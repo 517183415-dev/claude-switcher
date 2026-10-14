@@ -1,67 +1,105 @@
-# Claude 切换器 (Claude Switcher)
+<div align="center">
 
-一个 macOS 原生小工具：**启动前环境安检 + A/B 双账号一键切换 + 代理掉线自动熔断**。
+# Claude 切换器
 
-专为需要严格网络环境一致性的 Claude 桌面版用户设计。任何一项安全检查不通过，Claude 就不会被启动。
+**Fail-Closed 账号环境管理器 —— 让真实 IP 在物理上无法泄漏**
 
-![截图](docs/screenshot.png)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS-blue.svg)]()
+[![UI](https://img.shields.io/badge/UI-SwiftUI-orange.svg)]()
+[![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
 
-## 功能
+<img src="assets/icon-2048.png" width="128">
 
-- **11 项环境安全检查**（启动前强制执行）
-  代理内核 / TUN 网卡 / 出口 IP 归属地 / IP 与上次一致性 / 时区 / 地区 Locale / IPv6 旁路 / DNS 隧道校验（Fake-IP）/ WebRTC·STUN 多节点泄漏探测 / 保镖守护进程 / 域名置顶规则
-- **一键修复**：检查不过时自动拉起代理、恢复 TUN 开关、修正时区/IPv6/DNS、重装守护进程、重写分流规则
-- **A/B 双账号切换**：完整快照隔离（独立 Device Fingerprint / OAuth Credential），切换即物理交换数据卷，一次登录长期免登
-- **保镖（Kill-Switch）**：守护进程每 10 秒巡检，代理内核或 TUN 离线瞬间自动关闭 Claude，杜绝裸连重试
-- **时区看门狗**：系统时区被改动时自动回滚并留痕
-- **域名置顶路由**：Claude 全家族及生态域名（Turnstile / Datadog / Segment / Stripe / Intercom）置顶强制走代理，免疫第三方规则集误判
+</div>
 
-## 系统要求
+---
 
-- macOS（Apple Silicon / Intel）
-- [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev)（TUN 模式可用的代理）
-- Claude 桌面版（`/Applications/Claude.app`）
-- python3（`xcode-select --install`）
+## 为什么做这个
+
+AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：时区、Locale、DNS 出口、WebRTC 候选地址、设备指纹、行为时序。绝大多数封号不是因为你做错了什么，而是某个你没意识到的场景里，真实出口 IP 悄悄溜出去了一次——哪怕只是一个 TCP SYN 握手包。
+
+本项目的立场：**防御不建立在"用户记得"上，而建立在系统级的硬性物理约束上**。
+
+> 哪怕代理暴毙、哪怕软件静默升级、哪怕随手乱点，也绝对发不出一次直连请求。
+
+## 核心创新
+
+### 1. Block-on-Fail 环境审计引擎
+
+每次启动前强制执行 11 项环境指纹审计：Egress IP 归属地与 ASN 属性、时区与 Geo-location 一致性、Locale、IPv6 双栈旁路、DNS 隧道校验、WebRTC 泄漏、守护进程健康度、路由规则完整性……**任一指标不达标，应用物理上不会被拉起**。
+
+### 2. 纯标准库手写 STUN 协议栈的 WebRTC 泄漏探针
+
+不依赖浏览器内核（headless Chrome 的 ICE 子系统在无人值守场景下根本不工作——我们踩过这个坑），直接用 `socket` + `struct` 手工构造 RFC 5389 Binding Request，解析 XOR-MAPPED-ADDRESS。
+
+真正的创新在**交叉验证拓扑**：探测列表同时包含全球节点（Google/Cloudflare）与国内骨干节点——走隧道时应回传代理出口 IP，裸连时国内节点必然秒回并当场抓获真实 IP。两种状态可区分、零误报、不依赖"恰好不通"。
+
+### 3. Fail-Closed Kill-Switch
+
+常驻守护进程以 10s 周期巡检隧道健康度（内核进程 × 虚拟网卡双因子），隧道中断即刻终止受保护进程。区别于客户端自带的 Fail-Open 容错重试——那种机制会把含真实 IP 的握手包送到对方网关日志里，哪怕最终"超时失败"。
+
+### 4. Session Snapshot 快照隔离
+
+多账号不是"登出再登入"（那会产生大量认证事件与指纹抖动），而是**物理交换数据卷**：每个账号持有独立的 Device Fingerprint、OAuth Credential 与本地状态，切换时原子化封存/载入。对服务端而言，每个账号看到的都是一台恒定不变的设备。
+
+### 5. 配置漂移自愈（Watchdog）
+
+软件更新会静默重置你的安全配置（我们的生产环境里，TUN 开关被代理客户端更新重置了 4 次，系统时区被改回 8 次）。Watchdog 周期巡检 + 基线回滚 + 全程留痕，配置漂移从"事故"降级为"日志里的一行记录"。
+
+### 6. Pinned Routing 置顶路由
+
+目标服务全家族域名及其生态依赖（Turnstile 人机验证 / Telemetry / Payment / Support）置顶锁定代理路由，优先级高于任何第三方分流规则集——不信任、不验证、直接免疫规则库误判。
+
+## 实战战绩
+
+这不是玩具项目，每个机制都有生产环境实战记录：
+
+```
+2026-10-07 00:31:12  代理离线(内核或TUN丢失),已自动关闭 Claude   ← Kill-Switch 真实拦截
+2026-10-04 12:55:26  时区异常: [Asia/Shanghai] 已自动恢复        ← Watchdog 第 8 次拦截漂移
+```
+
+## 界面
+
+![Screenshot](docs/screenshot.png)
+
+原生 SwiftUI 单文件应用（无 Xcode 工程、无第三方依赖，`swiftc` 一条命令出可执行文件），图标由 Swift 代码程序生成——整个仓库不含一张设计素材。
 
 ## 安装
 
-下载后双击 `installer/安装.command`，按提示操作（自动识别代理组名与时区，中途需要一次管理员密码）。
+**系统要求**：macOS · [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev)（TUN 可用）· Claude 桌面版 · python3
 
-> 如提示"无法打开，因为来自身份不明的开发者"：右键 → 打开 → 打开。
+```bash
+# 克隆后双击 installer/安装.command 即可,自动识别代理组名与时区
+git clone https://github.com/YOURSJEYO/claude-switcher.git
+```
 
 ## 使用
 
-1. 双击桌面「Claude切换器」
-2. 等待 11 项检查完成：全绿 → 选账号启动；有红项 → 点「一键修复」
-3. 首次使用 B 账号：选择账号 B，在打开的 Claude 中登录一次即可，以后切换自动存档
+1. 双击桌面「Claude切换器」→ 等待 11 项检查
+2. 全绿 → 选账号启动；有红项 → 「一键修复」自动处理
+3. B 账号首次使用登录一次，以后 A/B 随切随用、互不干扰
 
-## 项目结构（二改指南）
+## 项目结构
 
 ```
-├── app/main.swift          # SwiftUI 界面源码(单文件,swiftc 直接编译)
+├── app/main.swift          # SwiftUI 界面(单文件)
 ├── core/
-│   ├── claude-switch.sh    # 核心逻辑:安检/切换/修复(全部功能在此)
-│   └── stun-probe.py       # STUN 泄漏探针(纯标准库手工实现协议)
-├── daemons/                # launchd 守护进程模板(安装时物化路径)
-├── installer/              # 双击安装/卸载程序
-└── assets/                 # 图标源码(Swift 程序生成)与成品
+│   ├── claude-switch.sh    # 核心逻辑:审计/切换/修复
+│   └── stun-probe.py       # STUN 探针(手工协议实现)
+├── daemons/                # Kill-Switch / Watchdog 模板
+├── installer/              # 双击安装/卸载
+└── assets/                 # 程序生成图标
 ```
 
-**改界面**：编辑 `app/main.swift` 后重新编译：
+## 二改指南
 
-```bash
-swiftc -O -parse-as-library app/main.swift \
-  -o "Claude切换器.app/Contents/MacOS/ClaudeSwitcher" \
-  -framework SwiftUI -framework AppKit
-```
+- **改界面**：编辑 `app/main.swift`，`swiftc -O -parse-as-library` 重编译即可
+- **加检查项**：`core/claude-switch.sh` 的 `checkdetail()` + UI 的 `keyMap` 各加一行
+- **改防护策略**：`daemons/` 里的模板即全部守护逻辑
 
-**改检查项/加新检查**：编辑 `core/claude-switch.sh` 的 `checkdetail()`（UI 逐行渲染）与 `check()`（启动门禁）即可，键名与 UI 的 `keyMap` 对应。
-
-## 安全说明
-
-- 本工具只做本地环境管理，不修改、不注入 Claude 客户端，不与 Anthropic 服务器产生任何额外通信
-- 所有网络探测仅发往 Cloudflare / STUN 公共服务器
-- 账号存档（含登录态）保存在 `~/.claude-switcher/`，请勿手动删除
+欢迎 Fork / PR。Issue 区接受场景补充——你遇到的每一个真实泄漏场景，都可能成为下一个检查项。
 
 ## License
 
