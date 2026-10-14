@@ -71,7 +71,10 @@ check() {
 
     grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null || fails="$fails;置顶规则缺失"
 
-    defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US' || fails="$fails;客户端语言未设英文"
+    defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US' || {
+        syslang=$(defaults read -g AppleLanguages 2>/dev/null | sed -n '2p' | tr -d ' ,"')
+        [[ "$syslang" == en* ]] || fails="$fails;客户端语言为中文"
+    }
 
     r1=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://claude.ai/ 2>/dev/null)
     r2=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/models 2>/dev/null)
@@ -138,10 +141,13 @@ checkdetail() {
     else
         echo '规则置顶=fail:未生效'
     fi
-    # 12. Claude 客户端语言(应单独设为英文,防止 JS 层 navigator.language/Intl 读出中文)
+    # 12. Claude 客户端语言(单独设为英文,或系统首选语言为英文均可;防止 JS 层读出中文)
     clang=$(defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | head -2)
+    syslang=$(defaults read -g AppleLanguages 2>/dev/null | sed -n '2p' | tr -d ' ,"')
     if echo "$clang" | grep -q 'en-US'; then
         echo '客户端语言=ok:en-US'
+    elif [[ "$syslang" == en* ]]; then
+        echo '客户端语言=ok:跟随系统(英文)'
     else
         echo '客户端语言=fail:跟随系统(中文)'
     fi
@@ -221,8 +227,9 @@ ASEOF
         echo "FIX:时区/IPv6/保镖 无需修复 ✓"
     fi
 
-    # B3. Claude 客户端单独设英文(用户级,无需密码)
-    if ! defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US'; then
+    # B3. Claude 客户端单独设英文(用户级,无需密码;系统首选语言已是英文则跳过)
+    syslang=$(defaults read -g AppleLanguages 2>/dev/null | sed -n '2p' | tr -d ' ,"')
+    if ! defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US' && [[ "$syslang" != en* ]]; then
         defaults write com.anthropic.claudefordesktop AppleLanguages -array en-US
         echo "FIX:Claude 客户端语言 → en-US ✓(重启 Claude 后生效)"
     fi
