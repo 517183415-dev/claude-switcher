@@ -71,6 +71,12 @@ check() {
 
     grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null || fails="$fails;置顶规则缺失"
 
+    defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US' || fails="$fails;客户端语言未设英文"
+
+    r1=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://claude.ai/ 2>/dev/null)
+    r2=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/models 2>/dev/null)
+    { [ "$r1" = "000" ] || [ "$r2" = "000" ]; } && fails="$fails;Anthropic生态不可达($r1/$r2)"
+
     if [ -n "$fails" ]; then
         echo "FAIL:${fails#;}"
         return 1
@@ -132,6 +138,28 @@ checkdetail() {
     else
         echo '规则置顶=fail:未生效'
     fi
+    # 12. Claude 客户端语言(应单独设为英文,防止 JS 层 navigator.language/Intl 读出中文)
+    clang=$(defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | head -2)
+    if echo "$clang" | grep -q 'en-US'; then
+        echo '客户端语言=ok:en-US'
+    else
+        echo '客户端语言=fail:跟随系统(中文)'
+    fi
+    # 13. ASN 网络属性(住宅宽带 vs 机房)
+    org=$(curl -s --max-time 6 https://ipinfo.io/json 2>/dev/null | grep '"org"' | cut -d'"' -f4)
+    case "$org" in
+        '') echo 'ASN属性=warn:未获取' ;;
+        *Comcast*|*AT\&T*|*Verizon*|*Spectrum*|*Charter*|*Cox*|*T-Mobile*|*Cable*|*esidential*) echo "ASN属性=ok:$org" ;;
+        *) echo "ASN属性=warn:疑似机房($org)" ;;
+    esac
+    # 14. Anthropic 生态可达性
+    r1=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://claude.ai/ 2>/dev/null)
+    r2=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/models 2>/dev/null)
+    if [ "$r1" != "000" ] && [ "$r2" != "000" ]; then
+        echo "生态可达性=ok:claude.ai:$r1 api:$r2"
+    else
+        echo "生态可达性=fail:claude.ai:$r1 api:$r2"
+    fi
 }
 
 # 一键修复:按项自动修复,每步输出结果
@@ -191,6 +219,12 @@ ASEOF
         fi
     else
         echo "FIX:时区/IPv6/保镖 无需修复 ✓"
+    fi
+
+    # B3. Claude 客户端单独设英文(用户级,无需密码)
+    if ! defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US'; then
+        defaults write com.anthropic.claudefordesktop AppleLanguages -array en-US
+        echo "FIX:Claude 客户端语言 → en-US ✓(重启 Claude 后生效)"
     fi
 
     # B2. 置顶规则缺失 → 重写 Merge 配置并重启 Clash

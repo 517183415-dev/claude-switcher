@@ -27,7 +27,7 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 
 ### 1. Block-on-Fail 环境审计引擎
 
-每次启动前强制执行 11 项环境指纹审计：Egress IP 归属地与 ASN 属性、时区与 Geo-location 一致性、Locale、IPv6 双栈旁路、DNS 隧道校验、WebRTC 泄漏、守护进程健康度、路由规则完整性……**任一指标不达标，应用物理上不会被拉起**。
+每次启动前强制执行 14 项环境指纹审计：Egress IP 归属地与 ASN 属性、时区与 Geo-location 一致性、Locale、IPv6 双栈旁路、DNS 隧道校验、WebRTC 泄漏、守护进程健康度、路由规则完整性……**任一指标不达标，应用物理上不会被拉起**。
 
 ### 2. 纯标准库手写 STUN 协议栈的 WebRTC 泄漏探针
 
@@ -81,7 +81,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 
 ## 使用
 
-1. 双击桌面「Claude切换器」→ 等待 11 项检查
+1. 双击桌面「Claude切换器」→ 等待 14 项检查
 2. 全绿 → 选账号启动；有红项 → 「一键修复」自动处理
 3. B 账号首次使用登录一次，以后 A/B 随切随用、互不干扰
 

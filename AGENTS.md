@@ -7,7 +7,7 @@
 
 ## 你的任务
 
-帮助用户在 macOS 上安装并配置「Claude 切换器」：一个带环境安检的 Claude 账号启动/切换工具。目标状态是：**用户双击桌面图标，11 项安全检查全部通过，可以正常启动 Claude**。
+帮助用户在 macOS 上安装并配置「Claude 切换器」：一个带环境安检的 Claude 账号启动/切换工具。目标状态是：**用户双击桌面图标，14 项安全检查全部通过，可以正常启动 Claude**。
 
 ## 开始之前：必须先确认的前置条件
 
@@ -37,7 +37,7 @@
 
 ## 验收标准（全部满足才算装完）
 
-- 终端执行 `~/.local/bin/claude-switch.sh checkdetail` 输出 11 行且全部 `=ok`
+- 终端执行 `~/.local/bin/claude-switch.sh checkdetail` 输出 14 行且全部 `=ok`
 - 双击桌面 App，界面全绿，能正常启动 Claude
 - `launchctl print system/local.claude-bodyguard` 与 `system/local.tz-watchdog` 均能查到（服务已注册）
 - 切换一次账号 B 再切回 A，A 的登录态完好
