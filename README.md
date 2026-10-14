@@ -105,6 +105,13 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 
 欢迎 Fork / PR。Issue 区接受场景补充——你遇到的每一个真实泄漏场景，都可能成为下一个检查项。
 
+## 问题反馈
+
+- 提交 [Issue](https://github.com/YOURSJEYO/claude-switcher/issues)
+- 在 [Linux.do](https://linux.do) 论坛发帖讨论
+
+反馈掉登录、弹盾类问题时，请附上「应用设置 → 日志」导出的日志，里面不含密码和 Cookie 原文。
+
 ## License
 
 MIT © Claude Switcher Contributors
