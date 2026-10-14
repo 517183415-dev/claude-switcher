@@ -75,6 +75,10 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 git clone https://github.com/YOURSJEYO/claude-switcher.git
 ```
 
+## 不会配置？交给你的 AI
+
+仓库根目录的 [`AGENTS.md`](AGENTS.md) 是一份完整的 **Agent 交接提示词**：把它直接粘贴给你的本地模型（Kimi Code / Cursor / Claude Code 等），它会按文档自动完成环境检查、安装、配置与验收。里面还附了我们实战踩过的全部坑的排障手册。
+
 ## 使用
 
 1. 双击桌面「Claude切换器」→ 等待 11 项检查
