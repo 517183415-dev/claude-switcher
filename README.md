@@ -127,7 +127,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 - 提交 [Issue](https://github.com/YOURSJEYO/claude-switcher/issues)
 - 在 [Linux.do](https://linux.do) 论坛发帖讨论
 
-反馈掉登录、弹盾类问题时，请附上「应用设置 → 日志」导出的日志，里面不含密码和 Cookie 原文。
+反馈掉登录、弹盾类问题时，请附上「应用设置 → 日志」导出的日志，里面不含密码和 Cookie 原文；如果可以，也请附上可复现步骤。
 
 ## License
 
