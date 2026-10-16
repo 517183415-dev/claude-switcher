@@ -6,6 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS-blue.svg)]()
+[![Windows](https://img.shields.io/badge/Windows-Beta-lightgrey.svg)](windows/)
 [![UI](https://img.shields.io/badge/UI-SwiftUI-orange.svg)]()
 [![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
 
@@ -87,6 +88,8 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 
 **系统要求**：macOS · [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev)（TUN 可用）· Claude 桌面版 · python3
 
+> **Windows 用户**：[`windows/`](windows/) 目录提供 Windows 版（PowerShell + WPF，Beta），安装与注意事项见 [windows/README.md](windows/README.md)。
+
 ```bash
 # 克隆后双击 installer/安装.command 即可,自动识别代理组名与时区
 git clone https://github.com/YOURSJEYO/claude-switcher.git
@@ -109,6 +112,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 ├── core/
 │   ├── claude-switch.sh    # 核心逻辑:审计/切换/修复
 │   └── stun-probe.py       # STUN 探针(手工协议实现)
+├── windows/                # Windows 版(PowerShell 核心 + WPF 界面, Beta)
 ├── daemons/                # Kill-Switch / Watchdog 模板
 ├── installer/              # 双击安装/卸载
 └── assets/                 # 程序生成图标

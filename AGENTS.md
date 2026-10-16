@@ -61,6 +61,19 @@
 3. 不要在日志、文档、Issue 里暴露用户的住宅/代理 IP 与任何凭据
 4. 不要改动 `~/.claude-switcher/accounts/` 下的存档结构
 
+## Windows 版（windows/ 目录, Beta）
+
+Windows 用户请使用 `windows/` 下的 PowerShell 版本。关键差异与注意事项：
+
+- **文件编码**：所有 `.ps1` 文件必须保持 **UTF-8 with BOM**（Windows PowerShell 5.1 无 BOM 会把中文读成乱码）。编辑后若中文变乱码，重新加 BOM。
+- **时区 ID 体系不同**：Windows 用 `Eastern Standard Time` 这类 ID，安装器负责把 IANA 时区（America/New_York）映射过去，见 `install.ps1` 的 `$tzMap`。
+- **权限模型**：`install.ps1` 需要管理员运行（注册计划任务/锁时区/关 IPv6）；日常使用中「一键修复」通过 `Start-Process -Verb RunAs` 触发 UAC 弹窗。
+- **保镖实现**：用计划任务（AtLogOn 触发）启动隐藏 PowerShell 常驻进程，10 秒巡检，与 Mac 版行为一致。
+- **robocopy 退出码**：0-7 都是成功，8+ 才是失败——判断切换成败时不要按常规退出码判断。
+- **账号数据目录**：`%APPDATA%\Claude`（不是 macOS 的 `~/Library/Application Support/Claude`）。
+- **已知限制**：WPF 界面为第一版重写，未经大规模真机测试；Clash Verge 的 TUN 开关被更新重置后在 Windows 端需手动重开。
+- SmartScreen 首次运行拦截属正常现象（未签名脚本），引导用户「更多信息 → 仍要运行」。
+
 ## 文件索引
 
 - 核心逻辑：`core/claude-switch.sh`（安检/切换/修复全在这一个文件）
@@ -68,3 +81,4 @@
 - 界面：`app/main.swift`（单文件 SwiftUI）
 - 守护进程模板：`daemons/`
 - 安装器：`installer/`
+- Windows 版：`windows/`（核心 `claude-switch.ps1` / 界面 `SwitcherUI.ps1` / 安装器 `install.ps1` / 保镖 `claude-bodyguard.ps1`）
