@@ -4,6 +4,8 @@
 
 **Fail-Closed 账号环境管理器 —— 让真实 IP 在物理上无法泄漏**
 
+> 🛠️ **本项目持续活跃更新中**——防护项随目标平台风控演进不断增加，见下方[路线图](#路线图)。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS-blue.svg)]()
 [![Windows](https://img.shields.io/badge/Windows-Beta-lightgrey.svg)](windows/)
@@ -132,6 +134,21 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 - 在 [Linux.do](https://linux.do) 论坛发帖讨论
 
 反馈掉登录、弹盾类问题时，请附上「应用设置 → 日志」导出的日志，里面不含密码和 Cookie 原文；如果可以，也请附上可复现步骤。
+
+## 路线图
+
+本项目按"实战驱动"迭代——风控怎么进化，防护就怎么跟上：
+
+- [x] macOS 版：14 项环境审计 + Kill-Switch + 快照切换 + 漂移自愈（已稳定）
+- [x] Windows 版（Beta）：核心逻辑全移植
+- [ ] Windows 版稳定化：真机测试迭代，收敛 Beta
+- [ ] Web 版环境检测页：手机/平板浏览器打开即测，零安装
+- [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
+- [ ] 更多代理客户端适配：Surge / sing-box / ClashX
+- [ ] 快照切换提速：增量归档（只写差量）
+- [ ] 应用内自动更新
+
+> 有想优先看到的功能，去 [Issues](https://github.com/YOURSJEYO/claude-switcher/issues) 投票或提需求，热度高的先做。
 
 ## License
 
