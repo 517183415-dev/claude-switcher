@@ -9,6 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS-blue.svg)]()
 [![Windows](https://img.shields.io/badge/Windows-Beta-lightgrey.svg)](windows/)
+[![Linux](https://img.shields.io/badge/Linux-Beta-lightgrey.svg)](linux/)
 [![UI](https://img.shields.io/badge/UI-SwiftUI-orange.svg)]()
 [![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)]()
 
@@ -91,6 +92,7 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 **系统要求**：macOS · [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev)（TUN 可用）· Claude 桌面版 · python3
 
 > **Windows 用户**：[`windows/`](windows/) 目录提供 Windows 版（PowerShell + WPF，Beta），安装与注意事项见 [windows/README.md](windows/README.md)。
+> **Linux 用户**：[`linux/`](linux/) 目录提供 Linux 版（bash + systemd，Beta），设计取舍（无官方桌面版→切换浏览器登录态）见 [linux/README.md](linux/README.md)。
 
 ```bash
 # 克隆后双击 installer/安装.command 即可,自动识别代理组名与时区
@@ -115,6 +117,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 │   ├── claude-switch.sh    # 核心逻辑:审计/切换/修复
 │   └── stun-probe.py       # STUN 探针(手工协议实现)
 ├── windows/                # Windows 版(PowerShell 核心 + WPF 界面, Beta)
+├── linux/                  # Linux 版(bash 核心 + systemd 保镖 + 终端菜单, Beta)
 ├── daemons/                # Kill-Switch / Watchdog 模板
 ├── installer/              # 双击安装/卸载
 └── assets/                 # 程序生成图标
@@ -141,7 +144,9 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 
 - [x] macOS 版：14 项环境审计 + Kill-Switch + 快照切换 + 漂移自愈（已稳定）
 - [x] Windows 版（Beta）：核心逻辑全移植
+- [x] Linux 版（Beta）：bash 核心 + systemd 保镖 + 终端菜单
 - [ ] Windows 版稳定化：真机测试迭代，收敛 Beta
+- [ ] Linux 版稳定化：多发行版实测迭代
 - [ ] Web 版环境检测页：手机/平板浏览器打开即测，零安装
 - [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
 - [ ] 更多代理客户端适配：Surge / sing-box / ClashX

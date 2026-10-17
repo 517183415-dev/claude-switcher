@@ -74,6 +74,20 @@ Windows 用户请使用 `windows/` 下的 PowerShell 版本。关键差异与注
 - **已知限制**：WPF 界面为第一版重写，未经大规模真机测试；Clash Verge 的 TUN 开关被更新重置后在 Windows 端需手动重开。
 - SmartScreen 首次运行拦截属正常现象（未签名脚本），引导用户「更多信息 → 仍要运行」。
 
+## Linux 版（linux/ 目录, Beta）
+
+Linux 用户使用 `linux/` 下的 bash 版本。**开始之前必须先理解最大的前提差异**：
+
+- **Claude 官方没有 Linux 桌面版**——使用形态是「网页版(浏览器) + Claude Code CLI」。因此：
+  - 账号切换切换的是**浏览器配置目录**（`~/.config/google-chrome` 或 `~/.config/chromium`），即切换 Web 登录态；切换前必须完全退出浏览器
+  - 保镖只终止 `claude` CLI 进程，**不要让它去杀浏览器**（网页端保护交给 TUN + 置顶规则）
+- **常驻服务**：systemd 用户单元（`~/.config/systemd/user/`，免 sudo、登录自启）
+- **系统设置**：时区用 `timedatectl set-timezone`（sudo）；IPv6 用 `sysctl -w net.ipv6.conf.all.disable_ipv6=1` + `/etc/sysctl.d/` 持久化
+- **DNS 查询工具**：`dig` → `nslookup` → `getent` 逐级回退（部分发行版默认无 dig，脚本已内置回退，勿改成 dig 硬依赖）
+- **界面**：无 GUI，终端菜单（`claude-switch menu`）+ CLI 参数
+- **发行版差异**：安装器不区分发行版，但依赖 systemd；非 systemd 发行版（如 Alpine/void 部分配置）需要手工替代保镖常驻方式
+- 配置目录路径：Clash Verge Linux 版配置在 `~/.config/io.github.clash-verge-rev.clash-verge-rev/`（脚本已兼容两种常见路径）
+
 ## 文件索引
 
 - 核心逻辑：`core/claude-switch.sh`（安检/切换/修复全在这一个文件）
@@ -82,3 +96,4 @@ Windows 用户请使用 `windows/` 下的 PowerShell 版本。关键差异与注
 - 守护进程模板：`daemons/`
 - 安装器：`installer/`
 - Windows 版：`windows/`（核心 `claude-switch.ps1` / 界面 `SwitcherUI.ps1` / 安装器 `install.ps1` / 保镖 `claude-bodyguard.ps1`）
+- Linux 版：`linux/`（核心 `claude-switch.sh` / 保镖 `claude-bodyguard.sh` / 安装器 `install.sh`）
