@@ -119,6 +119,7 @@ chmod +x "$H/.local/bin/tz-watchdog.sh"
 # launchd 配置
 sed "s|__HOME__|$H|g" "$REPO/daemons/local.claude-bodyguard.plist" > "$H/.local/bin/local.claude-bodyguard.plist"
 sed "s|__HOME__|$H|g" "$REPO/daemons/local.tz-watchdog.plist" > "$H/.local/bin/local.tz-watchdog.plist"
+sed "s|__HOME__|$H|g" "$REPO/daemons/local.claude-update.plist" > "$H/.local/bin/local.claude-update.plist"
 echo "✓ 核心文件已安装"
 
 # ---- 4. 现场编译 App 到桌面 ----
@@ -206,11 +207,12 @@ fi
 if [ -n "$DRYRUN" ]; then
     echo "[演练模式] 跳过系统级配置(守护进程/时区/IPv6)"
 else
-    SYSCMDS="cp '$H/.local/bin/local.claude-bodyguard.plist' '$H/.local/bin/local.tz-watchdog.plist' /Library/LaunchDaemons/;
-        chown root:wheel /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist;
-        chmod 644 /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist;
+    SYSCMDS="cp '$H/.local/bin/local.claude-bodyguard.plist' '$H/.local/bin/local.tz-watchdog.plist' '$H/.local/bin/local.claude-update.plist' /Library/LaunchDaemons/;
+        chown root:wheel /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist /Library/LaunchDaemons/local.claude-update.plist;
+        chmod 644 /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist /Library/LaunchDaemons/local.claude-update.plist;
         launchctl bootout system/local.claude-bodyguard 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.claude-bodyguard.plist;
-        launchctl bootout system/local.tz-watchdog 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.tz-watchdog.plist;"
+        launchctl bootout system/local.tz-watchdog 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.tz-watchdog.plist;
+        launchctl bootout system/local.claude-update 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.claude-update.plist;"
     curt=$(readlink /etc/localtime 2>/dev/null)
     [ "$curt" != "/var/db/timezone/zoneinfo/$TZV" ] && SYSCMDS="$SYSCMDS /usr/sbin/systemsetup -settimezone '$TZV';"
     v6=$(networksetup -getinfo Wi-Fi 2>/dev/null | grep -i '^IPv6:')
@@ -241,5 +243,6 @@ echo "  ✅ 安装完成!"
 echo "  使用: 双击桌面「Claude切换器」"
 echo "  首次使用: 打开后选账号A(自动收编当前登录)"
 echo "  换了其他国家节点后: 运行 claude-switch.sh set-region 一键重新适配"
+echo "  自动更新已启用(每12小时检查一次),也可手动: claude-switch.sh update"
 echo "=================================="
 read -n 1 -s -r -p "按任意键关闭窗口..."

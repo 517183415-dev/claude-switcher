@@ -50,6 +50,8 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 | 13 | ASN 属性 | 住宅宽带 vs 机房 IP（Residential vs Datacenter） |
 | 14 | 生态可达性 | claude.ai / api.anthropic.com 连通性验证 |
 
+> 关于「IP 与上次一致」：除了比对上一次出口，审计引擎还会维护 48 小时出口 IP 历史——**48 小时内出口 IP 变化 ≥3 次会亮黄色警告**（不阻断启动）。IP 频繁漂移意味着账号画像在风控眼里"居无定所"，建议固定一条高质量住宅节点长期使用。
+
 ### 2. 纯标准库手写 STUN 协议栈的 WebRTC 泄漏探针
 
 不依赖浏览器内核（headless Chrome 的 ICE 子系统在无人值守场景下根本不工作——我们踩过这个坑），直接用 `socket` + `struct` 手工构造 RFC 5389 Binding Request，解析 XOR-MAPPED-ADDRESS。
@@ -122,6 +124,16 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 3. B 账号首次使用登录一次，以后 A/B 随切随用、互不干扰
 4. 换了其他国家的节点 → 跑一次 `~/.local/bin/claude-switch.sh set-region`，国家/时区/地区格式一键重新锁定
 
+## 使用卫生与被封急救
+
+工具能兜底技术泄漏，兜不住主动作死。以下每条都是社区里用账号堆出来的教训：
+
+- **先退出 Claude，再断/换代理**。断线重连的那几秒是全年最高危时刻——保镖会兜底杀进程，但正确姿势永远是先退客户端再动网络，不要反过来挑战物理
+- **不要把订阅账号接入任何第三方工具/中转站/拼车服务**（2026 年头号封号诱因，没有之一）。你的会话凭证经过谁的机器，谁就拥有你的账号
+- **支付卡段、账单地址尽量与出口国家一致**。美国出口配国内双币卡 + 北京账单地址，等于在风控表格里自己填了"我是跨区用户"
+- **新账号前几天不要拉满高档位用量**。注册即跑满额度的行为序列，是批量养号工作室的指纹，正常用户不长这样
+- **真被封了**：先用被封账号登录 [claude.ai/restricted](https://claude.ai/restricted) 提交申诉（社区历史成功率约十分之一，值得一试）；申诉前先在封号提示页导出你的数据；**不要立刻用同一台机器、同一张卡、同一个邮箱再注册新号**——绕过封禁本身违反条款，而且关联指纹会让新号活得比旧号还短
+
 ## 项目结构
 
 ```
@@ -164,9 +176,13 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 - [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
 - [x] 更多代理客户端适配：已支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge（含 auto 自动识别）
 - [ ] 快照切换提速：增量归档（只写差量）
-- [ ] 应用内自动更新
+- [x] 应用内自动更新：launchd 每 12 小时自动检查更新，自检失败自动回滚，也可手动 `claude-switch.sh update` 保底
 
 > 有想优先看到的功能，去 [Issues](https://github.com/YOURSJEYO/claude-switcher/issues) 投票或提需求，热度高的先做。
+
+## 帮忙吆喝一声
+
+如果这个工具让你少被封了一个号，希望有条件的佬哥能帮我们在 [Linux.do](https://linux.do) 论坛发个帖子推荐一下——仓库地址 <https://github.com/YOURSJEYO/claude-switcher>，一句话定位：**"Claude 账号的 Fail-Closed 环境保护罩：14 项环境审计不过就物理上不让启动"**。让更多被风控折磨的兄弟少走弯路。
 
 ## License
 

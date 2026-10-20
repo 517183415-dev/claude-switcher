@@ -27,7 +27,7 @@
 2. 探测代理客户端并写进脚本顶部 `PROXY_MODE="..."`：存在 Clash Verge 配置目录 → `clash-verge`；否则 `scutil --nc list` 有 Shadowrocket VPN 配置 → `shadowrocket`；都没有则让用户在 clash-verge/shadowrocket/sing-box/clashx/surge/auto 中选择
 3. Clash Verge 模式下，从 `clash-verge.yaml` 的 `proxy-groups:` 找第一个 `type: select` 的组名写进 `PROXY_GROUP="..."`（其他客户端跳过）
 4. 按出口 IP 自动锁定地区目标：`curl -s ipinfo.io/json` 的 country → `COUNTRY_TARGET`，timezone → `TZ_TARGET`，country 经映射表（US→en_US、JP→ja_JP、TW→zh_TW、HK→zh_HK、SG→en_SG、GB→en_GB、DE→de_DE、FR→fr_FR、KR→ko_KR、AU→en_AU、CA→en_CA，其余→en_US）→ `LOCALE_TARGET`，三项都写进脚本头部
-5. 参照 `daemons/` 目录的模板，生成保镖与时区看门狗脚本（把 `__HOME__` / `__TZ_TARGET__` / `__PROXY_MODE__` 替换为实际值），并安装对应的 launchd 服务到 `/Library/LaunchDaemons/`（需要 sudo）
+5. 参照 `daemons/` 目录的模板，生成保镖与时区看门狗脚本（把 `__HOME__` / `__TZ_TARGET__` / `__PROXY_MODE__` 替换为实际值），并把三个 launchd 服务安装到 `/Library/LaunchDaemons/`（需要 sudo）：`local.claude-bodyguard`（保镖）、`local.tz-watchdog`（时区看门狗）、`local.claude-update`（自动更新，每 12 小时跑一次 `update --auto`，模板在 `daemons/local.claude-update.plist`）
 6. 现场编译界面 App（需要 Xcode 命令行工具，必须带 `-target` 否则新 SDK 产物在老系统拒启动）：
    ```bash
    swiftc -O -parse-as-library -target "$(uname -m)-apple-macos13.0" app/main.swift -o Claude切换器.app/Contents/MacOS/ClaudeSwitcher -framework SwiftUI -framework AppKit
@@ -37,11 +37,13 @@
 8. 时区与 IPv6（已是目标值则跳过对应命令）：`systemsetup -settimezone <TZ_TARGET>`、`networksetup -setv6off Wi-Fi`（需管理员）
 9. 收尾自检：运行 `~/.local/bin/claude-switch.sh checkdetail` 确认各项状态
 
+日常维护命令：`check`（静默总检）/ `checkdetail`（14 项逐项）/ `fix`（一键修复）/ `switch A|B`（切换账号）/ `set-region`（换国家节点后重锁地区目标）/ `update [--auto]`（自动更新：`--auto` 供 launchd 调用、输出落 `~/.claude-switcher/update.log`；手动跑则直接打印。流程：拉取 main → 剔除 5 个配置行比对去重 → 备份 .bak → 注入配置 → 自检，含任何 `=fail` 自动回滚）
+
 ## 验收标准（全部满足才算装完）
 
 - 终端执行 `~/.local/bin/claude-switch.sh checkdetail` 输出 14 行且全部 `=ok`
 - 双击桌面 App，界面全绿，能正常启动 Claude
-- `launchctl print system/local.claude-bodyguard` 与 `system/local.tz-watchdog` 均能查到（服务已注册）
+- `launchctl print system/local.claude-bodyguard`、`system/local.tz-watchdog` 与 `system/local.claude-update` 均能查到（服务已注册）
 - 切换一次账号 B 再切回 A，A 的登录态完好
 
 ## 排障手册（以下全是实战中踩过的坑，按症状直接查）

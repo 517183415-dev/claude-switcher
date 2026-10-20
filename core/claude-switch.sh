@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude 账号切换器 - 核心脚本 (通用版)
-# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix | set-region
+# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix | set-region | update [--auto]
 set -u
 export LC_ALL=en_US.UTF-8
 
@@ -102,6 +102,18 @@ locale_for() {
     esac
 }
 
+# IP 审查:记录出口IP并统计最近48h内不同IP个数(账号画像风险指标)
+iphist_count() {
+    [ -z "$1" ] && { echo 0; return; }
+    local HIST="$BASE/iphistory.log"
+    local now=$(date +%s)
+    echo "$1 $now" >>"$HIST"
+    # 裁掉48小时(172800秒)以前的记录
+    awk -v cutoff=$((now-172800)) '$2>=cutoff' "$HIST" > "$HIST.tmp" && mv "$HIST.tmp" "$HIST"
+    # 统计48h内不同IP个数
+    awk '{print $1}' "$HIST" | sort -u | wc -l | tr -d ' '
+}
+
 # ---------- 安全检查 ----------
 check() {
     fails=""
@@ -119,6 +131,12 @@ check() {
         ipwarn="注意:出口IP与上次不同($lastip -> $ip)"
     fi
     [ -n "$ip" ] && echo "$ip" > "$BASE/lastip"
+
+    # IP 审查:48h 内出口 IP 变化 ≥3 次追加警告(只 warn 不 fail)
+    ipn=$(iphist_count "$ip")
+    if [ "$ipn" -ge 3 ] 2>/dev/null; then
+        ipwarn="${ipwarn:+$ipwarn; }注意:48h内出口IP变化${ipn}次,账号画像有风险,建议固定节点"
+    fi
 
     tz=$(readlink /etc/localtime 2>/dev/null)
     [ "$tz" = "/var/db/timezone/zoneinfo/$TZ_TARGET" ] || fails="$fails;时区异常($tz)"
@@ -196,11 +214,24 @@ checkdetail() {
     loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
     if [ "$loc" = "$COUNTRY_TARGET" ]; then echo "出口IP=ok:$ip/$loc"; else echo "出口IP=fail:${ip:-无}/${loc:-未知}(期望$COUNTRY_TARGET)"; fi
     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
+    ipst=""; ipdt=""
     if [ -z "$ip" ]; then echo 'IP一致=fail:未获取到出口IP'
-    elif [ -z "$lastip" ]; then echo 'IP一致=ok:首次记录'
-    elif [ "$ip" = "$lastip" ]; then echo 'IP一致=ok'
-    else echo "IP一致=warn:$lastip → $ip"; fi
+    elif [ -z "$lastip" ]; then ipst="ok"; ipdt="首次记录"
+    elif [ "$ip" = "$lastip" ]; then ipst="ok"
+    else ipst="warn"; ipdt="$lastip → $ip"; fi
     [ -n "$ip" ] && echo "$ip" > "$BASE/lastip"
+    # IP 审查:48h 内出口 IP 变化 ≥3 次提示账号画像风险(只 warn 不 fail)
+    if [ -n "$ipst" ]; then
+        ipn=$(iphist_count "$ip")
+        if [ "$ipn" -ge 3 ] 2>/dev/null; then
+            if [ "$ipst" = "ok" ]; then
+                ipst="warn"; ipdt="48h内出口IP变化${ipn}次,账号画像有风险,建议固定节点"
+            else
+                ipdt="$ipdt;48h内出口IP变化${ipn}次,账号画像有风险,建议固定节点"
+            fi
+        fi
+        if [ -z "$ipdt" ]; then echo "IP一致=$ipst"; else echo "IP一致=$ipst:$ipdt"; fi
+    fi
     tz=$(readlink /etc/localtime 2>/dev/null)
     if [ "$tz" = "/var/db/timezone/zoneinfo/$TZ_TARGET" ]; then echo '时区=ok'; else echo "时区=fail:$tz"; fi
     locale=$(defaults read -g AppleLocale 2>/dev/null)
@@ -466,6 +497,83 @@ ASEOF
     echo "OK:region=$loc tz=$ntz locale=$nlocale"
 }
 
+# 自动更新:拉取 main 分支最新代码,配置注入+自检+失败回滚(--auto 供 launchd 每12小时调用)
+self_update() {
+    if [ "${1:-}" = "--auto" ]; then auto=1; else auto=0; fi
+    # 路径全部从脚本自身位置推导,launchd 以 root 运行时 $HOME 不可靠
+    BIN=$(cd "$(dirname "$0")" && pwd)
+    UHOME="${BIN%/.local/bin}"
+    [ "$UHOME" = "$BIN" ] && UHOME="$HOME"
+    UBASE="$UHOME/.claude-switcher"
+    if [ "$auto" -eq 1 ]; then
+        mkdir -p "$UBASE"
+        exec >>"$UBASE/update.log" 2>&1
+        echo "# $(date '+%F %T') update --auto 开始"
+    fi
+
+    tmpd=$(mktemp -d)
+    if ! curl -sL --max-time 30 "https://codeload.github.com/YOURSJEYO/claude-switcher/zip/refs/heads/main" -o "$tmpd/main.zip" \
+        || ! unzip -q "$tmpd/main.zip" -d "$tmpd" 2>/dev/null; then
+        echo "FAIL:下载或解压失败(网络问题,稍后再试)"; rm -rf "$tmpd"; return 1
+    fi
+    NEW="$tmpd/claude-switcher-main"
+    if [ ! -f "$NEW/core/claude-switch.sh" ]; then
+        echo "FAIL:远程包结构异常,已中止"; rm -rf "$tmpd"; return 1
+    fi
+
+    # 跳过判断:剔除头部5个配置行后与本地已安装版本比对,无差异即已是最新
+    strip_cfg() { grep -vE '^(PROXY_MODE|PROXY_GROUP|COUNTRY_TARGET|TZ_TARGET|LOCALE_TARGET)="' "$1"; }
+    if [ -f "$BIN/claude-switch.sh" ] && \
+       diff <(strip_cfg "$BIN/claude-switch.sh") <(strip_cfg "$NEW/core/claude-switch.sh") >/dev/null 2>&1; then
+        echo "OK:已是最新版本"; rm -rf "$tmpd"; return 0
+    fi
+
+    # 备份现有三件套
+    for f in claude-switch.sh claude-bodyguard.sh tz-watchdog.sh; do
+        [ -f "$BIN/$f" ] && cp "$BIN/$f" "$BIN/$f.bak"
+    done
+
+    # 替换核心脚本 + 从 .bak 读出5个配置值注入新脚本
+    cp "$NEW/core/claude-switch.sh" "$BIN/claude-switch.sh"
+    PM=""; PG=""; CT=""; TZV=""; LCT=""
+    if [ -f "$BIN/claude-switch.sh.bak" ]; then
+        get_cfg() { grep "^$1=\"" "$BIN/claude-switch.sh.bak" | head -1 | cut -d'"' -f2; }
+        PM=$(get_cfg PROXY_MODE); PG=$(get_cfg PROXY_GROUP); CT=$(get_cfg COUNTRY_TARGET)
+        TZV=$(get_cfg TZ_TARGET); LCT=$(get_cfg LOCALE_TARGET)
+        inject_cfg() { grep -q "^$1=\"" "$BIN/claude-switch.sh.bak" && sed -i '' "s|^$1=\".*\"|$1=\"$2\"|" "$BIN/claude-switch.sh"; }
+        inject_cfg PROXY_MODE "$PM"; inject_cfg PROXY_GROUP "$PG"; inject_cfg COUNTRY_TARGET "$CT"
+        inject_cfg TZ_TARGET "$TZV"; inject_cfg LOCALE_TARGET "$LCT"
+    fi
+    chmod +x "$BIN/claude-switch.sh"
+
+    # 保镖/看门狗用远程模板重新物化(launchd plist 不动,脚本更新即生效)
+    [ -z "$PM" ] && PM="clash-verge"
+    [ -z "$TZV" ] && TZV="America/New_York"
+    sed -e "s|__HOME__|$UHOME|g" -e "s|__PROXY_MODE__|$PM|g" \
+        "$NEW/daemons/claude-bodyguard.sh" > "$BIN/claude-bodyguard.sh"
+    sed -e "s|__HOME__|$UHOME|g" -e "s|__TZ_TARGET__|$TZV|g" \
+        "$NEW/daemons/tz-watchdog.sh" > "$BIN/tz-watchdog.sh"
+    chmod +x "$BIN/claude-bodyguard.sh" "$BIN/tz-watchdog.sh"
+    rm -rf "$tmpd"
+
+    # 更新后自检:root(launchd)下切回真实用户执行,避免 defaults 读到 root 的配置
+    if [ "$(id -u)" -eq 0 ]; then
+        owner=$(stat -f '%Su' "$UHOME" 2>/dev/null)
+        if [ -n "$owner" ]; then out=$(sudo -H -u "$owner" "$BIN/claude-switch.sh" checkdetail 2>&1); else out=""; fi
+    else
+        out=$("$BIN/claude-switch.sh" checkdetail 2>&1)
+    fi
+    if [ -z "$out" ] || echo "$out" | grep -q '=fail'; then
+        for f in claude-switch.sh claude-bodyguard.sh tz-watchdog.sh; do
+            [ -f "$BIN/$f.bak" ] && cp "$BIN/$f.bak" "$BIN/$f"
+        done
+        echo "FAIL:新版自检未通过,已自动回滚"
+        return 1
+    fi
+    echo "OK:更新完成 $(date '+%Y-%m-%d')"
+    return 0
+}
+
 status() {
     cur="none"; [ -f "$BASE/current" ] && cur=$(cat "$BASE/current")
     hasA=0; [ -d "$BASE/accounts/A" ] && hasA=1
@@ -545,5 +653,6 @@ case "${1:-}" in
     status) status ;;
     switch) switch_to "${2:-}" ;;
     set-region) set_region ;;
-    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region"; exit 2 ;;
+    update) self_update "${2:-}" ;;
+    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]"; exit 2 ;;
 esac
