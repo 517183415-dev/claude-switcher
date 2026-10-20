@@ -22,6 +22,8 @@
 
 ## 与 macOS 版的差异（注意事项）
 
+> **注意**：macOS 版已支持多代理客户端（Clash Verge / Shadowrocket / sing-box / ClashX / Surge）与地区自适应（按出口国家自动锁定时区+地区格式，换节点后 `set-region` 一键重配）。Windows 版当前仍默认按美国出口设计，安装时会按 ipinfo 自动锁定时区；其他国家/地区的完整支持在路线图中。
+
 | 项目 | 说明 |
 |---|---|
 | 时区名称 | Windows 用 `Eastern Standard Time` 这类 ID,安装器会自动把 IP 城市映射过去 |

@@ -89,15 +89,27 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 
 ## 安装
 
-**系统要求**：macOS · [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev)（TUN 可用）· Claude 桌面版 · python3
+**系统要求**：macOS · Clash Verge / Shadowrocket / sing-box / ClashX / Surge 任一（TUN 可用）· Claude 桌面版 · python3
 
 > **Windows 用户**：[`windows/`](windows/) 目录提供 Windows 版（PowerShell + WPF，Beta），安装与注意事项见 [windows/README.md](windows/README.md)。
 > **Linux 用户**：[`linux/`](linux/) 目录提供 Linux 版（bash + systemd，Beta），设计取舍（无官方桌面版→切换浏览器登录态）见 [linux/README.md](linux/README.md)。
 
 ```bash
-# 克隆后双击 installer/安装.command 即可,自动识别代理组名与时区
+# 克隆后双击 installer/安装.command 即可,自动识别代理客户端、代理组名与地区目标
 git clone https://github.com/YOURSJEYO/claude-switcher.git
 ```
+
+## 地区自适应
+
+不再锁死美国：安装程序按当前出口 IP 的国家自动锁定**目标国家 + 时区 + 地区格式**三件套（出口是 CN 会直接拒装，逼你先挂好代理）。之后换了其他国家的节点，不用重装，一条命令重新适配：
+
+```bash
+~/.local/bin/claude-switch.sh set-region
+# 自动探测出口国家 → 改写自身配置 → 设地区格式 → 弹一次授权锁时区 → 同步看门狗
+# 输出: OK:region=JP tz=Asia/Tokyo locale=ja_JP
+```
+
+14 项检查里的「出口 IP / 时区 / 地区」全部按新目标判定，界面无需任何改动。
 
 ## 不会配置？交给你的 AI
 
@@ -108,6 +120,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 1. 双击桌面「Claude切换器」→ 等待 14 项检查
 2. 全绿 → 选账号启动；有红项 → 「一键修复」自动处理
 3. B 账号首次使用登录一次，以后 A/B 随切随用、互不干扰
+4. 换了其他国家的节点 → 跑一次 `~/.local/bin/claude-switch.sh set-region`，国家/时区/地区格式一键重新锁定
 
 ## 项目结构
 
@@ -149,7 +162,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 - [ ] Linux 版稳定化：多发行版实测迭代
 - [ ] Web 版环境检测页：手机/平板浏览器打开即测，零安装
 - [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
-- [ ] 更多代理客户端适配：Surge / sing-box / ClashX
+- [x] 更多代理客户端适配：已支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge（含 auto 自动识别）
 - [ ] 快照切换提速：增量归档（只写差量）
 - [ ] 应用内自动更新
 

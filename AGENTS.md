@@ -14,26 +14,28 @@
 逐项检查，缺哪项就先补哪项：
 
 1. **macOS**（Apple Silicon 或 Intel 均可）
-2. **Clash Verge** 已安装且代理可用（配置目录应存在于 `~/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/`）
+2. **代理客户端**已安装且代理可用，支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge 任一（TUN 可用）。Clash Verge 的配置目录应存在于 `~/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/`；Shadowrocket 以 VPN 配置形式存在（`scutil --nc list` 可见）
 3. **Claude 桌面版** 在 `/Applications/Claude.app`
 4. **python3** 可用（`python3 --version` 能输出版本号；没有则引导用户运行 `xcode-select --install`）
-5. **当前出口 IP 必须已经是美国**——先跑 `curl -s https://www.cloudflare.com/cdn-cgi/trace | grep loc=`，返回 `loc=US` 才能继续。不是美国就停下，让用户先把代理调好（安装程序会按出口 IP 锁定时区，裸连时装机会把时区锁错）
+5. **当前出口 IP 所在国家不能是 CN**——先跑 `curl -s https://www.cloudflare.com/cdn-cgi/trace | grep loc=`，返回的 `loc` 不是 `CN` 才能继续。是 CN 就停下，让用户先把代理调好（安装程序会按出口 IP 自动锁定地区目标：国家/时区/地区格式三件套，裸连时装机会把它们锁错）
 
 ## 安装步骤
 
 首选引导用户运行安装器（双击 `installer/安装.command`，或终端执行它）。如果安装器环境受限，按下面的手动等效步骤执行：
 
 1. 把 `core/claude-switch.sh` 复制为 `~/.local/bin/claude-switch.sh`（可执行），把 `core/stun-probe.py` 放到 `~/.claude-switcher/`
-2. 从 Clash 配置自动识别代理组名：在 `clash-verge.yaml` 的 `proxy-groups:` 下找第一个 `type: select` 的组名，写进脚本顶部的 `PROXY_GROUP="..."`
-3. 按出口 IP 城市确定锁定时区（`curl -s ipinfo.io/json` 的 timezone 字段），写进脚本顶部 `TZ_TARGET="..."`
-4. 参照 `daemons/` 目录的模板，生成保镖与时区看门狗脚本（把 `__HOME__` / `__TZ_TARGET__` 替换为实际值），并安装对应的 launchd 服务到 `/Library/LaunchDaemons/`（需要 sudo）
-5. 编译界面 App（需要 Xcode 命令行工具）：
+2. 探测代理客户端并写进脚本顶部 `PROXY_MODE="..."`：存在 Clash Verge 配置目录 → `clash-verge`；否则 `scutil --nc list` 有 Shadowrocket VPN 配置 → `shadowrocket`；都没有则让用户在 clash-verge/shadowrocket/sing-box/clashx/surge/auto 中选择
+3. Clash Verge 模式下，从 `clash-verge.yaml` 的 `proxy-groups:` 找第一个 `type: select` 的组名写进 `PROXY_GROUP="..."`（其他客户端跳过）
+4. 按出口 IP 自动锁定地区目标：`curl -s ipinfo.io/json` 的 country → `COUNTRY_TARGET`，timezone → `TZ_TARGET`，country 经映射表（US→en_US、JP→ja_JP、TW→zh_TW、HK→zh_HK、SG→en_SG、GB→en_GB、DE→de_DE、FR→fr_FR、KR→ko_KR、AU→en_AU、CA→en_CA，其余→en_US）→ `LOCALE_TARGET`，三项都写进脚本头部
+5. 参照 `daemons/` 目录的模板，生成保镖与时区看门狗脚本（把 `__HOME__` / `__TZ_TARGET__` / `__PROXY_MODE__` 替换为实际值），并安装对应的 launchd 服务到 `/Library/LaunchDaemons/`（需要 sudo）
+6. 现场编译界面 App（需要 Xcode 命令行工具，必须带 `-target` 否则新 SDK 产物在老系统拒启动）：
    ```bash
-   swiftc -O -parse-as-library app/main.swift -o Claude切换器.app/Contents/MacOS/ClaudeSwitcher -framework SwiftUI -framework AppKit
+   swiftc -O -parse-as-library -target "$(uname -m)-apple-macos13.0" app/main.swift -o Claude切换器.app/Contents/MacOS/ClaudeSwitcher -framework SwiftUI -framework AppKit
    ```
-   图标已在 `assets/` 里，打进 `Contents/Resources/AppIcon.icns` 并在 `Info.plist` 声明 `CFBundleIconFile`
-6. 把 `installer/` 里的置顶规则写入 Clash Verge 的「全局扩展配置」(Merge.yaml)，重启 Clash Verge 使生效
-7. 时区与 IPv6：`systemsetup -settimezone <TZ_TARGET>`、`networksetup -setv6off Wi-Fi`（需管理员）
+   图标用 `assets/icon-2048.png` 经 sips 生成 iconset 再 `iconutil -c icns` 打进 `Contents/Resources/AppIcon.icns`，`Info.plist` 声明 `CFBundleIconFile`，最后 `codesign --force --deep -s -`
+7. Clash Verge 模式下把置顶规则写入「全局扩展配置」(Merge.yaml) 并重启 Clash Verge；其他客户端提示用户自行添加 DOMAIN-SUFFIX 置顶规则
+8. 时区与 IPv6（已是目标值则跳过对应命令）：`systemsetup -settimezone <TZ_TARGET>`、`networksetup -setv6off Wi-Fi`（需管理员）
+9. 收尾自检：运行 `~/.local/bin/claude-switch.sh checkdetail` 确认各项状态
 
 ## 验收标准（全部满足才算装完）
 
@@ -56,7 +58,7 @@
 
 ## 安全红线（Agent 必须遵守）
 
-1. **绝不在出口非美国时启动 Claude**——任何时候先验 `loc=US`
+1. **绝不在出口国家与目标不一致时启动 Claude**——任何时候先验 cloudflare trace 的 `loc` 与脚本头部 `COUNTRY_TARGET` 一致；换了国家节点先跑 `claude-switch.sh set-region` 再启动
 2. 切换账号前必须先完全退出 Claude 进程，再交换数据目录
 3. 不要在日志、文档、Issue 里暴露用户的住宅/代理 IP 与任何凭据
 4. 不要改动 `~/.claude-switcher/accounts/` 下的存档结构

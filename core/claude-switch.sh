@@ -1,18 +1,22 @@
 #!/bin/bash
 # Claude 账号切换器 - 核心脚本 (通用版)
-# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix
+# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix | set-region
 set -u
 export LC_ALL=en_US.UTF-8
 
 # ============ 安装时可配置项(安装程序会自动改写) ============
-TZ_TARGET="America/New_York"     # 锁定时区,应与出口IP所在城市一致
-PROXY_GROUP="IpEqual"            # Clash 代理组名(安装时自动探测)
+PROXY_MODE="clash-verge"       # 代理客户端: clash-verge|shadowrocket|sing-box|clashx|surge|auto
+PROXY_GROUP="IpEqual"          # Clash 代理组名(安装时自动探测)
+COUNTRY_TARGET="US"            # 目标出口国家(安装时按出口自动识别)
+TZ_TARGET="America/New_York"   # 锁定时区,应与出口IP所在城市一致
+LOCALE_TARGET="en_US"          # 锁定地区格式
 # ============================================================
 
 DATA="$HOME/Library/Application Support/Claude"
 BASE="$HOME/.claude-switcher"
 LOG="$HOME/Library/Logs/claude-switch.log"
 CLASH_DIR="$HOME/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
+ROUTE_MISSED=""
 mkdir -p "$BASE/accounts"
 
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >>"$LOG"; }
@@ -20,17 +24,95 @@ log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >>"$LOG"; }
 # TUN 在线判定:存在 fake-ip 网段地址即视为 TUN 已接管(兼容各种 TUN 设备名)
 tun_up() { ifconfig 2>/dev/null | grep -q 'inet 198\.18\.'; }
 
+# 代理客户端显示名(供检查细节输出)
+proxy_name() {
+    case "$PROXY_MODE" in
+        clash-verge)  echo "Clash Verge" ;;
+        shadowrocket) echo "Shadowrocket" ;;
+        sing-box)     echo "sing-box" ;;
+        clashx)       echo "ClashX" ;;
+        surge)        echo "Surge" ;;
+        auto)         echo "代理客户端" ;;
+        *)            echo "$PROXY_MODE" ;;
+    esac
+}
+
+# 可 open -a 启动的客户端 App 名(sing-box/auto 无标准 App,返回空)
+proxy_app_name() {
+    case "$PROXY_MODE" in
+        clash-verge)  echo "Clash Verge" ;;
+        shadowrocket) echo "Shadowrocket" ;;
+        clashx)       echo "ClashX" ;;
+        surge)        echo "Surge" ;;
+        *)            echo "" ;;
+    esac
+}
+
+# Shadowrocket 在 Mac 上表现为 VPN 配置;launchd/非图形环境下 scutil 可能查不到该行,此时以 TUN 判定为准(避免误杀)
+shadowrocket_up() {
+    nc=$(scutil --nc list 2>/dev/null)
+    if echo "$nc" | grep -q 'com.liguangming.Shadowrocket'; then
+        echo "$nc" | grep 'com.liguangming.Shadowrocket' | grep -q '(Connected)'
+    else
+        tun_up
+    fi
+}
+
+# 代理内核在线判定:按安装时识别的客户端分派;auto 时任一命中即活
+proxy_alive() {
+    case "$PROXY_MODE" in
+        clash-verge)  pgrep -f verge-mihomo >/dev/null 2>&1 ;;
+        shadowrocket) shadowrocket_up ;;
+        sing-box)     pgrep -f sing-box >/dev/null 2>&1 ;;
+        clashx)       pgrep -x ClashX >/dev/null 2>&1 || pgrep -f clash >/dev/null 2>&1 ;;
+        surge)        pgrep -f Surge >/dev/null 2>&1 ;;
+        auto)         pgrep -f verge-mihomo >/dev/null 2>&1 || shadowrocket_up \
+                      || pgrep -f sing-box >/dev/null 2>&1 \
+                      || pgrep -x ClashX >/dev/null 2>&1 || pgrep -f clash >/dev/null 2>&1 \
+                      || pgrep -f Surge >/dev/null 2>&1 ;;
+        *)            pgrep -f verge-mihomo >/dev/null 2>&1 ;;
+    esac
+}
+
+# 置顶规则配置检查(仅 Clash Verge):合并配置里是否含置顶规则
+merge_ok() {
+    grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null
+}
+
+# 置顶规则行为检测:三个生态域名全部解析到 fake-ip 段(198.18.x.x)即视为已置顶;未命中域名记入 ROUTE_MISSED
+route_ok() {
+    ROUTE_MISSED=""
+    local d a
+    for d in claude.ai api.anthropic.com claudeusercontent.com; do
+        a=$(dig +short +time=3 +tries=1 "$d" 2>/dev/null | head -1)
+        case "$a" in
+            198.18.*) ;;
+            *) ROUTE_MISSED="$ROUTE_MISSED $d" ;;
+        esac
+    done
+    [ -z "$ROUTE_MISSED" ]
+}
+
+# 国家代码 → 地区格式映射(未收录的国家回退 en_US)
+locale_for() {
+    case "$1" in
+        US) echo en_US ;; JP) echo ja_JP ;; TW) echo zh_TW ;; HK) echo zh_HK ;;
+        SG) echo en_SG ;; GB) echo en_GB ;; DE) echo de_DE ;; FR) echo fr_FR ;;
+        KR) echo ko_KR ;; AU) echo en_AU ;; CA) echo en_CA ;; *) echo en_US ;;
+    esac
+}
+
 # ---------- 安全检查 ----------
 check() {
     fails=""
 
-    pgrep -f verge-mihomo >/dev/null 2>&1 || fails="$fails;代理内核未运行"
+    proxy_alive || fails="$fails;代理内核未运行"
     tun_up || fails="$fails;TUN网卡不在线"
 
     trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
     ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
     loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
-    [ "$loc" = "US" ] || fails="$fails;出口IP非美国(${ip:-无}/${loc:-未知})"
+    [ "$loc" = "$COUNTRY_TARGET" ] || fails="$fails;出口IP异常(${ip:-无}/${loc:-未知},期望$COUNTRY_TARGET)"
     ipwarn=""
     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
     if [ -n "$ip" ] && [ -n "$lastip" ] && [ "$ip" != "$lastip" ]; then
@@ -42,7 +124,7 @@ check() {
     [ "$tz" = "/var/db/timezone/zoneinfo/$TZ_TARGET" ] || fails="$fails;时区异常($tz)"
 
     locale=$(defaults read -g AppleLocale 2>/dev/null)
-    [ "$locale" = "en_US" ] || fails="$fails;地区异常($locale)"
+    [ "$locale" = "$LOCALE_TARGET" ] || fails="$fails;地区异常($locale)"
 
     v6=$(networksetup -getinfo Wi-Fi 2>/dev/null | grep -i '^IPv6:')
     echo "$v6" | grep -qi 'off' || fails="$fails;IPv6未关闭"
@@ -69,7 +151,12 @@ check() {
 
     launchctl print system/local.claude-bodyguard >/dev/null 2>&1 || fails="$fails;保镖未运行"
 
-    grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null || fails="$fails;置顶规则缺失"
+    # 置顶规则:Clash Verge 看配置或行为任一通过;其他客户端只看行为检测
+    if [ "$PROXY_MODE" = "clash-verge" ]; then
+        merge_ok || route_ok || fails="$fails;置顶规则缺失"
+    else
+        route_ok || fails="$fails;置顶规则缺失(未命中:${ROUTE_MISSED# })"
+    fi
 
     defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | grep -q 'en-US' || {
         syslang=$(defaults read -g AppleLanguages 2>/dev/null | sed -n '2p' | tr -d ' ,"')
@@ -95,12 +182,19 @@ webrtc_test() {
 
 # 逐项输出检查结果(供UI使用): 名称=ok|fail:细节
 checkdetail() {
-    if pgrep -f verge-mihomo >/dev/null 2>&1; then echo '代理内核=ok'; else echo '代理内核=fail:未运行'; fi
+    if proxy_alive; then
+        case "$PROXY_MODE" in
+            shadowrocket) echo '代理内核=ok:Shadowrocket 已连接' ;;
+            *) echo "代理内核=ok:$(proxy_name) 运行中" ;;
+        esac
+    else
+        echo "代理内核=fail:$(proxy_name) 未运行"
+    fi
     if tun_up; then echo 'TUN网卡=ok'; else echo 'TUN网卡=fail:不在线'; fi
     trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
     ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
     loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
-    if [ "$loc" = "US" ]; then echo "出口IP=ok:$ip"; else echo "出口IP=fail:${ip:-无}/${loc:-未知}"; fi
+    if [ "$loc" = "$COUNTRY_TARGET" ]; then echo "出口IP=ok:$ip/$loc"; else echo "出口IP=fail:${ip:-无}/${loc:-未知}(期望$COUNTRY_TARGET)"; fi
     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
     if [ -z "$ip" ]; then echo 'IP一致=fail:未获取到出口IP'
     elif [ -z "$lastip" ]; then echo 'IP一致=ok:首次记录'
@@ -110,7 +204,7 @@ checkdetail() {
     tz=$(readlink /etc/localtime 2>/dev/null)
     if [ "$tz" = "/var/db/timezone/zoneinfo/$TZ_TARGET" ]; then echo '时区=ok'; else echo "时区=fail:$tz"; fi
     locale=$(defaults read -g AppleLocale 2>/dev/null)
-    if [ "$locale" = "en_US" ]; then echo '地区=ok'; else echo "地区=fail:$locale"; fi
+    if [ "$locale" = "$LOCALE_TARGET" ]; then echo '地区=ok'; else echo "地区=fail:$locale"; fi
     v6=$(networksetup -getinfo Wi-Fi 2>/dev/null | grep -i '^IPv6:')
     if echo "$v6" | grep -qi 'off'; then echo 'IPv6=ok:已关闭'; else echo 'IPv6=fail:未关闭'; fi
     dnsip=$(dig +short +time=3 +tries=1 claude.ai 2>/dev/null | head -1)
@@ -136,10 +230,21 @@ checkdetail() {
     else
         echo '保镖=fail:未安装'
     fi
-    if grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null; then
-        echo '规则置顶=ok'
+    # 置顶规则:Clash Verge 配置/行为双保险,其他客户端只看行为
+    if [ "$PROXY_MODE" = "clash-verge" ]; then
+        if merge_ok; then
+            echo '规则置顶=ok'
+        elif route_ok; then
+            echo '规则置顶=ok:行为检测通过'
+        else
+            echo '规则置顶=fail:未生效'
+        fi
     else
-        echo '规则置顶=fail:未生效'
+        if route_ok; then
+            echo '规则置顶=ok:行为检测通过'
+        else
+            echo "规则置顶=fail:未命中(${ROUTE_MISSED# }),请在 $(proxy_name) 中自行加置顶规则"
+        fi
     fi
     # 12. Claude 客户端语言(单独设为英文,或系统首选语言为英文均可;防止 JS 层读出中文)
     clang=$(defaults read com.anthropic.claudefordesktop AppleLanguages 2>/dev/null | head -2)
@@ -151,11 +256,17 @@ checkdetail() {
     else
         echo '客户端语言=fail:跟随系统(中文)'
     fi
-    # 13. ASN 网络属性(住宅宽带 vs 机房)
+    # 13. ASN 网络属性(住宅宽带 vs 机房,按目标地区收录主流运营商)
     org=$(curl -s --max-time 6 https://ipinfo.io/json 2>/dev/null | grep '"org"' | cut -d'"' -f4)
     case "$org" in
         '') echo 'ASN属性=warn:未获取' ;;
-        *Comcast*|*AT\&T*|*Verizon*|*Spectrum*|*Charter*|*Cox*|*T-Mobile*|*Cable*|*esidential*) echo "ASN属性=ok:$org" ;;
+        *Comcast*|*AT\&T*|*Verizon*|*Spectrum*|*Charter*|*Cox*|*T-Mobile*|*Cable*|*esidential*|\
+        *NTT*|*KDDI*|*SoftBank*|*IIJ*|*OCN*|*So-net*|\
+        *HiNet*|*Chunghwa*|*CHT*|*kbro*|*Taiwan*|*FarEasTone*|*Data\ Communication*|\
+        *Singtel*|*StarHub*|*M1*|\
+        *HKT*|*PCCW*|*HKBN*|*HGC*|\
+        *BT*|*Sky*|*Virgin*|*TalkTalk*|*Vodafone*|\
+        *Deutsche\ Telekom*|*1\&1*|*O2*) echo "ASN属性=ok:$org" ;;
         *) echo "ASN属性=warn:疑似机房($org)" ;;
     esac
     # 14. Anthropic 生态可达性
@@ -173,33 +284,50 @@ fix() {
     echo "FIX:开始一键修复"
 
     # A. 代理内核 + TUN
-    if ! pgrep -f verge-mihomo >/dev/null 2>&1; then
-        echo "FIX:正在启动 Clash Verge..."
-        open -a "Clash Verge"
-    fi
-    for i in $(seq 1 40); do
-        pgrep -f verge-mihomo >/dev/null 2>&1 && tun_up && break
-        sleep 1
-    done
-    if pgrep -f verge-mihomo >/dev/null 2>&1 && tun_up; then
-        echo "FIX:代理内核+TUN ✓"
-    else
-        V="$CLASH_DIR/verge.yaml"
-        if [ -f "$V" ] && grep -q '^enable_tun_mode: false' "$V"; then
-            echo "FIX:检测到 TUN 开关被关闭,正在恢复..."
-            osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1
-            sleep 3
-            sed -i '' 's/^enable_tun_mode: false/enable_tun_mode: true/' "$V"
+    if [ "$PROXY_MODE" = "clash-verge" ]; then
+        if ! pgrep -f verge-mihomo >/dev/null 2>&1; then
+            echo "FIX:正在启动 Clash Verge..."
             open -a "Clash Verge"
-            for i in $(seq 1 40); do
-                tun_up && break
-                sleep 1
-            done
         fi
+        for i in $(seq 1 40); do
+            pgrep -f verge-mihomo >/dev/null 2>&1 && tun_up && break
+            sleep 1
+        done
         if pgrep -f verge-mihomo >/dev/null 2>&1 && tun_up; then
-            echo "FIX:代理内核+TUN ✓(已恢复TUN开关)"
+            echo "FIX:代理内核+TUN ✓"
         else
-            echo "FIX:代理内核/TUN ✗(请打开 Clash Verge 检查节点/线路)"
+            V="$CLASH_DIR/verge.yaml"
+            if [ -f "$V" ] && grep -q '^enable_tun_mode: false' "$V"; then
+                echo "FIX:检测到 TUN 开关被关闭,正在恢复..."
+                osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1
+                sleep 3
+                sed -i '' 's/^enable_tun_mode: false/enable_tun_mode: true/' "$V"
+                open -a "Clash Verge"
+                for i in $(seq 1 40); do
+                    tun_up && break
+                    sleep 1
+                done
+            fi
+            if pgrep -f verge-mihomo >/dev/null 2>&1 && tun_up; then
+                echo "FIX:代理内核+TUN ✓(已恢复TUN开关)"
+            else
+                echo "FIX:代理内核/TUN ✗(请打开 Clash Verge 检查节点/线路)"
+            fi
+        fi
+    else
+        app=$(proxy_app_name)
+        if ! proxy_alive && [ -n "$app" ]; then
+            echo "FIX:正在启动 $app..."
+            open -a "$app" >/dev/null 2>&1
+        fi
+        for i in $(seq 1 40); do
+            proxy_alive && tun_up && break
+            sleep 1
+        done
+        if proxy_alive && tun_up; then
+            echo "FIX:代理内核+TUN ✓"
+        else
+            echo "FIX:代理内核/TUN ✗(请打开 $(proxy_name) 手动检查节点/线路及TUN模式)"
         fi
     fi
 
@@ -234,10 +362,18 @@ ASEOF
         echo "FIX:Claude 客户端语言 → en-US ✓(重启 Claude 后生效)"
     fi
 
-    # B2. 置顶规则缺失 → 重写 Merge 配置并重启 Clash
-    if ! grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null; then
-        echo "FIX:重写置顶规则..."
-        cat > "$CLASH_DIR/profiles/Merge.yaml" <<MEOF
+    # B4. 地区格式(用户级,无需密码)
+    locale=$(defaults read -g AppleLocale 2>/dev/null)
+    if [ "$locale" != "$LOCALE_TARGET" ]; then
+        defaults write -g AppleLocale "$LOCALE_TARGET"
+        echo "FIX:地区格式 → $LOCALE_TARGET ✓"
+    fi
+
+    # B2. 置顶规则缺失 → Clash Verge 重写 Merge 配置并重启;其他客户端提示自行配置
+    if [ "$PROXY_MODE" = "clash-verge" ]; then
+        if ! merge_ok && ! route_ok; then
+            echo "FIX:重写置顶规则..."
+            cat > "$CLASH_DIR/profiles/Merge.yaml" <<MEOF
 # Profile Enhancement Merge Template for Clash Verge
 
 profile:
@@ -259,15 +395,20 @@ prepend-rules:
   - DOMAIN-SUFFIX,intercomcdn.com,$PROXY_GROUP
   - DOMAIN-SUFFIX,intercomassets.com,$PROXY_GROUP
 MEOF
-        osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1
-        sleep 3
-        open -a "Clash Verge"
-        for i in $(seq 1 40); do
-            tun_up && break
-            sleep 1
-        done
-        grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null \
-            && echo "FIX:置顶规则 ✓" || echo "FIX:置顶规则 ✗"
+            osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1
+            sleep 3
+            open -a "Clash Verge"
+            for i in $(seq 1 40); do
+                tun_up && break
+                sleep 1
+            done
+            grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null \
+                && echo "FIX:置顶规则 ✓" || echo "FIX:置顶规则 ✗"
+        fi
+    else
+        if ! route_ok; then
+            echo "FIX:置顶规则 ✗(未命中:${ROUTE_MISSED# }) — 请在 $(proxy_name) 中自行添加 DOMAIN-SUFFIX 置顶规则"
+        fi
     fi
 
     # C. 出口IP最终验证
@@ -275,12 +416,54 @@ MEOF
     trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
     ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
     loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
-    if [ "$loc" = "US" ]; then
-        echo "FIX:出口IP ✓ ($ip)"
+    if [ "$loc" = "$COUNTRY_TARGET" ]; then
+        echo "FIX:出口IP ✓ ($ip/$loc)"
     else
-        echo "FIX:出口IP ✗ (${ip:-无}/${loc:-未知}) — 可能是节点故障,请到 Clash 里换条线路"
+        echo "FIX:出口IP ✗ (${ip:-无}/${loc:-未知},期望$COUNTRY_TARGET) — 可能是节点故障,请到 $(proxy_name) 里换条线路"
     fi
     echo "FIX:修复流程结束"
+}
+
+# 地区自适应:按当前出口国家一键重设 国家/时区/地区格式(换了国家节点后运行)
+set_region() {
+    trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+    loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
+    [ -z "$loc" ] && { echo "FAIL:无法获取出口国家(cloudflare trace 无结果,请先挂代理)"; return 1; }
+    info=$(curl -s --max-time 8 https://ipinfo.io/json 2>/dev/null)
+    ctry=$(echo "$info" | grep '"country"' | cut -d'"' -f4)
+    ntz=$(echo "$info" | grep '"timezone"' | cut -d'"' -f4)
+    if [ -z "$ctry" ] || [ -z "$ntz" ]; then
+        echo "FAIL:ipinfo 未返回国家或时区"; return 1
+    fi
+    if [ "$loc" != "$ctry" ]; then
+        echo "FAIL:出口国家不一致(cloudflare=$loc ipinfo=$ctry),已中止"; return 1
+    fi
+    nlocale=$(locale_for "$ctry")
+
+    # 改写脚本自身头部三个配置项
+    sed -i '' \
+        -e "s|^COUNTRY_TARGET=\".*\"|COUNTRY_TARGET=\"$ctry\"|" \
+        -e "s|^TZ_TARGET=\".*\"|TZ_TARGET=\"$ntz\"|" \
+        -e "s|^LOCALE_TARGET=\".*\"|LOCALE_TARGET=\"$nlocale\"|" \
+        "$0"
+    COUNTRY_TARGET="$ctry"; TZ_TARGET="$ntz"; LOCALE_TARGET="$nlocale"
+
+    # 地区格式(用户级,无需密码)
+    defaults write -g AppleLocale "$nlocale"
+
+    # 时区(需管理员权限,会弹一次授权框)
+    if ! osascript <<ASEOF >/dev/null 2>&1
+do shell script "/usr/sbin/systemsetup -settimezone $ntz" with prompt "set-region 需要管理员权限以锁定时区" with administrator privileges
+ASEOF
+    then
+        echo "FAIL:时区设置被取消或失败(国家/地区格式已更新为 $ctry/$nlocale)"
+        return 1
+    fi
+
+    # 同步时区看门狗的目标值
+    [ -f "$HOME/.local/bin/tz-watchdog.sh" ] && sed -i '' "s|^TARGET=.*|TARGET=\"$ntz\"|" "$HOME/.local/bin/tz-watchdog.sh"
+
+    echo "OK:region=$loc tz=$ntz locale=$nlocale"
 }
 
 status() {
@@ -361,5 +544,6 @@ case "${1:-}" in
     fix) fix ;;
     status) status ;;
     switch) switch_to "${2:-}" ;;
-    *) echo "用法: claude-switch.sh check|status|switch A|B"; exit 2 ;;
+    set-region) set_region ;;
+    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region"; exit 2 ;;
 esac
