@@ -143,8 +143,10 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 │   └── stun-probe.py       # STUN 探针(手工协议实现)
 ├── windows/                # Windows 版(PowerShell 核心 + WPF 界面, Beta)
 ├── linux/                  # Linux 版(bash 核心 + systemd 保镖 + 终端菜单, Beta)
-├── daemons/                # Kill-Switch / Watchdog 模板
+├── daemons/                # Kill-Switch / Watchdog / 自动更新 launchd 模板
 ├── installer/              # 双击安装/卸载
+├── scripts/gen-sums.sh     # 重新生成 SHA256SUMS(改动 core/daemons/installer 后必跑)
+├── SHA256SUMS              # 发布工件完整性校验清单(自动更新逐项比对)
 └── assets/                 # 程序生成图标
 ```
 
@@ -160,6 +162,7 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 
 - 提交 [Issue](https://github.com/YOURSJEYO/claude-switcher/issues)
 - 在 [Linux.do](https://linux.do) 论坛发帖讨论
+- **安全问题请走非公开渠道**：见 [SECURITY.md](SECURITY.md)（GitHub Private Vulnerability Reporting 优先）
 
 反馈掉登录、弹盾类问题时，请附上「应用设置 → 日志」导出的日志，里面不含密码和 Cookie 原文；如果可以，也请附上可复现步骤。
 

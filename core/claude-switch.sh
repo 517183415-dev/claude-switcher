@@ -310,6 +310,99 @@ checkdetail() {
     fi
 }
 
+# 置顶规则写入(智能合并):不整文件覆盖,用户已有的 Merge 配置原样保留
+# 标记块自包含 prepend-rules 键+全部规则,重复执行幂等
+write_merge_rules() {
+    M="$CLASH_DIR/profiles/Merge.yaml"
+    B0="# >>> claude-switcher pinned rules >>>"
+    B1="# <<< claude-switcher pinned rules <<<"
+    mkdir -p "$CLASH_DIR/profiles"
+    # 置顶规则清单(缩进两格)
+    rules=""
+    for d in claude.ai claude.com anthropic.com claudeusercontent.com challenges.cloudflare.com datadoghq.com segment.io stripe.com stripe.network stripecdn.com intercom.io intercomcdn.com intercomassets.com; do
+        rules="$rules  - DOMAIN-SUFFIX,$d,$PROXY_GROUP
+"
+    done
+
+    # 首次:文件不存在,整文件写入
+    if [ ! -f "$M" ]; then
+        cat > "$M" <<MEOF
+# Profile Enhancement Merge Template for Clash Verge
+
+profile:
+  store-selected: true
+
+# Claude 全家族及生态域名置顶强制走代理(优先级高于任何国内规则集)
+$B0
+prepend-rules:
+$rules$B1
+MEOF
+        return 0
+    fi
+
+    # 已存在:备份后幂等替换(只在将要修改时备份)
+    cp "$M" "$M.bak.$(date +%Y%m%d%H%M%S)"
+    tmp="$M.cs.tmp"
+    cp "$M" "$tmp"
+    # 删除旧标记块(含标记行,兼容块在 prepend-rules 下缩进的情形)
+    if grep -qF "$B0" "$tmp"; then
+        awk -v b0="$B0" -v b1="$B1" '
+            index($0, b0) {inblock=1; next}
+            inblock && index($0, b1) {inblock=0; next}
+            !inblock
+        ' "$tmp" > "$tmp.out" && mv "$tmp.out" "$tmp"
+        # 清理孤立的 prepend-rules: 键(其后没有规则行,只剩空行/注释/EOF)
+        awk '
+            { L[NR]=$0 }
+            END {
+                for (i=1; i<=NR; i++) {
+                    if (L[i] ~ /^prepend-rules:/) {
+                        has=0
+                        for (j=i+1; j<=NR; j++) {
+                            if (L[j] ~ /^[ \t]*- /) { has=1; break }
+                            if (L[j] ~ /^[ \t]*$/ || L[j] ~ /^[ \t]*#/) continue
+                            break
+                        }
+                        if (!has) continue
+                    }
+                    print L[i]
+                }
+            }
+        ' "$tmp" > "$tmp.out" && mv "$tmp.out" "$tmp"
+    fi
+    # 注入:已有 prepend-rules: 则标记规则块(不带键)插到该行之后,否则文件顶部插入完整块
+    # 注意:多行文本走环境变量传递(macOS awk 的 -v 不支持含换行的字符串);先写中间文件再替换,失败不碰原文件
+    if grep -q '^prepend-rules:' "$tmp"; then
+        if MARK0="$B0" MARK1="$B1" RULES="$rules" awk '
+            /^prepend-rules:/ && !done {
+                print
+                print "  " ENVIRON["MARK0"]
+                printf "%s", ENVIRON["RULES"]
+                print "  " ENVIRON["MARK1"]
+                done=1
+                next
+            }
+            { print }
+        ' "$tmp" > "$tmp.out"; then
+            mv "$tmp.out" "$M" && rm -f "$tmp"
+        else
+            rm -f "$tmp" "$tmp.out"
+            return 1
+        fi
+    else
+        {
+            echo "# Claude 全家族及生态域名置顶强制走代理(优先级高于任何国内规则集)"
+            echo "$B0"
+            echo "prepend-rules:"
+            printf "%s" "$rules"
+            echo "$B1"
+            echo ""
+            cat "$tmp"
+        } > "$tmp.out" && mv "$tmp.out" "$M" && rm -f "$tmp"
+    fi
+    rm -f "$tmp"
+}
+
 # 一键修复:按项自动修复,每步输出结果
 fix() {
     echo "FIX:开始一键修复"
@@ -400,32 +493,11 @@ ASEOF
         echo "FIX:地区格式 → $LOCALE_TARGET ✓"
     fi
 
-    # B2. 置顶规则缺失 → Clash Verge 重写 Merge 配置并重启;其他客户端提示自行配置
+    # B2. 置顶规则缺失 → Clash Verge 智能合并写入 Merge 配置并重启;其他客户端提示自行配置
     if [ "$PROXY_MODE" = "clash-verge" ]; then
         if ! merge_ok && ! route_ok; then
-            echo "FIX:重写置顶规则..."
-            cat > "$CLASH_DIR/profiles/Merge.yaml" <<MEOF
-# Profile Enhancement Merge Template for Clash Verge
-
-profile:
-  store-selected: true
-
-# Claude 全家族及生态域名置顶强制走代理(优先级高于任何国内规则集)
-prepend-rules:
-  - DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP
-  - DOMAIN-SUFFIX,claude.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,anthropic.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,claudeusercontent.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,challenges.cloudflare.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,datadoghq.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,segment.io,$PROXY_GROUP
-  - DOMAIN-SUFFIX,stripe.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,stripe.network,$PROXY_GROUP
-  - DOMAIN-SUFFIX,stripecdn.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,intercom.io,$PROXY_GROUP
-  - DOMAIN-SUFFIX,intercomcdn.com,$PROXY_GROUP
-  - DOMAIN-SUFFIX,intercomassets.com,$PROXY_GROUP
-MEOF
+            echo "FIX:写入置顶规则(智能合并,不动你的已有配置)..."
+            write_merge_rules
             osascript -e 'tell application "Clash Verge" to quit' >/dev/null 2>&1
             sleep 3
             open -a "Clash Verge"
@@ -482,32 +554,39 @@ set_region() {
     # 地区格式(用户级,无需密码)
     defaults write -g AppleLocale "$nlocale"
 
-    # 时区(需管理员权限,会弹一次授权框)
+    # 时区(需管理员权限,会弹一次授权框);看门狗脚本在 root 目录下,顺道用同一次授权同步目标值
+    WD="/Library/Application Support/claude-switcher/tz-watchdog.sh"
+    adminCmds="/usr/sbin/systemsetup -settimezone $ntz"
+    wdsync=0
+    if [ -f "$WD" ] && [ ! -w "$WD" ]; then
+        adminCmds="$adminCmds; /usr/bin/sed -i '' 's|^TARGET=.*|TARGET=$ntz|' '$WD'"
+        wdsync=1
+    fi
     if ! osascript <<ASEOF >/dev/null 2>&1
-do shell script "/usr/sbin/systemsetup -settimezone $ntz" with prompt "set-region 需要管理员权限以锁定时区" with administrator privileges
+do shell script "$adminCmds" with prompt "set-region 需要管理员权限以锁定时区" with administrator privileges
 ASEOF
     then
         echo "FAIL:时区设置被取消或失败(国家/地区格式已更新为 $ctry/$nlocale)"
         return 1
     fi
-
-    # 同步时区看门狗的目标值
-    [ -f "$HOME/.local/bin/tz-watchdog.sh" ] && sed -i '' "s|^TARGET=.*|TARGET=\"$ntz\"|" "$HOME/.local/bin/tz-watchdog.sh"
+    # 看门狗目标同步兜底(可写的老版本安装直接 sed;失败则提示运行安装器刷新)
+    if [ -f "$WD" ] && [ "$wdsync" -eq 0 ]; then
+        sed -i '' "s|^TARGET=.*|TARGET=$ntz|" "$WD" 2>/dev/null || echo "WARN:看门狗目标未同步,请运行安装器刷新"
+    fi
 
     echo "OK:region=$loc tz=$ntz locale=$nlocale"
 }
 
-# 自动更新:拉取 main 分支最新代码,配置注入+自检+失败回滚(--auto 供 launchd 每12小时调用)
+# 自动更新:拉取 main 分支最新代码,SHA256 校验+配置注入+自检+失败回滚(--auto 供 LaunchAgent 每12小时调用)
 self_update() {
     if [ "${1:-}" = "--auto" ]; then auto=1; else auto=0; fi
-    # 路径全部从脚本自身位置推导,launchd 以 root 运行时 $HOME 不可靠
+    # 路径全部从脚本自身位置推导,兼容旧版 LaunchDaemon(root) 混跑时 $HOME 不可靠的场景
     BIN=$(cd "$(dirname "$0")" && pwd)
     UHOME="${BIN%/.local/bin}"
     [ "$UHOME" = "$BIN" ] && UHOME="$HOME"
-    UBASE="$UHOME/.claude-switcher"
     if [ "$auto" -eq 1 ]; then
-        mkdir -p "$UBASE"
-        exec >>"$UBASE/update.log" 2>&1
+        mkdir -p "$BASE"
+        exec >>"$BASE/update.log" 2>&1
         echo "# $(date '+%F %T') update --auto 开始"
     fi
 
@@ -521,6 +600,22 @@ self_update() {
         echo "FAIL:远程包结构异常,已中止"; rm -rf "$tmpd"; return 1
     fi
 
+    # 工件完整性校验:逐项比对仓库 SHA256SUMS,任一不符即中止(防传输篡改;信任根为 GitHub 仓库本身)
+    if ! curl -sL --max-time 15 "https://raw.githubusercontent.com/YOURSJEYO/claude-switcher/main/SHA256SUMS" -o "$tmpd/SHA256SUMS" \
+        || [ ! -s "$tmpd/SHA256SUMS" ]; then
+        echo "FAIL:无法获取校验清单(SHA256SUMS),已中止"; rm -rf "$tmpd"; return 1
+    fi
+    bad=0
+    while read -r sum rel; do
+        [ -z "$sum" ] && continue
+        if [ ! -f "$NEW/$rel" ] || [ "$(shasum -a 256 "$NEW/$rel" | awk '{print $1}')" != "$sum" ]; then
+            bad=1; break
+        fi
+    done < "$tmpd/SHA256SUMS"
+    if [ "$bad" -eq 1 ]; then
+        echo "FAIL:工件校验失败,已中止(不排除网络篡改,可稍后重试或手动 update)"; rm -rf "$tmpd"; return 1
+    fi
+
     # 跳过判断:剔除头部5个配置行后与本地已安装版本比对,无差异即已是最新
     strip_cfg() { grep -vE '^(PROXY_MODE|PROXY_GROUP|COUNTRY_TARGET|TZ_TARGET|LOCALE_TARGET)="' "$1"; }
     if [ -f "$BIN/claude-switch.sh" ] && \
@@ -528,10 +623,8 @@ self_update() {
         echo "OK:已是最新版本"; rm -rf "$tmpd"; return 0
     fi
 
-    # 备份现有三件套
-    for f in claude-switch.sh claude-bodyguard.sh tz-watchdog.sh; do
-        [ -f "$BIN/$f" ] && cp "$BIN/$f" "$BIN/$f.bak"
-    done
+    # 备份现有核心脚本
+    [ -f "$BIN/claude-switch.sh" ] && cp "$BIN/claude-switch.sh" "$BIN/claude-switch.sh.bak"
 
     # 替换核心脚本 + 从 .bak 读出5个配置值注入新脚本
     cp "$NEW/core/claude-switch.sh" "$BIN/claude-switch.sh"
@@ -546,17 +639,21 @@ self_update() {
     fi
     chmod +x "$BIN/claude-switch.sh"
 
-    # 保镖/看门狗用远程模板重新物化(launchd plist 不动,脚本更新即生效)
-    [ -z "$PM" ] && PM="clash-verge"
-    [ -z "$TZV" ] && TZV="America/New_York"
-    sed -e "s|__HOME__|$UHOME|g" -e "s|__PROXY_MODE__|$PM|g" \
-        "$NEW/daemons/claude-bodyguard.sh" > "$BIN/claude-bodyguard.sh"
-    sed -e "s|__HOME__|$UHOME|g" -e "s|__TZ_TARGET__|$TZV|g" \
-        "$NEW/daemons/tz-watchdog.sh" > "$BIN/tz-watchdog.sh"
-    chmod +x "$BIN/claude-bodyguard.sh" "$BIN/tz-watchdog.sh"
+    # 守护进程脚本(root 所有,用户态不可写):与远程模板比对,有差异只提示不自动改
+    APPDIR="/Library/Application Support/claude-switcher"
+    if [ -f "$APPDIR/claude-bodyguard.sh" ] || [ -f "$APPDIR/tz-watchdog.sh" ]; then
+        [ -z "$PM" ] && PM="clash-verge"
+        [ -z "$TZV" ] && TZV="America/New_York"
+        sed -e "s|__HOME__|$UHOME|g" -e "s|__PROXY_MODE__|$PM|g" "$NEW/daemons/claude-bodyguard.sh" > "$tmpd/bg.new"
+        sed -e "s|__HOME__|$UHOME|g" -e "s|__TZ_TARGET__|$TZV|g" "$NEW/daemons/tz-watchdog.sh" > "$tmpd/tz.new"
+        if ! diff -q "$tmpd/bg.new" "$APPDIR/claude-bodyguard.sh" >/dev/null 2>&1 || \
+           ! diff -q "$tmpd/tz.new" "$APPDIR/tz-watchdog.sh" >/dev/null 2>&1; then
+            echo "INFO:守护进程脚本有更新,请运行 installer/安装.command 刷新(需要密码)"
+        fi
+    fi
     rm -rf "$tmpd"
 
-    # 更新后自检:root(launchd)下切回真实用户执行,避免 defaults 读到 root 的配置
+    # 更新后自检:root(旧版 LaunchDaemon)下切回真实用户执行,避免 defaults 读到 root 的配置
     if [ "$(id -u)" -eq 0 ]; then
         owner=$(stat -f '%Su' "$UHOME" 2>/dev/null)
         if [ -n "$owner" ]; then out=$(sudo -H -u "$owner" "$BIN/claude-switch.sh" checkdetail 2>&1); else out=""; fi
@@ -564,9 +661,7 @@ self_update() {
         out=$("$BIN/claude-switch.sh" checkdetail 2>&1)
     fi
     if [ -z "$out" ] || echo "$out" | grep -q '=fail'; then
-        for f in claude-switch.sh claude-bodyguard.sh tz-watchdog.sh; do
-            [ -f "$BIN/$f.bak" ] && cp "$BIN/$f.bak" "$BIN/$f"
-        done
+        [ -f "$BIN/claude-switch.sh.bak" ] && cp "$BIN/claude-switch.sh.bak" "$BIN/claude-switch.sh"
         echo "FAIL:新版自检未通过,已自动回滚"
         return 1
     fi
@@ -654,5 +749,6 @@ case "${1:-}" in
     switch) switch_to "${2:-}" ;;
     set-region) set_region ;;
     update) self_update "${2:-}" ;;
+    write-merge-rules) write_merge_rules ;;  # 隐藏入口:供安装器调用,保证两处合并逻辑一致
     *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]"; exit 2 ;;
 esac

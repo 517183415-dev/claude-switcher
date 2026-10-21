@@ -54,20 +54,34 @@ if ! command -v swiftc >/dev/null 2>&1; then
 fi
 echo "✓ 前置检查通过($MODE / Claude / python3 / swiftc)"
 
-# ---- 1. 自动探测代理组名(仅 Clash Verge) ----
+# ---- 1. 自动探测代理组名(仅 Clash Verge;多个 select 组时让用户选,避免静默选错专线) ----
 GRP=""
 if [ "$MODE" = "clash-verge" ]; then
-    GRP=$(awk '
+    GRPS=()
+    while IFS= read -r g; do GRPS+=("$g"); done < <(awk '
         /^proxy-groups:/ {f=1; next}
         f && /^[a-zA-Z]/ {f=0}
         f && /- name:/ { n=$0; sub(/.*- name: */, "", n); gsub(/"/, "", n) }
-        f && /type: *select/ { print n; exit }
+        f && /type: *select/ { print n }
     ' "$CLASH_DIR/clash-verge.yaml" 2>/dev/null)
-    if [ -z "$GRP" ]; then
+    if [ "${#GRPS[@]}" -eq 0 ]; then
         echo ""
         echo "未能自动识别你的代理组名,请打开 Clash Verge 查看「代理」页面顶部的组名。"
         read -r -p "请输入代理组名: " GRP
         [ -z "$GRP" ] && { echo "未输入,退出"; exit 1; }
+    elif [ "${#GRPS[@]}" -eq 1 ]; then
+        GRP="${GRPS[0]}"
+    else
+        echo ""
+        echo "检测到多个代理组,请选择用于 Claude 专线的那个:"
+        i=1
+        for g in "${GRPS[@]}"; do echo "  $i) $g"; i=$((i+1)); done
+        read -r -p "请输入序号: " pick
+        case "$pick" in ''|*[!0-9]*) echo "输入无效,退出"; exit 1 ;; esac
+        if [ "$pick" -lt 1 ] || [ "$pick" -gt "${#GRPS[@]}" ]; then
+            echo "序号超范围,退出"; exit 1
+        fi
+        GRP="${GRPS[$((pick-1))]}"
     fi
     echo "✓ 代理组: $GRP"
 fi
@@ -106,19 +120,19 @@ sed -i '' \
     -e "s|^LOCALE_TARGET=\".*\"|LOCALE_TARGET=\"$LOCALE\"|" \
     "$H/.local/bin/claude-switch.sh"
 
-# 保镖脚本(物化路径与客户端)
+# 保镖/时区看门狗脚本:物化到临时目录,由 sudo 段装入 root 所有的系统目录(用户态不可写,防提权)
+STAGE=$(mktemp -d)
 sed -e "s|__HOME__|$H|g" -e "s|__PROXY_MODE__|$MODE|g" \
-    "$REPO/daemons/claude-bodyguard.sh" > "$H/.local/bin/claude-bodyguard.sh"
-chmod +x "$H/.local/bin/claude-bodyguard.sh"
-
-# 时区看门狗脚本
+    "$REPO/daemons/claude-bodyguard.sh" > "$STAGE/claude-bodyguard.sh"
 sed -e "s|__HOME__|$H|g" -e "s|__TZ_TARGET__|$TZV|g" \
-    "$REPO/daemons/tz-watchdog.sh" > "$H/.local/bin/tz-watchdog.sh"
-chmod +x "$H/.local/bin/tz-watchdog.sh"
+    "$REPO/daemons/tz-watchdog.sh" > "$STAGE/tz-watchdog.sh"
+chmod +x "$STAGE/claude-bodyguard.sh" "$STAGE/tz-watchdog.sh"
+# 清理旧版本装在用户目录下的守护脚本(用户可写=提权面)
+rm -f "$H/.local/bin/claude-bodyguard.sh" "$H/.local/bin/tz-watchdog.sh" \
+      "$H/.local/bin/claude-bodyguard.sh.bak" "$H/.local/bin/tz-watchdog.sh.bak"
 
-# launchd 配置
-sed "s|__HOME__|$H|g" "$REPO/daemons/local.claude-bodyguard.plist" > "$H/.local/bin/local.claude-bodyguard.plist"
-sed "s|__HOME__|$H|g" "$REPO/daemons/local.tz-watchdog.plist" > "$H/.local/bin/local.tz-watchdog.plist"
+# launchd 配置(保镖/看门狗的 ProgramArguments 已指向系统目录,直接拷贝;自动更新为 LaunchAgent)
+cp "$REPO/daemons/local.claude-bodyguard.plist" "$REPO/daemons/local.tz-watchdog.plist" "$H/.local/bin/"
 sed "s|__HOME__|$H|g" "$REPO/daemons/local.claude-update.plist" > "$H/.local/bin/local.claude-update.plist"
 echo "✓ 核心文件已安装"
 
@@ -170,31 +184,14 @@ EOF
 codesign --force --deep -s - "$APP" >/dev/null 2>&1 || true
 echo "✓ App 已放到桌面"
 
-# ---- 5. 写入置顶规则(仅 Clash Verge;其他客户端自行配置) ----
+# ---- 5. 写入置顶规则(仅 Clash Verge;智能合并不覆盖已有配置;其他客户端自行配置) ----
 if [ "$MODE" = "clash-verge" ]; then
-    cat > "$CLASH_DIR/profiles/Merge.yaml" <<EOF
-# Profile Enhancement Merge Template for Clash Verge
-
-profile:
-  store-selected: true
-
-# Claude 全家族及生态域名置顶强制走代理
-prepend-rules:
-  - DOMAIN-SUFFIX,claude.ai,$GRP
-  - DOMAIN-SUFFIX,claude.com,$GRP
-  - DOMAIN-SUFFIX,anthropic.com,$GRP
-  - DOMAIN-SUFFIX,claudeusercontent.com,$GRP
-  - DOMAIN-SUFFIX,challenges.cloudflare.com,$GRP
-  - DOMAIN-SUFFIX,datadoghq.com,$GRP
-  - DOMAIN-SUFFIX,segment.io,$GRP
-  - DOMAIN-SUFFIX,stripe.com,$GRP
-  - DOMAIN-SUFFIX,stripe.network,$GRP
-  - DOMAIN-SUFFIX,stripecdn.com,$GRP
-  - DOMAIN-SUFFIX,intercom.io,$GRP
-  - DOMAIN-SUFFIX,intercomcdn.com,$GRP
-  - DOMAIN-SUFFIX,intercomassets.com,$GRP
-EOF
-    echo "✓ Claude 域名置顶规则已写入(重启 Clash Verge 后生效)"
+    # 复用核心脚本里的 write_merge_rules(隐藏入口),保证与 fix() 行为一致
+    if "$H/.local/bin/claude-switch.sh" write-merge-rules; then
+        echo "✓ Claude 域名置顶规则已写入(智能合并,不动已有配置;重启 Clash Verge 后生效)"
+    else
+        echo "⚠️  置顶规则写入失败,可稍后运行 claude-switch.sh fix 重试"
+    fi
 else
     echo "ℹ️  当前客户端为 $MODE,请自行在客户端中添加 DOMAIN-SUFFIX 置顶规则:"
     echo "    claude.ai / claude.com / anthropic.com / claudeusercontent.com"
@@ -206,21 +203,38 @@ fi
 # ---- 6. 系统级配置(需要一次密码;时区/IPv6 已是目标值则跳过对应命令) ----
 if [ -n "$DRYRUN" ]; then
     echo "[演练模式] 跳过系统级配置(守护进程/时区/IPv6)"
+    rm -rf "$STAGE"
 else
-    SYSCMDS="cp '$H/.local/bin/local.claude-bodyguard.plist' '$H/.local/bin/local.tz-watchdog.plist' '$H/.local/bin/local.claude-update.plist' /Library/LaunchDaemons/;
-        chown root:wheel /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist /Library/LaunchDaemons/local.claude-update.plist;
-        chmod 644 /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist /Library/LaunchDaemons/local.claude-update.plist;
+    # 守护脚本装入 root 所有的系统目录;同时清理旧版的 root 级自动更新(已改为用户态 LaunchAgent)
+    SYSCMDS="mkdir -p '/Library/Application Support/claude-switcher';
+        cp '$STAGE/claude-bodyguard.sh' '$STAGE/tz-watchdog.sh' '/Library/Application Support/claude-switcher/';
+        chown root:wheel '/Library/Application Support/claude-switcher/claude-bodyguard.sh' '/Library/Application Support/claude-switcher/tz-watchdog.sh';
+        chmod 755 '/Library/Application Support/claude-switcher/claude-bodyguard.sh' '/Library/Application Support/claude-switcher/tz-watchdog.sh';
+        cp '$H/.local/bin/local.claude-bodyguard.plist' '$H/.local/bin/local.tz-watchdog.plist' /Library/LaunchDaemons/;
+        chown root:wheel /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist;
+        chmod 644 /Library/LaunchDaemons/local.claude-bodyguard.plist /Library/LaunchDaemons/local.tz-watchdog.plist;
         launchctl bootout system/local.claude-bodyguard 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.claude-bodyguard.plist;
         launchctl bootout system/local.tz-watchdog 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.tz-watchdog.plist;
-        launchctl bootout system/local.claude-update 2>/dev/null; launchctl bootstrap system /Library/LaunchDaemons/local.claude-update.plist;"
+        launchctl bootout system/local.claude-update 2>/dev/null; rm -f /Library/LaunchDaemons/local.claude-update.plist;"
     curt=$(readlink /etc/localtime 2>/dev/null)
     [ "$curt" != "/var/db/timezone/zoneinfo/$TZV" ] && SYSCMDS="$SYSCMDS /usr/sbin/systemsetup -settimezone '$TZV';"
     v6=$(networksetup -getinfo Wi-Fi 2>/dev/null | grep -i '^IPv6:')
     echo "$v6" | grep -qi 'off' || SYSCMDS="$SYSCMDS networksetup -setv6off Wi-Fi;"
     SYSCMDS="$SYSCMDS dscacheutil -flushcache; killall -HUP mDNSResponder"
     echo ""
-    echo "接下来需要输入一次开机密码,用于: 安装守护进程 + 锁定时区($TZV) + 关闭IPv6"
+    echo "接下来需要输入一次开机密码,用于: 安装守护进程(系统目录) + 锁定时区($TZV) + 关闭IPv6"
     sudo bash -c "$SYSCMDS" && echo "✓ 系统级配置完成" || echo "✗ 系统级配置被取消,可稍后重新运行安装程序"
+    rm -rf "$STAGE"
+
+    # 自动更新:用户态 LaunchAgent(每12小时),不走 root,降低供应链风险
+    mkdir -p "$H/Library/LaunchAgents"
+    cp "$H/.local/bin/local.claude-update.plist" "$H/Library/LaunchAgents/local.claude-update.plist"
+    launchctl bootout "gui/$(id -u)/local.claude-update" 2>/dev/null
+    if launchctl bootstrap "gui/$(id -u)" "$H/Library/LaunchAgents/local.claude-update.plist" 2>/dev/null; then
+        echo "✓ 自动更新服务已注册(每12小时检查一次)"
+    else
+        echo "⚠️  自动更新服务注册失败,可手动保底: claude-switch.sh update"
+    fi
 fi
 
 # ---- 7. 重启 Clash 使规则生效(仅 Clash Verge) ----
