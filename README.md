@@ -124,6 +124,28 @@ git clone https://github.com/YOURSJEYO/claude-switcher.git
 3. B 账号首次使用登录一次，以后 A/B 随切随用、互不干扰
 4. 换了其他国家的节点 → 跑一次 `~/.local/bin/claude-switch.sh set-region`，国家/时区/地区格式一键重新锁定
 
+## 已有代理的独立诊断（macOS CLI）
+
+已有 HTTP/SOCKS 入口、由其他工具管理账号时，可以先单独检查 Claude 的网络传输，无需运行安装器或启动 Claude：
+
+```bash
+bash core/claude-switch.sh diagnose-proxy --proxy http://127.0.0.1:18080
+# 已安装版本:
+~/.local/bin/claude-switch.sh diagnose-proxy --config /path/to/private-proxy.json
+```
+
+私有配置文件只需包含 `{"proxy_url":"http://127.0.0.1:18080"}`。也可明确设置 `CLAUDE_SWITCHER_PROXY_URL`；命令行/配置文件优先于该变量。需要代理认证时优先使用私有配置或变量，避免凭据出现在本命令的参数中。支持 `http`、`https`、`socks5`、`socks5h`，地址必须包含端口；不会自动扫描代理或回退直连。
+
+命令只向固定的 Claude 网页/API 地址发送无账号认证的请求，输出 JSON，不读取账号存档、不创建状态目录、不更改系统设置、不启动/关闭应用。代理地址和凭据不进入报告；代理凭据通过 curl 标准输入传递。它随现有核心脚本分发和更新，无需额外服务。
+
+- 退出码 `0`：两个目标均收到经过 TLS 验证的 HTTP 响应。API 的 `401` 单独标为 `unauthenticated`，网页的 `403` 标为 `access_restricted`，均不等于账号或业务可用。
+- 退出码 `1`：至少一项传输失败、超时或输出异常；未完成的检查保持未知。
+- 退出码 `2`：代理或参数配置无效。普通 `HTTP_PROXY` / `NO_PROXY` 等继承值不会代替明确选择的入口。
+
+该命令仅诊断上述官方域名的传输，不验证自定义 API Base URL/第三方供应商、DNS/WebRTC/IPv6 泄漏，不产生启动许可，也不绕过或修改原有的 TUN 启动审计。可用 `CLAUDE_SWITCHER_PYTHON` 选择已有 Python 解释器；默认 `python3`。
+
+隔离回归测试（不连接真实代理或账号）：`python3 -m unittest discover -s tests -v`。
+
 ## 使用卫生与被封急救
 
 工具能兜底技术泄漏，兜不住主动作死。以下每条都是社区里用账号堆出来的教训：

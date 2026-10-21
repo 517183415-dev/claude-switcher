@@ -4,3 +4,5 @@ accounts/
 lastip
 last-check.txt
 *.log
+
+_trash/

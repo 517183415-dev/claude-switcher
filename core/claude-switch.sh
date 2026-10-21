@@ -1,8 +1,144 @@
 #!/bin/bash
 # Claude 账号切换器 - 核心脚本 (通用版)
-# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix | set-region | update [--auto]
+# 用法: claude-switch.sh check | status | switch A|B | checkdetail | fix | set-region | update [--auto] | diagnose-proxy
 set -u
 export LC_ALL=en_US.UTF-8
+
+# 随现有单脚本更新分发;在任何账号状态读写、审计/修复/启动之前分派。
+if [ "${1:-}" = "diagnose-proxy" ]; then
+    shift
+    exec "${CLAUDE_SWITCHER_PYTHON:-python3}" - "$@" <<'PY_PROXY_DIAGNOSE'
+"""Read-only transport diagnostics for an explicitly selected HTTP/SOCKS proxy."""
+import argparse
+import concurrent.futures
+import ipaddress
+import json
+import math
+import os
+import subprocess
+from urllib.parse import urlsplit
+
+
+TARGETS = (
+    ("anthropic_api", "https://api.anthropic.com/v1/models"),
+    ("claude_web", "https://claude.ai/"),
+)
+
+
+def select_proxy(args, environ):
+    if args.proxy is not None:
+        value, source = args.proxy, "argument"
+    elif args.config is not None:
+        with open(args.config, encoding="utf-8") as handle:
+            config = json.load(handle)
+        if not isinstance(config, dict):
+            raise ValueError("invalid config")
+        value, source = config.get("proxy_url"), "config"
+    else:
+        value, source = environ.get("CLAUDE_SWITCHER_PROXY_URL"), "environment"
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("proxy required")
+    value = value.strip()
+    if any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in value):
+        raise ValueError("invalid proxy")
+    parsed = urlsplit(value)
+    if (parsed.scheme not in ("http", "https", "socks5", "socks5h")
+            or not parsed.hostname or parsed.port is None
+            or not 0 < parsed.port < 65536
+            or parsed.path not in ("", "/") or parsed.query or parsed.fragment):
+        raise ValueError("invalid proxy")
+    try:
+        loopback = ipaddress.ip_address(parsed.hostname).is_loopback
+    except ValueError:
+        loopback = parsed.hostname.lower() == "localhost"
+    # Do not include proxy addresses, credentials, or private config paths in reports.
+    public = {"scheme": parsed.scheme, "port": parsed.port,
+              "host_scope": "loopback" if loopback else "remote",
+              "authentication_configured": parsed.username is not None,
+              "source": source}
+    return value, public
+
+
+def probe(name, url, proxy, environ):
+    # -q ignores curlrc. Pass proxy credentials over stdin, never in argv/reports.
+    quoted = proxy.replace("\\", "\\\\").replace('"', '\\"')
+    config = 'proxy = "' + quoted + '"\n'
+    args = ["curl", "-q", "--config", "-", "-sS", "-o", os.devnull,
+            "--proto", "=https", "--noproxy", "", "--connect-timeout", "6",
+            "--max-time", "12", "-w",
+            "%{http_code}\t%{http_connect}\t%{ssl_verify_result}\t%{time_appconnect}\t%{time_total}",
+            url]
+    keep = {"PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE",
+            "SSL_CERT_FILE", "SSL_CERT_DIR", "CURL_CA_BUNDLE", "SYSTEMROOT"}
+    clean_env = {k: v for k, v in environ.items() if k in keep}
+    result = {"name": name, "url": url, "transport_reached": False,
+              "access": "unknown"}
+    try:
+        process = subprocess.run(args, input=config, env=clean_env, capture_output=True,
+                                 text=True, timeout=15)
+        fields = process.stdout.strip().split()
+        status, connect, verify = map(int, fields[:3])
+        tls, elapsed = map(float, fields[3:5])
+        if (not 0 <= status <= 599 or not 0 <= connect <= 599 or verify < 0
+                or not math.isfinite(tls) or not math.isfinite(elapsed)
+                or tls < 0 or elapsed < 0):
+            raise ValueError("invalid probe metrics")
+        reached = process.returncode == 0 and status > 0 and verify == 0 and tls > 0
+        access = ("unauthenticated" if status == 401 else
+                  "access_restricted" if status in (403, 407) else
+                  "server_error" if status >= 500 else "http_response")
+        result.update(curl_exit=process.returncode, http_status=status,
+                      proxy_connect_status=connect, tls_verified=reached,
+                      elapsed_seconds=elapsed, transport_reached=reached,
+                      access=access if reached else "unknown")
+    except subprocess.TimeoutExpired:
+        result["error"] = "probe_timeout"
+    except OSError:
+        result["error"] = "curl_unavailable"
+    except (ValueError, IndexError):
+        result["error"] = "invalid_probe_output"
+    return result
+
+
+class DiagnosticParser(argparse.ArgumentParser):
+    def error(self, message):
+        # argparse's default error can echo private URLs or paths from argv.
+        raise ValueError("invalid arguments")
+
+
+def main(argv=None, environ=None):
+    parser = DiagnosticParser(description=__doc__)
+    choice = parser.add_mutually_exclusive_group()
+    choice.add_argument("--proxy", help="explicit proxy URL including a port")
+    choice.add_argument("--config", help="private JSON file containing proxy_url")
+    environ = os.environ if environ is None else environ
+    report = {"schema_version": 1, "mode": "proxy_diagnostics",
+              "scope": "unauthenticated_transport_only",
+              "account_status": "not_evaluated", "leak_protection": "not_evaluated",
+              "launch_allowed": None, "application_started": False,
+              "system_modified": False}
+    try:
+        args = parser.parse_args(argv)
+        proxy, public = select_proxy(args, environ)
+    except (OSError, ValueError, TypeError):
+        report.update(state="configuration_error", error="invalid_or_missing_proxy",
+                      hint="Use --proxy, --config, or CLAUDE_SWITCHER_PROXY_URL; an explicit port is required.")
+        print(json.dumps(report, ensure_ascii=False))
+        return 2
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(probe, name, url, proxy, environ) for name, url in TARGETS]
+        checks = [f.result() for f in futures]
+    reached = all(check["transport_reached"] for check in checks)
+    report.update(proxy=public, checks=checks,
+                  state="transport_reached" if reached else "transport_failed")
+    print(json.dumps(report, ensure_ascii=False))
+    return 0 if reached else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+PY_PROXY_DIAGNOSE
+fi
 
 # ============ 安装时可配置项(安装程序会自动改写) ============
 PROXY_MODE="clash-verge"       # 代理客户端: clash-verge|shadowrocket|sing-box|clashx|surge|auto
@@ -750,5 +886,5 @@ case "${1:-}" in
     set-region) set_region ;;
     update) self_update "${2:-}" ;;
     write-merge-rules) write_merge_rules ;;  # 隐藏入口:供安装器调用,保证两处合并逻辑一致
-    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]"; exit 2 ;;
+    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]|diagnose-proxy [--proxy URL|--config FILE]"; exit 2 ;;
 esac
