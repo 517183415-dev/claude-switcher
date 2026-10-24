@@ -1,0 +1,76 @@
+[
+  {
+    "command": [
+      "rustfmt",
+      "--edition",
+      "2024",
+      "experiments/p0/native/native_probe.rs"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rustc",
+      "--edition",
+      "2024",
+      "--target",
+      "aarch64-apple-darwin",
+      "-D",
+      "warnings",
+      "experiments/p0/native/native_probe.rs",
+      "-o",
+      "experiments/p0/native/build/native-probe"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "codesign",
+      "--force",
+      "--sign",
+      "-",
+      "experiments/p0/native/build/native-probe"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "experiments/p0/native/build/native-probe: replacing existing signature\n"
+  },
+  {
+    "command": [
+      "experiments/p0/native/build/native-probe"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "xpc_dictionary_roundtrip=PASS\nxpc_requirement_valid_rc=0\nxpc_requirement_invalid_rc=22\nsynthetic_xpc_identity_rc=-67071\nadhoc_self_validity_rc=0\nadhoc_rejected_by_apple_anchor_rc=-67050\nsmappservice_readonly_selectors=PASS\nnsxpc_signing_requirement_selector=PASS\nservices_activated=0 services_registered=0 privileged_actions=0 keychain_reads=0\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "otool",
+      "-l",
+      "experiments/p0/native/build/native-probe"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "experiments/p0/native/build/native-probe:\nLoad command 0\n      cmd LC_SEGMENT_64\n  cmdsize 72\n  segname __PAGEZERO\n   vmaddr 0x0000000000000000\n   vmsize 0x0000000100000000\n  fileoff 0\n filesize 0\n  maxprot 0x00000000\n initprot 0x00000000\n   nsects 0\n    flags 0x0\nLoad command 1\n      cmd LC_SEGMENT_64\n  cmdsize 632\n  segname __TEXT\n   vmaddr 0x0000000100000000\n   vmsize 0x0000000000048000\n  fileoff 0\n filesize 294912\n  maxprot 0x00000005\n initprot 0x00000005\n   nsects 7\n    flags 0x0\nSection\n  sectname __text\n   segname __TEXT\n      addr 0x00000001000009a8\n      size 0x0000000000035c40\n    offset 2472\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000400\n reserved1 0\n reserved2 0\nSection\n  sectname __stubs\n   segname __TEXT\n      addr 0x00000001000365e8\n      size 0x00000000000003e4\n    offset 222696\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000408\n reserved1 0 (index into indirect symbol table)\n reserved2 12 (size of stubs)\nSection\n  sectname __gcc_except_tab\n   segname __TEXT\n      addr 0x00000001000369cc\n      size 0x00000000000011f0\n    offset 223692\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __cstring\n   segname __TEXT\n      addr 0x0000000100037bbc\n      size 0x0000000000001918\n    offset 228284\n     align 2^0 (1)\n    reloff 0\n    nreloc 0\n     flags 0x00000002\n reserved1 0\n reserved2 0\nSection\n  sectname __const\n   segname __TEXT\n      addr 0x00000001000394e0\n      size 0x000000000000335c\n    offset 234720\n     align 2^4 (16)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __unwind_info\n   segname __TEXT\n      addr 0x000000010003c83c\n      size 0x0000000000001418\n    offset 247868\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __eh_frame\n   segname __TEXT\n      addr 0x000000010003dc58\n      size 0x0000000000006c60\n    offset 253016\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x6800000b\n reserved1 0\n reserved2 0\nLoad command 2\n      cmd LC_SEGMENT_64\n  cmdsize 232\n  segname __DATA_CONST\n   vmaddr 0x0000000100048000\n   vmsize 0x0000000000004000\n  fileoff 294912\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 2\n    flags 0x10\nSection\n  sectname __const\n   segname __DATA_CONST\n      addr 0x0000000100048000\n      size 0x0000000000001d78\n    offset 294912\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __got\n   segname __DATA_CONST\n      addr 0x0000000100049d78\n      size 0x00000000000002b0\n    offset 302456\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000006\n reserved1 83 (index into indirect symbol table)\n reserved2 0\nLoad command 3\n      cmd LC_SEGMENT_64\n  cmdsize 552\n  segname __DATA\n   vmaddr 0x000000010004c000\n   vmsize 0x0000000000004000\n  fileoff 311296\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 6\n    flags 0x0\nSection\n  sectname __data\n   segname __DATA\n      addr 0x000000010004c000\n      size 0x00000000000009b8\n    offset 311296\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_vars\n   segname __DATA\n      addr 0x000000010004c9b8\n      size 0x0000000000000090\n    offset 313784\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000013\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_data\n   segname __DATA\n      addr 0x000000010004ca48\n      size 0x0000000000000020\n    offset 313928\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000011\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_bss\n   segname __DATA\n      addr 0x000000010004ca68\n      size 0x0000000000000038\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000012\n reserved1 0\n reserved2 0\nSection\n  sectname __common\n   segname __DATA\n      addr 0x000000010004caa0\n      size 0x0000000000000028\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nSection\n  sectname __bss\n   segname __DATA\n      addr 0x000000010004cac8\n      size 0x0000000000000088\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nLoad command 4\n      cmd LC_SEGMENT_64\n  cmdsize 72\n  segname __LINKEDIT\n   vmaddr 0x0000000100050000\n   vmsize 0x0000000000028000\n  fileoff 327680\n filesize 157856\n  maxprot 0x00000001\n initprot 0x00000001\n   nsects 0\n    flags 0x0\nLoad command 5\n      cmd LC_DYLD_CHAINED_FIXUPS\n  cmdsize 16\n  dataoff 327680\n datasize 1944\nLoad command 6\n      cmd LC_DYLD_EXPORTS_TRIE\n  cmdsize 16\n  dataoff 329624\n datasize 22408\nLoad command 7\n     cmd LC_SYMTAB\n cmdsize 24\n  symoff 352984\n   nsyms 2980\n  stroff 401344\n strsize 82952\nLoad command 8\n            cmd LC_DYSYMTAB\n        cmdsize 80\n      ilocalsym 0\n      nlocalsym 2627\n     iextdefsym 2627\n     nextdefsym 267\n      iundefsym 2894\n      nundefsym 86\n         tocoff 0\n           ntoc 0\n      modtaboff 0\n        nmodtab 0\n   extrefsymoff 0\n    nextrefsyms 0\n indirectsymoff 400664\n  nindirectsyms 169\n      extreloff 0\n        nextrel 0\n      locreloff 0\n        nlocrel 0\nLoad command 9\n          cmd LC_LOAD_DYLINKER\n      cmdsize 32\n         name /usr/lib/dyld (offset 12)\nLoad command 10\n     cmd LC_UUID\n cmdsize 24\n    uuid 616C49D5-7039-314A-978E-5A6AAEE2FA17\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform 1\n    minos 13.0\n      sdk 27.0\n   ntools 1\n     tool 3\n  version 27037.1\nLoad command 12\n      cmd LC_SOURCE_VERSION\n  cmdsize 16\n  version 0.0\nLoad command 13\n       cmd LC_MAIN\n   cmdsize 24\n  entryoff 6156\n stacksize 0\nLoad command 14\n          cmd LC_LOAD_DYLIB\n      cmdsize 56\n         name /usr/lib/libSystem.B.dylib (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 1359.0.0\ncompatibility version 1.0.0\nLoad command 15\n          cmd LC_LOAD_DYLIB\n      cmdsize 104\n         name /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 5027.0.69\ncompatibility version 150.0.0\nLoad command 16\n          cmd LC_LOAD_DYLIB\n      cmdsize 96\n         name /System/Library/Frameworks/Security.framework/Versions/A/Security (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 62460.1.2\ncompatibility version 1.0.0\nLoad command 17\n          cmd LC_LOAD_DYLIB\n      cmdsize 112\n         name /System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 3298.1.1\ncompatibility version 1.0.0\nLoad command 18\n          cmd LC_LOAD_DYLIB\n      cmdsize 96\n         name /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 5027.0.69\ncompatibility version 300.0.0\nLoad command 19\n          cmd LC_LOAD_DYLIB\n      cmdsize 56\n         name /usr/lib/libobjc.A.dylib (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 228.0.0\ncompatibility version 1.0.0\nLoad command 20\n      cmd LC_FUNCTION_STARTS\n  cmdsize 16\n  dataoff 352032\n datasize 952\nLoad command 21\n      cmd LC_DATA_IN_CODE\n  cmdsize 16\n  dataoff 352984\n datasize 0\nLoad command 22\n      cmd LC_CODE_SIGNATURE\n  cmdsize 16\n  dataoff 484304\n datasize 1232\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "otool",
+      "-L",
+      "experiments/p0/native/build/native-probe"
+    ],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "exit_code": 0,
+    "stdout": "experiments/p0/native/build/native-probe:\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement (compatibility version 1.0.0, current version 3298.1.1)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n",
+    "stderr": ""
+  }
+]

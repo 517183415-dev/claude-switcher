@@ -21,19 +21,23 @@ final class VM: ObservableObject {
         CheckRow(name: "TUN 网卡", icon: "cable.connector"),
         CheckRow(name: "出口 IP", icon: "globe.americas"),
         CheckRow(name: "IP 与上次一致", icon: "checkmark.seal"),
-        CheckRow(name: "时区(纽约)", icon: "clock"),
-        CheckRow(name: "地区(美国)", icon: "flag"),
+        CheckRow(name: "时区", icon: "clock"),
+        CheckRow(name: "地区", icon: "flag"),
         CheckRow(name: "IPv6 关闭", icon: "6.circle"),
         CheckRow(name: "DNS 走隧道", icon: "magnifyingglass"),
         CheckRow(name: "WebRTC", icon: "eye.slash"),
         CheckRow(name: "保镖在线", icon: "hand.raised"),
         CheckRow(name: "规则置顶", icon: "list.number"),
+        CheckRow(name: "客户端语言", icon: "character.bubble"),
+        CheckRow(name: "ASN 属性", icon: "network"),
+        CheckRow(name: "生态可达性", icon: "globe"),
     ]
     @Published var phase: Phase = .checking
     @Published var current = "?"
     @Published var hasB = false
     @Published var banner = ""
     @Published var note = ""
+    @Published var showNotice = false
 
     let core = NSHomeDirectory() + "/.local/bin/claude-switch.sh"
 
@@ -54,7 +58,7 @@ final class VM: ObservableObject {
                 if p.isRunning { timedOut = true; p.terminate() }
             }
             DispatchQueue.global().asyncAfter(deadline: .now() + timeout, execute: watchdog)
-            do { try p.launch() } catch {
+            do { try p.run() } catch {
                 DispatchQueue.main.async { done("FAIL:无法启动脚本 \(error.localizedDescription)") }
                 return
             }
@@ -92,9 +96,10 @@ final class VM: ObservableObject {
             var matched = 0
             let keyMap: [String: String] = [
                 "代理内核": "代理内核", "TUN网卡": "TUN 网卡", "出口IP": "出口 IP",
-                "IP一致": "IP 与上次一致", "时区": "时区(纽约)", "地区": "地区(美国)",
+                "IP一致": "IP 与上次一致", "时区": "时区", "地区": "地区",
                 "IPv6": "IPv6 关闭", "DNS": "DNS 走隧道", "WebRTC": "WebRTC",
                 "保镖": "保镖在线", "规则置顶": "规则置顶",
+                "客户端语言": "客户端语言", "ASN属性": "ASN 属性", "生态可达性": "生态可达性",
             ]
             for line in out.split(separator: "\n") {
                 let parts = line.split(separator: "=", maxSplits: 1).map(String.init)
@@ -107,7 +112,13 @@ final class VM: ObservableObject {
                 matched += 1
                 switch code {
                 case "ok": self.rows[idx].state = .ok
-                case "warn": self.rows[idx].state = .warn
+                case "warn":
+                    if ["IP一致", "ASN属性"].contains(parts[0]) {
+                        self.rows[idx].state = .warn
+                    } else {
+                        self.rows[idx].state = .fail
+                        allOk = false
+                    }
                 default: self.rows[idx].state = .fail; allOk = false
                 }
                 self.rows[idx].detail = detail
@@ -139,17 +150,18 @@ final class VM: ObservableObject {
         phase = .switching
         banner = "正在切换到账号 \(target)…"
         run(["switch", target], timeout: 180) { out in
-            if out.hasPrefix("FAIL:") {
+            let outputLines = out.split(separator: "\n")
+            if let failure = outputLines.last(where: { $0.hasPrefix("FAIL:") }) {
                 self.phase = .failed
-                self.banner = String(out.dropFirst(5))
+                self.banner = String(failure.dropFirst(5))
                 return
             }
+            let alreadyCurrent = outputLines.contains(where: { $0.hasPrefix("INFO:") })
             var extra = ""
-            if target == "B" && !self.hasB { extra = "B 号首次使用：请在打开的 Claude 里登录 B 账号，登录一次即可。" }
-            if out.hasPrefix("INFO:") { extra = "" }
+            if target == "B" && !self.hasB && !alreadyCurrent { extra = "B 号首次使用：请在打开的 Claude 里登录 B 账号，登录一次即可。" }
             self.current = target
             self.phase = .done
-            self.banner = out.hasPrefix("INFO:") ? "当前已是账号 \(target)" : "已切换到账号 \(target)"
+            self.banner = alreadyCurrent ? "当前已是账号 \(target)" : "已切换到账号 \(target)"
             self.note = extra
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
                 NSApplication.shared.terminate(nil)
@@ -162,7 +174,6 @@ final class VM: ObservableObject {
 
 struct ContentView: View {
     @StateObject private var vm = VM()
-    @State private var showNotice = false
 
     var body: some View {
         ZStack {
@@ -181,7 +192,7 @@ struct ContentView: View {
             }
             .padding(20)
         }
-        .frame(width: 440, height: 740)
+        .frame(width: 440, height: 820)
         .onAppear { vm.refresh() }
     }
 
@@ -198,14 +209,14 @@ struct ContentView: View {
                 Text("安全检查 · 切换 · 启动").font(.caption).foregroundColor(.white.opacity(0.55))
             }
             Spacer()
-            Button { showNotice = true } label: {
+            Button { vm.showNotice = true } label: {
                 Image(systemName: "info.circle").font(.title3).foregroundColor(.white.opacity(0.6))
             }
             .buttonStyle(.plain)
             .help("安全防护体系公告")
             statusPill
         }
-        .sheet(isPresented: $showNotice) { NoticeView() }
+        .sheet(isPresented: $vm.showNotice) { NoticeView() }
     }
 
     var statusPill: some View {

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-ad-link"
+description = "Enables the open_ad_link command without any pre-configured scope."
+commands.allow = ["open_ad_link"]
+
+[[permission]]
+identifier = "deny-open-ad-link"
+description = "Denies the open_ad_link command without any pre-configured scope."
+commands.deny = ["open_ad_link"]

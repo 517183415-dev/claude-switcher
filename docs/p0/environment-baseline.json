@@ -1,0 +1,125 @@
+{
+  "recorded_at_utc": "2026-10-22T02:10:14.476101+00:00",
+  "installed_files": [
+    {
+      "path": "/Users/gua/.local/bin/claude-switch.sh",
+      "exists": true,
+      "sha256": "44460c0ae40f13ae558c9430ab3dffd63dd014249a5b1726a46b0b6304a4c00d",
+      "uid": 501,
+      "gid": 20,
+      "mode": "0o755",
+      "current_user_writable": true,
+      "backup": "0-claude-switch.sh"
+    },
+    {
+      "path": "/Users/gua/.claude-switcher/stun-probe.py",
+      "exists": true,
+      "sha256": "2c891f5f3cf392a6bb736dacc65a945afe89ae8e4d88e353b04fd1f9cd792ab1",
+      "uid": 501,
+      "gid": 20,
+      "mode": "0o644",
+      "current_user_writable": true,
+      "backup": "1-stun-probe.py"
+    },
+    {
+      "path": "/Users/gua/Library/LaunchAgents/local.claude-update.plist",
+      "exists": true,
+      "sha256": "30f42cc036ba10593524f7f14d898c612f25e9e6e2b12dd72647d70c3605a6d8",
+      "uid": 501,
+      "gid": 20,
+      "mode": "0o644",
+      "current_user_writable": true,
+      "backup": "2-local.claude-update.plist"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/claude-bodyguard.sh",
+      "exists": true,
+      "sha256": "75383cfd58ee0d1d0f9996e20a622d67228ca06289d3ff54b5d37574dd968dcf",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "current_user_writable": false,
+      "backup": "3-claude-bodyguard.sh"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+      "exists": true,
+      "sha256": "46e61749cfa6615a39f71294a79774d270a06f8d3be8417b5ff5d5acd4e903d1",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "current_user_writable": false,
+      "backup": "4-tz-watchdog.sh"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.claude-bodyguard.plist",
+      "exists": true,
+      "sha256": "0105bf35a2bcbc286fd785534f7730059354cbfb2c6a30a1ba3fb44c146dab4f",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644",
+      "current_user_writable": false,
+      "backup": "5-local.claude-bodyguard.plist"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.tz-watchdog.plist",
+      "exists": true,
+      "sha256": "c0b6b95e88becfb9aa51ec75e3c2a04b8e5a8a2698c5f87ec139d57621971300",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644",
+      "current_user_writable": false,
+      "backup": "6-local.tz-watchdog.plist"
+    }
+  ],
+  "updater": {
+    "disabled": true,
+    "registered": false,
+    "query_exit_code": 113,
+    "print_disabled_value": "disabled"
+  },
+  "root_services": {
+    "local.claude-bodyguard": {
+      "registered": true
+    },
+    "local.tz-watchdog": {
+      "registered": true
+    }
+  },
+  "macos": {
+    "exit_code": 0,
+    "output": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434"
+  },
+  "arch": {
+    "exit_code": 0,
+    "output": "arm64"
+  },
+  "rustc": {
+    "exit_code": 0,
+    "output": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: aarch64-apple-darwin\nrelease: 1.96.0\nLLVM version: 22.1.2"
+  },
+  "cargo": {
+    "exit_code": 0,
+    "output": "cargo 1.96.0 (30a34c682 2026-05-25)"
+  },
+  "node": {
+    "exit_code": 0,
+    "output": "v26.8.2"
+  },
+  "npm": {
+    "exit_code": 0,
+    "output": "11.19.1"
+  },
+  "developer_dir": {
+    "exit_code": 0,
+    "output": "/Library/Developer/CommandLineTools"
+  },
+  "sdk": {
+    "exit_code": 0,
+    "output": "27.0"
+  },
+  "code_signing": {
+    "exit_code": 0,
+    "output": "0 valid identities found"
+  }
+}

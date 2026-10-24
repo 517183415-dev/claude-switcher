@@ -1,0 +1,88 @@
+{
+  "handoff_id": "CS-RUST-20261022-R4",
+  "scope": "current specifications and execution handoff",
+  "content_files": 16,
+  "self_exclusion": "Manifest excludes its own bytes; archive verification covers every member.",
+  "files": [
+    {
+      "path": "00-开始这里.txt",
+      "bytes": 1032,
+      "sha256": "5eb8386e0f81b422006b75b74ba9e9466e6d9ce375a6f610ba50e14175b597e3"
+    },
+    {
+      "path": "docs/design/code-map.md",
+      "bytes": 3643,
+      "sha256": "73d3968037119247b995352571fecd5f6bcd57c2f1d73ad1794d4d12df369abf"
+    },
+    {
+      "path": "docs/design/ui-concept-v1.png",
+      "bytes": 1301581,
+      "sha256": "c343343de98decf2547dda30b14dc8946e0a8195403311a843b925424982c8c4"
+    },
+    {
+      "path": "docs/handoff/交付验证记录.json",
+      "bytes": 3048,
+      "sha256": "5acab3dbe87629a100e57005c69d5b7dd18a34710f299bedfb43255bb4bcc617"
+    },
+    {
+      "path": "docs/handoff/交接包说明.md",
+      "bytes": 1461,
+      "sha256": "dad88f5a70c9e425e22bf1be710c6d533468fe3b35706c1d5167a907625ebed7"
+    },
+    {
+      "path": "docs/handoff/整套项目工程执行提示词.md",
+      "bytes": 9228,
+      "sha256": "26fb8c088a84056f59a1854bdf5640b75c13786907a339b02cd8708aad451b9f"
+    },
+    {
+      "path": "docs/handoff/新会话启动提示词.txt",
+      "bytes": 1032,
+      "sha256": "5eb8386e0f81b422006b75b74ba9e9466e6d9ce375a6f610ba50e14175b597e3"
+    },
+    {
+      "path": "docs/handoff/旧源码审查哈希.json",
+      "bytes": 7601,
+      "sha256": "0949d676221ebb3a598421472619032597ff3e9e620904be38bd93aa476eb6a8"
+    },
+    {
+      "path": "docs/handoff/源码保护基线.json",
+      "bytes": 6866,
+      "sha256": "7c41f12905d5bb7e099a6ee8c56a5d4ab51f15c39aee874f5e1f7dd1ed0f331d"
+    },
+    {
+      "path": "docs/handoff/项目交接记录.md",
+      "bytes": 4138,
+      "sha256": "ac3fc4d0f8758b997d06d24ca720c08933362ab575b919ec4447afb858b26500"
+    },
+    {
+      "path": "docs/plans/PRD-Rust双版本产品-v1.2.md",
+      "bytes": 10167,
+      "sha256": "85d51f2eb7d12abc50a1b4fd1d49ad5ada0f4de692dc541507d62970c31adc09"
+    },
+    {
+      "path": "docs/plans/advertising-operations-plan.md",
+      "bytes": 2071,
+      "sha256": "21bc26e7242f1ad101b91035bbce9be41081446522ba5d197db0a39b0791bf2a"
+    },
+    {
+      "path": "docs/plans/rust-rewrite-plan.md",
+      "bytes": 676,
+      "sha256": "db7939a724739a34e37c2c75b64a830d2cf04790787d58725de8a6259c0323d5"
+    },
+    {
+      "path": "docs/plans/审查与开工索引.md",
+      "bytes": 1682,
+      "sha256": "5ff1f05326fe092239fd2ce2ae9cff0f3c5f427964463e84738813b1eacb94e7"
+    },
+    {
+      "path": "docs/plans/工程执行文档-Rust重写-v1.2.md",
+      "bytes": 29682,
+      "sha256": "77602271fc83a3baeb999a191781a9f427a2313fe0d5900d8dc96fa5e918c884"
+    },
+    {
+      "path": "docs/reviews/范围精简审查-2026-10-22.md",
+      "bytes": 4860,
+      "sha256": "dbf9f80270ac12714f024bbf46bafde5a4c83675428cb62cf4e4f065cbdb0ec0"
+    }
+  ]
+}

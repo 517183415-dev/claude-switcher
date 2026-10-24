@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-publisher-backup-folder"
+description = "Enables the open_publisher_backup_folder command without any pre-configured scope."
+commands.allow = ["open_publisher_backup_folder"]
+
+[[permission]]
+identifier = "deny-open-publisher-backup-folder"
+description = "Denies the open_publisher_backup_folder command without any pre-configured scope."
+commands.deny = ["open_publisher_backup_folder"]

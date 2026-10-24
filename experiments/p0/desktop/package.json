@@ -1,0 +1,10 @@
+{
+  "name": "claude-switcher-p0-desktop-probe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": "26.8.2", "npm": "11.19.1"},
+  "scripts": {"build": "vite build", "check": "svelte-check --tsconfig ./tsconfig.json", "tauri": "tauri"},
+  "dependencies": {"@tauri-apps/api": "2.12.4", "svelte": "5.57.2"},
+  "devDependencies": {"@sveltejs/vite-plugin-svelte": "7.3.1", "@tauri-apps/cli": "2.12.4", "svelte-check": "4.7.7", "typescript": "6.0.3", "vite": "8.3.5"}
+}

@@ -1,0 +1,8 @@
+- github tauri-apps tauri license MIT Apache: https://github.com/tauri-apps/tauri
+- github tauri-apps tauri license MIT Apache: https://v2.tauri.app/distribute/pipelines/github/
+- Rich Harris locate-character 3.0.0 license gitlab: https://docs.gitlab.com/administration/license_file/
+- Rich Harris locate-character 3.0.0 license gitlab: https://support.gitlab.com/hc/en-us/articles/17478946109724-Unable-to-find-UI-to-activate-license-using-a-24-character-code
+- github Rich-Harris is-reference 3.0.3 license: https://github.com/Rich-Harris/is-reference
+- github Rich-Harris is-reference 3.0.3 license: https://docs.github.com/articles/licensing-a-repository
+- github rolldown rolldown v1.2.15 license: https://github.com/rolldown/rolldown
+- github rolldown rolldown v1.2.15 license: https://crates.io/crates/rolldown_common/range/%5E1.2.3

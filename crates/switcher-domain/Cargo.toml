@@ -1,0 +1,15 @@
+[package]
+name = "switcher-domain"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+ts-rs.workspace = true
+
+[[bin]]
+name = "export-types"
+path = "src/bin/export-types.rs"

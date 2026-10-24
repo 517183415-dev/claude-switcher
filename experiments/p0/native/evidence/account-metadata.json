@@ -1,0 +1,571 @@
+{
+  "recorded_at_utc": "2026-10-22T02:12:39.797316+00:00",
+  "claude_app": {
+    "CFBundleIdentifier": "com.anthropic.claudefordesktop",
+    "CFBundleName": "Claude",
+    "CFBundleShortVersionString": "3.1623.0",
+    "CFBundleVersion": "3.1623.0",
+    "LSMinimumSystemVersion": "13.0",
+    "CFBundleExecutable": "Claude"
+  },
+  "commands": [
+    {
+      "command": [
+        "sw_vers"
+      ],
+      "exit_code": 0,
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "uname",
+        "-m"
+      ],
+      "exit_code": 0,
+      "stdout": "arm64\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "xcrun",
+        "--show-sdk-path"
+      ],
+      "exit_code": 0,
+      "stdout": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "xcrun",
+        "--show-sdk-version"
+      ],
+      "exit_code": 0,
+      "stdout": "27.0\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "codesign",
+        "-d",
+        "--verbose=4",
+        "/Applications/Claude.app"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "Executable=/Applications/Claude.app/Contents/MacOS/Claude\nIdentifier=com.anthropic.claudefordesktop\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=458 flags=0x10000(runtime) hashes=3+7 location=embedded\nVersionPlatform=1\nVersionMin=851968\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe\nCandidateCDHashFull sha256=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe59e0fdf1684f937d92ffb878\nHash choices=sha256\nCMSDigest=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe59e0fdf1684f937d92ffb878\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe\nSignature size=9046\nAuthority=Developer ID Application: Anthropic PBC (Q6L2SF6YDW)\nAuthority=Developer ID Certification Authority\nAuthority=Apple Root CA\nTimestamp=Oct 20, 2026 at 2:11:19 PM\nNotarization Ticket=stapled\nInfo.plist entries=47\nTeamIdentifier=Q6L2SF6YDW\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=4477\nInternal requirements count=1 size=192\nTotal signatures=1\nChosen signature=1\n"
+    },
+    {
+      "command": [
+        "codesign",
+        "--verify",
+        "--strict",
+        "/Applications/Claude.app"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "codesign",
+        "-d",
+        "--entitlements",
+        "-",
+        "/Applications/Claude.app"
+      ],
+      "exit_code": 0,
+      "stdout": "[Dict]\n\t[Key] com.apple.application-identifier\n\t[Value]\n\t\t[String] Q6L2SF6YDW.com.anthropic.claudefordesktop\n\t[Key] com.apple.developer.team-identifier\n\t[Value]\n\t\t[String] Q6L2SF6YDW\n\t[Key] com.apple.security.automation.apple-events\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.cs.allow-jit\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.audio-input\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.bluetooth\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.camera\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.print\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.usb\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.personal-information.location\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.personal-information.photos-library\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.virtualization\n\t[Value]\n\t\t[Bool] true\n\t[Key] keychain-access-groups\n\t[Value]\n\t\t[Array]\n\t\t\t[String] Q6L2SF6YDW.com.anthropic.claude.webauthn\n\t\t\t[String] Q6L2SF6YDW.com.anthropic.claude.hwkey\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.identity.universalstorage\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.workplacejoin\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.workplacejoin.v2\n",
+      "stderr": "Executable=/Applications/Claude.app/Contents/MacOS/Claude\n"
+    },
+    {
+      "command": [
+        "security",
+        "find-identity",
+        "-v",
+        "-p",
+        "codesigning"
+      ],
+      "exit_code": 0,
+      "stdout": "     0 valid identities found\n",
+      "stderr": ""
+    }
+  ],
+  "directories": {
+    "active_claude_data": {
+      "path": "~/Library/Application Support/Claude",
+      "kind": "directory",
+      "mode": "0o700",
+      "uid": 501,
+      "gid": 20,
+      "stat_size_bytes": 1792,
+      "entries": [
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 128,
+          "name": "Cache"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 160,
+          "name": "Code Cache"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 32768,
+          "name": "Cookies"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 0,
+          "name": "Cookies-journal"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 224,
+          "name": "Crashpad"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 36864,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 224,
+          "name": "DawnGraphiteCache"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 224,
+          "name": "DawnWebGPUCache"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 224,
+          "name": "GPUCache"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 288,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "IndexedDB"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 57,
+          "name": "Local State"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "Local Storage"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 6997,
+          "name": "Network Persistent State"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 224,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 270,
+          "name": "Preferences"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 384,
+          "name": "Session Storage"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 160,
+          "name": "Shared Dictionary"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 4096,
+          "name": "SharedStorage"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 3192,
+          "name": "TransportSecurity"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 36864,
+          "name": "Trust Tokens"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 0,
+          "name": "Trust Tokens-journal"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 160,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 160,
+          "name": "WebStorage"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 148,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 48,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "blob_storage"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 69,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 47,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 128,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 128,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 6280,
+          "name": "claude_desktop_config.json"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 4839,
+          "name": "config.json"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 4827,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 61,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 32768,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 0,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 551,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 40237,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 480,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 8936,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 128,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 11623,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 97,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o755",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 288,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 86,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o755",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 96,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "file",
+          "mode": "0o600",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 194,
+          "name": "<redacted-unknown-name>"
+        },
+        {
+          "kind": "directory",
+          "mode": "0o700",
+          "uid": 501,
+          "gid": 20,
+          "stat_size_bytes": 64,
+          "name": "<redacted-unknown-name>"
+        }
+      ],
+      "top_level_entry_count": 54
+    },
+    "switcher_account_archives": {
+      "path": "~/.claude-switcher/accounts",
+      "kind": "directory",
+      "mode": "0o755",
+      "uid": 501,
+      "gid": 20,
+      "stat_size_bytes": 64,
+      "entries": [],
+      "top_level_entry_count": 0
+    }
+  },
+  "public_binary_literal_counts": [
+    {
+      "path": "/Applications/Claude.app/Contents/Resources/app.asar",
+      "literal_presence": {
+        "Claude Safe Storage": false,
+        " Safe Storage": true,
+        "safeStorage": true,
+        "keytar": true
+      }
+    },
+    {
+      "path": "/Applications/Claude.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+      "literal_presence": {
+        "Claude Safe Storage": false,
+        " Safe Storage": true,
+        "safeStorage": true,
+        "keytar": false
+      }
+    }
+  ],
+  "private_content_opened": false,
+  "keychain_secret_queries": 0
+}

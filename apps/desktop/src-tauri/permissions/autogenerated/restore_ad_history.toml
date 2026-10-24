@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-restore-ad-history"
+description = "Enables the restore_ad_history command without any pre-configured scope."
+commands.allow = ["restore_ad_history"]
+
+[[permission]]
+identifier = "deny-restore-ad-history"
+description = "Denies the restore_ad_history command without any pre-configured scope."
+commands.deny = ["restore_ad_history"]

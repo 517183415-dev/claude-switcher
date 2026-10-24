@@ -1,0 +1,32 @@
+{
+  "identifier": "main",
+  "description": "仅允许本地工作台的固定业务命令。",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "allow-runtime-info",
+    "allow-workspace-snapshot",
+    "allow-check-environment",
+    "allow-cancel-check",
+    "allow-launch-checked",
+    "allow-account-action",
+    "allow-migration-preparation",
+    "allow-create-migration-backup",
+    "allow-preview-repair",
+    "allow-execute-repair",
+    "allow-cancel-repair",
+    "allow-recover-repair",
+    "allow-save-preferences",
+    "allow-activity-log",
+    "allow-export-activity",
+    "allow-software-update",
+    "allow-rebuild-time-baseline",
+    "allow-open-date-settings",
+    "allow-open-ad-link",
+    "allow-ad-cached-image",
+    "allow-refresh-ad-content",
+    "allow-region-view",
+    "allow-preview-region-change"
+  ]
+}

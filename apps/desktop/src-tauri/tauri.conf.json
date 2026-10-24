@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Claude 切换器 Personal",
+  "version": "0.2.0",
+  "identifier": "local.claudeswitcher.personal",
+  "build": {"beforeBuildCommand": "bash scripts/prepare-native.sh && npm run types && npm run check && npm run build", "frontendDist": "../dist"},
+  "app": {
+    "windows": [{"label": "main", "title": "Claude 切换器", "width": 1180, "height": 800, "minWidth": 960, "minHeight": 680}],
+    "security": {
+      "capabilities": ["main"],
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    }
+  },
+  "bundle": {"active": true, "targets": ["app"], "resources": {"components/claude-switcher": "components/claude-switcher", "components/switcher-helper": "components/switcher-helper", "components/switcher-guardian": "components/switcher-guardian"}, "icon": ["icons/icon.png", "icons/AppIcon.icns"], "macOS": {"minimumSystemVersion": "13.0", "signingIdentity": "-", "hardenedRuntime": true}}
+}

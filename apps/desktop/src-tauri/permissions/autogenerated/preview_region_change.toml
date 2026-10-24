@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-preview-region-change"
+description = "Enables the preview_region_change command without any pre-configured scope."
+commands.allow = ["preview_region_change"]
+
+[[permission]]
+identifier = "deny-preview-region-change"
+description = "Denies the preview_region_change command without any pre-configured scope."
+commands.deny = ["preview_region_change"]

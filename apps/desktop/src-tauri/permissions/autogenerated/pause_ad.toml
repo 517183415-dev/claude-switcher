@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pause-ad"
+description = "Enables the pause_ad command without any pre-configured scope."
+commands.allow = ["pause_ad"]
+
+[[permission]]
+identifier = "deny-pause-ad"
+description = "Denies the pause_ad command without any pre-configured scope."
+commands.deny = ["pause_ad"]

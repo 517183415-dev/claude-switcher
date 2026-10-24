@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ad-cached-image"
+description = "Enables the ad_cached_image command without any pre-configured scope."
+commands.allow = ["ad_cached_image"]
+
+[[permission]]
+identifier = "deny-ad-cached-image"
+description = "Denies the ad_cached_image command without any pre-configured scope."
+commands.deny = ["ad_cached_image"]

@@ -1,0 +1,87 @@
+{
+  "client_date": "2026-10-21",
+  "client_timezone": "America/Los_Angeles",
+  "installed_core_matches_repo_except_five_config_lines": true,
+  "installed_core_sha256": "44460c0ae40f13ae558c9430ab3dffd63dd014249a5b1726a46b0b6304a4c00d",
+  "proxy_mode": "auto",
+  "components": [
+    {
+      "installed_path": "/Library/Application Support/claude-switcher/claude-bodyguard.sh",
+      "source": "daemons/claude-bodyguard.sh",
+      "owner": "root",
+      "group": "wheel",
+      "mode": "0o755",
+      "is_symlink": false,
+      "user_writable": false,
+      "sha256": "75383cfd58ee0d1d0f9996e20a622d67228ca06289d3ff54b5d37574dd968dcf",
+      "matches_expanded_template": true
+    },
+    {
+      "installed_path": "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+      "source": "daemons/tz-watchdog.sh",
+      "owner": "root",
+      "group": "wheel",
+      "mode": "0o755",
+      "is_symlink": false,
+      "user_writable": false,
+      "sha256": "46e61749cfa6615a39f71294a79774d270a06f8d3be8417b5ff5d5acd4e903d1",
+      "matches_expanded_template": true
+    },
+    {
+      "installed_path": "/Library/LaunchDaemons/local.claude-bodyguard.plist",
+      "source": "daemons/local.claude-bodyguard.plist",
+      "owner": "root",
+      "group": "wheel",
+      "mode": "0o644",
+      "is_symlink": false,
+      "user_writable": false,
+      "sha256": "0105bf35a2bcbc286fd785534f7730059354cbfb2c6a30a1ba3fb44c146dab4f",
+      "matches_expanded_template": true
+    },
+    {
+      "installed_path": "/Library/LaunchDaemons/local.tz-watchdog.plist",
+      "source": "daemons/local.tz-watchdog.plist",
+      "owner": "root",
+      "group": "wheel",
+      "mode": "0o644",
+      "is_symlink": false,
+      "user_writable": false,
+      "sha256": "c0b6b95e88becfb9aa51ec75e3c2a04b8e5a8a2698c5f87ec139d57621971300",
+      "matches_expanded_template": true
+    }
+  ],
+  "updater_registered": false,
+  "updater_disabled_entry": [
+    "\"local.claude-update\" => disabled"
+  ],
+  "source_bundle_matches_current": true,
+  "user_bodyguard_plist_exists": true,
+  "user_bodyguard_plist": {
+    "owner": "<CURRENT_USER>",
+    "mode": "0o644",
+    "user_writable": true
+  },
+  "local.claude-bodyguard": {
+    "registered": true,
+    "state_lines": [
+      "state = not running",
+      "state = active",
+      "state = active",
+      "job state = exited"
+    ]
+  },
+  "local.tz-watchdog": {
+    "registered": true,
+    "state_lines": [
+      "state = not running",
+      "state = active",
+      "state = active",
+      "job state = exited"
+    ]
+  },
+  "recorded_at_utc": "2026-10-22T01:44:26.762140+00:00",
+  "source_file_count": 29,
+  "original_review_pack_attachments_unchanged": true,
+  "verification_scope": "read-only file comparison, permissions, launchd registration and disabled state; runtime payloads not captured",
+  "service_state_note": "Periodic jobs were registered; sampled state alone does not establish end-to-end health."
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-date-settings"
+description = "Enables the open_date_settings command without any pre-configured scope."
+commands.allow = ["open_date_settings"]
+
+[[permission]]
+identifier = "deny-open-date-settings"
+description = "Denies the open_date_settings command without any pre-configured scope."
+commands.deny = ["open_date_settings"]

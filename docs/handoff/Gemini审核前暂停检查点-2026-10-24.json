@@ -1,0 +1,149 @@
+{
+  "checkpoint_id": "CS-RUST-20261022-R4-GEMINI-PAUSE-20261024",
+  "handoff_id": "CS-RUST-20261022-R4",
+  "thread_id": "01a161e7-0f87-7740-9f41-f36cf541df9a",
+  "recorded_at": "2026-10-24T06:49:02.407066+00:00",
+  "project_root": "/Users/gua/CodexWorkspaces/claude-switcher",
+  "status": "PAUSED_WAITING_GEMINI_REVIEW",
+  "pause_requested_by_user": true,
+  "product_intent": "原项目用 Rust 重构；增加广告；本地 SourceLocal 不自动更新；其他原有使用逻辑恢复旧版",
+  "source_control": {
+    "branch": "main",
+    "head": "2cf108596a7bb382acbc62c2d1dd9b89e17e1d71",
+    "uncommitted_rewrite_preserved": true,
+    "staged_diff_empty": true,
+    "index_sha256": "e50990af95c13862101318cb80e44d9b8ed0e9116d675f795317092aab8d8a5e",
+    "baseline_commit_created": false,
+    "review_branch_created": false,
+    "review_worktree_created": false,
+    "next_step_before_worktree": "Verify frozen source and save current rewrite as baseline commit; HEAD alone omits uncommitted Rust code",
+    "ignored_new_module": "crates/switcher-core/src/accounts/legacy.rs must be included explicitly"
+  },
+  "source_snapshot": {
+    "manifest": "docs/handoff/Gemini审核前源码冻结清单-2026-10-24.json",
+    "sha256": "bd23a3b33d9a89b5f2ada3312701d8bf3f4712bfb6faec412779a56b9039ba57",
+    "source_files": 355,
+    "rust_files": 77,
+    "all_match_gemini_export": true
+  },
+  "review_package": {
+    "path": "output/review/Gemini-整体审核-20261024/Gemini-完整审核包.zip",
+    "sha256": "b68a8780d8337ff7609deb6f9970f22df852174120e3fa627e5e9a5b8b208ca2",
+    "left_unchanged": true,
+    "uploaded_by_agent": false
+  },
+  "completed": {
+    "legacy_restore": {
+      "tracked_behavior_items": 71,
+      "meaning": "source restoration and scoped verification; not 71 native passes",
+      "tracker": "docs/acceptance/evidence/legacy-restoration-20261023/restoration-tracker.json"
+    },
+    "installed_candidate": {
+      "name": "rust-0.2.0-legacy-restored-20261023",
+      "installation": "committed",
+      "read_only_verification": "components_verified",
+      "evidence": "docs/acceptance/evidence/legacy-restoration-20261023/root-group-fix/native-committed.json"
+    },
+    "real_current_a_launch": {
+      "archive_created": true,
+      "claude_login_page_observed": true,
+      "authenticated_login_proven": false,
+      "real_b_created": false,
+      "evidence": "docs/acceptance/evidence/legacy-restoration-20261023/root-group-fix/native-runtime.json"
+    },
+    "in_place_followup": {
+      "source": "crates/switcher-core/src/accounts/legacy.rs",
+      "source_sha256": "9b7c25f205b6bdd61efa2af478e82f9f4dfc23272e872574f556c0706bab0974",
+      "targeted_test_executions": 25,
+      "targeted_failures": 0,
+      "review": "scoped_CLEAR",
+      "both_editions_built": true,
+      "both_windows_readonly_ipc_observed": true,
+      "installed": false,
+      "evidence": "docs/acceptance/evidence/legacy-restoration-20261023/first-a-in-place/"
+    },
+    "gemini_materials": {
+      "documents_fulltext": 43,
+      "source_files": 355,
+      "rust_files": 77,
+      "graph_files": 154,
+      "graph_nodes": 3834,
+      "graph_edges": 14817
+    }
+  },
+  "remaining": [
+    {
+      "id": "R01",
+      "work": "Gemini 整体审核、逐条复核及最小整改",
+      "status": "WAIT_GEMINI_REPORT",
+      "condition": "报告及阅读覆盖表到达"
+    },
+    {
+      "id": "R02",
+      "work": "最新原位补丁纳入最终候选并统一安装验证",
+      "status": "BUILT_NOT_INSTALLED",
+      "condition": "先完成审核整改；集中一次最终候选验证"
+    },
+    {
+      "id": "R03",
+      "work": "真实 A 保存、恢复、重启和登录；真实 A→B→A",
+      "status": "PARTIAL_WAIT_VALID_ACCOUNTS",
+      "condition": "有效 A 登录基线；B 仅阻塞依赖 B 的验证"
+    },
+    {
+      "id": "R04",
+      "work": "时区漂移、代理兼容、修复和守护最终真机联调",
+      "status": "PARTIAL_ENVIRONMENT_BLOCK",
+      "condition": "复核环境；保持旧版行为；最新 12ok/1warn/1timezoneblock"
+    },
+    {
+      "id": "R05",
+      "work": "广告最终运营回归与托管、源码开源交付、适用更新分支及必要长时验收",
+      "status": "PARTIAL_DEFERRED_UNTIL_CORE",
+      "condition": "先完成核心；审核后复核范围；远端材料仅阻塞依赖项"
+    }
+  ],
+  "resume_sequence": [
+    "保存 Gemini 报告，复核阅读覆盖与每条结论，形成采纳决策",
+    "核对源码清单，保存审核前基线提交，不遗漏未提交或被忽略的新源码",
+    "创建 codex/gemini-review 分支与独立 worktree，实施最小整改",
+    "完成必要验证和独立整改版本，集中最终安装验证后合并主线",
+    "逐项对比 R01-R05，继续旧版核心，再推进广告"
+  ],
+  "native_environment_at_last_observation": {
+    "passed_checks": 12,
+    "advisory_checks": 1,
+    "blocking_checks": 1,
+    "block": "timezone",
+    "current_timezone": "Asia/Shanghai",
+    "saved_timezone": "America/Los_Angeles",
+    "fresh_drift_actor": "not_established",
+    "watchdog_interval_seconds": 3600,
+    "not_retested_for_pause": true
+  },
+  "not_passed": [
+    "authenticated_A_login_and_restore",
+    "real_A_B_A",
+    "full_37_acceptance_items",
+    "48h_and_7d",
+    "final_candidate_complete_ads_and_remote_propagation",
+    "real_source_update_download_install_cycle"
+  ],
+  "user_exclusions": {
+    "accessibility_specialist_testing": "SKIPPED_BY_USER_DIRECTIVE",
+    "commercial_apple_release_materials": "not_required_for_source_local_delivery",
+    "intermediate_admin_installs": "batch_into_final_candidate"
+  },
+  "pause_actions": {
+    "product_source_modified": false,
+    "tests_or_builds_rerun": false,
+    "installation_or_system_settings_changed": false,
+    "commit_or_push_performed": false,
+    "pending_child_tasks_interrupted": [
+      "legacy_proxy_official_identity",
+      "source_identity_review"
+    ],
+    "normal_installed_services_left_running": true
+  },
+  "entry_document": "docs/handoff/Gemini审核前暂停检查点-2026-10-24.md"
+}

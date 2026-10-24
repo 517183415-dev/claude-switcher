@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-preview-repair"
+description = "Enables the preview_repair command without any pre-configured scope."
+commands.allow = ["preview_repair"]
+
+[[permission]]
+identifier = "deny-preview-repair"
+description = "Denies the preview_repair command without any pre-configured scope."
+commands.deny = ["preview_repair"]

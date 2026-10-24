@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Claude Switcher P0 Probe",
+  "version": "0.0.0",
+  "identifier": "local.claudeswitcher.p0.desktop",
+  "build": {"beforeBuildCommand": "npm run build", "frontendDist": "../dist"},
+  "app": {"windows": [{"label": "main", "title": "P0 技术验证", "width": 780, "height": 360, "visible": false}], "security": {"csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost; img-src 'self' data:"}},
+  "bundle": {"active": true, "targets": ["app"], "icon": ["../../../../assets/icon-2048.png"], "macOS": {"minimumSystemVersion": "13.0", "signingIdentity": "-"}},
+  "plugins": {"updater": {"pubkey": "P0_TEST_ONLY_NO_RELEASE_KEY", "endpoints": [], "requireSignedVersion": true, "allowDowngrades": false}}
+}

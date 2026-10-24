@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-rebuild-time-baseline"
+description = "Enables the rebuild_time_baseline command without any pre-configured scope."
+commands.allow = ["rebuild_time_baseline"]
+
+[[permission]]
+identifier = "deny-rebuild-time-baseline"
+description = "Denies the rebuild_time_baseline command without any pre-configured scope."
+commands.deny = ["rebuild_time_baseline"]
