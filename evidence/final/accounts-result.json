@@ -1,0 +1,38 @@
+{
+  "scope": "accounts-launch legacy restoration",
+  "implemented": [
+    "A01",
+    "A02",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A12",
+    "C12",
+    "C13",
+    "A10"
+  ],
+  "integration_api": "lifecycle::switch_checked(edition, target): preflight -> graceful quit/selection -> checked selected launch",
+  "A03": "root integrates shared API into GUI and CLI",
+  "A10": "Destination-volume local stages; native ditto copies symlinks without following and accepts hardlinks, modes and ACLs. Cross-volume staging implemented; actual second-volume test not run.",
+  "A11": "Transparent journal and atomic local directory exchange retained; historical journal recovery and seven SIGKILL boundaries tested. Pre-journal stages cleaned on errors; post-rename write errors retain recovery stages.",
+  "verification": {
+    "accounts_tests": 30,
+    "migration_tests": 7,
+    "lifecycle_tests": 5,
+    "storage_tests": 10,
+    "cargo_check": "passed",
+    "strict_clippy": "passed: cargo clippy -p switcher-core --all-targets --offline -- -D warnings",
+    "legacy_ditto_tests": 10
+  },
+  "not_run": [
+    "real account switching",
+    "real Claude quit/open",
+    "real Keychain",
+    "network or system changes",
+    "final installation",
+    "actual two-volume account switch"
+  ]
+}

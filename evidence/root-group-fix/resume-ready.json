@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-24T06:00:40.651455+00:00",
+  "status": "ready_for_user_admin_resume",
+  "planned_operation": "finalize",
+  "manifest_sha256": "3aee9edec4730c786ec2053376b0a9bdc5f9dff6e44a3113c599325b91066173",
+  "wrapper_sha256": "64caf37d0692bd60f242a32f19d3b9b2a96138d3a14a2469f5739de0a68d742a",
+  "source_files": {
+    "packaging/macos/local_install.py": "0b0e0536f89af8067416748288a9b2a97eda8df1c7b1717c6ae45b48ef4424bb",
+    "packaging/macos/test_local_install.py": "028eed066dbc3a6bf0abeec98fdda6403d124f4bfd52c879e096d8033aa8bf21"
+  },
+  "compiled_source_drift": false,
+  "real_privileged_finalization": "NOT_RUN",
+  "journal_and_barrier": "preserved"
+}

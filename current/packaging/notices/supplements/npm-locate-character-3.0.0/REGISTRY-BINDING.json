@@ -1,0 +1,13 @@
+{
+  "name": "locate-character",
+  "version": "3.0.0",
+  "license": "MIT",
+  "gitHead": "4f08a59ec248121f7002abd02ee7b94e8eda06bc",
+  "repository": {
+    "url": "git+https://gitlab.com/Rich-Harris/locate-character.git",
+    "type": "git"
+  },
+  "dist_integrity": "sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==",
+  "tree_license_paths": [],
+  "tree_url": "https://api.github.com/repos/Rich-Harris/locate-character/git/trees/4f08a59ec248121f7002abd02ee7b94e8eda06bc?recursive=1"
+}

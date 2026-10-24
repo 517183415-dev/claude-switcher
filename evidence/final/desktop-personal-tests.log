@@ -1,0 +1,197 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.08s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-ab6e483bf456d11c)
+
+running 38 tests
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test native_probe::tests::ordinary_startup_is_not_a_probe ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test native_probe::tests::only_exact_health_arguments_are_accepted ... ok
+test publisher::tests::missing_or_wrong_signing_credentials_never_create_remote_objects ... ok
+test publisher::tests::drafts_need_no_key_and_explicit_generation_persists_only_public_trust_on_disk ... ok
+test publisher::tests::strict_local_draft_atomic_lock_pause_history_and_private_images ... ok
+test publisher::tests::local_store_fixed_scope_cas_immutable_private_files_and_restart ... ok
+test publisher::tests::cas_conflict_requires_explicit_edit_and_never_reports_success ... ok
+test publisher::tests::public_readback_must_validate_all_images_and_current_before_success ... ok
+test publisher::tests::unknown_before_commit_rechecks_version_and_retries_same_id ... ok
+test publisher::tests::unknown_result_recovers_same_release_after_restart_without_duplicate_commit ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test publisher::tests::cas_success_repeat_idempotence_pause_history_and_environment_isolation ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+test publisher::tests::restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets ... ok
+test publisher::tests::encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_restore ... ok
+test publisher::tests::local_publication_both_editions_pause_history_backup_and_signature_verification ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.62s
+
+     Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-ae9642735055950b)
+
+running 26 tests
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test export_rejects_links_and_nonprivate_directory_without_changing_targets ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test export_uses_the_same_redacted_snapshot_and_private_edition_path ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.74s
+
+     Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-381ad6dfeb95c8d0)
+
+running 36 tests
+test historical_verified_preserved_never_authorizes_global_readiness ... ok
+test inspected_current_account_never_offers_reinitialization ... ok
+test metadata_observed_never_implies_dependency_preservation ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test missing_scoped_context_never_implies_local_permission ... ok
+test available_handling_plan_exposes_no_metadata_or_login_preservation_claim ... ok
+test recovery_failure_guidance_does_not_require_new_application_or_keychain_evidence ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test scoped_permission_never_removes_global_keychain_gate ... ok
+test only_consistent_complete_readiness_is_presented_as_ready ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test backup_affordance_rejects_installation_process_repair_and_unknown_blockers ... ok
+test projection_keeps_all_blockers_and_excludes_keychain_metadata ... ok
+test handling_plan_preserves_every_backend_blocker_and_ready_consistency ... ok
+test scoped_blockers_and_inconsistent_ready_fail_closed ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.03s
+
+     Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-d0da9d670e7dbbb9)
+
+running 29 tests
+test e06_repair_preview_cancel_before_worker_start_rejects_completion ... ok
+test e06_repair_preview_execution_consumes_only_matching_request_and_never_invents_a_plan ... ok
+test e06_repair_preview_cancel_old_request_does_not_cancel_new_plan ... ok
+test e06_repair_preview_newer_request_rejects_late_old_preview ... ok
+test e06_repair_preview_reverse_worker_completion_preserves_new_request ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-e6bd58583deb894b)
+
+running 26 tests
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test desktop_log_privacy_roundtrip ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test desktop_personal_background_update_actions_are_denied_before_transport ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s
+

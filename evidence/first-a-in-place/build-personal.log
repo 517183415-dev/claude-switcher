@@ -1,0 +1,154 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `release` profile [optimized] target(s) in 15.42s
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running `target/debug/export-types`
+Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+
+added 50 packages, and audited 51 packages in 2s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> claude-switcher-desktop@0.2.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings
+
+> claude-switcher-desktop@0.2.0 tauri
+> tauri build --target aarch64-apple-darwin --features personal --config ../../packaging/editions/personal.json -- --no-default-features
+
+        Info `tauri-build` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+        Info `tauri` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `bash scripts/prepare-native.sh && npm run types && npm run check && npm run build`
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+    Finished `release` profile [optimized] target(s) in 2.86s
+/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-helper: replacing existing signature
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `release` profile [optimized] target(s) in 4.18s
+/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-guardian: replacing existing signature
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `release` profile [optimized] target(s) in 0.09s
+/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/claude-switcher: replacing existing signature
+
+> claude-switcher-desktop@0.2.0 types
+> cargo run --manifest-path ../../Cargo.toml -p switcher-domain --bin export-types
+
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `/Users/gua/CodexWorkspaces/claude-switcher/target/debug/export-types`
+Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+
+> claude-switcher-desktop@0.2.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings
+
+> claude-switcher-desktop@0.2.0 build
+> VITE_EDITION=${VITE_EDITION:-personal} vite build
+
+2:15:07 PM [vite-plugin-svelte] no Svelte config found at /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop - using default configuration.
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 123 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                       0.36 kB │ gzip:  0.28 kB
+dist/assets/Operations-BX8ABjmX.css   4.07 kB │ gzip:  1.08 kB
+dist/assets/index-Dv7E4Yva.css       17.25 kB │ gzip:  4.26 kB
+dist/assets/Operations-DM2RnGaO.js   21.12 kB │ gzip:  8.30 kB
+dist/assets/index-0AdQX-Vq.js        88.80 kB │ gzip: 33.63 kB
+
+✓ built in 302ms
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `release` profile [optimized] target(s) in 37.96s
+       Built application at: /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/switcher-desktop
+    Bundling Claude 切换器 Personal.app (/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app)
+     Signing with identity "-"
+Signing with identity "-"
+Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop
+/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop: replacing existing signature
+Signing with identity "-"
+Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app
+/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app: replacing existing signature
+        Warn skipping app notarization, no APPLE_ID & APPLE_PASSWORD & APPLE_TEAM_ID or APPLE_API_KEY & APPLE_API_ISSUER & APPLE_API_KEY_PATH environment variables found
+    Finished 1 bundle at:
+        /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app (29.43 MiB)
+

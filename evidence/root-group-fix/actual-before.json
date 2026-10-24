@@ -1,0 +1,145 @@
+{
+  "timestamp_utc": "2026-10-24T05:55:34.494095+00:00",
+  "operation": "read_only_diagnosis",
+  "reason": "root service copy inherited admin group; pending transaction remains",
+  "paths": [
+    {
+      "path": "/Library/Application Support/claude-switcher",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o755",
+      "size": 608
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/source-local-transaction.json",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o600",
+      "size": 3838
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/component-installer-active",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o644",
+      "size": 36,
+      "file_sha256": "0420b8e368efb7cd22608a4c8e19def7f8cffa34ecd49c6b9f5be8e347807f79"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/install.json",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o644",
+      "size": 388,
+      "file_sha256": "550d5caa14147717ea11a24e734ca7fe56ff88d3ed91cccae2abaa52d5bd031b"
+    },
+    {
+      "path": "/Library/PrivilegedHelperTools/local.claudeswitcher.helper",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "size": 1087632,
+      "file_sha256": "143ff86758c36fcbdb3a3f87283d92ffaf79f4783dc087fb53d31b84f028fd55"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/switcher-guardian",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o755",
+      "size": 1723408,
+      "file_sha256": "4a0fda2cc121315d13edc51d9a2a7e89f6709f874ff5d3b7a8ce76698b4cc81f"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o755",
+      "size": 414,
+      "file_sha256": "151ba1fe1e6df31f23bbdd69748c5819cdff3b1f301c43c4f5d14a838856f0c0"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/claude-bodyguard.sh",
+      "uid": 0,
+      "gid": 80,
+      "mode": "0o755",
+      "size": 1464,
+      "file_sha256": "730b7e88be932a23a13eb1e42f0b6ff284f4497118cc072b73709a21aca61f5d"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.tz-watchdog.plist",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644",
+      "size": 480,
+      "file_sha256": "c2cd59a3520ee1fcc5f7bf22f43a9490ceba1c5598510209fa77452f049539de"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.claude-bodyguard.plist",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644",
+      "size": 488,
+      "file_sha256": "e817da557237d2df6f1b2d7cef20db6c88445df1fad81d38445ca8c506fa76d8"
+    }
+  ],
+  "watchdog_expected": [
+    {
+      "path": "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+      "contents_match": true,
+      "mode": "0o755"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.tz-watchdog.plist",
+      "contents_match": true,
+      "mode": "0o644"
+    }
+  ],
+  "bodyguard_matching_modes": [
+    "auto"
+  ],
+  "candidate_record": {
+    "edition": "personal",
+    "helper_version": "0.2.0",
+    "minimum_app_version": "0.2.0",
+    "owner_uid": 501,
+    "schema_version": 2,
+    "trust": {
+      "generation": "e92061cec5824b04ad41d8f65c6d9fd5",
+      "guardian_cdhash": "75605c7df6c4a3a41dc9b416976c4e3d99c03f97",
+      "gui_cdhash": "b41d7f8a98a77d26a64b71a7179bf222e59c63f6",
+      "helper_cdhash": "14b6c13bd863734f1a0692320177d295d1525d04",
+      "kind": "source_local"
+    }
+  },
+  "service_registration": {
+    "local.tz-watchdog": {
+      "registered": true,
+      "state_lines": [
+        "state = not running",
+        "last exit code = 0",
+        "state = active",
+        "state = active"
+      ]
+    },
+    "local.claude-bodyguard": {
+      "registered": true,
+      "state_lines": [
+        "state = not running",
+        "last exit code = 0",
+        "state = active",
+        "state = active"
+      ]
+    },
+    "local.claudeswitcher.helper": {
+      "registered": true,
+      "state_lines": [
+        "state = running",
+        "pid = 80595",
+        "last exit code = (never exited)",
+        "state = active",
+        "state = active"
+      ]
+    }
+  },
+  "failed_install_output": "local.tz-watchdog installation differs\n"
+}

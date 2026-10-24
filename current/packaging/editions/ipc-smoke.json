@@ -1,0 +1,1 @@
+{"app":{"windows":[{"label":"main","title":"Claude 切换器 · IPC 验证","width":1180,"height":800,"minWidth":960,"minHeight":680,"url":"index.html?ipc-smoke"}],"security":{"capabilities":["main",{"identifier":"ipc-smoke","windows":["main"],"permissions":["allow-finish-smoke"]}]}}}

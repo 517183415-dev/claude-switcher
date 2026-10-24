@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-10-24T06:04:53.472448+00:00",
+  "installation": {
+    "status": "committed",
+    "evidence": "/Library/Application Support/claude-switcher/source-local-e92061cec5824b04ad41d8f65c6d9fd5/result.json",
+    "backup": "/Library/Application Support/claude-switcher/source-local-e92061cec5824b04ad41d8f65c6d9fd5"
+  },
+  "read_only_verification": {
+    "status": "components_verified",
+    "processes": [
+      {
+        "label": "local.claudeswitcher.helper",
+        "pid": 80595,
+        "uid": 0,
+        "path": "/Library/PrivilegedHelperTools/local.claudeswitcher.helper"
+      },
+      {
+        "label": "local.claudeswitcher.guardian",
+        "pid": 80589,
+        "uid": 501,
+        "path": "/Library/Application Support/claude-switcher/switcher-guardian"
+      }
+    ],
+    "timezone_watchdog": "registered",
+    "authenticated_health": "not_run"
+  },
+  "journal_absent": true,
+  "barrier_absent": true,
+  "services": [
+    {
+      "path": "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/claude-bodyguard.sh",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.tz-watchdog.plist",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    {
+      "path": "/Library/LaunchDaemons/local.claude-bodyguard.plist",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    }
+  ]
+}

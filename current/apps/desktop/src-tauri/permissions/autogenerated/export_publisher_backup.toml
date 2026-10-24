@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-export-publisher-backup"
+description = "Enables the export_publisher_backup command without any pre-configured scope."
+commands.allow = ["export_publisher_backup"]
+
+[[permission]]
+identifier = "deny-export-publisher-backup"
+description = "Denies the export_publisher_backup command without any pre-configured scope."
+commands.deny = ["export_publisher_backup"]

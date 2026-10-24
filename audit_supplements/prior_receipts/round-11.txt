@@ -1,0 +1,121 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组3的附件 G3-P13 至 G3-P16。由于当前处于低档模型降级阶段，暂不生成完整正式的长篇总报告，先按规范提取每份附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 11/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G3-P13 ～ G3-P16）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及其 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G3-P13.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/packaging/THIRD-PARTY-NOTICES.md (1-537) 
+TXT
+
+	
+
+END_G3-P13_0415e1e13e517666 
+TXT
+
+
+G3-P14.txt	
+
+完整 
+TXT
+
+	4	
+
+2. current/packaging/THIRD-PARTY-NOTICES.md (538-651)
+
+
+
+
+3. current/packaging/editions/ipc-smoke.json (1-1)
+
+
+
+
+4. current/packaging/editions/personal.json (1-1)
+
+
+
+
+5. current/packaging/macos/README.md (1-133) 注：此处 FILE 条目总数以实际文本统计为准 
+TXT
+
+	
+
+END_G3-P14_ab1d08f43c4d4921 
+TXT
+
+
+G3-P15.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/packaging/macos/local_install.py (1-1617) 
+TXT
+
+	
+
+END_G3-P15_16816a9df079f867 
+TXT
+
+
+G3-P16.txt	
+
+完整 
+TXT
+
+	3	
+
+1. current/packaging/macos/test_build_pkg.py (1-66)
+
+
+
+
+2. current/packaging/macos/test_local_install.py (1-1253)
+
+
+
+
+3. (见本文件内其余测试项) 
+TXT
+
+	
+
+END_G3-P16_76814afc394a1ba4 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮对打包、第三方声明及 macOS 本地安装脚本的核心代码取证如下：
+
+第三方依赖许可声明（THIRD-PARTY-NOTICES.md）：
+
+证据位置：current/packaging/THIRD-PARTY-NOTICES.md 行 000001–000013。   
+TXT
+
+取证发现：明确指出该文件是基于 Cargo.lock 和 package-lock.json 生成的“overinclusive 锁全集”，为离线收集，不包含联网行为，且锁文件不变性在生成前后保持一致（Cargo.lock 的 SHA256 为 b535d6041b83fa8f5d203ba91829c2faf44cfb34530f2ae7bce2405de7c50f5c）。   
+TXT
+
+macOS 本地安装器与版式升级逻辑（local_install.py）：
+
+证据位置：current/packaging/macos/local_install.py 行 000726–000732、000792–000803。   
+TXT
++ 1
+
+取证发现：首次安装时若缺少地区配置，会自动调用 Cloudflare 链路及 ipinfo、ipwho.is、ip.sb 探测出口国家并映射时区与地区格式（严格拒绝 CN 出口）；同时支持 Clash Verge、Shadowrocket 等代理模式的自动识别，完美对接旧版行为基线。   
+TXT
+
+待高级模型恢复后，将对所有批次的暂定取证与未读缺口进行整体复核并出具最终五部分总报告。

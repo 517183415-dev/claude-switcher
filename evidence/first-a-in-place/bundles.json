@@ -1,0 +1,48 @@
+{
+  "started_at": "2026-10-24T06:14:37.829167+00:00",
+  "installed_candidate_unchanged": true,
+  "records": [
+    {
+      "edition": "personal",
+      "build_exit": 0,
+      "strict_codesign_exit": 0,
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261024-inplace/personal/Claude 切换器 Personal.app",
+      "bundle_identifier": "local.claudeswitcher.personal",
+      "main_sha256": "9ba5fcca1b1ff29f8a4f239fd7fd2b3f42cdcd8220ad252c5ba914bfa81b3294",
+      "components": {
+        "claude-switcher": {
+          "sha256": "41697f16852ca2f921289ce5a790d4ac5689ef69ad55da7d1408285b95962d98"
+        },
+        "switcher-helper": {
+          "sha256": "00e79f29dd9ce4a874848be74886aa903dfcfbf9c9deb5b8c60d1b44eb5cdf7e"
+        },
+        "switcher-guardian": {
+          "sha256": "9bb3e295ac06a84bc652dc1c96634503cd2a1f065a636f197dd3339eec8ff03c"
+        }
+      },
+      "build_log": "output/tmp/legacy-restoration/first-a-in-place/build-personal.log"
+    },
+    {
+      "edition": "public",
+      "build_exit": 0,
+      "strict_codesign_exit": 0,
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261024-inplace/public/Claude 切换器 Public.app",
+      "bundle_identifier": "local.claudeswitcher.public",
+      "main_sha256": "a63770ceb7d8662386bc375742f4ece7c25d49b3e2d0d6f6a6b0ad75f9d953f0",
+      "components": {
+        "claude-switcher": {
+          "sha256": "41697f16852ca2f921289ce5a790d4ac5689ef69ad55da7d1408285b95962d98"
+        },
+        "switcher-helper": {
+          "sha256": "63d34a8e4c5f86f56983c91f652398b25a37d5c95684dd115b3a5b43c5e3275e"
+        },
+        "switcher-guardian": {
+          "sha256": "d9554c147dd12262b93efdfce2bcdfc05b6e75041d688ecfaaabf1f2d51f4877"
+        }
+      },
+      "build_log": "output/tmp/legacy-restoration/first-a-in-place/build-public.log"
+    }
+  ],
+  "source_drift_during_build": false,
+  "completed_at": "2026-10-24T06:16:26.913827+00:00"
+}

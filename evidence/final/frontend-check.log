@@ -1,0 +1,8 @@
+
+> claude-switcher-desktop@0.2.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings

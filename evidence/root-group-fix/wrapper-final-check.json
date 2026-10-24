@@ -1,0 +1,6 @@
+{
+  "timestamp": "2026-10-24T06:01:26.450347+00:00",
+  "exit_code": 0,
+  "output": "已核对冻结工件。\n只读检查通过；下一次操作：finalize。未执行管理员命令。\n",
+  "administrator_command_executed": false
+}

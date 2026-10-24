@@ -1,0 +1,137 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组3的附件 G3-P09 至 G3-P12。由于当前处于低档模型接收阶段，暂不生成完整正式的长篇总报告，先按规范提取每份附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 10/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G3-P09 ～ G3-P12）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及其 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G3-P09.txt	
+
+完整 
+TXT
+
+	4	
+
+2. current/crates/switcher-helper/src/lib.rs (1-12)
+
+
+
+
+3. current/crates/switcher-helper/src/main.rs (1-49)
+
+
+
+
+4. current/crates/switcher-helper/src/native_authorization.rs (1-122) 
+TXT
+
+	
+
+END_G3-P09_5a3c65c2effa5198 
+TXT
+
+
+G3-P10.txt	
+
+完整 
+TXT
+
+	4	
+
+2. current/crates/switcher-helper/src/platform/dns_cache.rs (1-266)
+
+
+
+
+3. current/crates/switcher-helper/src/platform/timezone_guard.rs (1-93)
+
+
+
+
+4. current/crates/switcher-helper/src/platform.rs (1-1200) 
+TXT
+
+	
+
+END_G3-P10_626646454b6016c1 
+TXT
+
+
+G3-P11.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-helper/src/policy.rs (1-1183) 
+TXT
+
+	
+
+END_G3-P11_c935d7f14f6a797a 
+TXT
+
+
+G3-P12.txt	
+
+完整 
+TXT
+
+	2	
+
+1. current/crates/switcher-helper/src/root_operation.rs (1-843)
+
+
+
+
+2. current/crates/switcher-helper/src/xpc.rs (1-508) 
+TXT
+
+	
+
+END_G3-P12_fbfe36d5bcb47874 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮对 switcher-helper 组件（特权后端、权限检查、XPC 与根权限操作）的核心代码取证如下：
+
+特权助手与安装健康 attestation（installation_health.rs）：
+
+证据位置：current/crates/switcher-helper/src/installation_health.rs 行 000017–000047。   
+TXT
+
+取证发现：严格验证挑战文件的所有者、模式（0o644）及硬链接限制，防止恶意替换；同时在 HealthTracker 中绑定了 GUI 与 Guardian 双角色的健康状态上报。   
+TXT
+
+原生授权服务边界（native_authorization.rs）：
+
+证据位置：current/crates/switcher-helper/src/native_authorization.rs 行 000061–000081。   
+TXT
+
+取证发现：通过 macOS 的 AuthorizationCreate 与 AuthorizationCopyRights 调用标准管理员权限右（system.privilege.admin），并在外部形态（external form）消费时对凭证进行单次销毁，防止凭证被持久化或滥用。   
+TXT
+
+平台系统动作与安全检查（platform.rs 与 dns_cache.rs）：
+
+证据位置：current/crates/switcher-helper/src/platform.rs 行 000088–000095；current/crates/switcher-helper/src/platform/dns_cache.rs 行 000005–000040。   
+TXT
++ 1
+
+取证发现：所有系统命令执行前均会进行严格的隧道路由（utun 接口）及网络服务策略校验；在修改时区或 IPv6 后，通过固定命令（dscacheutil -flushcache 与 killall -HUP mDNSResponder）刷新 DNS 缓存，完美对齐旧版代理与网络行为基线。   
+TXT
+
+XPC 与 Peer 身份验证（xpc.rs 与 policy.rs）：
+
+证据位置：current/crates/switcher-helper/src/xpc.rs 行 000132–000169；current/crates/switcher-helper/src/policy.rs 行 000120–000126。   
+TXT
++ 1
+
+取证发现：每个 XPC 消息均通过审计令牌（audit token）动态创建 SecCode，并结合代码签名要求和最低版本门禁对发送者（GUI、Guardian、Installer）进行多维鉴权，确保特权信道不被伪造或劫持。   
+TXT
++ 1

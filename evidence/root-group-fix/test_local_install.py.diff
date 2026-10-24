@@ -1,0 +1,108 @@
+--- baseline/test_local_install.py
++++ packaging/macos/test_local_install.py
+@@ -16,6 +16,7 @@
+ REAL_LEGACY_SNAPSHOT = m.legacy_snapshot
+ REAL_STOPPED = m.stopped
+ REAL_RUN = m.run
++REAL_ROOT_SERVICE_OWNERSHIP = m.root_service_ownership
+ 
+ 
+ class LocalInstallTests(unittest.TestCase):
+@@ -32,7 +33,7 @@
+         self.patches += [patch.object(m,'app',return_value=self.root/'Application.app'),
+                          patch.object(m,'safe_parents'), patch.object(m,'legacy_snapshot',return_value=[]),
+                          patch.object(m,'stopped'), patch.object(m,'service'),
+-                         patch.object(m,'create_challenge'),
++                         patch.object(m,'create_challenge'), patch.object(m,'root_service_ownership'),
+                          patch.object(m,'load_journal',side_effect=lambda:json.loads(m.JOURNAL.read_text())),
+                          patch.object(m,'private_json',side_effect=lambda path,mode:json.loads(path.read_text())),
+                          patch.object(m,'identity',return_value='a'*40),
+@@ -945,6 +946,88 @@
+             config.write_text('{"proxy_mode":"$(id)"}')
+             with self.assertRaises(ValueError): m.read_proxy_mode(501)
+ 
++    def root_metadata_fixture(self, uid=0):
++        from contextlib import contextmanager
++        from types import SimpleNamespace
++        original=m.os.fstat
++        groups={}
++        @contextmanager
++        def context():
++            def metadata(fd):
++                value=original(fd)
++                return SimpleNamespace(st_uid=uid,st_gid=groups.get(value.st_ino,80),st_mode=value.st_mode,
++                                       st_size=value.st_size,st_nlink=value.st_nlink,st_dev=value.st_dev,st_ino=value.st_ino)
++            def chown(fd,owner,group):
++                self.assertEqual((owner,group),(0,0))
++                groups[original(fd).st_ino]=group
++            with patch.object(m.os,'fstat',side_effect=metadata), patch.object(m.os,'fchown',side_effect=chown) as changed:
++                yield changed
++        return context()
++
++    def test_fixed_service_fd_normalizes_admin_inheritance_without_real_chown(self):
++        first=self.system/'script'; first.write_bytes(b'fixed script'); first.chmod(0o755)
++        second=self.system/'plist'; second.write_bytes(b'fixed plist'); second.chmod(0o644)
++        with self.root_metadata_fixture() as changed:
++            REAL_ROOT_SERVICE_OWNERSHIP([(first,b'fixed script',0o755),(second,b'fixed plist',0o644)])
++            self.assertEqual(changed.call_count,2)
++            REAL_ROOT_SERVICE_OWNERSHIP([(first,b'fixed script',0o755),(second,b'fixed plist',0o644)])
++            self.assertEqual(changed.call_count,2)
++
++    def test_pending_resume_repairs_only_gid_without_replacing_app_or_backups(self):
++        self.watchdog_fixture(); self.bodyguard_fixture(); self.execute()
++        stage=json.loads(m.JOURNAL.read_text())['stage']
++        with self.root_metadata_fixture() as changed, patch.object(m,'root_service_ownership',side_effect=REAL_ROOT_SERVICE_OWNERSHIP), patch.object(m,'replace_component') as replace, patch.object(m,'verify_processes',return_value=[]), patch.object(m,'run',return_value=type('R',(),{'returncode':0})()):
++            self.assertEqual(m.finalize(501)['status'],'committed')
++            self.assertEqual(changed.call_count,4)
++            replace.assert_not_called()
++        self.assertEqual(json.loads(m.LAST_RESULT.read_text())['stage'],stage)
++
++    def test_bad_pending_service_preserves_pending_without_any_chown(self):
++        self.watchdog_fixture(); self.execute()
++        script=self.system/'tz-watchdog.sh'
++        expected=script.read_bytes()
++        for fault in ['bytes','mode','symlink','hardlink','uid']:
++            with self.subTest(fault=fault):
++                if script.exists() or script.is_symlink(): script.unlink()
++                script.write_bytes(expected); script.chmod(0o755)
++                other=self.system/'other'
++                if other.exists(): other.unlink()
++                if fault=='bytes': script.write_bytes(b'changed')
++                if fault=='mode': script.chmod(0o700)
++                if fault=='symlink': script.rename(other); script.symlink_to(other)
++                if fault=='hardlink': os.link(script,other)
++                with self.root_metadata_fixture(uid=501 if fault=='uid' else 0) as changed, patch.object(m,'root_service_ownership',side_effect=REAL_ROOT_SERVICE_OWNERSHIP):
++                    with self.assertRaises((ValueError,OSError)): m.finalize(501)
++                    changed.assert_not_called()
++                self.assertEqual(json.loads(m.JOURNAL.read_text())['pending'],'health')
++
++    def test_restore_explicitly_normalizes_copied_service_target_group(self):
++        from types import SimpleNamespace
++        self.watchdog_fixture()
++        script=self.system/'tz-watchdog.sh'; script.write_bytes(b'old root script'); script.chmod(0o755)
++        original=m.small_file
++        def root_file(path):
++            data,meta=original(path)
++            return data,SimpleNamespace(st_uid=0,st_gid=0,st_mode=meta.st_mode)
++        with patch.object(m,'small_file',side_effect=root_file): self.execute()
++        with patch.object(m,'root_service_ownership') as ownership:
++            self.recover()
++            self.assertIn(((script,b'old root script',0o755),),[tuple(call.args[0]) for call in ownership.call_args_list])
++        self.assertEqual(script.read_bytes(),b'old root script')
++
++    def test_root_service_install_explicitly_materializes_wheel(self):
++        self.watchdog_fixture()
++        with patch.object(m,'root_service_ownership',create=True) as ownership:
++            self.execute()
++            self.assertTrue(ownership.called, 'install must set root:wheel after copying into admin-group parent')
++
++    def test_pending_health_normalizes_service_group_before_strict_verify(self):
++        self.watchdog_fixture()
++        self.execute()
++        with patch.object(m,'root_service_ownership',create=True) as ownership, patch.object(m,'watchdog_verify'), patch.object(m,'verify_processes',return_value=[]):
++            m.finalize(501)
++            self.assertTrue(ownership.called, 'pending health must normalize trusted fixed service files')
++
+     def watchdog_fixture(self):
+         self.plan['timezone_target'] = 'Asia/Tokyo'
+         zone = self.root/'zoneinfo/Asia'

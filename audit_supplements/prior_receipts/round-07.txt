@@ -1,0 +1,104 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组2的附件 G2-P13 至 G2-P16。由于当前处于低档模型接收阶段，暂不生成完整正式的长篇总报告，先按规范提取每份附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 7/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G2-P13 ～ G2-P16）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个（或全部）FILE 原路径及 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G2-P13.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/updates.rs (1731-2368) 
+TXT
+
+	
+
+END_G2-P13_842362d0ad832593 
+TXT
+
+
+G2-P14.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/user_repairs.rs (1-1730) 
+TXT
+
+	
+
+END_G2-P14_5a3a36357d221ee9 
+TXT
+
+
+G2-P15.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/user_repairs.rs (1731-3013) 
+TXT
+
+	
+
+END_G2-P15_bfa1ecbd80f33971 
+TXT
+
+
+G2-P16.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/tests/e11_privacy.rs (1-604) 
+TXT
+
+	
+
+END_G2-P16_2ce0e162ee3d0144 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮核心代码取证发现如下：
+
+软件更新与应用包解压安全边界（updates.rs）：
+
+证据位置：current/crates/switcher-core/src/updates.rs 行 001811–001914、002302–002367。   
+TXT
++ 1
+
+取证发现：stage_app_archive 在解压 .app.tar.gz 升级包时，强制进行了路径规范化与组件检查（限制总文件数 ≤50,000、总大小 ≤2倍上限、拒绝绝对路径、限制符号链接越权），在进入系统安装前阻断恶意归档攻击。   
+TXT
+
+用户级偏好与置顶路由修复（user_repairs.rs）的原子性保护：
+
+证据位置：current/crates/switcher-core/src/user_repairs.rs 行 000370–000392、000722–000815。   
+TXT
++ 1
+
+取证发现：UserRepairCoordinator 在修复系统偏好或 Clash Merge 路由时，通过完整的结构化 Journal 记录备份和变更动作。若中途失败，支持按事务阶段安全回滚原文件（restore_inner），绝不盲目覆盖。   
+TXT
+
+E11 隐私与外发合规测试（e11_privacy.rs）：
+
+证据位置：current/crates/switcher-core/tests/e11_privacy.rs 行 000311–000363、000417–000452。   
+TXT
++ 1
+
+取证发现：测试用例明确断言：当广告关闭或 Personal 未请求更新时，系统产生的广告和更新请求数量为零（0）；同时验证了 STUN 探测数据包仅为 20 字节绑定请求，绝不夹带任何用户账号、Cookie 或设备标识符，严格契合“零账号隐私外发”合同。   
+TXT

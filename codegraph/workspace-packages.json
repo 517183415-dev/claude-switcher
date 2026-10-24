@@ -1,0 +1,134 @@
+[
+  {
+    "name": "switcher-domain",
+    "manifest": "crates/switcher-domain/Cargo.toml",
+    "local_dependencies": [],
+    "targets": [
+      {
+        "name": "switcher_domain",
+        "kind": [
+          "lib"
+        ]
+      },
+      {
+        "name": "export-types",
+        "kind": [
+          "bin"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "switcher-core",
+    "manifest": "crates/switcher-core/Cargo.toml",
+    "local_dependencies": [
+      "switcher-domain",
+      "switcher-helper"
+    ],
+    "targets": [
+      {
+        "name": "switcher_core",
+        "kind": [
+          "lib"
+        ]
+      },
+      {
+        "name": "claude-switcher",
+        "kind": [
+          "bin"
+        ]
+      },
+      {
+        "name": "keychain-metadata-probe",
+        "kind": [
+          "bin"
+        ]
+      },
+      {
+        "name": "switcher-guardian",
+        "kind": [
+          "bin"
+        ]
+      },
+      {
+        "name": "checks_cli",
+        "kind": [
+          "test"
+        ]
+      },
+      {
+        "name": "e11_privacy",
+        "kind": [
+          "test"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "switcher-helper",
+    "manifest": "crates/switcher-helper/Cargo.toml",
+    "local_dependencies": [
+      "switcher-domain"
+    ],
+    "targets": [
+      {
+        "name": "switcher_helper",
+        "kind": [
+          "lib"
+        ]
+      },
+      {
+        "name": "switcher-helper",
+        "kind": [
+          "bin"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "switcher-desktop",
+    "manifest": "apps/desktop/src-tauri/Cargo.toml",
+    "local_dependencies": [
+      "switcher-core",
+      "switcher-domain"
+    ],
+    "targets": [
+      {
+        "name": "switcher-desktop",
+        "kind": [
+          "bin"
+        ]
+      },
+      {
+        "name": "e03_activity_export",
+        "kind": [
+          "test"
+        ]
+      },
+      {
+        "name": "e03_core_preparation",
+        "kind": [
+          "test"
+        ]
+      },
+      {
+        "name": "e06_repair_preview",
+        "kind": [
+          "test"
+        ]
+      },
+      {
+        "name": "e11_log_privacy",
+        "kind": [
+          "test"
+        ]
+      },
+      {
+        "name": "build-script-build",
+        "kind": [
+          "custom-build"
+        ]
+      }
+    ]
+  }
+]

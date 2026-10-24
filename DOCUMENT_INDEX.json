@@ -1,0 +1,363 @@
+{
+  "documents": [
+    {
+      "path": "documents/docs/acceptance/旧版核心恢复结果-2026-10-23.md",
+      "bytes": 4088,
+      "sha256": "85b4226bb97dc1b515cb2d6f6ef267da53dc31d08b7b49e9a080a3f576447820"
+    },
+    {
+      "path": "documents/docs/acceptance/验收记录.md",
+      "bytes": 59318,
+      "sha256": "7b764581e5217917f0873630c02e0b951973631adf9647642e5293076f599329"
+    },
+    {
+      "path": "documents/docs/design/code-map.md",
+      "bytes": 3643,
+      "sha256": "73d3968037119247b995352571fecd5f6bcd57c2f1d73ad1794d4d12df369abf"
+    },
+    {
+      "path": "documents/docs/handoff/Rust-R4-实施状态.md",
+      "bytes": 50077,
+      "sha256": "065b5c7396f2aa10f36fcd66b93bad1198e8630a3511bea833cbba2ec1224226"
+    },
+    {
+      "path": "documents/docs/handoff/Rust重写工程交接包-20261022-R3.zip.sha256",
+      "bytes": 108,
+      "sha256": "68f52e4dc7bc20b976a17c5052e6ef89e90a75193e451e826fc1fe47db2c5a6c"
+    },
+    {
+      "path": "documents/docs/handoff/Rust重写工程交接包-20261022-R4.zip.sha256",
+      "bytes": 108,
+      "sha256": "9a469c4e31ed7f026d111d0f978d8a02e9f5aa153af4f24f50d01f72d251f834"
+    },
+    {
+      "path": "documents/docs/handoff/交付验证记录.json",
+      "bytes": 3048,
+      "sha256": "5acab3dbe87629a100e57005c69d5b7dd18a34710f299bedfb43255bb4bcc617"
+    },
+    {
+      "path": "documents/docs/handoff/交接包说明.md",
+      "bytes": 1461,
+      "sha256": "dad88f5a70c9e425e22bf1be710c6d533468fe3b35706c1d5167a907625ebed7"
+    },
+    {
+      "path": "documents/docs/handoff/整套项目工程执行提示词.md",
+      "bytes": 9654,
+      "sha256": "2c6586c9910cb98b236cc5713b6c9d10ab894aa57e508330b34b0ced600f432e"
+    },
+    {
+      "path": "documents/docs/handoff/文件清单.json",
+      "bytes": 2982,
+      "sha256": "9728aa50c710bff5edffc94049685882532fb4ba80aeb444ab21f519ace1f182"
+    },
+    {
+      "path": "documents/docs/handoff/新会话启动提示词.txt",
+      "bytes": 1032,
+      "sha256": "5eb8386e0f81b422006b75b74ba9e9466e6d9ce375a6f610ba50e14175b597e3"
+    },
+    {
+      "path": "documents/docs/handoff/旧源码审查哈希.json",
+      "bytes": 7601,
+      "sha256": "0949d676221ebb3a598421472619032597ff3e9e620904be38bd93aa476eb6a8"
+    },
+    {
+      "path": "documents/docs/handoff/源码保护基线.json",
+      "bytes": 6866,
+      "sha256": "7c41f12905d5bb7e099a6ee8c56a5d4ab51f15c39aee874f5e1f7dd1ed0f331d"
+    },
+    {
+      "path": "documents/docs/handoff/项目交接记录.md",
+      "bytes": 12584,
+      "sha256": "9d37fa38f16dacf956832de80e4dbe57bb13afdcfa27c844636b7d0e15acfa32"
+    },
+    {
+      "path": "documents/docs/p0/P0有限验证报告-2026-10-22.md",
+      "bytes": 7980,
+      "sha256": "5a5ae969beb45b7b52462bdebc33bdcd789cb951fe346909ac721c0e54ecb0a4"
+    },
+    {
+      "path": "documents/docs/plans/Keychain依赖处理-实现补充.md",
+      "bytes": 6023,
+      "sha256": "ea01019724037deacda74cfe856218254193672b78276484ce1dcdcd0870fdd4"
+    },
+    {
+      "path": "documents/docs/plans/PRD-Rust双版本产品-v1.0.md",
+      "bytes": 15946,
+      "sha256": "739cc4121fe28b1d5ff707e095e06b321fbbfb5d5222f2468f5ddf6709362f99"
+    },
+    {
+      "path": "documents/docs/plans/PRD-Rust双版本产品-v1.1.md",
+      "bytes": 18550,
+      "sha256": "e11752f467eee81c78b6ca18ba6a3f1f84c4d445e3cf0fe6e93c3b9a877dbcd4"
+    },
+    {
+      "path": "documents/docs/plans/PRD-Rust双版本产品-v1.2.md",
+      "bytes": 12121,
+      "sha256": "39a788a494bc60dbaa03c20d21c4318c28f198b82cc7b8ce297730a0e54def8d"
+    },
+    {
+      "path": "documents/docs/plans/advertising-operations-plan-v1.0.md",
+      "bytes": 15592,
+      "sha256": "1791d801102d596b673b3713cd5a21616b38bdd760a0107ba6313798c8ac468d"
+    },
+    {
+      "path": "documents/docs/plans/advertising-operations-plan-v1.1.md",
+      "bytes": 17189,
+      "sha256": "38aff26d19c718eb7ecfc36ed5f21eb914a4bafdaa4001f64069b911ace5bd81"
+    },
+    {
+      "path": "documents/docs/plans/advertising-operations-plan.md",
+      "bytes": 2071,
+      "sha256": "21bc26e7242f1ad101b91035bbce9be41081446522ba5d197db0a39b0791bf2a"
+    },
+    {
+      "path": "documents/docs/plans/rust-rewrite-plan-v2.1.md",
+      "bytes": 53791,
+      "sha256": "348324fc62acbd33738bfd1ec69f9aa14e7c99f39f790946e6d7d1a46f7aa47d"
+    },
+    {
+      "path": "documents/docs/plans/rust-rewrite-plan-v2.2.md",
+      "bytes": 57120,
+      "sha256": "c8697b2c97f492207cfc02102b8e361b6405906a0265aa06e5853222a35d581d"
+    },
+    {
+      "path": "documents/docs/plans/rust-rewrite-plan-v2.3.md",
+      "bytes": 60379,
+      "sha256": "8bf7421b818558d5367e8f5b0ac1145f84427043218942d5bc558b2ef6d19c9a"
+    },
+    {
+      "path": "documents/docs/plans/rust-rewrite-plan.md",
+      "bytes": 676,
+      "sha256": "db7939a724739a34e37c2c75b64a830d2cf04790787d58725de8a6259c0323d5"
+    },
+    {
+      "path": "documents/docs/plans/审查与开工索引.md",
+      "bytes": 1682,
+      "sha256": "5ff1f05326fe092239fd2ce2ae9cff0f3c5f427964463e84738813b1eacb94e7"
+    },
+    {
+      "path": "documents/docs/plans/工作组与任务拆分-v1.0.md",
+      "bytes": 11537,
+      "sha256": "061b1976cd405e74b77b6fe52a6604bcffabe3701c7dd7cf6654b2f032803c4c"
+    },
+    {
+      "path": "documents/docs/plans/工作组与任务拆分-v1.1.md",
+      "bytes": 12764,
+      "sha256": "25fc22ed97fcc439c9215df8bcb59092887830e76862d2bc900e0f92bfe11b05"
+    },
+    {
+      "path": "documents/docs/plans/工程合同补充-v1.1.md",
+      "bytes": 30982,
+      "sha256": "dd832ecca00700f744f710b8b59c1c87e4a49a170d9fc076bf0f8a793fd622fb"
+    },
+    {
+      "path": "documents/docs/plans/工程执行文档-Rust重写-v1.0.md",
+      "bytes": 26577,
+      "sha256": "bcbe148fb6201cd96d8343dc997ecc03307bdf38b39a0caac9777c6733e3f7aa"
+    },
+    {
+      "path": "documents/docs/plans/工程执行文档-Rust重写-v1.1.md",
+      "bytes": 29802,
+      "sha256": "7f05eb57312c619e284dbfd74dd64389cfa58ce0a27d2d0fb16ca37978d18ef6"
+    },
+    {
+      "path": "documents/docs/plans/工程执行文档-Rust重写-v1.2.md",
+      "bytes": 33040,
+      "sha256": "b29fc622e89727327f0894ab230e035d0e3441fc38157bd78dec98fc51126c45"
+    },
+    {
+      "path": "documents/docs/plans/旧版核心逻辑恢复执行计划-2026-10-23.md",
+      "bytes": 2283,
+      "sha256": "53bb45d2c4e4a7ec651d4066bc4b7f8623e562e307ebf888f936ae0666bcdb39"
+    },
+    {
+      "path": "documents/docs/plans/源码本地安装补充-2026-10-23.md",
+      "bytes": 3620,
+      "sha256": "f065997c729c687a03eca9449d1dea582ac43d3f95d62c4bb2c04bc822ba0280"
+    },
+    {
+      "path": "documents/docs/plans/验收台账-v1.1.md",
+      "bytes": 5291,
+      "sha256": "ca78872dabdb30d31fce8d6466fd4ce7dcf0dc82d1c27c46c4a36e30ff19f641"
+    },
+    {
+      "path": "documents/docs/usage/Rust使用说明.md",
+      "bytes": 5602,
+      "sha256": "870a4fd8e2caa093fa2e04eaa72ea4ffa9e1e099a01bd46126ad27313f69359b"
+    },
+    {
+      "path": "documents/docs/usage/Rust恢复说明.md",
+      "bytes": 3728,
+      "sha256": "2e05e80e4de08d0da6a4ca7190ecea8668ed572227b35180a19bc965c5c697af"
+    },
+    {
+      "path": "documents/docs/usage/广告运营说明.md",
+      "bytes": 4481,
+      "sha256": "607664c615223ca675199799fdc3ea9290fb6009316cb658fad53a72ac460b5f"
+    },
+    {
+      "path": "documents/原项目README-HEAD.md",
+      "bytes": 13884,
+      "sha256": "403e1a9f21b28d4fa04a3a365f8b794f0b0620527f1048de6d757d92dffe3df7"
+    },
+    {
+      "path": "documents/当前README.md",
+      "bytes": 15058,
+      "sha256": "d10fd757a0f3b198addb1f673524cdb03732480712a131efb95232eaf00c8326"
+    },
+    {
+      "path": "documents/源码内开发说明/AGENTS.md",
+      "bytes": 11905,
+      "sha256": "5caf609cadc318ac4730b0f55e638eb45d73aec840eabeb211ac7fce125f49d5"
+    },
+    {
+      "path": "documents/源码内开发说明/README.md",
+      "bytes": 15058,
+      "sha256": "d10fd757a0f3b198addb1f673524cdb03732480712a131efb95232eaf00c8326"
+    },
+    {
+      "path": "documents/源码内开发说明/SECURITY.md",
+      "bytes": 2849,
+      "sha256": "d98d1a35aaba89fa83c2232a14d4b0c105f0ba897d9ed495a45bf65612a95689"
+    },
+    {
+      "path": "documents/源码内开发说明/apps/desktop/src-tauri/src/publisher/README.md",
+      "bytes": 3946,
+      "sha256": "9d6d4182d26c18f6d51992f4a675e16bdfe6750d93ec689233acb713b3dadf23"
+    },
+    {
+      "path": "documents/源码内开发说明/crates/switcher-core/src/ad_runtime/VALIDATION.md",
+      "bytes": 1800,
+      "sha256": "6efdf49f2f7d16cf3b363ba5add0c557d5196890a148d2fc869443464ac8612f"
+    },
+    {
+      "path": "documents/源码内开发说明/linux/README.md",
+      "bytes": 3009,
+      "sha256": "afd837974de8b313a770d19d2c70c4333d6a93b2dd38491607af499322bb0028"
+    },
+    {
+      "path": "documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md",
+      "bytes": 104459,
+      "sha256": "1b2080f74245e3764a2102b49ac05ebcfcf5e83e718b3d9cc6434decf10f47b7"
+    },
+    {
+      "path": "documents/源码内开发说明/packaging/macos/README.md",
+      "bytes": 12575,
+      "sha256": "062a539117bd747bd3283a629ca150a04055da447ba82be6bf669cbbb2c3ee8a"
+    },
+    {
+      "path": "documents/源码内开发说明/windows/README.md",
+      "bytes": 2568,
+      "sha256": "75a03d3e26efd3520ebd2a1bc1e9a8794c2f8793b71ad0ea36963c6b0c3e1c44"
+    }
+  ],
+  "embedded_fulltext_files": [
+    "documents/原项目README-HEAD.md",
+    "documents/当前README.md",
+    "documents/docs/plans/PRD-Rust双版本产品-v1.0.md",
+    "documents/docs/plans/PRD-Rust双版本产品-v1.1.md",
+    "documents/docs/plans/PRD-Rust双版本产品-v1.2.md",
+    "documents/docs/acceptance/旧版核心恢复结果-2026-10-23.md",
+    "documents/docs/acceptance/验收记录.md",
+    "documents/docs/design/code-map.md",
+    "documents/docs/handoff/Rust-R4-实施状态.md",
+    "documents/docs/handoff/交接包说明.md",
+    "documents/docs/handoff/整套项目工程执行提示词.md",
+    "documents/docs/handoff/项目交接记录.md",
+    "documents/docs/p0/P0有限验证报告-2026-10-22.md",
+    "documents/docs/plans/Keychain依赖处理-实现补充.md",
+    "documents/docs/plans/advertising-operations-plan-v1.0.md",
+    "documents/docs/plans/advertising-operations-plan-v1.1.md",
+    "documents/docs/plans/advertising-operations-plan.md",
+    "documents/docs/plans/rust-rewrite-plan-v2.1.md",
+    "documents/docs/plans/rust-rewrite-plan-v2.2.md",
+    "documents/docs/plans/rust-rewrite-plan-v2.3.md",
+    "documents/docs/plans/rust-rewrite-plan.md",
+    "documents/docs/plans/审查与开工索引.md",
+    "documents/docs/plans/工作组与任务拆分-v1.0.md",
+    "documents/docs/plans/工作组与任务拆分-v1.1.md",
+    "documents/docs/plans/工程合同补充-v1.1.md",
+    "documents/docs/plans/工程执行文档-Rust重写-v1.0.md",
+    "documents/docs/plans/工程执行文档-Rust重写-v1.1.md",
+    "documents/docs/plans/工程执行文档-Rust重写-v1.2.md",
+    "documents/docs/plans/旧版核心逻辑恢复执行计划-2026-10-23.md",
+    "documents/docs/plans/源码本地安装补充-2026-10-23.md",
+    "documents/docs/plans/验收台账-v1.1.md",
+    "documents/docs/usage/Rust使用说明.md",
+    "documents/docs/usage/Rust恢复说明.md",
+    "documents/docs/usage/广告运营说明.md",
+    "documents/源码内开发说明/AGENTS.md",
+    "documents/源码内开发说明/README.md",
+    "documents/源码内开发说明/SECURITY.md",
+    "documents/源码内开发说明/apps/desktop/src-tauri/src/publisher/README.md",
+    "documents/源码内开发说明/crates/switcher-core/src/ad_runtime/VALIDATION.md",
+    "documents/源码内开发说明/linux/README.md",
+    "documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md",
+    "documents/源码内开发说明/packaging/macos/README.md",
+    "documents/源码内开发说明/windows/README.md"
+  ],
+  "evidence_files": [
+    "evidence/final/accounts-result.json",
+    "evidence/final/build-personal-final.log",
+    "evidence/final/build-public-final.log",
+    "evidence/final/bundles-final.json",
+    "evidence/final/checks-summary.json",
+    "evidence/final/clippy-personal.log",
+    "evidence/final/clippy-public.log",
+    "evidence/final/desktop-personal-tests.log",
+    "evidence/final/desktop-public-tests.log",
+    "evidence/final/final-preinstall.json",
+    "evidence/final/fmt-check.log",
+    "evidence/final/frontend-build.log",
+    "evidence/final/frontend-check.log",
+    "evidence/final/frontend-tests.log",
+    "evidence/final/guardian-result.json",
+    "evidence/final/independent-review-final.json",
+    "evidence/final/install-implementation-notes.md",
+    "evidence/final/install-plan-personal.json",
+    "evidence/final/install-plan-public.json",
+    "evidence/final/native-cli-final.json",
+    "evidence/final/packaging-final.log",
+    "evidence/final/protected-source-final.json",
+    "evidence/final/proxy-result.json",
+    "evidence/final/regions-report.json",
+    "evidence/final/rust-tests-final-candidate.log",
+    "evidence/final/source-frozen-final.json",
+    "evidence/first-a-in-place/baseline.sha256",
+    "evidence/first-a-in-place/build-personal.log",
+    "evidence/first-a-in-place/build-public.log",
+    "evidence/first-a-in-place/bundles.json",
+    "evidence/first-a-in-place/change.diff",
+    "evidence/first-a-in-place/clippy.log",
+    "evidence/first-a-in-place/final.sha256",
+    "evidence/first-a-in-place/green.log",
+    "evidence/first-a-in-place/independent-review.json",
+    "evidence/first-a-in-place/lifecycle.log",
+    "evidence/first-a-in-place/migration.log",
+    "evidence/first-a-in-place/native-windows.json",
+    "evidence/first-a-in-place/red.log",
+    "evidence/first-a-in-place/source-before-build.json",
+    "evidence/first-a-in-place/verification-manifest.json",
+    "evidence/restoration-tracker.json",
+    "evidence/result.json",
+    "evidence/root-group-fix/account-before-current-launch.json",
+    "evidence/root-group-fix/actual-before.json",
+    "evidence/root-group-fix/baseline-provenance.md",
+    "evidence/root-group-fix/conclusion.md",
+    "evidence/root-group-fix/failed-install-original.log",
+    "evidence/root-group-fix/independent-review.json",
+    "evidence/root-group-fix/installed-binaries-before.json",
+    "evidence/root-group-fix/live-services-before.json",
+    "evidence/root-group-fix/local_install.py.diff",
+    "evidence/root-group-fix/native-cli-after-commit.json",
+    "evidence/root-group-fix/native-committed.json",
+    "evidence/root-group-fix/native-finalize.log",
+    "evidence/root-group-fix/native-runtime.json",
+    "evidence/root-group-fix/native-verify.log",
+    "evidence/root-group-fix/resume-ready.json",
+    "evidence/root-group-fix/source-local-update-native.json",
+    "evidence/root-group-fix/test_local_install.py.diff",
+    "evidence/root-group-fix/wrapper-final-check.json",
+    "evidence/source-before.json"
+  ]
+}

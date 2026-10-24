@@ -1,0 +1,56 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组3的附件 G3-P17。由于当前处于低档模型降级阶段，暂不生成完整正式的长篇总报告，先按规范提取附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 12/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 1 份附件（G3-P17）已完整读取，无截断、无缺失。   
+TXT
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及其 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G3-P17.txt	
+
+完整 
+TXT
+
+	5	
+
+3. current/packaging/notices/macos_subset.py (1-202)
+
+
+
+
+4. current/scripts/build-rust.sh (1-19)
+
+
+
+
+5. current/scripts/gen-sums.sh (1-14) 
+TXT
+
+	
+
+END_G3-P17_8a58fcf60007737e 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮对打包脚本、第三方声明辅助工具及构建流程的核心代码取证如下：
+
+Rust 编译与 Tauri 构建脚本（build-rust.sh）：
+
+证据位置：current/scripts/build-rust.sh 行 000010–000019。   
+TXT
+
+取证发现：脚本明确支持 personal 与 public 两种 editions 的参数传入，并在执行 Tauri 构建时通过 --no-default-features 及指定配置文件（如 packaging/editions/personal.json）严格控制编译特性，对齐本地构建规范。   
+TXT
+
+第三方声明补充收集工具（fetch_supplements.py）：
+
+证据位置：current/packaging/notices/fetch_supplements.py 行 000029–000033。   
+TXT
+
+取证发现：通过显式离线或受控的网络抓取绑定官方 upstream 提交或 crate 存档，用于支撑 THIRD-PARTY-NOTICES.md 中第三方依赖合规声明的完整性，且不影响主程序运行逻辑。   
+TXT
+
+待高级模型恢复后，将对全部批次的暂定取证与未读缺口进行整体复核并出具最终五部分总报告。

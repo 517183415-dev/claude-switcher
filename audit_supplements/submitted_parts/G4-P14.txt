@@ -1,0 +1,1214 @@
+审核补充附件 G4-P14，逻辑组4，共19份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: codegraph/file-relations.csv
+SHA256_ORIGINAL: e7f36cd8bbb455b45a0ff0e2322a1e65a2e8ed5ff653764c9ecabad4dea4a9cc
+ORIGINAL_LINES: 1-700
+000001 | source_file,target_file,relation,static_edge_count
+000002 | app/main.swift,crates/switcher-core/src/signed.rs,instantiates,3
+000003 | apps/desktop/src-tauri/src/bridge.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,2
+000004 | apps/desktop/src-tauri/src/bridge.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,7
+000005 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/accounts.rs,calls,2
+000006 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/ad_runtime.rs,calls,8
+000007 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/config.rs,calls,5
+000008 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/guardian.rs,calls,12
+000009 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/install.rs,calls,1
+000010 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/lib.rs,imports,1
+000011 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/migration.rs,calls,8
+000012 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/regions.rs,calls,3
+000013 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/time.rs,calls,3
+000014 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-core/src/updates.rs,calls,3
+000015 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-domain/src/checks.rs,instantiates,3
+000016 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-domain/src/desktop.rs,instantiates,13
+000017 | apps/desktop/src-tauri/src/bridge.rs,crates/switcher-domain/src/lib.rs,imports,1
+000018 | apps/desktop/src-tauri/src/bridge.rs,packaging/notices/generate.py,calls,3
+000019 | apps/desktop/src-tauri/src/commands.rs,apps/desktop/src-tauri/src/bridge.rs,calls,24
+000020 | apps/desktop/src-tauri/src/commands.rs,apps/desktop/src-tauri/src/bridge.rs,imports,1
+000021 | apps/desktop/src-tauri/src/commands.rs,crates/switcher-domain/src/lib.rs,imports,1
+000022 | apps/desktop/src-tauri/src/main.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000023 | apps/desktop/src-tauri/src/main.rs,apps/desktop/src-tauri/src/native_probe.rs,calls,1
+000024 | apps/desktop/src-tauri/src/main.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,2
+000025 | apps/desktop/src-tauri/src/main.rs,crates/switcher-core/src/guardian.rs,calls,1
+000026 | apps/desktop/src-tauri/src/main.rs,crates/switcher-core/src/updates.rs,calls,1
+000027 | apps/desktop/src-tauri/src/main.rs,packaging/notices/generate.py,calls,1
+000028 | apps/desktop/src-tauri/src/native_probe.rs,crates/switcher-domain/src/lib.rs,imports,1
+000029 | apps/desktop/src-tauri/src/publisher/backup.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,8
+000030 | apps/desktop/src-tauri/src/publisher/local_store.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,4
+000031 | apps/desktop/src-tauri/src/publisher/local_store.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,implements,1
+000032 | apps/desktop/src-tauri/src/publisher/local_store.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,imports,3
+000033 | apps/desktop/src-tauri/src/publisher/local_store.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,instantiates,1
+000034 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-core/src/ad_runtime/local.rs,calls,4
+000035 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-core/src/guardian.rs,calls,5
+000036 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-core/src/lib.rs,imports,1
+000037 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-core/src/storage.rs,calls,2
+000038 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-core/src/updates.rs,calls,4
+000039 | apps/desktop/src-tauri/src/publisher/local_store.rs,crates/switcher-domain/src/lib.rs,imports,1
+000040 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000041 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/backup.rs,calls,2
+000042 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,calls,13
+000043 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,imports,4
+000044 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,instantiates,2
+000045 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/security.rs,calls,5
+000046 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/security.rs,imports,2
+000047 | apps/desktop/src-tauri/src/publisher/mod.rs,apps/desktop/src-tauri/src/publisher/security.rs,instantiates,1
+000048 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/config.rs,calls,1
+000049 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/guardian.rs,calls,10
+000050 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/lib.rs,imports,1
+000051 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/signed.rs,calls,2
+000052 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/signed.rs,instantiates,1
+000053 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-core/src/updates.rs,calls,4
+000054 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-domain/src/ads.rs,instantiates,2
+000055 | apps/desktop/src-tauri/src/publisher/mod.rs,crates/switcher-domain/src/lib.rs,imports,1
+000056 | apps/desktop/src-tauri/src/publisher/mod.rs,packaging/notices/generate.py,calls,2
+000057 | apps/desktop/src-tauri/src/publisher/protocol.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,6
+000058 | apps/desktop/src-tauri/src/publisher/protocol.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,2
+000059 | apps/desktop/src-tauri/src/publisher/protocol.rs,apps/desktop/src-tauri/src/publisher/tests.rs,calls,5
+000060 | apps/desktop/src-tauri/src/publisher/protocol.rs,crates/switcher-domain/src/lib.rs,imports,1
+000061 | apps/desktop/src-tauri/src/publisher/security.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,3
+000062 | apps/desktop/src-tauri/src/publisher/security.rs,apps/desktop/src-tauri/src/publisher/tests.rs,calls,2
+000063 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000064 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,7
+000065 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,61
+000066 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,implements,1
+000067 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,instantiates,2
+000068 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/security.rs,implements,1
+000069 | apps/desktop/src-tauri/src/publisher/tests.rs,apps/desktop/src-tauri/src/publisher/security.rs,instantiates,1
+000070 | apps/desktop/src-tauri/src/publisher/tests.rs,crates/switcher-core/src/ad_runtime.rs,calls,2
+000071 | apps/desktop/src-tauri/src/publisher/tests.rs,crates/switcher-core/src/ad_runtime/local.rs,instantiates,2
+000072 | apps/desktop/src-tauri/src/publisher/tests.rs,crates/switcher-core/src/guardian.rs,calls,17
+000073 | apps/desktop/src-tauri/src/publisher/tests.rs,crates/switcher-domain/src/ads.rs,instantiates,1
+000074 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/bridge.rs,calls,9
+000075 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/bridge.rs,imports,1
+000076 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/native_probe.rs,calls,1
+000077 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000078 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,imports,1
+000079 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,13
+000080 | apps/desktop/src-tauri/src/publisher_commands.rs,apps/desktop/src-tauri/src/publisher/mod.rs,imports,1
+000081 | apps/desktop/src-tauri/src/publisher_commands.rs,crates/switcher-core/src/ad_runtime/local.rs,instantiates,1
+000082 | apps/desktop/src-tauri/src/publisher_commands.rs,crates/switcher-core/src/guardian.rs,calls,4
+000083 | apps/desktop/src-tauri/src/publisher_commands.rs,crates/switcher-core/src/updates.rs,calls,1
+000084 | apps/desktop/src-tauri/src/publisher_commands.rs,crates/switcher-domain/src/desktop.rs,instantiates,3
+000085 | apps/desktop/src-tauri/src/publisher_commands.rs,crates/switcher-domain/src/lib.rs,imports,1
+000086 | apps/desktop/src-tauri/src/publisher_commands.rs,packaging/notices/generate.py,calls,2
+000087 | apps/desktop/src-tauri/src/update_runtime.rs,apps/desktop/src-tauri/src/bridge.rs,calls,4
+000088 | apps/desktop/src-tauri/src/update_runtime.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,2
+000089 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/ad_runtime.rs,calls,1
+000090 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/ads.rs,calls,2
+000091 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/checks.rs,calls,6
+000092 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/config.rs,calls,1
+000093 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/guardian.rs,calls,30
+000094 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/install.rs,calls,2
+000095 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/lib.rs,imports,1
+000096 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/signed.rs,calls,3
+000097 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/storage.rs,calls,1
+000098 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/time.rs,calls,19
+000099 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/time.rs,instantiates,2
+000100 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-core/src/updates.rs,calls,41
+000101 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-domain/src/ads.rs,instantiates,1
+000102 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-domain/src/desktop.rs,instantiates,3
+000103 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-domain/src/lib.rs,imports,1
+000104 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-domain/src/system.rs,calls,3
+000105 | apps/desktop/src-tauri/src/update_runtime.rs,crates/switcher-domain/src/system.rs,instantiates,4
+000106 | apps/desktop/src-tauri/tests/e03_activity_export.rs,apps/desktop/src-tauri/src/bridge.rs,calls,8
+000107 | apps/desktop/src-tauri/tests/e03_activity_export.rs,crates/switcher-core/src/guardian.rs,calls,7
+000108 | apps/desktop/src-tauri/tests/e03_activity_export.rs,crates/switcher-core/src/lib.rs,imports,1
+000109 | apps/desktop/src-tauri/tests/e03_activity_export.rs,crates/switcher-domain/src/lib.rs,imports,1
+000110 | apps/desktop/src-tauri/tests/e03_core_preparation.rs,crates/switcher-core/src/accounts.rs,instantiates,2
+000111 | apps/desktop/src-tauri/tests/e03_core_preparation.rs,crates/switcher-core/src/lib.rs,imports,1
+000112 | apps/desktop/src-tauri/tests/e03_core_preparation.rs,crates/switcher-core/src/migration.rs,instantiates,3
+000113 | apps/desktop/src-tauri/tests/e03_core_preparation.rs,packaging/notices/generate.py,calls,1
+000114 | apps/desktop/src-tauri/tests/e06_repair_preview.rs,apps/desktop/tests/repair-preview-queue.test.mjs,imports,1
+000115 | apps/desktop/src-tauri/tests/e06_repair_preview.rs,crates/switcher-core/src/time.rs,calls,5
+000116 | apps/desktop/src-tauri/tests/e11_log_privacy.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000117 | apps/desktop/src-tauri/tests/e11_log_privacy.rs,apps/desktop/src-tauri/src/bridge.rs,calls,4
+000118 | apps/desktop/src-tauri/tests/e11_log_privacy.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,1
+000119 | apps/desktop/src-tauri/tests/e11_log_privacy.rs,crates/switcher-core/src/guardian.rs,calls,4
+000120 | apps/desktop/src/App.svelte,apps/desktop/src/components/AdCard.svelte,imports,2
+000121 | apps/desktop/src/App.svelte,apps/desktop/src/components/Icon.svelte,imports,2
+000122 | apps/desktop/src/App.svelte,apps/desktop/src/components/RegionSettings.svelte,imports,2
+000123 | apps/desktop/src/App.svelte,apps/desktop/src/fixture.ts,calls,1
+000124 | apps/desktop/src/App.svelte,apps/desktop/src/fixture.ts,imports,1
+000125 | apps/desktop/src/App.svelte,apps/desktop/src/generated/ActivityEntry.ts,imports,1
+000126 | apps/desktop/src/App.svelte,apps/desktop/src/generated/AdSlot.ts,imports,1
+000127 | apps/desktop/src/App.svelte,apps/desktop/src/generated/Campaign.ts,imports,1
+000128 | apps/desktop/src/App.svelte,apps/desktop/src/generated/CheckId.ts,imports,1
+000129 | apps/desktop/src/App.svelte,apps/desktop/src/generated/CheckReport.ts,imports,1
+000130 | apps/desktop/src/App.svelte,apps/desktop/src/generated/OperationOutcome.ts,imports,1
+000131 | apps/desktop/src/App.svelte,apps/desktop/src/generated/Preferences.ts,imports,1
+000132 | apps/desktop/src/App.svelte,apps/desktop/src/generated/RuntimeInfo.ts,imports,1
+000133 | apps/desktop/src/App.svelte,apps/desktop/src/generated/UpdateAction.ts,imports,1
+000134 | apps/desktop/src/App.svelte,apps/desktop/src/generated/WorkspaceSnapshot.ts,imports,1
+000135 | apps/desktop/src/App.svelte,apps/desktop/src/ui.ts,calls,17
+000136 | apps/desktop/src/App.svelte,apps/desktop/src/ui.ts,imports,8
+000137 | apps/desktop/src/App.svelte,crates/switcher-core/src/guardian.rs,calls,1
+000138 | apps/desktop/src/App.svelte,crates/switcher-core/src/installation_health.rs,calls,2
+000139 | apps/desktop/src/App.svelte,crates/switcher-core/src/installation_health.rs,imports,1
+000140 | apps/desktop/src/components/AdCard.svelte,apps/desktop/src/components/Icon.svelte,imports,2
+000141 | apps/desktop/src/components/AdCard.svelte,apps/desktop/src/generated/AdSlot.ts,imports,1
+000142 | apps/desktop/src/components/AdCard.svelte,apps/desktop/src/generated/Campaign.ts,imports,1
+000143 | apps/desktop/src/components/AdCard.svelte,apps/desktop/src/ui.ts,calls,3
+000144 | apps/desktop/src/components/AdCard.svelte,apps/desktop/src/ui.ts,imports,3
+000145 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/fixture.ts,calls,1
+000146 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/fixture.ts,imports,1
+000147 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/generated/OperationOutcome.ts,imports,1
+000148 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/generated/RegionPreset.ts,imports,1
+000149 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/generated/RegionView.ts,imports,1
+000150 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/generated/RepairPreview.ts,imports,1
+000151 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/ui.ts,calls,5
+000152 | apps/desktop/src/components/RegionSettings.svelte,apps/desktop/src/ui.ts,imports,1
+000153 | apps/desktop/src/fixture.ts,apps/desktop/src/generated/CheckId.ts,imports,1
+000154 | apps/desktop/src/fixture.ts,apps/desktop/src/generated/RegionPreset.ts,imports,1
+000155 | apps/desktop/src/fixture.ts,apps/desktop/src/generated/RepairPreview.ts,imports,1
+000156 | apps/desktop/src/fixture.ts,apps/desktop/src/generated/WorkspaceSnapshot.ts,imports,1
+000157 | apps/desktop/src/fixture.ts,apps/desktop/src/ui.ts,imports,1
+000158 | apps/desktop/src/generated/AccountOverview.ts,apps/desktop/src/generated/AccountProfile.ts,imports,1
+000159 | apps/desktop/src/generated/AccountPreparation.ts,apps/desktop/src/generated/InPlaceAction.ts,imports,1
+000160 | apps/desktop/src/generated/AccountPreparation.ts,apps/desktop/src/generated/PreparationBlocker.ts,imports,1
+000161 | apps/desktop/src/generated/AccountProfile.ts,apps/desktop/src/generated/ProfileState.ts,imports,1
+000162 | apps/desktop/src/generated/AdManifest.ts,apps/desktop/src/generated/AdChannel.ts,imports,1
+000163 | apps/desktop/src/generated/AdManifest.ts,apps/desktop/src/generated/SlotContent.ts,imports,1
+000164 | apps/desktop/src/generated/Campaign.ts,apps/desktop/src/generated/ImageAsset.ts,imports,1
+000165 | apps/desktop/src/generated/CheckReport.ts,apps/desktop/src/generated/CheckResult.ts,imports,1
+000166 | apps/desktop/src/generated/CheckReport.ts,apps/desktop/src/generated/CheckSummary.ts,imports,1
+000167 | apps/desktop/src/generated/CheckReport.ts,apps/desktop/src/generated/LaunchDecision.ts,imports,1
+000168 | apps/desktop/src/generated/CheckResult.ts,apps/desktop/src/generated/CheckId.ts,imports,1
+000169 | apps/desktop/src/generated/CheckResult.ts,apps/desktop/src/generated/CheckStatus.ts,imports,1
+000170 | apps/desktop/src/generated/DiagnosticReport.ts,apps/desktop/src/generated/ProxyDescription.ts,imports,1
+000171 | apps/desktop/src/generated/DiagnosticReport.ts,apps/desktop/src/generated/TransportProbe.ts,imports,1
+000172 | apps/desktop/src/generated/ImportedImage.ts,apps/desktop/src/generated/ImageAsset.ts,imports,1
+000173 | apps/desktop/src/generated/MerchantConsent.ts,apps/desktop/src/generated/AdSlot.ts,imports,1
+000174 | apps/desktop/src/generated/Preferences.ts,apps/desktop/src/generated/AdPreferences.ts,imports,1
+000175 | apps/desktop/src/generated/PublisherView.ts,apps/desktop/src/generated/PublishRecord.ts,imports,1
+000176 | apps/desktop/src/generated/RepairPreview.ts,apps/desktop/src/generated/RegionView.ts,imports,1
+000177 | apps/desktop/src/generated/RepairPreview.ts,apps/desktop/src/generated/RepairChange.ts,imports,1
+000178 | apps/desktop/src/generated/RuntimeInfo.ts,apps/desktop/src/generated/AdSlot.ts,imports,1
+000179 | apps/desktop/src/generated/RuntimeInfo.ts,apps/desktop/src/generated/Edition.ts,imports,1
+000180 | apps/desktop/src/generated/SlotContent.ts,apps/desktop/src/generated/AdSlot.ts,imports,1
+000181 | apps/desktop/src/generated/SlotContent.ts,apps/desktop/src/generated/Campaign.ts,imports,1
+000182 | apps/desktop/src/generated/TransportProbe.ts,apps/desktop/src/generated/AccessState.ts,imports,1
+000183 | apps/desktop/src/generated/TransportProbe.ts,apps/desktop/src/generated/TransportState.ts,imports,1
+000184 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/AccountOverview.ts,imports,1
+000185 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/AdManifest.ts,imports,1
+000186 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/CheckReport.ts,imports,1
+000187 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/Preferences.ts,imports,1
+000188 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/RuntimeInfo.ts,imports,1
+000189 | apps/desktop/src/generated/WorkspaceSnapshot.ts,apps/desktop/src/generated/UpdateView.ts,imports,1
+000190 | apps/desktop/src/main.ts,apps/desktop/src/App.svelte,imports,1
+000191 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src-tauri/src/publisher/mod.rs,calls,1
+000192 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/components/AdCard.svelte,imports,2
+000193 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/components/Icon.svelte,imports,2
+000194 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/AdChannel.ts,imports,1
+000195 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/AdManifest.ts,imports,1
+000196 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/AdSlot.ts,imports,1
+000197 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/Campaign.ts,imports,1
+000198 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/ImportedImage.ts,imports,1
+000199 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/OperationOutcome.ts,imports,1
+000200 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/generated/PublisherView.ts,imports,1
+000201 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/operations-date.ts,calls,5
+000202 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/operations-date.ts,imports,3
+000203 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/ui.ts,calls,12
+000204 | apps/desktop/src/pages/Operations.svelte,apps/desktop/src/ui.ts,imports,6
+000205 | apps/desktop/src/ui.ts,apps/desktop/src/generated/AdSlot.ts,imports,1
+000206 | apps/desktop/src/ui.ts,apps/desktop/src/generated/CheckId.ts,imports,1
+000207 | apps/desktop/src/ui.ts,apps/desktop/src/generated/CheckStatus.ts,imports,1
+000208 | apps/desktop/tests/operations-timezone.test.mjs,apps/desktop/src/operations-date.ts,calls,27
+000209 | apps/desktop/tests/operations-timezone.test.mjs,apps/desktop/src/operations-date.ts,imports,4
+000210 | apps/desktop/tests/recovery-copy.test.mjs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000211 | apps/desktop/tests/recovery-copy.test.mjs,apps/desktop/src/App.svelte,calls,2
+000212 | apps/desktop/tests/recovery-copy.test.mjs,apps/desktop/src/ui.ts,calls,1
+000213 | apps/desktop/tests/recovery-copy.test.mjs,apps/desktop/src/ui.ts,imports,2
+000214 | apps/desktop/tests/repair-preview.test.mjs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000215 | crates/switcher-core/src/accounts.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,4
+000216 | crates/switcher-core/src/accounts.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000217 | crates/switcher-core/src/accounts.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,5
+000218 | crates/switcher-core/src/accounts.rs,apps/desktop/src/generated/ImageAsset.ts,calls,2
+000219 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/accounts/legacy.rs,calls,2
+000220 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000221 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/guardian.rs,calls,75
+000222 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/install.rs,calls,1
+000223 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/lifecycle.rs,calls,5
+000224 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/migration.rs,calls,11
+000225 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/proxy_repair.rs,calls,1
+000226 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/signed.rs,calls,1
+000227 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/storage.rs,calls,71
+000228 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/storage.rs,imports,1
+000229 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/timezone_guard.rs,calls,2
+000230 | crates/switcher-core/src/accounts.rs,crates/switcher-core/src/updates.rs,calls,17
+000231 | crates/switcher-core/src/accounts/legacy.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,2
+000232 | crates/switcher-core/src/accounts/legacy.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000233 | crates/switcher-core/src/accounts/legacy.rs,apps/desktop/src/generated/ImageAsset.ts,calls,1
+000234 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/accounts.rs,calls,78
+000235 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/accounts.rs,instantiates,2
+000236 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/guardian.rs,calls,41
+000237 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/install.rs,calls,2
+000238 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/lifecycle.rs,calls,2
+000239 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/migration.rs,calls,4
+000240 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/storage.rs,calls,39
+000241 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/timezone_guard.rs,calls,2
+000242 | crates/switcher-core/src/accounts/legacy.rs,crates/switcher-core/src/updates.rs,calls,4
+000243 | crates/switcher-core/src/accounts/legacy.rs,packaging/notices/generate.py,calls,1
+000244 | crates/switcher-core/src/ad_runtime.rs,app/main.swift,calls,1
+000245 | crates/switcher-core/src/ad_runtime.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000246 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/ad_runtime/local.rs,calls,7
+000247 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/ad_runtime/local.rs,instantiates,1
+000248 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/ad_runtime/tests.rs,calls,2
+000249 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/ads.rs,calls,18
+000250 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/ads.rs,imports,3
+000251 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/config.rs,calls,1
+000252 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/guardian.rs,calls,9
+000253 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/signed.rs,calls,3
+000254 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/storage.rs,calls,9
+000255 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/time.rs,calls,16
+000256 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/time.rs,imports,2
+000257 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-core/src/updates.rs,calls,3
+000258 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-domain/src/lib.rs,imports,1
+000259 | crates/switcher-core/src/ad_runtime.rs,crates/switcher-domain/src/system.rs,calls,1
+000260 | crates/switcher-core/src/ad_runtime.rs,packaging/notices/generate.py,calls,1
+000261 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/ad_runtime.rs,implements,1
+000262 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/ad_runtime.rs,instantiates,2
+000263 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/ads.rs,calls,3
+000264 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/guardian.rs,calls,6
+000265 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/signed.rs,calls,2
+000266 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/storage.rs,calls,4
+000267 | crates/switcher-core/src/ad_runtime/local.rs,crates/switcher-core/src/updates.rs,calls,3
+000268 | crates/switcher-core/src/ad_runtime/tests.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000269 | crates/switcher-core/src/ad_runtime/tests.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000270 | crates/switcher-core/src/ad_runtime/tests.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,2
+000271 | crates/switcher-core/src/ad_runtime/tests.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,25
+000272 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/ad_runtime.rs,calls,14
+000273 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/ad_runtime.rs,implements,1
+000274 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/ad_runtime.rs,instantiates,5
+000275 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/ad_runtime/local.rs,instantiates,1
+000276 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/ads.rs,calls,7
+000277 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000278 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/guardian.rs,calls,22
+000279 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/network.rs,calls,1
+000280 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/signed.rs,calls,1
+000281 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/signed.rs,instantiates,1
+000282 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/storage.rs,calls,10
+000283 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/time.rs,calls,1
+000284 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/time.rs,instantiates,1
+000285 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000286 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-core/src/updates.rs,calls,1
+000287 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-domain/src/ads.rs,instantiates,6
+000288 | crates/switcher-core/src/ad_runtime/tests.rs,crates/switcher-domain/src/lib.rs,imports,1
+000289 | crates/switcher-core/src/ad_runtime/tests.rs,packaging/notices/generate.py,calls,1
+000290 | crates/switcher-core/src/ads.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000291 | crates/switcher-core/src/ads.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,5
+000292 | crates/switcher-core/src/ads.rs,apps/desktop/src/generated/Campaign.ts,imports,1
+000293 | crates/switcher-core/src/ads.rs,crates/switcher-core/src/signed.rs,calls,4
+000294 | crates/switcher-core/src/ads.rs,crates/switcher-core/src/signed.rs,instantiates,1
+000295 | crates/switcher-core/src/ads.rs,crates/switcher-core/src/updates.rs,calls,2
+000296 | crates/switcher-core/src/ads.rs,crates/switcher-domain/src/ads.rs,instantiates,7
+000297 | crates/switcher-core/src/ads.rs,crates/switcher-domain/src/lib.rs,imports,1
+000298 | crates/switcher-core/src/ads.rs,packaging/notices/generate.py,calls,2
+000299 | crates/switcher-core/src/bin/claude-switcher.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000300 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/checks.rs,calls,1
+000301 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/config.rs,calls,3
+000302 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/diagnostics.rs,calls,4
+000303 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/guardian.rs,calls,4
+000304 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/install.rs,calls,1
+000305 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/lib.rs,imports,1
+000306 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/lifecycle.rs,calls,4
+000307 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/migration.rs,calls,6
+000308 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-core/src/repair_cli.rs,calls,2
+000309 | crates/switcher-core/src/bin/claude-switcher.rs,crates/switcher-domain/src/lib.rs,imports,1
+000310 | crates/switcher-core/src/bin/switcher-guardian.rs,crates/switcher-core/src/accounts.rs,calls,2
+000311 | crates/switcher-core/src/bin/switcher-guardian.rs,crates/switcher-core/src/config.rs,calls,1
+000312 | crates/switcher-core/src/bin/switcher-guardian.rs,crates/switcher-core/src/config.rs,instantiates,1
+000313 | crates/switcher-core/src/bin/switcher-guardian.rs,crates/switcher-core/src/guardian.rs,calls,3
+000314 | crates/switcher-core/src/bin/switcher-guardian.rs,packaging/notices/generate.py,calls,1
+000315 | crates/switcher-core/src/checks.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000316 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/accounts.rs,calls,4
+000317 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/ad_runtime.rs,calls,1
+000318 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/ad_runtime/local.rs,calls,2
+000319 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/config.rs,calls,10
+000320 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/config.rs,imports,1
+000321 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/config.rs,instantiates,4
+000322 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/diagnostics.rs,calls,3
+000323 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/guardian.rs,calls,14
+000324 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/lifecycle.rs,calls,1
+000325 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/macos.rs,calls,15
+000326 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/network.rs,calls,7
+000327 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/network.rs,instantiates,1
+000328 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/storage.rs,calls,4
+000329 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/updates.rs,calls,1
+000330 | crates/switcher-core/src/checks.rs,crates/switcher-core/src/user_repairs.rs,calls,1
+000331 | crates/switcher-core/src/checks.rs,crates/switcher-domain/src/checks.rs,calls,3
+000332 | crates/switcher-core/src/checks.rs,crates/switcher-domain/src/checks.rs,instantiates,11
+000333 | crates/switcher-core/src/checks.rs,packaging/notices/generate.py,calls,4
+000334 | crates/switcher-core/src/config.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000335 | crates/switcher-core/src/config.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000336 | crates/switcher-core/src/config.rs,crates/switcher-core/src/guardian.rs,calls,2
+000337 | crates/switcher-core/src/config.rs,crates/switcher-core/src/updates.rs,calls,1
+000338 | crates/switcher-core/src/diagnostics.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000339 | crates/switcher-core/src/diagnostics.rs,crates/switcher-core/src/guardian.rs,calls,4
+000340 | crates/switcher-core/src/diagnostics.rs,crates/switcher-core/src/network.rs,calls,1
+000341 | crates/switcher-core/src/diagnostics.rs,crates/switcher-domain/src/checks.rs,instantiates,2
+000342 | crates/switcher-core/src/diagnostics.rs,crates/switcher-domain/src/lib.rs,imports,1
+000343 | crates/switcher-core/src/guardian.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000344 | crates/switcher-core/src/guardian.rs,apps/desktop/src-tauri/src/bridge.rs,calls,4
+000345 | crates/switcher-core/src/guardian.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000346 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/accounts.rs,calls,5
+000347 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/checks.rs,calls,7
+000348 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/config.rs,calls,4
+000349 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/config.rs,instantiates,1
+000350 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/installation_health.rs,calls,1
+000351 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/lifecycle.rs,calls,4
+000352 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/macos.rs,calls,4
+000353 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/proxy_repair.rs,calls,5
+000354 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/regions.rs,calls,2
+000355 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/repair_cli.rs,calls,1
+000356 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/storage.rs,calls,11
+000357 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/timezone_guard.rs,calls,4
+000358 | crates/switcher-core/src/guardian.rs,crates/switcher-core/src/updates.rs,calls,6
+000359 | crates/switcher-core/src/guardian.rs,crates/switcher-domain/src/checks.rs,instantiates,6
+000360 | crates/switcher-core/src/guardian.rs,crates/switcher-domain/src/lib.rs,imports,1
+000361 | crates/switcher-core/src/guardian.rs,crates/switcher-domain/src/system.rs,calls,3
+000362 | crates/switcher-core/src/guardian.rs,packaging/notices/generate.py,calls,4
+000363 | crates/switcher-core/src/guardian_repair.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000364 | crates/switcher-core/src/guardian_repair.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000365 | crates/switcher-core/src/guardian_repair.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,2
+000366 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/accounts.rs,calls,1
+000367 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/config.rs,calls,1
+000368 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/guardian.rs,calls,1
+000369 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/install.rs,calls,2
+000370 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/lifecycle.rs,calls,1
+000371 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/migration.rs,calls,1
+000372 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000373 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-core/src/updates.rs,calls,2
+000374 | crates/switcher-core/src/guardian_repair.rs,crates/switcher-domain/src/lib.rs,imports,1
+000375 | crates/switcher-core/src/install.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000376 | crates/switcher-core/src/install.rs,apps/desktop/src-tauri/src/bridge.rs,calls,4
+000377 | crates/switcher-core/src/install.rs,crates/switcher-core/src/accounts.rs,calls,5
+000378 | crates/switcher-core/src/install.rs,crates/switcher-core/src/checks.rs,calls,1
+000379 | crates/switcher-core/src/install.rs,crates/switcher-core/src/config.rs,calls,10
+000380 | crates/switcher-core/src/install.rs,crates/switcher-core/src/guardian.rs,calls,20
+000381 | crates/switcher-core/src/install.rs,crates/switcher-core/src/signed.rs,calls,1
+000382 | crates/switcher-core/src/install.rs,crates/switcher-core/src/storage.rs,calls,23
+000383 | crates/switcher-core/src/install.rs,crates/switcher-core/src/storage.rs,imports,1
+000384 | crates/switcher-core/src/install.rs,crates/switcher-core/src/time.rs,calls,9
+000385 | crates/switcher-core/src/install.rs,crates/switcher-core/src/time.rs,instantiates,1
+000386 | crates/switcher-core/src/install.rs,crates/switcher-core/src/updates.rs,calls,26
+000387 | crates/switcher-core/src/install.rs,crates/switcher-core/src/updates.rs,implements,1
+000388 | crates/switcher-core/src/install.rs,crates/switcher-core/src/updates.rs,instantiates,1
+000389 | crates/switcher-core/src/install.rs,crates/switcher-domain/src/lib.rs,imports,1
+000390 | crates/switcher-core/src/install.rs,crates/switcher-domain/src/system.rs,calls,7
+000391 | crates/switcher-core/src/install.rs,crates/switcher-domain/src/system.rs,instantiates,6
+000392 | crates/switcher-core/src/install.rs,crates/switcher-helper/src/native_authorization.rs,calls,2
+000393 | crates/switcher-core/src/install.rs,crates/switcher-helper/src/root_operation.rs,instantiates,4
+000394 | crates/switcher-core/src/install.rs,crates/switcher-helper/src/xpc.rs,calls,8
+000395 | crates/switcher-core/src/install.rs,packaging/notices/generate.py,calls,2
+000396 | crates/switcher-core/src/installation_health.rs,apps/desktop/src-tauri/src/bridge.rs,calls,4
+000397 | crates/switcher-core/src/installation_health.rs,crates/switcher-core/src/checks.rs,calls,1
+000398 | crates/switcher-core/src/installation_health.rs,crates/switcher-domain/src/lib.rs,imports,1
+000399 | crates/switcher-core/src/installation_health.rs,crates/switcher-domain/src/system.rs,calls,1
+000400 | crates/switcher-core/src/installation_health.rs,crates/switcher-domain/src/system.rs,instantiates,4
+000401 | crates/switcher-core/src/installation_health.rs,crates/switcher-helper/src/xpc.rs,calls,1
+000402 | crates/switcher-core/src/lib.rs,crates/switcher-domain/src/lib.rs,instantiates,1
+000403 | crates/switcher-core/src/lifecycle.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,2
+000404 | crates/switcher-core/src/lifecycle.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000405 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/accounts.rs,calls,1
+000406 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/accounts.rs,imports,2
+000407 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/checks.rs,calls,4
+000408 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/config.rs,calls,2
+000409 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/guardian.rs,calls,7
+000410 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/install.rs,calls,1
+000411 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/install.rs,instantiates,3
+000412 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/macos.rs,calls,2
+000413 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/migration.rs,calls,4
+000414 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/signed.rs,calls,1
+000415 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/storage.rs,calls,5
+000416 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/storage.rs,imports,1
+000417 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/timezone_guard.rs,calls,2
+000418 | crates/switcher-core/src/lifecycle.rs,crates/switcher-core/src/updates.rs,calls,2
+000419 | crates/switcher-core/src/lifecycle.rs,crates/switcher-domain/src/checks.rs,instantiates,4
+000420 | crates/switcher-core/src/lifecycle.rs,crates/switcher-domain/src/desktop.rs,instantiates,1
+000421 | crates/switcher-core/src/lifecycle.rs,crates/switcher-domain/src/lib.rs,imports,2
+000422 | crates/switcher-core/src/lifecycle.rs,crates/switcher-domain/src/system.rs,calls,2
+000423 | crates/switcher-core/src/lifecycle.rs,packaging/notices/generate.py,calls,1
+000424 | crates/switcher-core/src/macos.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000425 | crates/switcher-core/src/macos.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000426 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/ad_runtime.rs,calls,3
+000427 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000428 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/guardian.rs,calls,5
+000429 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/time.rs,calls,3
+000430 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000431 | crates/switcher-core/src/macos.rs,crates/switcher-core/src/updates.rs,calls,1
+000432 | crates/switcher-core/src/macos.rs,packaging/notices/generate.py,calls,3
+000433 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/accounts.rs,calls,12
+000434 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/accounts.rs,imports,6
+000435 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/guardian.rs,calls,17
+000436 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/storage.rs,calls,19
+000437 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/storage.rs,imports,1
+000438 | crates/switcher-core/src/migration.rs,crates/switcher-core/src/updates.rs,calls,1
+000439 | crates/switcher-core/src/migration.rs,crates/switcher-domain/src/lib.rs,imports,1
+000440 | crates/switcher-core/src/network.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000441 | crates/switcher-core/src/network.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,4
+000442 | crates/switcher-core/src/network.rs,crates/switcher-core/src/ad_runtime.rs,calls,1
+000443 | crates/switcher-core/src/network.rs,crates/switcher-core/src/ad_runtime/tests.rs,calls,1
+000444 | crates/switcher-core/src/network.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000445 | crates/switcher-core/src/network.rs,crates/switcher-core/src/guardian.rs,calls,1
+000446 | crates/switcher-core/src/network.rs,crates/switcher-core/src/regions/legacy.rs,calls,1
+000447 | crates/switcher-core/src/network.rs,crates/switcher-domain/src/checks.rs,instantiates,1
+000448 | crates/switcher-core/src/network.rs,crates/switcher-domain/src/lib.rs,imports,1
+000449 | crates/switcher-core/src/network.rs,crates/switcher-domain/src/system.rs,calls,2
+000450 | crates/switcher-core/src/network.rs,packaging/notices/generate.py,calls,1
+000451 | crates/switcher-core/src/pinned_routes.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000452 | crates/switcher-core/src/proxy_repair.rs,crates/switcher-core/src/checks.rs,calls,1
+000453 | crates/switcher-core/src/proxy_repair.rs,crates/switcher-core/src/guardian.rs,calls,1
+000454 | crates/switcher-core/src/proxy_repair.rs,crates/switcher-core/src/install.rs,instantiates,3
+000455 | crates/switcher-core/src/proxy_repair.rs,crates/switcher-core/src/lifecycle.rs,calls,1
+000456 | crates/switcher-core/src/proxy_repair.rs,crates/switcher-core/src/macos.rs,calls,9
+000457 | crates/switcher-core/src/region_detection.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,1
+000458 | crates/switcher-core/src/region_detection.rs,crates/switcher-core/src/config.rs,calls,1
+000459 | crates/switcher-core/src/region_detection.rs,crates/switcher-core/src/network.rs,calls,3
+000460 | crates/switcher-core/src/region_detection.rs,crates/switcher-core/src/network.rs,instantiates,1
+000461 | crates/switcher-core/src/region_detection.rs,crates/switcher-domain/src/desktop.rs,instantiates,1
+000462 | crates/switcher-core/src/region_detection.rs,crates/switcher-domain/src/lib.rs,imports,1
+000463 | crates/switcher-core/src/regions.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,6
+000464 | crates/switcher-core/src/regions.rs,apps/desktop/src-tauri/src/update_runtime.rs,calls,26
+000465 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/accounts.rs,calls,9
+000466 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/accounts/legacy.rs,calls,2
+000467 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/checks.rs,calls,9
+000468 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/config.rs,calls,25
+000469 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/config.rs,imports,1
+000470 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/config.rs,instantiates,6
+000471 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/guardian.rs,calls,48
+000472 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/guardian.rs,instantiates,1
+000473 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/guardian_repair.rs,calls,5
+000474 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/install.rs,calls,9
+000475 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/migration.rs,calls,1
+000476 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/proxy_repair.rs,calls,2
+000477 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/proxy_repair.rs,imports,4
+000478 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/proxy_repair.rs,instantiates,1
+000479 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/region_detection.rs,calls,1
+000480 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/regions/legacy.rs,calls,1
+000481 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/storage.rs,calls,25
+000482 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/updates.rs,calls,4
+000483 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/user_repairs.rs,calls,56
+000484 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/user_repairs.rs,implements,1
+000485 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/user_repairs.rs,imports,8
+000486 | crates/switcher-core/src/regions.rs,crates/switcher-core/src/user_repairs.rs,instantiates,2
+000487 | crates/switcher-core/src/regions.rs,crates/switcher-domain/src/desktop.rs,instantiates,10
+000488 | crates/switcher-core/src/regions.rs,crates/switcher-domain/src/lib.rs,imports,2
+000489 | crates/switcher-core/src/regions.rs,crates/switcher-domain/src/system.rs,calls,2
+000490 | crates/switcher-core/src/regions.rs,crates/switcher-domain/src/system.rs,instantiates,5
+000491 | crates/switcher-core/src/regions.rs,packaging/notices/generate.py,calls,2
+000492 | crates/switcher-core/src/regions/legacy.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,2
+000493 | crates/switcher-core/src/regions/legacy.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,1
+000494 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/ad_runtime.rs,calls,1
+000495 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/config.rs,calls,2
+000496 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/config.rs,instantiates,1
+000497 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/guardian.rs,calls,9
+000498 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/guardian_repair.rs,calls,2
+000499 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/install.rs,instantiates,1
+000500 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/macos.rs,calls,4
+000501 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/network.rs,calls,2
+000502 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/proxy_repair.rs,calls,6
+000503 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/regions.rs,calls,10
+000504 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/regions.rs,instantiates,1
+000505 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/storage.rs,calls,3
+000506 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/updates.rs,calls,2
+000507 | crates/switcher-core/src/regions/legacy.rs,crates/switcher-core/src/user_repairs.rs,calls,6
+000508 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/guardian.rs,calls,1
+000509 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/install.rs,calls,1
+000510 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/migration.rs,calls,2
+000511 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/network.rs,calls,1
+000512 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/proxy_repair.rs,calls,1
+000513 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/region_detection.rs,calls,1
+000514 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/regions.rs,calls,2
+000515 | crates/switcher-core/src/repair_cli.rs,crates/switcher-core/src/updates.rs,calls,2
+000516 | crates/switcher-core/src/repair_cli.rs,crates/switcher-domain/src/lib.rs,imports,2
+000517 | crates/switcher-core/src/repair_cli.rs,crates/switcher-domain/src/system.rs,calls,1
+000518 | crates/switcher-core/src/repair_cli.rs,crates/switcher-domain/src/system.rs,instantiates,2
+000519 | crates/switcher-core/src/signed.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,1
+000520 | crates/switcher-core/src/signed.rs,packaging/notices/generate.py,calls,1
+000521 | crates/switcher-core/src/storage.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,2
+000522 | crates/switcher-core/src/storage.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000523 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/accounts.rs,calls,3
+000524 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/accounts.rs,instantiates,2
+000525 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/accounts/legacy.rs,calls,1
+000526 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/guardian.rs,calls,53
+000527 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/lifecycle.rs,calls,3
+000528 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/signed.rs,calls,1
+000529 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000530 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/updates.rs,calls,9
+000531 | crates/switcher-core/src/storage.rs,crates/switcher-core/src/user_repairs.rs,calls,1
+000532 | crates/switcher-core/src/time.rs,crates/switcher-core/src/updates.rs,calls,1
+000533 | crates/switcher-core/src/timezone_guard.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000534 | crates/switcher-core/src/timezone_guard.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000535 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/accounts.rs,calls,1
+000536 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/config.rs,calls,2
+000537 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/config.rs,instantiates,1
+000538 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/guardian.rs,calls,5
+000539 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/storage.rs,calls,4
+000540 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-core/src/updates.rs,calls,1
+000541 | crates/switcher-core/src/timezone_guard.rs,crates/switcher-helper/src/xpc.rs,calls,1
+000542 | crates/switcher-core/src/updates.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,3
+000543 | crates/switcher-core/src/updates.rs,apps/desktop/src-tauri/src/bridge.rs,calls,7
+000544 | crates/switcher-core/src/updates.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,5
+000545 | crates/switcher-core/src/updates.rs,apps/desktop/src-tauri/src/update_runtime.rs,instantiates,1
+000546 | crates/switcher-core/src/updates.rs,apps/desktop/src/generated/ImageAsset.ts,calls,1
+000547 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/accounts.rs,calls,1
+000548 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/ad_runtime.rs,calls,2
+000549 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000550 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/guardian.rs,calls,31
+000551 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/install.rs,calls,1
+000552 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/network.rs,calls,1
+000553 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/regions.rs,calls,1
+000554 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/repair_cli.rs,calls,2
+000555 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/signed.rs,calls,12
+000556 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/signed.rs,imports,1
+000557 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/storage.rs,calls,3
+000558 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/time.rs,calls,4
+000559 | crates/switcher-core/src/updates.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000560 | crates/switcher-core/src/updates.rs,crates/switcher-domain/src/lib.rs,imports,1
+000561 | crates/switcher-core/src/updates.rs,crates/switcher-domain/src/system.rs,calls,1
+000562 | crates/switcher-core/src/updates.rs,packaging/notices/generate.py,calls,3
+000563 | crates/switcher-core/src/user_repairs.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000564 | crates/switcher-core/src/user_repairs.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000565 | crates/switcher-core/src/user_repairs.rs,apps/desktop/src-tauri/src/publisher/local_store.rs,calls,10
+000566 | crates/switcher-core/src/user_repairs.rs,apps/desktop/src-tauri/src/publisher/protocol.rs,instantiates,1
+000567 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/accounts.rs,calls,4
+000568 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/accounts.rs,instantiates,2
+000569 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/ad_runtime.rs,calls,1
+000570 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/config.rs,calls,1
+000571 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/guardian.rs,calls,51
+000572 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/lifecycle.rs,calls,3
+000573 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/migration.rs,calls,8
+000574 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/pinned_routes.rs,calls,8
+000575 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/regions.rs,calls,4
+000576 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/signed.rs,calls,6
+000577 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/storage.rs,calls,28
+000578 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/storage.rs,imports,1
+000579 | crates/switcher-core/src/user_repairs.rs,crates/switcher-core/src/updates.rs,calls,11
+000580 | crates/switcher-core/src/user_repairs.rs,packaging/notices/generate.py,calls,1
+000581 | crates/switcher-core/tests/checks_cli.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,2
+000582 | crates/switcher-core/tests/checks_cli.rs,crates/switcher-core/src/guardian.rs,calls,6
+000583 | crates/switcher-core/tests/checks_cli.rs,crates/switcher-core/src/repair_cli.rs,calls,1
+000584 | crates/switcher-core/tests/e11_privacy.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000585 | crates/switcher-core/tests/e11_privacy.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000586 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/accounts.rs,calls,2
+000587 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/ad_runtime.rs,calls,2
+000588 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/ads.rs,calls,5
+000589 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000590 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/guardian.rs,calls,20
+000591 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/lib.rs,imports,1
+000592 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/network.rs,calls,3
+000593 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000594 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-domain/src/ads.rs,instantiates,3
+000595 | crates/switcher-core/tests/e11_privacy.rs,crates/switcher-domain/src/lib.rs,imports,1
+000596 | crates/switcher-core/tests/e11_privacy.rs,packaging/notices/generate.py,calls,4
+000597 | crates/switcher-domain/src/desktop.rs,crates/switcher-domain/src/ads.rs,imports,3
+000598 | crates/switcher-domain/src/desktop.rs,crates/switcher-domain/src/checks.rs,imports,1
+000599 | crates/switcher-helper/src/installation_health.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000600 | crates/switcher-helper/src/installation_health.rs,crates/switcher-core/src/guardian.rs,calls,6
+000601 | crates/switcher-helper/src/installation_health.rs,crates/switcher-core/src/lifecycle.rs,calls,2
+000602 | crates/switcher-helper/src/installation_health.rs,crates/switcher-core/src/updates.rs,calls,2
+000603 | crates/switcher-helper/src/installation_health.rs,crates/switcher-domain/src/system.rs,calls,4
+000604 | crates/switcher-helper/src/installation_health.rs,crates/switcher-domain/src/system.rs,instantiates,14
+000605 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/platform.rs,calls,1
+000606 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/policy.rs,calls,6
+000607 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/policy.rs,implements,1
+000608 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/policy.rs,imports,3
+000609 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/policy.rs,instantiates,2
+000610 | crates/switcher-helper/src/installation_health.rs,crates/switcher-helper/src/root_operation.rs,calls,3
+000611 | crates/switcher-helper/src/main.rs,packaging/notices/generate.py,calls,1
+000612 | crates/switcher-helper/src/native_authorization.rs,crates/switcher-core/src/install.rs,instantiates,3
+000613 | crates/switcher-helper/src/platform.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,1
+000614 | crates/switcher-helper/src/platform.rs,apps/desktop/src-tauri/src/bridge.rs,calls,5
+000615 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/accounts/legacy.rs,calls,1
+000616 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/config.rs,calls,2
+000617 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/guardian.rs,calls,12
+000618 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/lifecycle.rs,calls,8
+000619 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000620 | crates/switcher-helper/src/platform.rs,crates/switcher-core/src/updates.rs,calls,9
+000621 | crates/switcher-helper/src/platform.rs,crates/switcher-domain/src/system.rs,calls,5
+000622 | crates/switcher-helper/src/platform.rs,crates/switcher-domain/src/system.rs,instantiates,18
+000623 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/installation_health.rs,calls,4
+000624 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/native_authorization.rs,calls,1
+000625 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/platform/dns_cache.rs,calls,1
+000626 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/platform/timezone_guard.rs,calls,1
+000627 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/platform/timezone_guard.rs,imports,1
+000628 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/policy.rs,imports,1
+000629 | crates/switcher-helper/src/platform.rs,crates/switcher-helper/src/root_operation.rs,calls,1
+000630 | crates/switcher-helper/src/platform.rs,packaging/notices/generate.py,calls,2
+000631 | crates/switcher-helper/src/platform/dns_cache.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000632 | crates/switcher-helper/src/platform/dns_cache.rs,crates/switcher-domain/src/system.rs,instantiates,4
+000633 | crates/switcher-helper/src/platform/dns_cache.rs,crates/switcher-helper/src/platform.rs,calls,6
+000634 | crates/switcher-helper/src/platform/dns_cache.rs,crates/switcher-helper/src/platform.rs,instantiates,1
+000635 | crates/switcher-helper/src/platform/dns_cache.rs,crates/switcher-helper/src/root_operation.rs,calls,2
+000636 | crates/switcher-helper/src/platform/dns_cache.rs,packaging/notices/generate.py,calls,2
+000637 | crates/switcher-helper/src/platform/timezone_guard.rs,crates/switcher-domain/src/system.rs,calls,1
+000638 | crates/switcher-helper/src/platform/timezone_guard.rs,crates/switcher-domain/src/system.rs,instantiates,1
+000639 | crates/switcher-helper/src/platform/timezone_guard.rs,crates/switcher-helper/src/platform.rs,calls,2
+000640 | crates/switcher-helper/src/platform/timezone_guard.rs,crates/switcher-helper/src/root_operation.rs,calls,3
+000641 | crates/switcher-helper/src/policy.rs,apps/desktop/src-tauri/src/bridge.rs,calls,2
+000642 | crates/switcher-helper/src/policy.rs,crates/switcher-core/src/accounts.rs,calls,5
+000643 | crates/switcher-helper/src/policy.rs,crates/switcher-core/src/ad_runtime.rs,calls,3
+000644 | crates/switcher-helper/src/policy.rs,crates/switcher-core/src/config.rs,calls,1
+000645 | crates/switcher-helper/src/policy.rs,crates/switcher-core/src/guardian.rs,calls,1
+000646 | crates/switcher-helper/src/policy.rs,crates/switcher-core/src/guardian_repair.rs,instantiates,1
+000647 | crates/switcher-helper/src/policy.rs,crates/switcher-domain/src/system.rs,calls,12
+000648 | crates/switcher-helper/src/policy.rs,crates/switcher-domain/src/system.rs,instantiates,25
+000649 | crates/switcher-helper/src/policy.rs,crates/switcher-helper/src/installation_health.rs,calls,10
+000650 | crates/switcher-helper/src/root_operation.rs,apps/desktop/scripts/activity-refresh-regression.py,calls,4
+000651 | crates/switcher-helper/src/root_operation.rs,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000652 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/accounts.rs,calls,1
+000653 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/accounts/legacy.rs,calls,1
+000654 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/diagnostics.rs,calls,1
+000655 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/guardian.rs,calls,17
+000656 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/lifecycle.rs,calls,8
+000657 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/time.rs,instantiates,1
+000658 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/timezone_guard.rs,calls,1
+000659 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/updates.rs,calls,17
+000660 | crates/switcher-helper/src/root_operation.rs,crates/switcher-core/src/user_repairs.rs,calls,4
+000661 | crates/switcher-helper/src/root_operation.rs,crates/switcher-domain/src/lib.rs,imports,1
+000662 | crates/switcher-helper/src/root_operation.rs,crates/switcher-domain/src/system.rs,calls,1
+000663 | crates/switcher-helper/src/root_operation.rs,crates/switcher-helper/src/platform.rs,calls,1
+000664 | crates/switcher-helper/src/root_operation.rs,packaging/notices/generate.py,calls,2
+000665 | crates/switcher-helper/src/xpc.rs,crates/switcher-domain/src/system.rs,calls,6
+000666 | crates/switcher-helper/src/xpc.rs,crates/switcher-domain/src/system.rs,instantiates,3
+000667 | crates/switcher-helper/src/xpc.rs,crates/switcher-helper/src/installation_health.rs,calls,1
+000668 | crates/switcher-helper/src/xpc.rs,crates/switcher-helper/src/policy.rs,calls,4
+000669 | crates/switcher-helper/src/xpc.rs,crates/switcher-helper/src/policy.rs,imports,2
+000670 | crates/switcher-helper/src/xpc.rs,crates/switcher-helper/src/policy.rs,instantiates,1
+000671 | crates/switcher-helper/src/xpc.rs,crates/switcher-helper/src/root_operation.rs,calls,1
+000672 | crates/switcher-helper/src/xpc.rs,packaging/notices/generate.py,calls,1
+000673 | experiments/p0/desktop/src-tauri/src/main.rs,apps/desktop/src-tauri/src/native_probe.rs,calls,1
+000674 | experiments/p0/desktop/src-tauri/src/main.rs,experiments/p0/desktop/src-tauri/src/contract.rs,imports,1
+000675 | experiments/p0/desktop/src-tauri/src/main.rs,experiments/p0/desktop/src-tauri/src/contract.rs,instantiates,1
+000676 | experiments/p0/desktop/src/App.svelte,experiments/p0/desktop/src-tauri/src/contract.rs,imports,1
+000677 | experiments/p0/desktop/src/main.ts,experiments/p0/desktop/src/App.svelte,imports,1
+000678 | experiments/p0/native/collect_metadata.py,apps/desktop/src/ui.ts,imports,1
+000679 | experiments/p0/protocol/src/lib.rs,crates/switcher-core/src/signed.rs,instantiates,1
+000680 | experiments/p0/protocol/src/lib.rs,packaging/notices/generate.py,calls,1
+000681 | experiments/p0/protocol/tests/signed_payload.rs,apps/desktop/src-tauri/src/publisher/mod.rs,calls,1
+000682 | experiments/p0/protocol/tests/signed_payload.rs,crates/switcher-core/src/signed.rs,instantiates,1
+000683 | experiments/p0/protocol/tests/signed_payload.rs,experiments/p0/protocol/src/lib.rs,instantiates,1
+000684 | packaging/macos/build_pkg.py,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000685 | packaging/macos/local_install.py,crates/switcher-helper/src/xpc.rs,calls,1
+000686 | packaging/macos/local_install.py,packaging/macos/test_local_install.py,calls,2
+000687 | packaging/macos/test_build_pkg.py,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000688 | packaging/macos/test_build_pkg.py,crates/switcher-core/src/updates.rs,calls,1
+000689 | packaging/macos/test_local_install.py,crates/switcher-core/src/guardian.rs,calls,1
+000690 | packaging/macos/test_local_install.py,crates/switcher-core/src/network.rs,calls,1
+000691 | packaging/macos/test_local_install.py,crates/switcher-core/src/updates.rs,calls,1
+000692 | packaging/macos/test_local_install.py,crates/switcher-core/src/user_repairs.rs,calls,2
+000693 | packaging/macos/test_local_install.py,packaging/macos/local_install.py,calls,3
+000694 | packaging/notices/fetch_supplements.py,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000695 | packaging/notices/fetch_supplements.py,crates/switcher-core/src/updates.rs,calls,3
+000696 | packaging/notices/fetch_supplements.py,packaging/notices/macos_subset.py,calls,1
+000697 | packaging/notices/generate.py,apps/desktop/src-tauri/src/bridge.rs,calls,1
+000698 | packaging/notices/generate.py,crates/switcher-core/src/network.rs,calls,1
+000699 | packaging/notices/generate.py,crates/switcher-core/src/updates.rs,calls,1
+000700 | packaging/notices/macos_subset.py,apps/desktop/src-tauri/src/bridge.rs,calls,5
+END_FILE_RANGE: codegraph/file-relations.csv 1-700
+
+FILE: evidence/final/accounts-result.json
+SHA256_ORIGINAL: 78861f752d58c39f09fa4bf96aedb25ed2fe9f45d20b618ae1db97bb9ce9bb74
+ORIGINAL_LINES: 1-38
+000001 | {
+000002 |   "scope": "accounts-launch legacy restoration",
+000003 |   "implemented": [
+000004 |     "A01",
+000005 |     "A02",
+000006 |     "A04",
+000007 |     "A05",
+000008 |     "A06",
+000009 |     "A07",
+000010 |     "A08",
+000011 |     "A09",
+000012 |     "A12",
+000013 |     "C12",
+000014 |     "C13",
+000015 |     "A10"
+000016 |   ],
+000017 |   "integration_api": "lifecycle::switch_checked(edition, target): preflight -> graceful quit/selection -> checked selected launch",
+000018 |   "A03": "root integrates shared API into GUI and CLI",
+000019 |   "A10": "Destination-volume local stages; native ditto copies symlinks without following and accepts hardlinks, modes and ACLs. Cross-volume staging implemented; actual second-volume test not run.",
+000020 |   "A11": "Transparent journal and atomic local directory exchange retained; historical journal recovery and seven SIGKILL boundaries tested. Pre-journal stages cleaned on errors; post-rename write errors retain recovery stages.",
+000021 |   "verification": {
+000022 |     "accounts_tests": 30,
+000023 |     "migration_tests": 7,
+000024 |     "lifecycle_tests": 5,
+000025 |     "storage_tests": 10,
+000026 |     "cargo_check": "passed",
+000027 |     "strict_clippy": "passed: cargo clippy -p switcher-core --all-targets --offline -- -D warnings",
+000028 |     "legacy_ditto_tests": 10
+000029 |   },
+000030 |   "not_run": [
+000031 |     "real account switching",
+000032 |     "real Claude quit/open",
+000033 |     "real Keychain",
+000034 |     "network or system changes",
+000035 |     "final installation",
+000036 |     "actual two-volume account switch"
+000037 |   ]
+000038 | }
+END_FILE_RANGE: evidence/final/accounts-result.json 1-38
+
+FILE: evidence/final/build-personal-final.log
+SHA256_ORIGINAL: 7b3b0183cd738a2ec1908821d27629985e0a8057b3eafbd404fe8107b0a3a05a
+ORIGINAL_LINES: 1-154
+000001 | warning: failed to parse serde attribute
+000002 |   | 
+000003 |   | deny_unknown_fields 
+000004 |   | 
+000005 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000006 | warning: failed to parse serde attribute
+000007 |   | 
+000008 |   | deny_unknown_fields 
+000009 |   | 
+000010 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000011 |    Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+000012 |     Finished `release` profile [optimized] target(s) in 14.72s
+000013 | warning: failed to parse serde attribute
+000014 |   | 
+000015 |   | deny_unknown_fields 
+000016 |   | 
+000017 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000018 | warning: failed to parse serde attribute
+000019 |   | 
+000020 |   | deny_unknown_fields 
+000021 |   | 
+000022 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000023 |     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+000024 |      Running `target/debug/export-types`
+000025 | Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+000026 | 
+000027 | added 50 packages, and audited 51 packages in 962ms
+000028 | 
+000029 | 13 packages are looking for funding
+000030 |   run `npm fund` for details
+000031 | 
+000032 | found 0 vulnerabilities
+000033 | 
+000034 | > claude-switcher-desktop@0.2.0 check
+000035 | > svelte-check --tsconfig ./tsconfig.json
+000036 | 
+000037 | Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+000038 | Getting Svelte diagnostics...
+000039 | 
+000040 | svelte-check found 0 errors and 0 warnings
+000041 | 
+000042 | > claude-switcher-desktop@0.2.0 tauri
+000043 | > tauri build --target aarch64-apple-darwin --features personal --config ../../packaging/editions/personal.json -- --no-default-features
+000044 | 
+000045 |         Info `tauri-build` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+000046 |         Info `tauri` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+000047 |         Info Looking up installed tauri packages to check mismatched versions...
+000048 |      Running beforeBuildCommand `bash scripts/prepare-native.sh && npm run types && npm run check && npm run build`
+000049 | warning: failed to parse serde attribute
+000050 |   | 
+000051 |   | deny_unknown_fields 
+000052 |   | 
+000053 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000054 | warning: failed to parse serde attribute
+000055 |   | 
+000056 |   | deny_unknown_fields 
+000057 |   | 
+000058 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000059 |    Compiling switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+000060 |     Finished `release` profile [optimized] target(s) in 3.22s
+000061 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-helper: replacing existing signature
+000062 | warning: failed to parse serde attribute
+000063 |   | 
+000064 |   | deny_unknown_fields 
+000065 |   | 
+000066 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000067 | warning: failed to parse serde attribute
+000068 |   | 
+000069 |   | deny_unknown_fields 
+000070 |   | 
+000071 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000072 |    Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+000073 |     Finished `release` profile [optimized] target(s) in 4.58s
+000074 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-guardian: replacing existing signature
+000075 | warning: failed to parse serde attribute
+000076 |   | 
+000077 |   | deny_unknown_fields 
+000078 |   | 
+000079 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000080 | warning: failed to parse serde attribute
+000081 |   | 
+000082 |   | deny_unknown_fields 
+000083 |   | 
+000084 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000085 |     Finished `release` profile [optimized] target(s) in 0.10s
+000086 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/claude-switcher: replacing existing signature
+000087 | 
+000088 | > claude-switcher-desktop@0.2.0 types
+000089 | > cargo run --manifest-path ../../Cargo.toml -p switcher-domain --bin export-types
+000090 | 
+000091 | warning: failed to parse serde attribute
+000092 |   | 
+000093 |   | deny_unknown_fields 
+000094 |   | 
+000095 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000096 | warning: failed to parse serde attribute
+000097 |   | 
+000098 |   | deny_unknown_fields 
+000099 |   | 
+000100 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000101 |     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.05s
+000102 |      Running `/Users/gua/CodexWorkspaces/claude-switcher/target/debug/export-types`
+000103 | Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+000104 | 
+000105 | > claude-switcher-desktop@0.2.0 check
+000106 | > svelte-check --tsconfig ./tsconfig.json
+000107 | 
+000108 | Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+000109 | Getting Svelte diagnostics...
+000110 | 
+000111 | svelte-check found 0 errors and 0 warnings
+000112 | 
+000113 | > claude-switcher-desktop@0.2.0 build
+000114 | > VITE_EDITION=${VITE_EDITION:-personal} vite build
+000115 | 
+000116 | 6:48:54 AM [vite-plugin-svelte] no Svelte config found at /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop - using default configuration.
+000117 | vite v8.3.5 building client environment for production...
+000118 | transforming...
+000119 | ✓ 123 modules transformed.
+000120 | rendering chunks...
+000121 | computing gzip size...
+000122 | dist/index.html                       0.36 kB │ gzip:  0.28 kB
+000123 | dist/assets/Operations-BX8ABjmX.css   4.07 kB │ gzip:  1.08 kB
+000124 | dist/assets/index-Dv7E4Yva.css       17.25 kB │ gzip:  4.26 kB
+000125 | dist/assets/Operations-DM2RnGaO.js   21.12 kB │ gzip:  8.30 kB
+000126 | dist/assets/index-0AdQX-Vq.js        88.80 kB │ gzip: 33.63 kB
+000127 | 
+000128 | ✓ built in 410ms
+000129 | warning: failed to parse serde attribute
+000130 |   | 
+000131 |   | deny_unknown_fields 
+000132 |   | 
+000133 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000134 | warning: failed to parse serde attribute
+000135 |   | 
+000136 |   | deny_unknown_fields 
+000137 |   | 
+000138 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000139 |    Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+000140 |    Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+000141 |     Finished `release` profile [optimized] target(s) in 34.35s
+000142 |        Built application at: /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/switcher-desktop
+000143 |     Bundling Claude 切换器 Personal.app (/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app)
+000144 |      Signing with identity "-"
+000145 | Signing with identity "-"
+000146 | Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop
+000147 | /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop: replacing existing signature
+000148 | Signing with identity "-"
+000149 | Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app
+000150 | /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app: replacing existing signature
+000151 |         Warn skipping app notarization, no APPLE_ID & APPLE_PASSWORD & APPLE_TEAM_ID or APPLE_API_KEY & APPLE_API_ISSUER & APPLE_API_KEY_PATH environment variables found
+000152 |     Finished 1 bundle at:
+000153 |         /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app (29.43 MiB)
+000154 | 
+END_FILE_RANGE: evidence/final/build-personal-final.log 1-154
+
+FILE: evidence/final/build-public-final.log
+SHA256_ORIGINAL: 0ebd5bd012280f6fe6a1f2acff73cfcab140a6316d69c769be85c4f35b825f1b
+ORIGINAL_LINES: 1-150
+000001 | warning: failed to parse serde attribute
+000002 |   | 
+000003 |   | deny_unknown_fields 
+000004 |   | 
+000005 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000006 | warning: failed to parse serde attribute
+000007 |   | 
+000008 |   | deny_unknown_fields 
+000009 |   | 
+000010 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000011 |     Finished `release` profile [optimized] target(s) in 0.26s
+000012 | warning: failed to parse serde attribute
+000013 |   | 
+000014 |   | deny_unknown_fields 
+000015 |   | 
+000016 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000017 | warning: failed to parse serde attribute
+000018 |   | 
+000019 |   | deny_unknown_fields 
+000020 |   | 
+000021 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000022 |     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.05s
+000023 |      Running `target/debug/export-types`
+000024 | Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+000025 | 
+000026 | added 50 packages, and audited 51 packages in 898ms
+000027 | 
+000028 | 13 packages are looking for funding
+000029 |   run `npm fund` for details
+000030 | 
+000031 | found 0 vulnerabilities
+000032 | 
+000033 | > claude-switcher-desktop@0.2.0 check
+000034 | > svelte-check --tsconfig ./tsconfig.json
+000035 | 
+000036 | Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+000037 | Getting Svelte diagnostics...
+000038 | 
+000039 | svelte-check found 0 errors and 0 warnings
+000040 | 
+000041 | > claude-switcher-desktop@0.2.0 tauri
+000042 | > tauri build --target aarch64-apple-darwin --features public --config ../../packaging/editions/public.json -- --no-default-features
+000043 | 
+000044 |         Info `tauri-build` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+000045 |         Info `tauri` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+000046 |         Info Looking up installed tauri packages to check mismatched versions...
+000047 |      Running beforeBuildCommand `bash scripts/prepare-native.sh && npm run types && npm run check && npm run build`
+000048 | warning: failed to parse serde attribute
+000049 |   | 
+000050 |   | deny_unknown_fields 
+000051 |   | 
+000052 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000053 | warning: failed to parse serde attribute
+000054 |   | 
+000055 |   | deny_unknown_fields 
+000056 |   | 
+000057 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000058 |    Compiling switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+000059 |     Finished `release` profile [optimized] target(s) in 3.36s
+000060 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-helper: replacing existing signature
+000061 | warning: failed to parse serde attribute
+000062 |   | 
+000063 |   | deny_unknown_fields 
+000064 |   | 
+000065 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000066 | warning: failed to parse serde attribute
+000067 |   | 
+000068 |   | deny_unknown_fields 
+000069 |   | 
+000070 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000071 |    Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+000072 |     Finished `release` profile [optimized] target(s) in 4.96s
+000073 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/switcher-guardian: replacing existing signature
+000074 | warning: failed to parse serde attribute
+000075 |   | 
+000076 |   | deny_unknown_fields 
+000077 |   | 
+000078 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000079 | warning: failed to parse serde attribute
+000080 |   | 
+000081 |   | deny_unknown_fields 
+000082 |   | 
+000083 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000084 |     Finished `release` profile [optimized] target(s) in 0.09s
+000085 | /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/components/claude-switcher: replacing existing signature
+000086 | 
+000087 | > claude-switcher-desktop@0.2.0 types
+000088 | > cargo run --manifest-path ../../Cargo.toml -p switcher-domain --bin export-types
+000089 | 
+000090 | warning: failed to parse serde attribute
+000091 |   | 
+000092 |   | deny_unknown_fields 
+000093 |   | 
+000094 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000095 | warning: failed to parse serde attribute
+000096 |   | 
+000097 |   | deny_unknown_fields 
+000098 |   | 
+000099 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000100 |     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.05s
+000101 |      Running `/Users/gua/CodexWorkspaces/claude-switcher/target/debug/export-types`
+000102 | Exported domain types to /Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain/../../apps/desktop/src/generated
+000103 | 
+000104 | > claude-switcher-desktop@0.2.0 check
+000105 | > svelte-check --tsconfig ./tsconfig.json
+000106 | 
+000107 | Loading svelte-check in workspace: /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop
+000108 | Getting Svelte diagnostics...
+000109 | 
+000110 | svelte-check found 0 errors and 0 warnings
+000111 | 
+000112 | > claude-switcher-desktop@0.2.0 build
+000113 | > VITE_EDITION=${VITE_EDITION:-personal} vite build
+000114 | 
+000115 | 6:50:43 AM [vite-plugin-svelte] no Svelte config found at /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop - using default configuration.
+000116 | vite v8.3.5 building client environment for production...
+000117 | transforming...
+000118 | ✓ 120 modules transformed.
+000119 | rendering chunks...
+000120 | computing gzip size...
+000121 | dist/index.html                  0.36 kB │ gzip:  0.28 kB
+000122 | dist/assets/index-Dv7E4Yva.css  17.25 kB │ gzip:  4.26 kB
+000123 | dist/assets/index-D2f4EAJz.js   84.19 kB │ gzip: 31.84 kB
+000124 | 
+000125 | ✓ built in 370ms
+000126 | warning: failed to parse serde attribute
+000127 |   | 
+000128 |   | deny_unknown_fields 
+000129 |   | 
+000130 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000131 | warning: failed to parse serde attribute
+000132 |   | 
+000133 |   | deny_unknown_fields 
+000134 |   | 
+000135 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000136 |    Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+000137 |     Finished `release` profile [optimized] target(s) in 29.96s
+000138 |        Built application at: /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/switcher-desktop
+000139 |     Bundling Claude 切换器 Public.app (/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app)
+000140 |      Signing with identity "-"
+000141 | Signing with identity "-"
+000142 | Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app/Contents/MacOS/switcher-desktop
+000143 | /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app/Contents/MacOS/switcher-desktop: replacing existing signature
+000144 | Signing with identity "-"
+000145 | Signing /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app
+000146 | /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app: replacing existing signature
+000147 |         Warn skipping app notarization, no APPLE_ID & APPLE_PASSWORD & APPLE_TEAM_ID or APPLE_API_KEY & APPLE_API_ISSUER & APPLE_API_KEY_PATH environment variables found
+000148 |     Finished 1 bundle at:
+000149 |         /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app (28.77 MiB)
+000150 | 
+END_FILE_RANGE: evidence/final/build-public-final.log 1-150
+
+FILE: evidence/final/bundles-final.json
+SHA256_ORIGINAL: 885ff17a969e44eb2d1b76a22311cb7b11655ad92b4d744b73f30610d4ab348f
+ORIGINAL_LINES: 1-60
+000001 | {
+000002 |   "timestamp": "2026-10-23T22:52:57.787247+00:00",
+000003 |   "apps": [
+000004 |     {
+000005 |       "edition": "personal",
+000006 |       "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app",
+000007 |       "version": "0.2.0",
+000008 |       "bundle_id": "local.claudeswitcher.personal",
+000009 |       "codesign_deep_strict": "pass",
+000010 |       "binaries": {
+000011 |         "Contents/MacOS/switcher-desktop": {
+000012 |           "sha256": "afe6ce08256ec815686adf9b49447b909b87b610151b183ddc349a7ed18ac1db",
+000013 |           "file": "Mach-O 64-bit executable arm64"
+000014 |         },
+000015 |         "Contents/Resources/components/switcher-helper": {
+000016 |           "sha256": "143ff86758c36fcbdb3a3f87283d92ffaf79f4783dc087fb53d31b84f028fd55",
+000017 |           "file": "Mach-O 64-bit executable arm64"
+000018 |         },
+000019 |         "Contents/Resources/components/switcher-guardian": {
+000020 |           "sha256": "4a0fda2cc121315d13edc51d9a2a7e89f6709f874ff5d3b7a8ce76698b4cc81f",
+000021 |           "file": "Mach-O 64-bit executable arm64"
+000022 |         },
+000023 |         "Contents/Resources/components/claude-switcher": {
+000024 |           "sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+000025 |           "file": "Mach-O 64-bit executable arm64"
+000026 |         }
+000027 |       }
+000028 |     },
+000029 |     {
+000030 |       "edition": "public",
+000031 |       "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/public/Claude 切换器 Public.app",
+000032 |       "version": "0.2.0",
+000033 |       "bundle_id": "local.claudeswitcher.public",
+000034 |       "codesign_deep_strict": "pass",
+000035 |       "binaries": {
+000036 |         "Contents/MacOS/switcher-desktop": {
+000037 |           "sha256": "0cefe31ab197f0d91c18c84ce9537f299d73eb9b8b26a6dba16c8ffbe19e5c93",
+000038 |           "file": "Mach-O 64-bit executable arm64"
+000039 |         },
+000040 |         "Contents/Resources/components/switcher-helper": {
+000041 |           "sha256": "d3810de301a27585e9660f6a44ef1c4aecbc935410307f6ba64e0071521c355e",
+000042 |           "file": "Mach-O 64-bit executable arm64"
+000043 |         },
+000044 |         "Contents/Resources/components/switcher-guardian": {
+000045 |           "sha256": "b1daadbea513f31861a2e7c497a742d885ae1fb5ee57550e9a294949bad8a055",
+000046 |           "file": "Mach-O 64-bit executable arm64"
+000047 |         },
+000048 |         "Contents/Resources/components/claude-switcher": {
+000049 |           "sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+000050 |           "file": "Mach-O 64-bit executable arm64"
+000051 |         }
+000052 |       }
+000053 |     }
+000054 |   ],
+000055 |   "source_changes_since_compile_freeze": [
+000056 |     "packaging/macos/README.md",
+000057 |     "packaging/macos/local_install.py",
+000058 |     "packaging/macos/test_local_install.py"
+000059 |   ]
+000060 | }
+END_FILE_RANGE: evidence/final/bundles-final.json 1-60
+
+FILE: evidence/final/checks-summary.json
+SHA256_ORIGINAL: 1192c2dd5cef40c7eebe2bc19d13c1f94777b91fb810aa46fc31ef35762eaa28
+ORIGINAL_LINES: 1-45
+000001 | {
+000002 |   "scope": "legacy checks restoration",
+000003 |   "source_sha256": {
+000004 |     "crates/switcher-core/src/checks.rs": "764d8244ec3c5d375564c0a01bec4538a21ee069bb8131c1ece2e9d539336a8b",
+000005 |     "crates/switcher-core/src/macos.rs": "1b251936dceb477f4b615559c275010cf8ddd13785f25d118cf5100e9c3630e7",
+000006 |     "crates/switcher-core/src/network.rs": "d57ad5a38867bb6b89bccbaac0f85a94bdebebfbdb4c2603334cbf3e1fd486b9",
+000007 |     "core/claude-switch.sh": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2"
+000008 |   },
+000009 |   "items": {
+000010 |     "C01": "RESTORED_ISOLATED_TESTS",
+000011 |     "C02": "RESTORED_ISOLATED_TESTS",
+000012 |     "C03": "RESTORED_ISOLATED_TESTS",
+000013 |     "C04": "RESTORED_ISOLATED_TESTS",
+000014 |     "C05": "RESTORED_ISOLATED_TESTS",
+000015 |     "C06": "RESTORED_ISOLATED_TESTS",
+000016 |     "C07": "RESTORED_ISOLATED_TESTS",
+000017 |     "C08": "RESTORED_ISOLATED_TESTS",
+000018 |     "C09": "RESTORED_ISOLATED_TESTS",
+000019 |     "C10": "RESTORED_ISOLATED_TESTS",
+000020 |     "C11": "RESTORED_ISOLATED_TESTS",
+000021 |     "C15": "RESTORED_ISOLATED_TESTS",
+000022 |     "C16": "RESTORED_ISOLATED_TESTS"
+000023 |   },
+000024 |   "verification": {
+000025 |     "checks_tests": "14 passed (STUN follow-up)",
+000026 |     "macos_tests": "5 passed",
+000027 |     "network_tests": "11 passed",
+000028 |     "cargo_check": "passed",
+000029 |     "core_all_tests": "prior revision: 274 passed; follow-up verified by 14 checks tests and strict clippy",
+000030 |     "clippy": "cargo clippy -p switcher-core --lib --offline -- -D warnings: passed"
+000031 |   },
+000032 |   "dependencies": [
+000033 |     "user_repairs::legacy_proxy_group reused for C04",
+000034 |     "switcher_domain::system::GUARDIAN_LABEL reused for C11"
+000035 |   ],
+000036 |   "notes": [
+000037 |     "No real HOME, App, services, accounts, or system settings changed during verification.",
+000038 |     "All command and network observations exercised through isolated command fixtures or loopback sockets.",
+000039 |     "SourceLocal update restriction unchanged.",
+000040 |     "C08 imports legacy lastip/iphistory.log into hashed private atomic JSON; only unexpired 48h records remain.",
+000041 |     "Network generation and per-row TTL fields remain schema metadata; they no longer block legacy launch decisions.",
+000042 |     "Regressions were added before implementation; initial red.log contains compilation failures from not-yet-implemented fixture/helper symbols.",
+000043 |     "No full-file formatter was run."
+000044 |   ]
+000045 | }
+END_FILE_RANGE: evidence/final/checks-summary.json 1-45
+
+FILE: evidence/final/clippy-personal.log
+SHA256_ORIGINAL: 5d0e3bb343a9fcaed8ec8948e0a152068ca8f5215ed7abea74fa60f37cf2fbab
+ORIGINAL_LINES: 1-27
+000001 |     Blocking waiting for file lock on package cache
+000002 |     Blocking waiting for file lock on build directory
+000003 | warning: failed to parse serde attribute
+000004 |   | 
+000005 |   | deny_unknown_fields 
+000006 |   | 
+000007 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000008 | warning: failed to parse serde attribute
+000009 |   | 
+000010 |   | deny_unknown_fields 
+000011 |   | 
+000012 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000013 |     Checking switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+000014 |     Checking switcher-domain v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain)
+000015 |    Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+000016 | warning: failed to parse serde attribute
+000017 |   | 
+000018 |   | deny_unknown_fields 
+000019 |   | 
+000020 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000021 | warning: failed to parse serde attribute
+000022 |   | 
+000023 |   | deny_unknown_fields 
+000024 |   | 
+000025 |   = note: ts-rs failed to parse this attribute. It will be ignored.
+000026 |     Checking switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+000027 |     Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.84s
+END_FILE_RANGE: evidence/final/clippy-personal.log 1-27
+
+END_G4-P14_32eb1575325f83b7

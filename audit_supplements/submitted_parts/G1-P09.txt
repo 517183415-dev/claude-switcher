@@ -1,0 +1,1507 @@
+审核补充附件 G1-P09，逻辑组1，共11份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/crates/switcher-core/src/accounts/legacy.rs
+SHA256_ORIGINAL: 9b7c25f205b6bdd61efa2af478e82f9f4dfc23272e872574f556c0706bab0974
+ORIGINAL_LINES: 1-1013
+000001 | //! Ditto-compatible account transactions. Staging follows each destination volume.
+000002 | use super::*;
+000003 | 
+000004 | #[derive(Serialize, Deserialize)]
+000005 | #[serde(deny_unknown_fields)]
+000006 | struct LegacyJournal {
+000007 |     schema: u32,
+000008 |     #[serde(default)]
+000009 |     in_place: bool,
+000010 |     transaction: String,
+000011 |     before: ActiveState,
+000012 |     target: AccountId,
+000013 |     active_stage: Identity,
+000014 |     archive_stage: Identity,
+000015 |     original: Identity,
+000016 |     incoming: Identity,
+000017 |     outgoing: Identity,
+000018 |     previous_archive: Option<Identity>,
+000019 |     original_hash: String,
+000020 |     incoming_hash: String,
+000021 |     outgoing_hash: String,
+000022 | }
+000023 | fn journal_path(store: &AccountStore) -> PathBuf {
+000024 |     store.v2().join("legacy-account-journal.json")
+000025 | }
+000026 | fn stages(store: &AccountStore, transaction: &str) -> (PathBuf, PathBuf) {
+000027 |     (
+000028 |         store
+000029 |             .active
+000030 |             .parent()
+000031 |             .unwrap()
+000032 |             .join(format!(".claude-switcher-{transaction}")),
+000033 |         store.archives().join(format!(".{transaction}")),
+000034 |     )
+000035 | }
+000036 | fn validate(store: &AccountStore, journal: &LegacyJournal) -> io::Result<()> {
+000037 |     if journal.schema != 1
+000038 |         || !journal.transaction.starts_with("tx-")
+000039 |         || journal.transaction.len() > 80
+000040 |         || !journal
+000041 |             .transaction
+000042 |             .bytes()
+000043 |             .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+000044 |         || journal.before.schema != 1
+000045 |         || journal.before.generation == 0
+000046 |         || journal.before.directory != journal.original
+000047 |         || (journal.in_place
+000048 |             && (journal.target != journal.before.account
+000049 |                 || journal.incoming != journal.original
+000050 |                 || journal.incoming_hash != journal.original_hash))
+000051 |         || !valid_hash(&journal.original_hash)
+000052 |         || !valid_hash(&journal.incoming_hash)
+000053 |         || !valid_hash(&journal.outgoing_hash)
+000054 |     {
+000055 |         return Err(invalid("invalid legacy transaction"));
+000056 |     }
+000057 |     let (active_stage, archive_stage) = stages(store, &journal.transaction);
+000058 |     if optional_identity(&active_stage)?.is_some_and(|id| id != journal.active_stage)
+000059 |         || optional_identity(&archive_stage)?.is_some_and(|id| id != journal.archive_stage)
+000060 |     {
+000061 |         return Err(invalid("legacy staging identity changed"));
+000062 |     }
+000063 |     Ok(())
+000064 | }
+000065 | fn check_lock(store: &AccountStore, lock: &LifecycleLock) -> io::Result<()> {
+000066 |     if !lock.protects(&store.v2()) {
+000067 |         return Err(denied("account lock changed"));
+000068 |     }
+000069 |     store.check_directory(&store.root)?;
+000070 |     storage::validate_no_symlinks(&store.active)?;
+000071 |     storage::validate_no_symlinks(&store.archives())?;
+000072 |     identity(&store.active)?;
+000073 |     identity(&store.archives())?;
+000074 |     Ok(())
+000075 | }
+000076 | 
+000077 | // Before the journal owns recovery, discard only directories created by this attempt.
+000078 | struct PendingStages {
+000079 |     paths: Vec<PathBuf>,
+000080 |     journal: PathBuf,
+000081 |     journal_attempted: bool,
+000082 |     handed_off: bool,
+000083 | }
+000084 | impl PendingStages {
+000085 |     fn create(&mut self, path: &Path) -> io::Result<()> {
+000086 |         use std::os::unix::fs::DirBuilderExt;
+000087 |         fs::DirBuilder::new().mode(0o700).create(path)?;
+000088 |         self.paths.push(path.to_owned());
+000089 |         Ok(())
+000090 |     }
+000091 | }
+000092 | impl Drop for PendingStages {
+000093 |     fn drop(&mut self) {
+000094 |         if self.handed_off {
+000095 |             return;
+000096 |         }
+000097 |         if self.journal_attempted {
+000098 |             // atomic_json can fail after rename (parent fsync). Keep recovery data
+000099 |             // unless absence is certain; even a metadata error must not delete it.
+000100 |             match fs::symlink_metadata(&self.journal) {
+000101 |                 Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+000102 |                 _ => return,
+000103 |             }
+000104 |         }
+000105 |         for path in self.paths.iter().rev() {
+000106 |             let _ = fs::remove_dir_all(path);
+000107 |         }
+000108 |     }
+000109 | }
+000110 | 
+000111 | pub(super) fn select(
+000112 |     store: &AccountStore,
+000113 |     target: AccountId,
+000114 |     lock: &LifecycleLock,
+000115 |     stopped: &dyn Fn() -> io::Result<()>,
+000116 | ) -> io::Result<()> {
+000117 |     select_with(store, target, lock, stopped, &mut |_| Ok(()))
+000118 | }
+000119 | fn select_with(
+000120 |     store: &AccountStore,
+000121 |     target: AccountId,
+000122 |     lock: &LifecycleLock,
+000123 |     stopped: &dyn Fn() -> io::Result<()>,
+000124 |     hook: &mut dyn FnMut(&str) -> io::Result<()>,
+000125 | ) -> io::Result<()> {
+000126 |     check_lock(store, lock)?;
+000127 |     stopped()?;
+000128 |     if store.journal_path().try_exists()? {
+000129 |         store.recover_checked(lock, stopped)?;
+000130 |     }
+000131 |     recover(store, lock, stopped)?;
+000132 |     let current = store.selected_account()?;
+000133 |     let first = !store.root.join("current").exists() && store.state()?.is_none();
+000134 |     if target == current && !first && store.archive(current).exists() {
+000135 |         store.mirror(current)?;
+000136 |         return Ok(());
+000137 |     }
+000138 |     let transaction = format!(
+000139 |         "tx-{}-{}-{}",
+000140 |         std::time::SystemTime::now()
+000141 |             .duration_since(std::time::UNIX_EPOCH)
+000142 |             .map_err(io::Error::other)?
+000143 |             .as_nanos(),
+000144 |         std::process::id(),
+000145 |         NEXT_TRANSACTION.fetch_add(1, Ordering::Relaxed)
+000146 |     );
+000147 |     let (active_stage, archive_stage) = stages(store, &transaction);
+000148 |     let mut pending = PendingStages {
+000149 |         paths: Vec::new(),
+000150 |         journal: journal_path(store),
+000151 |         journal_attempted: false,
+000152 |         handed_off: false,
+000153 |     };
+000154 |     pending.create(&active_stage)?;
+000155 |     pending.create(&archive_stage)?;
+000156 |     hook("stages_created")?;
+000157 |     let incoming = active_stage.join("incoming");
+000158 |     let outgoing = archive_stage.join("outgoing");
+000159 |     let original = identity(&store.active)?;
+000160 |     let original_hash = fingerprint(&store.active)?;
+000161 |     copy(&store.active, &outgoing)?;
+000162 |     hook("outgoing_copied")?;
+000163 |     // First A adoption and same-account archive repair retain the live directory.
+000164 |     let in_place = target == current;
+000165 |     if in_place {
+000166 |         // The outgoing copy is the archive; no replacement live copy is needed.
+000167 |     } else if store.archive(target).exists() {
+000168 |         copy(&store.archive(target), &incoming)?;
+000169 |     } else {
+000170 |         storage::create_private_directory(&incoming)?;
+000171 |     }
+000172 |     hook("incoming_copied")?;
+000173 |     stopped()?;
+000174 |     if identity(&store.active)? != original || fingerprint(&store.active)? != original_hash {
+000175 |         return Err(invalid("live account changed while copying"));
+000176 |     }
+000177 |     let before = ActiveState {
+000178 |         schema: 1,
+000179 |         account: current,
+000180 |         generation: store.state()?.map(|state| state.generation).unwrap_or(1),
+000181 |         directory: original,
+000182 |         transaction: None,
+000183 |     };
+000184 |     let journal = LegacyJournal {
+000185 |         schema: 1,
+000186 |         in_place,
+000187 |         transaction,
+000188 |         before,
+000189 |         target,
+000190 |         active_stage: identity(&active_stage)?,
+000191 |         archive_stage: identity(&archive_stage)?,
+000192 |         original,
+000193 |         incoming: if in_place {
+000194 |             original
+000195 |         } else {
+000196 |             identity(&incoming)?
+000197 |         },
+000198 |         outgoing: identity(&outgoing)?,
+000199 |         previous_archive: optional_identity(&store.archive(current))?,
+000200 |         original_hash,
+000201 |         incoming_hash: if in_place {
+000202 |             fingerprint(&store.active)?
+000203 |         } else {
+000204 |             fingerprint(&incoming)?
+000205 |         },
+000206 |         outgoing_hash: fingerprint(&outgoing)?,
+000207 |     };
+000208 |     hook("before_journal")?;
+000209 |     pending.journal_attempted = true;
+000210 |     storage::atomic_json(&journal_path(store), &journal)?;
+000211 |     // This injection point also models a parent fsync error after journal rename.
+000212 |     hook("journal_written")?;
+000213 |     pending.handed_off = true;
+000214 |     hook("prepared")?;
+000215 |     finish(store, &journal, lock, stopped, hook)
+000216 | }
+000217 | pub(super) fn recover(
+000218 |     store: &AccountStore,
+000219 |     lock: &LifecycleLock,
+000220 |     stopped: &dyn Fn() -> io::Result<()>,
+000221 | ) -> io::Result<()> {
+000222 |     let journal: LegacyJournal = match storage::read_json(&journal_path(store)) {
+000223 |         Ok(value) => value,
+000224 |         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+000225 |         Err(error) => return Err(error),
+000226 |     };
+000227 |     finish(store, &journal, lock, stopped, &mut |_| Ok(()))
+000228 | }
+000229 | fn finish(
+000230 |     store: &AccountStore,
+000231 |     journal: &LegacyJournal,
+000232 |     lock: &LifecycleLock,
+000233 |     stopped: &dyn Fn() -> io::Result<()>,
+000234 |     hook: &mut dyn FnMut(&str) -> io::Result<()>,
+000235 | ) -> io::Result<()> {
+000236 |     check_lock(store, lock)?;
+000237 |     validate(store, journal)?;
+000238 |     stopped()?;
+000239 |     let (active_stage, archive_stage) = stages(store, &journal.transaction);
+000240 |     let incoming = active_stage.join("incoming");
+000241 |     let outgoing = archive_stage.join("outgoing");
+000242 |     let archive = store.archive(journal.before.account);
+000243 |     let expected = ActiveState {
+000244 |         schema: 1,
+000245 |         account: journal.target,
+000246 |         generation: journal
+000247 |             .before
+000248 |             .generation
+000249 |             .checked_add(1)
+000250 |             .ok_or_else(|| invalid("account generation overflow"))?,
+000251 |         directory: journal.incoming,
+000252 |         transaction: Some(journal.transaction.clone()),
+000253 |     };
+000254 |     // A committed transaction may have already removed one or both staging directories.
+000255 |     let committed = store.state()?.as_ref() == Some(&expected);
+000256 |     if !journal.in_place && identity(&store.active)? == journal.original {
+000257 |         if committed
+000258 |             || identity(&incoming)? != journal.incoming
+000259 |             || fingerprint(&store.active)? != journal.original_hash
+000260 |             || fingerprint(&incoming)? != journal.incoming_hash
+000261 |         {
+000262 |             return Err(invalid("prepared account data changed"));
+000263 |         }
+000264 |         exchange(&store.active, &incoming)?;
+000265 |         storage::sync_directory(store.active.parent().unwrap())?;
+000266 |         storage::sync_directory(&active_stage)?;
+000267 |         hook("swapped")?;
+000268 |     }
+000269 |     if identity(&store.active)? != journal.incoming
+000270 |         || fingerprint(&store.active)? != journal.incoming_hash
+000271 |     {
+000272 |         return Err(invalid("selected account changed during recovery"));
+000273 |     }
+000274 |     if optional_identity(&archive)? != Some(journal.outgoing) {
+000275 |         if committed
+000276 |             || optional_identity(&archive)? != journal.previous_archive
+000277 |             || identity(&outgoing)? != journal.outgoing
+000278 |             || fingerprint(&outgoing)? != journal.outgoing_hash
+000279 |         {
+000280 |             return Err(invalid("outgoing account archive changed"));
+000281 |         }
+000282 |         if journal.previous_archive.is_some() {
+000283 |             exchange(&outgoing, &archive)?;
+000284 |         } else {
+000285 |             fs::rename(&outgoing, &archive)?;
+000286 |         }
+000287 |         storage::sync_directory(&store.archives())?;
+000288 |         storage::sync_directory(&archive_stage)?;
+000289 |         hook("archived")?;
+000290 |     }
+000291 |     if fingerprint(&archive)? != journal.outgoing_hash {
+000292 |         return Err(invalid("outgoing account content changed"));
+000293 |     }
+000294 |     stopped()?;
+000295 |     storage::atomic_json(&store.state_path(), &expected)?;
+000296 |     hook("committed")?;
+000297 |     store.mirror(journal.target)?;
+000298 |     hook("mirrored")?;
+000299 |     // remove_dir_all unlinks symbolic links; it never follows their targets.
+000300 |     clean_stage(
+000301 |         &active_stage,
+000302 |         journal.active_stage,
+000303 |         "incoming",
+000304 |         if journal.in_place {
+000305 |             None
+000306 |         } else {
+000307 |             Some(journal.original)
+000308 |         },
+000309 |     )?;
+000310 |     hook("active_cleaned")?;
+000311 |     clean_stage(
+000312 |         &archive_stage,
+000313 |         journal.archive_stage,
+000314 |         "outgoing",
+000315 |         journal.previous_archive,
+000316 |     )?;
+000317 |     hook("archive_cleaned")?;
+000318 |     fs::remove_file(journal_path(store))?;
+000319 |     storage::sync_directory(&store.v2())
+000320 | }
+000321 | fn clean_stage(
+000322 |     stage: &Path,
+000323 |     expected: Identity,
+000324 |     child: &str,
+000325 |     child_identity: Option<Identity>,
+000326 | ) -> io::Result<()> {
+000327 |     let Some(id) = optional_identity(stage)? else {
+000328 |         return Ok(());
+000329 |     };
+000330 |     let remaining = optional_identity(&stage.join(child))?;
+000331 |     if id != expected || remaining.is_some_and(|identity| Some(identity) != child_identity) {
+000332 |         return Err(invalid("staging cleanup identity changed"));
+000333 |     }
+000334 |     if fs::read_dir(stage)?.any(|entry| {
+000335 |         entry
+000336 |             .map(|entry| entry.file_name() != child)
+000337 |             .unwrap_or(true)
+000338 |     }) {
+000339 |         return Err(invalid("unexpected staging file"));
+000340 |     }
+000341 |     if remaining.is_some() {
+000342 |         fs::remove_dir_all(stage.join(child))?;
+000343 |     }
+000344 |     fs::remove_dir(stage)?;
+000345 |     storage::sync_directory(stage.parent().unwrap())
+000346 | }
+000347 | fn copy(from: &Path, to: &Path) -> io::Result<()> {
+000348 |     fn has_special(path: &Path) -> io::Result<bool> {
+000349 |         let metadata = fs::symlink_metadata(path)?;
+000350 |         if metadata.is_dir() {
+000351 |             for child in fs::read_dir(path)? {
+000352 |                 if has_special(&child?.path())? {
+000353 |                     return Ok(true);
+000354 |                 }
+000355 |             }
+000356 |             Ok(false)
+000357 |         } else {
+000358 |             Ok(!metadata.is_file() && !metadata.file_type().is_symlink())
+000359 |         }
+000360 |     }
+000361 |     // Ditto can wait indefinitely on a FIFO. Let it attempt the copy, then report its timeout.
+000362 |     let timeout = if has_special(from)? {
+000363 |         std::time::Duration::from_secs(15)
+000364 |     } else {
+000365 |         std::time::Duration::from_secs(30 * 60)
+000366 |     };
+000367 |     copy_with_timeout(from, to, timeout)
+000368 | }
+000369 | fn copy_with_timeout(from: &Path, to: &Path, timeout: std::time::Duration) -> io::Result<()> {
+000370 |     if to.exists() {
+000371 |         return Err(invalid("copy destination exists"));
+000372 |     }
+000373 |     let before = fingerprint(from)?;
+000374 |     let mut child = Command::new("/usr/bin/ditto")
+000375 |         .args(["--rsrc", "--extattr", "--acl"])
+000376 |         .arg(from)
+000377 |         .arg(to)
+000378 |         .env_clear()
+000379 |         .env("LC_ALL", "C")
+000380 |         .stdin(std::process::Stdio::null())
+000381 |         .stdout(std::process::Stdio::null())
+000382 |         .stderr(std::process::Stdio::null())
+000383 |         .spawn()?;
+000384 |     let deadline = std::time::Instant::now() + timeout;
+000385 |     loop {
+000386 |         match child.try_wait() {
+000387 |             Ok(Some(status)) if status.success() => break,
+000388 |             Ok(Some(_)) => return Err(io::Error::other("ditto could not copy account data")),
+000389 |             Ok(None) if std::time::Instant::now() < deadline => {
+000390 |                 std::thread::sleep(std::time::Duration::from_millis(20))
+000391 |             }
+000392 |             result => {
+000393 |                 let _ = child.kill();
+000394 |                 let _ = child.wait();
+000395 |                 return Err(match result {
+000396 |                     Err(error) => error,
+000397 |                     _ => io::Error::new(
+000398 |                         io::ErrorKind::TimedOut,
+000399 |                         "ditto account copy timed out; original data preserved",
+000400 |                     ),
+000401 |                 });
+000402 |             }
+000403 |         }
+000404 |     }
+000405 |     if fingerprint(from)? != before || fingerprint(to)? != before {
+000406 |         return Err(invalid("account copy content differs"));
+000407 |     }
+000408 |     sync_copy(to)
+000409 | }
+000410 | fn sync_copy(path: &Path) -> io::Result<()> {
+000411 |     let metadata = fs::symlink_metadata(path)?;
+000412 |     if metadata.is_dir() {
+000413 |         for entry in fs::read_dir(path)? {
+000414 |             sync_copy(&entry?.path())?;
+000415 |         }
+000416 |         storage::sync_directory(path)
+000417 |     } else if metadata.is_file() {
+000418 |         fs::OpenOptions::new()
+000419 |             .read(true)
+000420 |             .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+000421 |             .open(path)?
+000422 |             .sync_all()
+000423 |     } else {
+000424 |         Ok(())
+000425 |     }
+000426 | }
+000427 | /// Content proof, not an owner/mode/ACL policy. Never follows symbolic links or opens devices/FIFOs.
+000428 | fn fingerprint(root: &Path) -> io::Result<String> {
+000429 |     fn walk(root: &Path, path: &Path, digest: &mut Sha256) -> io::Result<()> {
+000430 |         let metadata = fs::symlink_metadata(path)?;
+000431 |         let relative = path
+000432 |             .strip_prefix(root)
+000433 |             .map_err(io::Error::other)?
+000434 |             .as_os_str()
+000435 |             .as_bytes();
+000436 |         digest.update((relative.len() as u64).to_le_bytes());
+000437 |         digest.update(relative);
+000438 |         digest.update((metadata.mode() & u32::from(libc::S_IFMT)).to_le_bytes());
+000439 |         if metadata.file_type().is_symlink() {
+000440 |             let target = fs::read_link(path)?;
+000441 |             let bytes = target.as_os_str().as_bytes();
+000442 |             digest.update((bytes.len() as u64).to_le_bytes());
+000443 |             digest.update(bytes);
+000444 |         } else if metadata.is_dir() {
+000445 |             let mut entries = fs::read_dir(path)?.collect::<io::Result<Vec<_>>>()?;
+000446 |             entries.sort_by_key(|entry| entry.file_name());
+000447 |             for entry in entries {
+000448 |                 walk(root, &entry.path(), digest)?;
+000449 |             }
+000450 |         } else if metadata.is_file() {
+000451 |             digest.update(metadata.len().to_le_bytes());
+000452 |             let mut file = fs::OpenOptions::new()
+000453 |                 .read(true)
+000454 |                 .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+000455 |                 .open(path)?;
+000456 |             let opened = file.metadata()?;
+000457 |             if opened.dev() != metadata.dev() || opened.ino() != metadata.ino() {
+000458 |                 return Err(invalid("account file changed while reading"));
+000459 |             }
+000460 |             let mut buffer = [0; 65536];
+000461 |             loop {
+000462 |                 let size = file.read(&mut buffer)?;
+000463 |                 if size == 0 {
+000464 |                     break;
+000465 |                 }
+000466 |                 digest.update(&buffer[..size]);
+000467 |             }
+000468 |         } else {
+000469 |             digest.update(metadata.rdev().to_le_bytes());
+000470 |         }
+000471 |         Ok(())
+000472 |     }
+000473 |     let mut digest = Sha256::new();
+000474 |     walk(root, root, &mut digest)?;
+000475 |     Ok(digest
+000476 |         .finalize()
+000477 |         .iter()
+000478 |         .map(|byte| format!("{byte:02x}"))
+000479 |         .collect())
+000480 | }
+000481 | 
+000482 | #[cfg(all(test, target_os = "macos"))]
+000483 | mod tests {
+000484 |     use super::*;
+000485 |     use std::os::unix::fs::{PermissionsExt, symlink};
+000486 |     struct Fixture {
+000487 |         base: PathBuf,
+000488 |         store: AccountStore,
+000489 |     }
+000490 |     impl Fixture {
+000491 |         fn new() -> Self {
+000492 |             let base = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000493 |                 "legacy-ditto-{}-{}",
+000494 |                 std::process::id(),
+000495 |                 NEXT_TRANSACTION.fetch_add(1, Ordering::Relaxed)
+000496 |             ));
+000497 |             storage::create_private_directory(&base).unwrap();
+000498 |             let root = base.join("switcher");
+000499 |             let active = base.join("Claude");
+000500 |             storage::create_private_directory(&root).unwrap();
+000501 |             storage::create_private_directory(&active).unwrap();
+000502 |             storage::atomic_write(&active.join("session"), b"A-latest").unwrap();
+000503 |             let store = AccountStore::new(&root, &active, unsafe { libc::geteuid() }).unwrap();
+000504 |             Self { base, store }
+000505 |         }
+000506 |         fn select(&self, account: AccountId) {
+000507 |             let lock = LifecycleLock::try_acquire(&self.store.v2()).unwrap();
+000508 |             select(&self.store, account, &lock, &|| Ok(())).unwrap();
+000509 |         }
+000510 |     }
+000511 |     impl Drop for Fixture {
+000512 |         fn drop(&mut self) {
+000513 |             let _ = fs::remove_dir_all(&self.base);
+000514 |         }
+000515 |     }
+000516 |     #[test]
+000517 |     fn first_a_and_missing_same_account_archive_preserve_live_identity() {
+000518 |         let fixture = Fixture::new();
+000519 |         symlink("session", fixture.store.active.join("session-link")).unwrap();
+000520 |         assert!(
+000521 |             Command::new("/bin/chmod")
+000522 |                 .args(["+a", "everyone allow read,write"])
+000523 |                 .arg(fixture.store.active.join("session"))
+000524 |                 .status()
+000525 |                 .unwrap()
+000526 |                 .success()
+000527 |         );
+000528 |         let original = identity(&fixture.store.active).unwrap();
+000529 |         let content = fingerprint(&fixture.store.active).unwrap();
+000530 |         for _ in 0..2 {
+000531 |             fixture.select(AccountId::A);
+000532 |             assert_eq!(identity(&fixture.store.active).unwrap(), original);
+000533 |             assert_eq!(fingerprint(&fixture.store.active).unwrap(), content);
+000534 |             assert_eq!(
+000535 |                 fingerprint(&fixture.store.archive(AccountId::A)).unwrap(),
+000536 |                 content
+000537 |             );
+000538 |             assert_eq!(
+000539 |                 fs::read_link(fixture.store.active.join("session-link")).unwrap(),
+000540 |                 PathBuf::from("session")
+000541 |             );
+000542 |             let acl = Command::new("/bin/ls")
+000543 |                 .arg("-le")
+000544 |                 .arg(fixture.store.active.join("session"))
+000545 |                 .output()
+000546 |                 .unwrap();
+000547 |             assert!(String::from_utf8_lossy(&acl.stdout).contains("everyone allow read,write"));
+000548 |             fs::remove_dir_all(fixture.store.archive(AccountId::A)).unwrap();
+000549 |         }
+000550 |     }
+000551 | 
+000552 |     #[test]
+000553 |     fn in_place_adoption_recovers_every_durable_boundary_without_replacing_live() {
+000554 |         for phase in [
+000555 |             "prepared",
+000556 |             "archived",
+000557 |             "committed",
+000558 |             "mirrored",
+000559 |             "active_cleaned",
+000560 |             "archive_cleaned",
+000561 |         ] {
+000562 |             let fixture = Fixture::new();
+000563 |             let original = identity(&fixture.store.active).unwrap();
+000564 |             let content = fingerprint(&fixture.store.active).unwrap();
+000565 |             let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000566 |             select_with(
+000567 |                 &fixture.store,
+000568 |                 AccountId::A,
+000569 |                 &lock,
+000570 |                 &|| Ok(()),
+000571 |                 &mut |point| {
+000572 |                     if point == phase {
+000573 |                         Err(io::Error::other("synthetic interruption"))
+000574 |                     } else {
+000575 |                         Ok(())
+000576 |                     }
+000577 |                 },
+000578 |             )
+000579 |             .unwrap_err();
+000580 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000581 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000582 |             assert_eq!(
+000583 |                 identity(&fixture.store.active).unwrap(),
+000584 |                 original,
+000585 |                 "{phase}"
+000586 |             );
+000587 |             assert_eq!(fingerprint(&fixture.store.active).unwrap(), content);
+000588 |             assert_eq!(
+000589 |                 fingerprint(&fixture.store.archive(AccountId::A)).unwrap(),
+000590 |                 content
+000591 |             );
+000592 |             assert!(!journal_path(&fixture.store).exists());
+000593 |         }
+000594 |     }
+000595 | 
+000596 |     #[test]
+000597 |     fn pending_journal_without_in_place_field_retains_exchange_recovery() {
+000598 |         let fixture = Fixture::new();
+000599 |         let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000600 |         select_with(
+000601 |             &fixture.store,
+000602 |             AccountId::B,
+000603 |             &lock,
+000604 |             &|| Ok(()),
+000605 |             &mut |point| {
+000606 |                 if point == "prepared" {
+000607 |                     Err(io::Error::other("synthetic interruption"))
+000608 |                 } else {
+000609 |                     Ok(())
+000610 |                 }
+000611 |             },
+000612 |         )
+000613 |         .unwrap_err();
+000614 |         let mut old: serde_json::Value = storage::read_json(&journal_path(&fixture.store)).unwrap();
+000615 |         old.as_object_mut().unwrap().remove("in_place");
+000616 |         storage::atomic_json(&journal_path(&fixture.store), &old).unwrap();
+000617 |         recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000618 |         assert_eq!(fixture.store.selected_account().unwrap(), AccountId::B);
+000619 |         assert_eq!(
+000620 |             fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
+000621 |             b"A-latest"
+000622 |         );
+000623 |     }
+000624 | 
+000625 |     #[test]
+000626 |     fn pre_journal_failures_remove_stages_and_preserve_accounts() {
+000627 |         for point in [
+000628 |             "stages_created",
+000629 |             "outgoing_copied",
+000630 |             "incoming_copied",
+000631 |             "before_journal",
+000632 |         ] {
+000633 |             let fixture = Fixture::new();
+000634 |             fixture.select(AccountId::A);
+000635 |             let original = fingerprint(&fixture.store.active).unwrap();
+000636 |             let archive = fingerprint(&fixture.store.archive(AccountId::A)).unwrap();
+000637 |             let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000638 |             for _ in 0..2 {
+000639 |                 select_with(
+000640 |                     &fixture.store,
+000641 |                     AccountId::B,
+000642 |                     &lock,
+000643 |                     &|| Ok(()),
+000644 |                     &mut |phase| {
+000645 |                         if phase == point {
+000646 |                             Err(io::Error::other("synthetic preparation failure"))
+000647 |                         } else {
+000648 |                             Ok(())
+000649 |                         }
+000650 |                     },
+000651 |                 )
+000652 |                 .unwrap_err();
+000653 |                 assert!(!journal_path(&fixture.store).exists());
+000654 |                 for parent in [
+000655 |                     fixture.store.active.parent().unwrap().to_owned(),
+000656 |                     fixture.store.archives(),
+000657 |                 ] {
+000658 |                     assert!(
+000659 |                         !fs::read_dir(parent).unwrap().any(|entry| {
+000660 |                             let name = entry.unwrap().file_name();
+000661 |                             let name = name.to_string_lossy();
+000662 |                             name.starts_with(".claude-switcher-tx-") || name.starts_with(".tx-")
+000663 |                         }),
+000664 |                         "orphan stage at {point}"
+000665 |                     );
+000666 |                 }
+000667 |                 assert_eq!(fingerprint(&fixture.store.active).unwrap(), original);
+000668 |                 assert_eq!(
+000669 |                     fingerprint(&fixture.store.archive(AccountId::A)).unwrap(),
+000670 |                     archive
+000671 |                 );
+000672 |                 assert_eq!(fixture.store.selected_account().unwrap(), AccountId::A);
+000673 |             }
+000674 |         }
+000675 |     }
+000676 | 
+000677 |     #[test]
+000678 |     fn journal_write_error_after_rename_preserves_recoverable_stages() {
+000679 |         let fixture = Fixture::new();
+000680 |         let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000681 |         select_with(
+000682 |             &fixture.store,
+000683 |             AccountId::B,
+000684 |             &lock,
+000685 |             &|| Ok(()),
+000686 |             &mut |phase| {
+000687 |                 if phase == "journal_written" {
+000688 |                     Err(io::Error::other("synthetic fsync error"))
+000689 |                 } else {
+000690 |                     Ok(())
+000691 |                 }
+000692 |             },
+000693 |         )
+000694 |         .unwrap_err();
+000695 |         let journal: LegacyJournal = storage::read_json(&journal_path(&fixture.store)).unwrap();
+000696 |         let (active, archive) = stages(&fixture.store, &journal.transaction);
+000697 |         assert!(active.join("incoming").exists());
+000698 |         assert!(archive.join("outgoing").exists());
+000699 |         recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000700 |         assert_eq!(fixture.store.selected_account().unwrap(), AccountId::B);
+000701 |         assert_eq!(
+000702 |             fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
+000703 |             b"A-latest"
+000704 |         );
+000705 |         assert!(!active.exists());
+000706 |         assert!(!archive.exists());
+000707 |     }
+000708 | 
+000709 |     #[test]
+000710 |     fn ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes() {
+000711 |         let fixture = Fixture::new();
+000712 |         let outside = fixture.base.join("outside");
+000713 |         storage::create_private_directory(&outside).unwrap();
+000714 |         storage::atomic_write(&outside.join("do-not-copy"), b"outside-secret").unwrap();
+000715 |         symlink(&outside, fixture.store.active.join("outside-link")).unwrap();
+000716 |         symlink("missing-target", fixture.store.active.join("dangling-link")).unwrap();
+000717 |         fs::hard_link(
+000718 |             fixture.store.active.join("session"),
+000719 |             fixture.store.active.join("hard-link"),
+000720 |         )
+000721 |         .unwrap();
+000722 |         fs::set_permissions(
+000723 |             fixture.store.active.join("session"),
+000724 |             fs::Permissions::from_mode(0o666),
+000725 |         )
+000726 |         .unwrap();
+000727 |         fs::set_permissions(&fixture.store.active, fs::Permissions::from_mode(0o777)).unwrap();
+000728 |         fixture.select(AccountId::B);
+000729 |         storage::atomic_write(&fixture.store.active.join("session"), b"B-live").unwrap();
+000730 |         fixture.select(AccountId::A);
+000731 |         assert_eq!(
+000732 |             fs::read_link(fixture.store.active.join("outside-link")).unwrap(),
+000733 |             outside
+000734 |         );
+000735 |         assert_eq!(
+000736 |             fs::read_link(fixture.store.active.join("dangling-link")).unwrap(),
+000737 |             PathBuf::from("missing-target")
+000738 |         );
+000739 |         assert_eq!(
+000740 |             fs::read(fixture.store.active.join("hard-link")).unwrap(),
+000741 |             b"A-latest"
+000742 |         );
+000743 |         assert_eq!(
+000744 |             fs::metadata(fixture.store.active.join("session"))
+000745 |                 .unwrap()
+000746 |                 .mode()
+000747 |                 & 0o777,
+000748 |             0o666
+000749 |         );
+000750 |         assert_eq!(
+000751 |             fs::read(outside.join("do-not-copy")).unwrap(),
+000752 |             b"outside-secret"
+000753 |         );
+000754 |         assert!(
+000755 |             fs::symlink_metadata(fixture.store.archive(AccountId::A).join("outside-link"))
+000756 |                 .unwrap()
+000757 |                 .file_type()
+000758 |                 .is_symlink()
+000759 |         );
+000760 |     }
+000761 |     #[test]
+000762 |     fn writable_acl_is_copied_without_becoming_a_business_gate() {
+000763 |         let fixture = Fixture::new();
+000764 |         let session = fixture.store.active.join("session");
+000765 |         assert!(
+000766 |             Command::new("/bin/chmod")
+000767 |                 .args(["+a", "everyone allow read,write"])
+000768 |                 .arg(&session)
+000769 |                 .status()
+000770 |                 .unwrap()
+000771 |                 .success()
+000772 |         );
+000773 |         fixture.select(AccountId::B);
+000774 |         fixture.select(AccountId::A);
+000775 |         let output = Command::new("/bin/ls")
+000776 |             .arg("-le")
+000777 |             .arg(&session)
+000778 |             .output()
+000779 |             .unwrap();
+000780 |         assert!(String::from_utf8_lossy(&output.stdout).contains("everyone allow read,write"));
+000781 |         assert_eq!(fs::read(session).unwrap(), b"A-latest");
+000782 |     }
+000783 |     #[test]
+000784 |     fn destination_local_stages_resume_every_persisted_boundary_without_receipts() {
+000785 |         for point in [
+000786 |             "prepared",
+000787 |             "swapped",
+000788 |             "archived",
+000789 |             "committed",
+000790 |             "mirrored",
+000791 |             "active_cleaned",
+000792 |             "archive_cleaned",
+000793 |         ] {
+000794 |             let fixture = Fixture::new();
+000795 |             fixture.select(AccountId::A);
+000796 |             let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000797 |             select_with(
+000798 |                 &fixture.store,
+000799 |                 AccountId::B,
+000800 |                 &lock,
+000801 |                 &|| Ok(()),
+000802 |                 &mut |phase| {
+000803 |                     if phase == point {
+000804 |                         Err(io::Error::other("synthetic interruption"))
+000805 |                     } else {
+000806 |                         Ok(())
+000807 |                     }
+000808 |                 },
+000809 |             )
+000810 |             .unwrap_err();
+000811 |             let journal: LegacyJournal = storage::read_json(&journal_path(&fixture.store)).unwrap();
+000812 |             let (active_stage, archive_stage) = stages(&fixture.store, &journal.transaction);
+000813 |             assert_eq!(active_stage.parent(), fixture.store.active.parent());
+000814 |             assert_eq!(
+000815 |                 archive_stage.parent(),
+000816 |                 Some(fixture.store.archives().as_path())
+000817 |             );
+000818 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000819 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000820 |             assert_eq!(
+000821 |                 fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
+000822 |                 b"A-latest"
+000823 |             );
+000824 |             assert_eq!(
+000825 |                 fs::read(fixture.store.root.join("current")).unwrap(),
+000826 |                 b"B\n"
+000827 |             );
+000828 |             assert_eq!(fs::read_dir(&fixture.store.active).unwrap().count(), 0);
+000829 |             assert!(!active_stage.exists());
+000830 |             assert!(!archive_stage.exists());
+000831 |             assert!(!journal_path(&fixture.store).exists());
+000832 |         }
+000833 |     }
+000834 |     #[test]
+000835 |     fn unsupported_fifo_times_out_in_native_ditto_without_touching_source() {
+000836 |         let fixture = Fixture::new();
+000837 |         let fifo = fixture.store.active.join("pipe");
+000838 |         let path = path_cstring(&fifo).unwrap();
+000839 |         assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
+000840 |         let result = copy_with_timeout(
+000841 |             &fixture.store.active,
+000842 |             &fixture.base.join("copy"),
+000843 |             std::time::Duration::from_millis(150),
+000844 |         );
+000845 |         assert_eq!(result.unwrap_err().kind(), io::ErrorKind::TimedOut);
+000846 |         assert!(std::os::unix::fs::FileTypeExt::is_fifo(
+000847 |             &fs::symlink_metadata(&fifo).unwrap().file_type()
+000848 |         ));
+000849 |         assert_eq!(
+000850 |             fs::read(fixture.store.active.join("session")).unwrap(),
+000851 |             b"A-latest"
+000852 |         );
+000853 |     }
+000854 | 
+000855 |     #[test]
+000856 |     fn legacy_process_crash_child() {
+000857 |         let Some(base) = std::env::var_os("SWITCHER_LEGACY_CRASH_FIXTURE") else {
+000858 |             return;
+000859 |         };
+000860 |         let base = PathBuf::from(base);
+000861 |         assert_eq!(
+000862 |             base.parent(),
+000863 |             Some(std::env::temp_dir().canonicalize().unwrap().as_path())
+000864 |         );
+000865 |         assert!(
+000866 |             base.file_name()
+000867 |                 .unwrap()
+000868 |                 .to_str()
+000869 |                 .unwrap()
+000870 |                 .starts_with("legacy-ditto-")
+000871 |         );
+000872 |         let store = AccountStore::new(&base.join("switcher"), &base.join("Claude"), unsafe {
+000873 |             libc::geteuid()
+000874 |         })
+000875 |         .unwrap();
+000876 |         let phase = std::env::var("SWITCHER_LEGACY_CRASH_PHASE").unwrap();
+000877 |         let lock = LifecycleLock::try_acquire(&store.v2()).unwrap();
+000878 |         select_with(&store, AccountId::B, &lock, &|| Ok(()), &mut |point| {
+000879 |             if point == phase {
+000880 |                 storage::atomic_write(&base.join("child-ready"), b"ready")?;
+000881 |                 loop {
+000882 |                     std::thread::park_timeout(std::time::Duration::from_secs(1));
+000883 |                 }
+000884 |             }
+000885 |             Ok(())
+000886 |         })
+000887 |         .unwrap();
+000888 |     }
+000889 |     #[test]
+000890 |     fn sigkill_recovers_destination_local_transactions_at_every_boundary() {
+000891 |         for phase in [
+000892 |             "prepared",
+000893 |             "swapped",
+000894 |             "archived",
+000895 |             "committed",
+000896 |             "mirrored",
+000897 |             "active_cleaned",
+000898 |             "archive_cleaned",
+000899 |         ] {
+000900 |             let fixture = Fixture::new();
+000901 |             fixture.select(AccountId::A);
+000902 |             struct Child(std::process::Child);
+000903 |             impl Drop for Child {
+000904 |                 fn drop(&mut self) {
+000905 |                     let _ = self.0.kill();
+000906 |                     let _ = self.0.wait();
+000907 |                 }
+000908 |             }
+000909 |             let mut child = Child(
+000910 |                 Command::new(std::env::current_exe().unwrap())
+000911 |                     .args([
+000912 |                         "--exact",
+000913 |                         "accounts::legacy::tests::legacy_process_crash_child",
+000914 |                         "--nocapture",
+000915 |                     ])
+000916 |                     .env("SWITCHER_LEGACY_CRASH_FIXTURE", &fixture.base)
+000917 |                     .env("SWITCHER_LEGACY_CRASH_PHASE", phase)
+000918 |                     .stdin(std::process::Stdio::null())
+000919 |                     .stdout(std::process::Stdio::null())
+000920 |                     .stderr(std::process::Stdio::null())
+000921 |                     .spawn()
+000922 |                     .unwrap(),
+000923 |             );
+000924 |             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+000925 |             while !fixture.base.join("child-ready").exists() && std::time::Instant::now() < deadline
+000926 |             {
+000927 |                 assert!(
+000928 |                     child.0.try_wait().unwrap().is_none(),
+000929 |                     "child exited before {phase}"
+000930 |                 );
+000931 |                 std::thread::sleep(std::time::Duration::from_millis(10));
+000932 |             }
+000933 |             assert!(
+000934 |                 fixture.base.join("child-ready").exists(),
+000935 |                 "child did not reach {phase}"
+000936 |             );
+000937 |             child.0.kill().unwrap();
+000938 |             child.0.wait().unwrap();
+000939 |             let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000940 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000941 |             recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000942 |             assert_eq!(
+000943 |                 fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
+000944 |                 b"A-latest"
+000945 |             );
+000946 |             assert_eq!(
+000947 |                 fs::read(fixture.store.root.join("current")).unwrap(),
+000948 |                 b"B\n"
+000949 |             );
+000950 |             assert!(!journal_path(&fixture.store).exists());
+000951 |             println!("legacy phase={phase} SIGKILL recovery=ok");
+000952 |         }
+000953 |     }
+000954 | 
+000955 |     #[test]
+000956 |     fn cleanup_resumes_when_child_removed_before_stage_directory() {
+000957 |         let fixture = Fixture::new();
+000958 |         let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000959 |         select_with(
+000960 |             &fixture.store,
+000961 |             AccountId::B,
+000962 |             &lock,
+000963 |             &|| Ok(()),
+000964 |             &mut |phase| {
+000965 |                 if phase == "committed" {
+000966 |                     Err(io::Error::other("synthetic interruption"))
+000967 |                 } else {
+000968 |                     Ok(())
+000969 |                 }
+000970 |             },
+000971 |         )
+000972 |         .unwrap_err();
+000973 |         let journal: LegacyJournal = storage::read_json(&journal_path(&fixture.store)).unwrap();
+000974 |         let (stage, _) = stages(&fixture.store, &journal.transaction);
+000975 |         fs::remove_dir_all(stage.join("incoming")).unwrap();
+000976 |         recover(&fixture.store, &lock, &|| Ok(())).unwrap();
+000977 |         assert!(!journal_path(&fixture.store).exists());
+000978 |         assert!(!stage.exists());
+000979 |         assert_eq!(
+000980 |             fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
+000981 |             b"A-latest"
+000982 |         );
+000983 |     }
+000984 | 
+000985 |     #[test]
+000986 |     fn changed_stage_is_preserved_instead_of_overwriting_account_data() {
+000987 |         let fixture = Fixture::new();
+000988 |         let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+000989 |         select_with(
+000990 |             &fixture.store,
+000991 |             AccountId::B,
+000992 |             &lock,
+000993 |             &|| Ok(()),
+000994 |             &mut |phase| {
+000995 |                 if phase == "prepared" {
+000996 |                     Err(io::Error::other("synthetic interruption"))
+000997 |                 } else {
+000998 |                     Ok(())
+000999 |                 }
+001000 |             },
+001001 |         )
+001002 |         .unwrap_err();
+001003 |         let journal: LegacyJournal = storage::read_json(&journal_path(&fixture.store)).unwrap();
+001004 |         let (stage, _) = stages(&fixture.store, &journal.transaction);
+001005 |         storage::atomic_write(&stage.join("incoming/injected"), b"changed").unwrap();
+001006 |         assert!(recover(&fixture.store, &lock, &|| Ok(())).is_err());
+001007 |         assert_eq!(
+001008 |             fs::read(fixture.store.active.join("session")).unwrap(),
+001009 |             b"A-latest"
+001010 |         );
+001011 |         assert!(journal_path(&fixture.store).exists());
+001012 |     }
+001013 | }
+END_FILE_RANGE: current/crates/switcher-core/src/accounts/legacy.rs 1-1013
+
+FILE: current/crates/switcher-core/src/migration.rs
+SHA256_ORIGINAL: 672f91811e714b21cd03a5814dc8fd7726bc3270d2202215dd654ff7df20611c
+ORIGINAL_LINES: 1-479
+000001 | //! Legacy account selection with transparent, recoverable directory transactions.
+000002 | use crate::accounts::{
+000003 |     AccountId, AccountStatus, AccountStore, InitializationCopy, ensure_claude_stopped, quit_claude,
+000004 | };
+000005 | use crate::storage::{self, LifecycleLock};
+000006 | use serde::{Deserialize, Serialize};
+000007 | use std::{
+000008 |     fs, io,
+000009 |     path::{Path, PathBuf},
+000010 | };
+000011 | use switcher_domain::Edition;
+000012 | 
+000013 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+000014 | #[serde(rename_all = "snake_case")]
+000015 | pub enum DependencyAssessment {
+000016 |     Unresolved,
+000017 |     VerifiedPreserved,
+000018 |     HandlingPlanAvailable,
+000019 | }
+000020 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+000021 | #[serde(rename_all = "snake_case")]
+000022 | pub enum ProbeStatus {
+000023 |     MetadataObserved,
+000024 |     NoMatchingItems,
+000025 |     InteractionBlocked,
+000026 |     Unavailable,
+000027 | }
+000028 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000029 | #[serde(deny_unknown_fields)]
+000030 | pub struct KeychainQuerySummary {
+000031 |     pub scope_id: String,
+000032 |     pub os_status: i32,
+000033 |     pub item_count: usize,
+000034 |     pub attribute_summary_hash: String,
+000035 | }
+000036 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000037 | #[serde(deny_unknown_fields)]
+000038 | pub struct KeychainMetadataProbe {
+000039 |     pub schema_version: u32,
+000040 |     pub status: ProbeStatus,
+000041 |     pub queries: Vec<KeychainQuerySummary>,
+000042 |     pub dependency_assessment: DependencyAssessment,
+000043 |     pub reason: String,
+000044 | }
+000045 | impl KeychainMetadataProbe {
+000046 |     /// Kept for CLI response compatibility. Account switching never queries Keychain.
+000047 |     pub fn run() -> Self {
+000048 |         Self {
+000049 |             schema_version: 1,
+000050 |             status: ProbeStatus::Unavailable,
+000051 |             queries: vec![],
+000052 |             dependency_assessment: DependencyAssessment::VerifiedPreserved,
+000053 |             reason: "账号切换沿用旧版目录存档，不要求 Keychain 元数据调查".into(),
+000054 |         }
+000055 |     }
+000056 | }
+000057 | #[derive(Debug, Clone, Serialize)]
+000058 | pub struct MigrationBlocker {
+000059 |     pub code: String,
+000060 |     pub message: String,
+000061 | }
+000062 | /// UI selects a fixed action; it cannot provide a dependency assessment or a permit.
+000063 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+000064 | pub enum MigrationIntent {
+000065 |     InitializeA,
+000066 |     AssociateA,
+000067 |     SelectA,
+000068 |     SelectB,
+000069 |     Recover,
+000070 | }
+000071 | #[derive(Debug, Clone, Serialize)]
+000072 | pub struct MigrationReadiness {
+000073 |     pub ready: bool,
+000074 |     pub blockers: Vec<MigrationBlocker>,
+000075 |     pub keychain: KeychainMetadataProbe,
+000076 | }
+000077 | #[derive(Debug, Clone)]
+000078 | pub struct MigrationPreview {
+000079 |     pub readiness: MigrationReadiness,
+000080 |     pub accounts: AccountStatus,
+000081 | }
+000082 | #[derive(Debug)]
+000083 | pub enum MigrationError {
+000084 |     Blocked(MigrationReadiness),
+000085 |     Invalid(&'static str),
+000086 |     Operation(&'static str),
+000087 | }
+000088 | impl std::fmt::Display for MigrationError {
+000089 |     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+000090 |         match self {
+000091 |             Self::Blocked(readiness) => write!(
+000092 |                 formatter,
+000093 |                 "迁移等待：{}",
+000094 |                 readiness
+000095 |                     .blockers
+000096 |                     .iter()
+000097 |                     .map(|item| item.message.as_str())
+000098 |                     .collect::<Vec<_>>()
+000099 |                     .join("；")
+000100 |             ),
+000101 |             Self::Invalid(message) | Self::Operation(message) => formatter.write_str(message),
+000102 |         }
+000103 |     }
+000104 | }
+000105 | impl std::error::Error for MigrationError {}
+000106 | 
+000107 | type Result<T> = std::result::Result<T, MigrationError>;
+000108 | trait Environment: Send + Sync {
+000109 |     fn quit(&self, owner: u32) -> io::Result<()>;
+000110 |     fn stopped(&self, owner: u32) -> io::Result<()>;
+000111 | }
+000112 | struct NativeEnvironment;
+000113 | impl Environment for NativeEnvironment {
+000114 |     fn quit(&self, owner: u32) -> io::Result<()> {
+000115 |         quit_claude(owner)
+000116 |     }
+000117 |     fn stopped(&self, owner: u32) -> io::Result<()> {
+000118 |         ensure_claude_stopped(owner)
+000119 |     }
+000120 | }
+000121 | pub struct MigrationCoordinator {
+000122 |     root: PathBuf,
+000123 |     active: PathBuf,
+000124 |     owner: u32,
+000125 |     environment: Box<dyn Environment>,
+000126 | }
+000127 | impl MigrationCoordinator {
+000128 |     pub fn for_current_user(edition: Edition) -> Result<Self> {
+000129 |         let owner = unsafe { libc::geteuid() };
+000130 |         let home =
+000131 |             account_home(owner).map_err(|_| MigrationError::Invalid("无法读取系统用户目录"))?;
+000132 |         Self::new(
+000133 |             &home.join(".claude-switcher"),
+000134 |             &home.join("Library/Application Support/Claude"),
+000135 |             owner,
+000136 |             edition,
+000137 |         )
+000138 |     }
+000139 |     pub fn new(root: &Path, active: &Path, owner: u32, _edition: Edition) -> Result<Self> {
+000140 |         let home =
+000141 |             account_home(owner).map_err(|_| MigrationError::Invalid("无法读取系统用户目录"))?;
+000142 |         if owner != unsafe { libc::geteuid() }
+000143 |             || root != home.join(".claude-switcher")
+000144 |             || active != home.join("Library/Application Support/Claude")
+000145 |         {
+000146 |             return Err(MigrationError::Invalid("账号操作只接受当前用户的固定目录"));
+000147 |         }
+000148 |         Ok(Self {
+000149 |             root: root.into(),
+000150 |             active: active.into(),
+000151 |             owner,
+000152 |             environment: Box::new(NativeEnvironment),
+000153 |         })
+000154 |     }
+000155 |     pub fn readiness(&self) -> Result<MigrationReadiness> {
+000156 |         Ok(MigrationReadiness {
+000157 |             ready: true,
+000158 |             blockers: vec![],
+000159 |             keychain: KeychainMetadataProbe::run(),
+000160 |         })
+000161 |     }
+000162 |     pub fn readiness_for(&self, _intent: MigrationIntent) -> Result<MigrationReadiness> {
+000163 |         self.readiness()
+000164 |     }
+000165 |     pub fn preview(&self) -> Result<MigrationPreview> {
+000166 |         let accounts = AccountStore::inspect(&self.root, &self.active, self.owner)
+000167 |             .map_err(|_| MigrationError::Operation("账号状态无法读取"))?;
+000168 |         Ok(MigrationPreview {
+000169 |             readiness: self.readiness()?,
+000170 |             accounts,
+000171 |         })
+000172 |     }
+000173 |     fn store(&self) -> Result<AccountStore> {
+000174 |         if !self.root.exists() {
+000175 |             storage::create_private_directory(&self.root)
+000176 |                 .map_err(|_| MigrationError::Operation("无法创建账号目录"))?;
+000177 |         }
+000178 |         if !self.active.exists() {
+000179 |             storage::create_private_directory(&self.active)
+000180 |                 .map_err(|_| MigrationError::Operation("无法创建 Claude 资料目录"))?;
+000181 |         }
+000182 |         AccountStore::new(&self.root, &self.active, self.owner)
+000183 |             .map_err(|_| MigrationError::Operation("账号目录校验失败"))
+000184 |     }
+000185 |     fn select(&self, target: AccountId) -> Result<()> {
+000186 |         // The legacy command simply opens Claude when this account is already selected.
+000187 |         if self.root.join("current").exists() {
+000188 |             let status = AccountStore::inspect(&self.root, &self.active, self.owner)
+000189 |                 .map_err(|_| MigrationError::Operation("账号状态无法读取"))?;
+000190 |             if status.current == Some(target) && !status.recovery_pending {
+000191 |                 return Ok(());
+000192 |             }
+000193 |         }
+000194 |         // A running application gets the same graceful quit request as the original switcher.
+000195 |         self.environment
+000196 |             .quit(self.owner)
+000197 |             .map_err(|_| MigrationError::Operation("Claude 未能退出，请手动退出后重试"))?;
+000198 |         let store = self.store()?;
+000199 |         let lock = LifecycleLock::try_acquire(&store.lifecycle_directory())
+000200 |             .map_err(|_| MigrationError::Operation("其他账号操作正在进行"))?;
+000201 |         self.recover_in_place(&store, &lock)?;
+000202 |         store
+000203 |             .select_legacy_checked(target, &lock, &|| self.environment.stopped(self.owner))
+000204 |             .map_err(|_| MigrationError::Operation("账号事务未完成；资料已保留，请重试或恢复"))
+000205 |     }
+000206 |     pub fn initialize_a(&self) -> Result<()> {
+000207 |         self.select(AccountId::A)
+000208 |     }
+000209 |     pub fn associate_a(&self) -> Result<()> {
+000210 |         self.select(AccountId::A)
+000211 |     }
+000212 |     pub fn select_a(&self) -> Result<()> {
+000213 |         self.select(AccountId::A)
+000214 |     }
+000215 |     pub fn select_b(&self) -> Result<()> {
+000216 |         self.select(AccountId::B)
+000217 |     }
+000218 |     pub fn recover(&self) -> Result<()> {
+000219 |         self.environment
+000220 |             .quit(self.owner)
+000221 |             .map_err(|_| MigrationError::Operation("Claude 未能退出"))?;
+000222 |         let store = self.store()?;
+000223 |         let lock = LifecycleLock::try_acquire(&store.lifecycle_directory())
+000224 |             .map_err(|_| MigrationError::Operation("其他账号操作正在进行"))?;
+000225 |         self.recover_in_place(&store, &lock)?;
+000226 |         store
+000227 |             .recover_legacy_checked(&lock, &|| self.environment.stopped(self.owner))
+000228 |             .map_err(|_| MigrationError::Operation("事务资料核对失败，已保留全部资料"))
+000229 |     }
+000230 |     fn recover_in_place(&self, store: &AccountStore, lock: &LifecycleLock) -> Result<()> {
+000231 |         let path = self.root.join("v2/migration/in-place-journal.json");
+000232 |         #[derive(Deserialize)]
+000233 |         struct PreviousJournal {
+000234 |             intent: MigrationIntent,
+000235 |             initialization_copy: Option<InitializationCopy>,
+000236 |         }
+000237 |         let journal: PreviousJournal = match storage::read_json(&path) {
+000238 |             Ok(journal) => journal,
+000239 |             Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+000240 |             Err(_) => {
+000241 |                 return Err(MigrationError::Operation(
+000242 |                     "旧账号事务记录无法读取，已保留资料",
+000243 |                 ));
+000244 |             }
+000245 |         };
+000246 |         if !matches!(
+000247 |             journal.intent,
+000248 |             MigrationIntent::InitializeA | MigrationIntent::AssociateA
+000249 |         ) {
+000250 |             return Err(MigrationError::Operation("旧账号事务类型不明，已保留资料"));
+000251 |         }
+000252 |         if let Some(copy) = journal.initialization_copy {
+000253 |             store
+000254 |                 .finish_initialization(
+000255 |                     lock,
+000256 |                     &copy,
+000257 |                     &|| self.environment.stopped(self.owner),
+000258 |                     &mut |_| Ok(()),
+000259 |                 )
+000260 |                 .map_err(|_| MigrationError::Operation("旧账号 A 存档事务恢复失败，已保留资料"))?;
+000261 |         }
+000262 |         // In-place journals never exchange the live directory. Retire the old permit after copy completion.
+000263 |         fs::remove_file(&path).map_err(|_| MigrationError::Operation("旧事务记录无法收尾"))?;
+000264 |         storage::sync_directory(path.parent().unwrap())
+000265 |             .map_err(|_| MigrationError::Operation("旧事务记录无法同步"))
+000266 |     }
+000267 |     pub fn create_verified_backup(&self) -> Result<()> {
+000268 |         Err(MigrationError::Invalid(
+000269 |             "旧版账号切换会自动存档，无需迁移备份或隔离恢复步骤",
+000270 |         ))
+000271 |     }
+000272 | }
+000273 | pub(crate) fn account_home(owner: u32) -> io::Result<PathBuf> {
+000274 |     let mut record = std::mem::MaybeUninit::<libc::passwd>::uninit();
+000275 |     let mut result = std::ptr::null_mut();
+000276 |     let mut buffer = vec![0u8; 65536];
+000277 |     let status = unsafe {
+000278 |         libc::getpwuid_r(
+000279 |             owner,
+000280 |             record.as_mut_ptr(),
+000281 |             buffer.as_mut_ptr().cast(),
+000282 |             buffer.len(),
+000283 |             &mut result,
+000284 |         )
+000285 |     };
+000286 |     if status != 0 || result.is_null() {
+000287 |         return Err(io::Error::other("system home lookup failed"));
+000288 |     }
+000289 |     let record = unsafe { record.assume_init() };
+000290 |     if record.pw_dir.is_null() {
+000291 |         return Err(io::Error::other("system home missing"));
+000292 |     }
+000293 |     use std::os::unix::ffi::OsStrExt;
+000294 |     let home = PathBuf::from(std::ffi::OsStr::from_bytes(
+000295 |         unsafe { std::ffi::CStr::from_ptr(record.pw_dir) }.to_bytes(),
+000296 |     ));
+000297 |     storage::validate_no_symlinks(&home)?;
+000298 |     Ok(home)
+000299 | }
+000300 | 
+000301 | #[cfg(all(test, target_os = "macos"))]
+000302 | mod tests {
+000303 |     use super::*;
+000304 |     use std::sync::{
+000305 |         Arc,
+000306 |         atomic::{AtomicUsize, Ordering},
+000307 |     };
+000308 |     static NEXT: AtomicUsize = AtomicUsize::new(0);
+000309 |     struct Synthetic {
+000310 |         quit_calls: Arc<AtomicUsize>,
+000311 |         running: bool,
+000312 |     }
+000313 |     impl Environment for Synthetic {
+000314 |         fn quit(&self, _: u32) -> io::Result<()> {
+000315 |             self.quit_calls.fetch_add(1, Ordering::SeqCst);
+000316 |             if self.running {
+000317 |                 Err(io::Error::other("synthetic quit timeout"))
+000318 |             } else {
+000319 |                 Ok(())
+000320 |             }
+000321 |         }
+000322 |         fn stopped(&self, _: u32) -> io::Result<()> {
+000323 |             Ok(())
+000324 |         }
+000325 |     }
+000326 |     struct Fixture {
+000327 |         base: PathBuf,
+000328 |         coordinator: MigrationCoordinator,
+000329 |         calls: Arc<AtomicUsize>,
+000330 |     }
+000331 |     impl Fixture {
+000332 |         fn new(running: bool) -> Self {
+000333 |             let base = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000334 |                 "legacy-coordinator-{}-{}",
+000335 |                 std::process::id(),
+000336 |                 NEXT.fetch_add(1, Ordering::Relaxed)
+000337 |             ));
+000338 |             storage::create_private_directory(&base).unwrap();
+000339 |             let root = base.join("switcher");
+000340 |             let active = base.join("Claude");
+000341 |             storage::create_private_directory(&active).unwrap();
+000342 |             storage::atomic_write(&active.join("session"), b"A-live").unwrap();
+000343 |             let calls = Arc::new(AtomicUsize::new(0));
+000344 |             let coordinator = MigrationCoordinator {
+000345 |                 root,
+000346 |                 active,
+000347 |                 owner: unsafe { libc::geteuid() },
+000348 |                 environment: Box::new(Synthetic {
+000349 |                     quit_calls: calls.clone(),
+000350 |                     running,
+000351 |                 }),
+000352 |             };
+000353 |             Self {
+000354 |                 base,
+000355 |                 coordinator,
+000356 |                 calls,
+000357 |             }
+000358 |         }
+000359 |     }
+000360 |     impl Drop for Fixture {
+000361 |         fn drop(&mut self) {
+000362 |             let _ = fs::remove_dir_all(&self.base);
+000363 |         }
+000364 |     }
+000365 |     #[test]
+000366 |     fn first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data() {
+000367 |         let fixture = Fixture::new(false);
+000368 |         let c = &fixture.coordinator;
+000369 |         assert!(c.readiness().unwrap().ready);
+000370 |         assert_eq!(fixture.calls.load(Ordering::SeqCst), 0);
+000371 |         c.select_b().unwrap();
+000372 |         assert_eq!(
+000373 |             fs::read(c.root.join("accounts/A/session")).unwrap(),
+000374 |             b"A-live"
+000375 |         );
+000376 |         assert_eq!(fs::read_dir(&c.active).unwrap().count(), 0);
+000377 |         assert_eq!(fs::read(c.root.join("current")).unwrap(), b"B\n");
+000378 |         storage::atomic_write(&c.active.join("session"), b"B-new-login").unwrap();
+000379 |         c.select_a().unwrap();
+000380 |         assert_eq!(fs::read(c.active.join("session")).unwrap(), b"A-live");
+000381 |         c.select_b().unwrap();
+000382 |         assert_eq!(fs::read(c.active.join("session")).unwrap(), b"B-new-login");
+000383 |         assert_eq!(fixture.calls.load(Ordering::SeqCst), 3);
+000384 |         assert!(!c.root.join("v2/migration").exists());
+000385 |         assert!(c.create_verified_backup().is_err());
+000386 |     }
+000387 |     #[test]
+000388 |     fn old_current_wins_and_replaced_live_directory_is_rebound_without_migration() {
+000389 |         let fixture = Fixture::new(false);
+000390 |         let c = &fixture.coordinator;
+000391 |         c.select_a().unwrap();
+000392 |         fs::rename(&c.active, fixture.base.join("old-live")).unwrap();
+000393 |         storage::create_private_directory(&c.active).unwrap();
+000394 |         storage::atomic_write(&c.active.join("session"), b"B-legacy-live").unwrap();
+000395 |         storage::atomic_write(&c.root.join("current"), b"B\n").unwrap();
+000396 |         assert_eq!(c.preview().unwrap().accounts.current, Some(AccountId::B));
+000397 |         c.select_a().unwrap();
+000398 |         assert_eq!(fs::read(c.active.join("session")).unwrap(), b"A-live");
+000399 |         assert_eq!(
+000400 |             fs::read(c.root.join("accounts/B/session")).unwrap(),
+000401 |             b"B-legacy-live"
+000402 |         );
+000403 |     }
+000404 |     #[test]
+000405 |     fn previous_in_place_journal_recovers_copy_without_version_keychain_or_backup() {
+000406 |         let fixture = Fixture::new(false);
+000407 |         let c = &fixture.coordinator;
+000408 |         let store = c.store().unwrap();
+000409 |         let control = c.root.join("v2/migration");
+000410 |         storage::create_private_directory(&control).unwrap();
+000411 |         {
+000412 |             let lock = LifecycleLock::try_acquire(&store.lifecycle_directory()).unwrap();
+000413 |             store.initialize_with_copy(&lock, &|| Ok(()), &mut |copy| {
+000414 |                 storage::atomic_json(&control.join("in-place-journal.json"), &serde_json::json!({
+000415 |                     "intent": "InitializeA", "initialization_copy": copy,
+000416 |                     "installation": "old-unavailable-install", "application": "old-version", "metadata": "old-keychain-hash"
+000417 |                 }))
+000418 |             }, &mut |phase| {
+000419 |                 if phase == "archive_renamed" { Err(io::Error::other("synthetic crash")) } else { Ok(()) }
+000420 |             }).unwrap_err();
+000421 |         }
+000422 |         c.select_b().unwrap();
+000423 |         assert!(!control.join("in-place-journal.json").exists());
+000424 |         assert_eq!(
+000425 |             fs::read(c.root.join("accounts/A/session")).unwrap(),
+000426 |             b"A-live"
+000427 |         );
+000428 |         assert_eq!(fs::read_dir(&c.active).unwrap().count(), 0);
+000429 |     }
+000430 | 
+000431 |     #[test]
+000432 |     fn missing_current_uses_existing_v2_account_selection() {
+000433 |         let fixture = Fixture::new(false);
+000434 |         let c = &fixture.coordinator;
+000435 |         c.select_b().unwrap();
+000436 |         fs::remove_file(c.root.join("current")).unwrap();
+000437 |         storage::atomic_write(&c.active.join("session"), b"B-latest").unwrap();
+000438 |         assert_eq!(c.preview().unwrap().accounts.current, Some(AccountId::B));
+000439 |         c.select_a().unwrap();
+000440 |         assert_eq!(
+000441 |             fs::read(c.root.join("accounts/B/session")).unwrap(),
+000442 |             b"B-latest"
+000443 |         );
+000444 |     }
+000445 | 
+000446 |     #[test]
+000447 |     fn selecting_current_account_does_not_quit_or_rewrite_live_data() {
+000448 |         let fixture = Fixture::new(false);
+000449 |         let c = &fixture.coordinator;
+000450 |         c.select_a().unwrap();
+000451 |         storage::atomic_write(&c.active.join("session"), b"A-new-live").unwrap();
+000452 |         c.select_a().unwrap();
+000453 |         assert_eq!(fixture.calls.load(Ordering::SeqCst), 1);
+000454 |         assert_eq!(fs::read(c.active.join("session")).unwrap(), b"A-new-live");
+000455 |     }
+000456 |     #[test]
+000457 |     fn failed_quit_never_creates_store_or_changes_active_data() {
+000458 |         let fixture = Fixture::new(true);
+000459 |         assert!(fixture.coordinator.select_b().is_err());
+000460 |         assert!(!fixture.coordinator.root.exists());
+000461 |         assert_eq!(
+000462 |             fs::read(fixture.coordinator.active.join("session")).unwrap(),
+000463 |             b"A-live"
+000464 |         );
+000465 |     }
+000466 |     #[test]
+000467 |     fn first_a_archives_without_requiring_existing_v2_or_backup() {
+000468 |         let fixture = Fixture::new(false);
+000469 |         fixture.coordinator.select_a().unwrap();
+000470 |         assert_eq!(
+000471 |             fs::read(fixture.coordinator.root.join("accounts/A/session")).unwrap(),
+000472 |             b"A-live"
+000473 |         );
+000474 |         assert_eq!(
+000475 |             fs::read(fixture.coordinator.active.join("session")).unwrap(),
+000476 |             b"A-live"
+000477 |         );
+000478 |     }
+000479 | }
+END_FILE_RANGE: current/crates/switcher-core/src/migration.rs 1-479
+
+END_G1-P09_6b57fbf0c5b238d2

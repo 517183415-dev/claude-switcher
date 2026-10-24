@@ -1,0 +1,105 @@
+{
+  "plan": {
+    "schema_version": 1,
+    "operation": "install",
+    "edition": "personal",
+    "owner_uid": 501,
+    "version": "0.2.0",
+    "payload": {
+      "app": {
+        "source": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app",
+        "sha256": "a94f05d5308c391f1356d987e5e2a9ed6e1cfdabaa4d0a1946efab4a87ad1c7f",
+        "cdhash": "b41d7f8a98a77d26a64b71a7179bf222e59c63f6"
+      },
+      "helper": {
+        "source": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper",
+        "sha256": "1d44ac60dd1d3ecac06caf80d6b6791c8b8dc87e9ddc100ea1b640002615b39e",
+        "cdhash": "14b6c13bd863734f1a0692320177d295d1525d04"
+      },
+      "guardian": {
+        "source": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian",
+        "sha256": "8800a4641dee355b8634531859feb3d69b9d9e9b0c07b1d88b9ca99d3ce99672",
+        "cdhash": "75605c7df6c4a3a41dc9b416976c4e3d99c03f97"
+      }
+    },
+    "templates": {
+      "local.claudeswitcher.helper.plist": "4efa44a047cbfd1664301c01de61c78c39bf730b1fab681995e2f9221c5f500f",
+      "local.claudeswitcher.guardian.plist": "995b0c77c1750fe4b4b8ddb9b5a0699a1252dffbbbb58b3ad0d29d28bf588cf2"
+    },
+    "destinations": [
+      "/Applications/Claude 切换器 Personal.app",
+      "/Library/PrivilegedHelperTools/local.claudeswitcher.helper",
+      "/Library/Application Support/claude-switcher/switcher-guardian",
+      "/Library/LaunchDaemons/local.claudeswitcher.helper.plist",
+      "/Library/LaunchAgents/local.claudeswitcher.guardian.plist",
+      "/Library/Application Support/claude-switcher/install.json"
+    ],
+    "previous": {
+      "app": {
+        "sha256": "16f2464060b604ac2be5f4116b0e64d9639c56e197541875a4f8c91278670e8e",
+        "uid": 0,
+        "gid": 80,
+        "mode": 493,
+        "cdhash": "fea4248a6bfca1b9bddcadb192c0421a68042a1b"
+      },
+      "helper": {
+        "sha256": "16b1a6b0fbff61ebd0ba7ed89decdbf377e86cb62b90620d67aec401fc4e3d80",
+        "uid": 0,
+        "gid": 0,
+        "mode": 493,
+        "cdhash": "9730958495f11d9a8f46ce56d4232db65804319d"
+      },
+      "guardian": {
+        "sha256": "c3a73b8b80c14714e8c257d88bbf85d89d805d356d2248fa286363059c20730e",
+        "uid": 0,
+        "gid": 80,
+        "mode": 493,
+        "cdhash": "e0867af35e1dadc86e094ba860eb0a83b6735f91"
+      },
+      "daemon": {
+        "sha256": "8b6fdf4fedb07f1383b6cf14f67322809eb9db8863ba7d480be209496f3454cd",
+        "uid": 0,
+        "gid": 0,
+        "mode": 420
+      },
+      "agent": {
+        "sha256": "6043cd41d6205562e69d217802b8b394729effec4705e9fe4bc2c5359486cdec",
+        "uid": 0,
+        "gid": 0,
+        "mode": 420
+      },
+      "record": {
+        "sha256": "46d89494f18fa0bd8da83d722bd03566f5182606065d011031018bf661f70dac",
+        "uid": 0,
+        "gid": 80,
+        "mode": 420
+      }
+    },
+    "legacy": [],
+    "timezone_target": "America/Los_Angeles",
+    "proxy_mode": "auto",
+    "cli_entry": {
+      "sha256": "44460c0ae40f13ae558c9430ab3dffd63dd014249a5b1726a46b0b6304a4c00d",
+      "mode": 493,
+      "literals": {
+        "PROXY_MODE": "auto",
+        "PROXY_GROUP": "",
+        "COUNTRY_TARGET": "US",
+        "TZ_TARGET": "America/Los_Angeles",
+        "LOCALE_TARGET": "en_US"
+      },
+      "install_literals": {
+        "PROXY_MODE": "auto",
+        "PROXY_GROUP": "",
+        "COUNTRY_TARGET": "US",
+        "TZ_TARGET": "America/Los_Angeles",
+        "LOCALE_TARGET": "en_US"
+      }
+    }
+  },
+  "digest": "4b55fd8367468be1109a55d99c8c5b1b863494817bfca05084f98b3658073e9e",
+  "notes": [
+    "Legacy rollback restores scheduling; RunAtLoad may immediately start its original task."
+  ],
+  "legacy_running_observations": {}
+}

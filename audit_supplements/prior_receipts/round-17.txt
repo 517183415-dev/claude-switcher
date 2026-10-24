@@ -1,0 +1,109 @@
+Gemini 说
+依据题目要求及当前位置（2026年）， 本轮独立审核逻辑组4的附件 
+G4-P17
+ 至 
+G4-P19
+。 随着本轮附件的完成， 全部 17 轮审核材料已全部接收完毕。 现按规范提取本轮附件的覆盖状态， 并记录相关的核心代码与证据取证。
+一、 第 17/17 轮附件读取覆盖核对表与额外要求核对
+本轮 3 份附件（
+G4-P17
+ ～ 
+G4-P19
+）均已 完整读取 ，无截断、无缺失
+。
+附件 ID
+完整/截断
+FILE 条目总数
+最后三个 FILE 原路径及其 ORIGINAL_LINES 范围
+附件末尾独立读出的 END 标记
+G4-P17.txt
+完整
+11
+9.  evidence/first-a-in-place/red.log  (1-34)
+10.  evidence/first-a-in-place/source-before.json  (1-203)
+11.  evidence/first-a-in-place/verification-manifest.json  (1-65)
+END_G4-P17_dbbf96d92b0541bd
+G4-P18.txt
+完整
+1
+1.  evidence/restoration-tracker.json  (1-876)
+END_G4-P18_65aed76cf15f5611
+G4-P19.txt
+完整
+1
+1.  evidence/source-before.json  (1-64)
+END_G4-P19_b1c95a3c16132c84
+二、 本轮与最初目标相关的暂定取证发现
+围绕用户最初目标（ 保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为 ）， 本轮对“首个 A 账号原位建档补丁”、 恢复跟踪器（
+restoration-tracker.json
+）及源码状态的前后对比进行了核心取证：
+首个 A 账号原位建档与恢复逻辑（
+legacy.rs
+ 变更与 
+change.diff
+） ：
+证据位置 ：
+evidence/first-a-in-place/change.diff
+ 行 
+000007
+–
+000009
+、
+000030
+–
+000034
+；
+evidence/first-a-in-place/green.log
+ 行 
+000015
+–
+000030
+。
+取证发现 ：
+引入了 
+in_place
+ 标志位，当目标账号与当前账号一致（
+target == current
+，即首次 A 账号 adoption 或同账号存档修复）时，保留活动目录（active directory）的原位，不替换活动资料目录inode，完美对齐旧版原位建档行为
+。
+相关的 13 项针对性隔离单元测试全部通过（
+test result: ok. 13 passed; 0 failed
+）
+。
+恢复状态跟踪总表（
+restoration-tracker.json
+） ：
+证据位置 ：
+evidence/restoration-tracker.json
+ 行 
+000004
+–
+000015
+、
+000777
+–
+000784
+。
+取证发现 ：
+对项目恢复的 71 项历史行为（含代理自动打开、14项安检、账号隔离、守护进程、安装器及 CLI 兼容）进行了系统性状态跟进
+。
+明确确认  SourceLocal 自动更新保持禁用状态 （
+"status": "retained"
+），严格符合用户关于“本地版本不自动更新”的基准要求
+。
+前后源码指纹比对（
+source-before.json
+ 与 
+source-frozen-final.json
+） ：
+证据位置 ：
+evidence/source-before.json
+ 行 
+000001
+–
+000010
+。
+取证发现 ：所有核心 Rust 模块、脚本及配置文件的 SHA256 均已在最终阶段冻结记录，确保重构过程中的所有变更完全可审计、可复现
+。
+三、 总结与下一步
+至此， 全部 17 轮逻辑组（含 G1 至 G4 各组文件及终审证据集）已全数完整审核完毕。 所有已读结论与待补证记录均已妥善保留， 项目开发保持暂停状态， 待高级模型恢复后将基于上述全部取证输出最终的五部分总报告。

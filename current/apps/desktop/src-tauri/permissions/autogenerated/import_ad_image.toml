@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-import-ad-image"
+description = "Enables the import_ad_image command without any pre-configured scope."
+commands.allow = ["import_ad_image"]
+
+[[permission]]
+identifier = "deny-import-ad-image"
+description = "Denies the import_ad_image command without any pre-configured scope."
+commands.deny = ["import_ad_image"]

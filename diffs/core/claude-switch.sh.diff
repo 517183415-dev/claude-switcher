@@ -1,0 +1,297 @@
+--- original_HEAD/core/claude-switch.sh
++++ current/core/claude-switch.sh
+@@ -202,7 +202,7 @@
+         sing-box)     pgrep -f sing-box >/dev/null 2>&1 ;;
+         clashx)       pgrep -x ClashX >/dev/null 2>&1 || pgrep -f clash >/dev/null 2>&1 ;;
+         surge)        pgrep -f Surge >/dev/null 2>&1 ;;
+-        auto)         pgrep -f verge-mihomo >/dev/null 2>&1 || shadowrocket_up \
++        auto)         pgrep -f verge-mihomo >/dev/null 2>&1 || pgrep -x 0dcloudCore >/dev/null 2>&1 || shadowrocket_up \
+                       || pgrep -f sing-box >/dev/null 2>&1 \
+                       || pgrep -x ClashX >/dev/null 2>&1 || pgrep -f clash >/dev/null 2>&1 \
+                       || pgrep -f Surge >/dev/null 2>&1 ;;
+@@ -238,6 +238,48 @@
+     esac
+ }
+ 
++# 国家与时区优先从 ipinfo 获取;遇到限流或无效响应时回退到 ipwho.is。
++lookup_geo() {
++    local url payload fields
++    for url in https://ipinfo.io/json https://ipwho.is/ https://api.ip.sb/geoip; do
++        payload=$(curl -fsS --max-time 8 "$url" 2>/dev/null) || continue
++        fields=$(printf '%s' "$payload" | python3 -c '
++import json, sys
++import ipaddress
++try:
++    data = json.load(sys.stdin)
++    country = data.get("country_code") or data.get("country") or ""
++    zone = data.get("timezone") or ""
++    if isinstance(zone, dict):
++        zone = zone.get("id", "")
++    address = data.get("ip") or ""
++    ipaddress.ip_address(address)
++    if len(country) == 2 and zone:
++        print(country + "\t" + zone + "\t" + address)
++except Exception:
++    pass
++' 2>/dev/null)
++        if [ -n "$fields" ]; then printf '%s\n' "$fields"; return 0; fi
++    done
++    return 1
++}
++
++# Cloudflare trace 优先;不可达时用已校验的地理服务结果提供出口 IP 与国家。
++lookup_egress() {
++    local trace address country geo zone
++    trace=$(curl -fsS --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null) || trace=""
++    address=$(printf '%s\n' "$trace" | sed -n 's/^ip=//p' | head -1)
++    country=$(printf '%s\n' "$trace" | sed -n 's/^loc=//p' | head -1)
++    if [ -n "$address" ] && [[ "$country" =~ ^[A-Z]{2}$ ]]; then
++        printf '%s\t%s\n' "$address" "$country"
++        return 0
++    fi
++    geo=$(lookup_geo) || return 1
++    IFS=$'\t' read -r country zone address <<< "$geo"
++    [ -n "$address" ] && [[ "$country" =~ ^[A-Z]{2}$ ]] || return 1
++    printf '%s\t%s\n' "$address" "$country"
++}
++
+ # IP 审查:记录出口IP并统计最近48h内不同IP个数(账号画像风险指标)
+ iphist_count() {
+     [ -z "$1" ] && { echo 0; return; }
+@@ -257,9 +299,8 @@
+     proxy_alive || fails="$fails;代理内核未运行"
+     tun_up || fails="$fails;TUN网卡不在线"
+ 
+-    trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+-    ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
+-    loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
++    egress=$(lookup_egress) || egress=""
++    IFS=$'\t' read -r ip loc <<< "$egress"
+     [ "$loc" = "$COUNTRY_TARGET" ] || fails="$fails;出口IP异常(${ip:-无}/${loc:-未知},期望$COUNTRY_TARGET)"
+     ipwarn=""
+     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
+@@ -345,13 +386,12 @@
+         echo "代理内核=fail:$(proxy_name) 未运行"
+     fi
+     if tun_up; then echo 'TUN网卡=ok'; else echo 'TUN网卡=fail:不在线'; fi
+-    trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+-    ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
+-    loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
++    egress=$(lookup_egress) || egress=""
++    IFS=$'\t' read -r ip loc <<< "$egress"
+     if [ "$loc" = "$COUNTRY_TARGET" ]; then echo "出口IP=ok:$ip/$loc"; else echo "出口IP=fail:${ip:-无}/${loc:-未知}(期望$COUNTRY_TARGET)"; fi
+     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
+     ipst=""; ipdt=""
+-    if [ -z "$ip" ]; then echo 'IP一致=fail:未获取到出口IP'
++    if [ -z "$ip" ]; then ipst="fail"; ipdt="未获取到出口IP"
+     elif [ -z "$lastip" ]; then ipst="ok"; ipdt="首次记录"
+     elif [ "$ip" = "$lastip" ]; then ipst="ok"
+     else ipst="warn"; ipdt="$lastip → $ip"; fi
+@@ -392,8 +432,7 @@
+         *) echo 'WebRTC=fail:检测异常' ;;
+     esac
+     if launchctl print system/local.claude-bodyguard >/dev/null 2>&1; then
+-        lastkill=$(tail -1 "$HOME/Library/Logs/claude-bodyguard.log" 2>/dev/null | cut -c1-40)
+-        echo "保镖=ok:${lastkill:-待命}"
++        echo '保镖=ok:守护进程运行中'
+     else
+         echo '保镖=fail:未安装'
+     fi
+@@ -444,6 +483,58 @@
+     else
+         echo "生态可达性=fail:claude.ai:$r1 api:$r2"
+     fi
++}
++
++# 检查输出必须含 14 个唯一项目。warn 项允许继续，缺项和未知状态一律阻断。
++validate_audit_output() {
++    local output="$1" total key row state line prefix found problems="" expected=14
++    local -a keys=("代理内核" "TUN网卡" "出口IP" "IP一致" "时区" "地区" "IPv6" "DNS" \
++        "WebRTC" "保镖" "规则置顶" "客户端语言" "ASN属性" "生态可达性")
++    total=0
++    while IFS= read -r line; do
++        [ -z "$line" ] && continue
++        [[ "$line" == \#* ]] && continue
++        total=$((total + 1))
++    done <<< "$output"
++    [ "$total" -eq "$expected" ] || problems="审计行数异常($total/$expected)"
++    for key in "${keys[@]}"; do
++        row=""; found=0
++        while IFS= read -r line; do
++            [ -z "$line" ] && continue
++            [[ "$line" == \#* ]] && continue
++            prefix=${line%%=*}
++            if [ "$prefix" = "$key" ]; then row="$line"; found=$((found + 1)); fi
++        done <<< "$output"
++        if [ "$found" -ne 1 ]; then
++            problems="${problems:+$problems; }缺少或重复检查项:$key"
++            continue
++        fi
++        state=${row#*=}
++        state=${state%%:*}
++        case "$state" in
++            ok) ;;
++            warn)
++                case "$key" in
++                    IP一致|ASN属性) ;;
++                    *) problems="${problems:+$problems; }不允许的警告:$key" ;;
++                esac ;;
++            *) problems="${problems:+$problems; }$key=${state:-未知状态}" ;;
++        esac
++    done
++    AUDIT_ERRORS="$problems"
++    [ -z "$problems" ]
++}
++
++# Claude 启动前必须收到完整的 14 项审计结果。
++launch_preflight() {
++    local output
++    output=$(checkdetail 2>&1)
++    printf '%s\n' "$output"
++    if ! validate_audit_output "$output"; then
++        echo "FAIL:启动被阻止，环境审计未通过：$AUDIT_ERRORS"
++        return 1
++    fi
++    echo "OK:14项环境审计通过"
+ }
+ 
+ # 置顶规则写入(智能合并):不整文件覆盖,用户已有的 Merge 配置原样保留
+@@ -591,6 +682,18 @@
+         fi
+     fi
+ 
++    # 禁止在隧道或目标地区未确认时改动系统时区、IPv6 或守护服务。
++    if ! proxy_alive || ! tun_up; then
++        echo "FIX:已停止；代理内核与 TUN 必须同时在线后才会修改系统设置"
++        return 1
++    fi
++    egress=$(lookup_egress) || egress=""
++    IFS=$'\t' read -r ip loc <<< "$egress"
++    if [ -z "$ip" ] || [ "$loc" != "$COUNTRY_TARGET" ]; then
++        echo "FIX:已停止；出口国家未确认($loc)，目标为$COUNTRY_TARGET"
++        return 1
++    fi
++
+     # B. 时区/IPv6/DNS缓存/保镖(需管理员权限,会弹一次密码框)
+     tz=$(readlink /etc/localtime 2>/dev/null)
+     v6=$(networksetup -getinfo Wi-Fi 2>/dev/null | grep -i '^IPv6:')
+@@ -652,9 +755,8 @@
+ 
+     # C. 出口IP最终验证
+     sleep 2
+-    trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+-    ip=$(echo "$trace" | grep '^ip=' | cut -d= -f2)
+-    loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
++    egress=$(lookup_egress) || egress=""
++    IFS=$'\t' read -r ip loc <<< "$egress"
+     if [ "$loc" = "$COUNTRY_TARGET" ]; then
+         echo "FIX:出口IP ✓ ($ip/$loc)"
+     else
+@@ -665,17 +767,12 @@
+ 
+ # 地区自适应:按当前出口国家一键重设 国家/时区/地区格式(换了国家节点后运行)
+ set_region() {
+-    trace=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+-    loc=$(echo "$trace" | grep '^loc=' | cut -d= -f2)
+-    [ -z "$loc" ] && { echo "FAIL:无法获取出口国家(cloudflare trace 无结果,请先挂代理)"; return 1; }
+-    info=$(curl -s --max-time 8 https://ipinfo.io/json 2>/dev/null)
+-    ctry=$(echo "$info" | grep '"country"' | cut -d'"' -f4)
+-    ntz=$(echo "$info" | grep '"timezone"' | cut -d'"' -f4)
+-    if [ -z "$ctry" ] || [ -z "$ntz" ]; then
+-        echo "FAIL:ipinfo 未返回国家或时区"; return 1
+-    fi
+-    if [ "$loc" != "$ctry" ]; then
+-        echo "FAIL:出口国家不一致(cloudflare=$loc ipinfo=$ctry),已中止"; return 1
++    trace=$(curl -fsS --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null) || trace=""
++    loc=$(printf '%s\n' "$trace" | sed -n 's/^loc=//p' | head -1)
++    geo=$(lookup_geo) || { echo "FAIL:地区服务未返回国家或时区"; return 1; }
++    IFS=$'\t' read -r ctry ntz geoip <<< "$geo"
++    if [ -n "$loc" ] && [ "$loc" != "$ctry" ]; then
++        echo "FAIL:出口国家不一致(cloudflare=$loc 地理服务=$ctry),已中止"; return 1
+     fi
+     nlocale=$(locale_for "$ctry")
+ 
+@@ -727,7 +824,7 @@
+     fi
+ 
+     tmpd=$(mktemp -d)
+-    if ! curl -sL --max-time 30 "https://codeload.github.com/YOURSJEYO/claude-switcher/zip/refs/heads/main" -o "$tmpd/main.zip" \
++    if ! curl -sL --max-time 30 "https://codeload.github.com/517183415-dev/claude-switcher/zip/refs/heads/main" -o "$tmpd/main.zip" \
+         || ! unzip -q "$tmpd/main.zip" -d "$tmpd" 2>/dev/null; then
+         echo "FAIL:下载或解压失败(网络问题,稍后再试)"; rm -rf "$tmpd"; return 1
+     fi
+@@ -737,7 +834,7 @@
+     fi
+ 
+     # 工件完整性校验:逐项比对仓库 SHA256SUMS,任一不符即中止(防传输篡改;信任根为 GitHub 仓库本身)
+-    if ! curl -sL --max-time 15 "https://raw.githubusercontent.com/YOURSJEYO/claude-switcher/main/SHA256SUMS" -o "$tmpd/SHA256SUMS" \
++    if ! curl -sL --max-time 15 "https://raw.githubusercontent.com/517183415-dev/claude-switcher/main/SHA256SUMS" -o "$tmpd/SHA256SUMS" \
+         || [ ! -s "$tmpd/SHA256SUMS" ]; then
+         echo "FAIL:无法获取校验清单(SHA256SUMS),已中止"; rm -rf "$tmpd"; return 1
+     fi
+@@ -796,7 +893,7 @@
+     else
+         out=$("$BIN/claude-switch.sh" checkdetail 2>&1)
+     fi
+-    if [ -z "$out" ] || echo "$out" | grep -q '=fail'; then
++    if [ -z "$out" ] || ! validate_audit_output "$out" || echo "$out" | grep -q '=fail'; then
+         [ -f "$BIN/claude-switch.sh.bak" ] && cp "$BIN/claude-switch.sh.bak" "$BIN/claude-switch.sh"
+         echo "FAIL:新版自检未通过,已自动回滚"
+         return 1
+@@ -831,6 +928,12 @@
+ 
+ switch_to() {
+     target="$1"
++    case "$target" in
++        A|B) ;;
++        *) echo "FAIL:账号目标无效，只支持 A 或 B"; return 2 ;;
++    esac
++    launch_preflight || return 1
++
+     cur="none"; [ -f "$BASE/current" ] && cur=$(cat "$BASE/current")
+ 
+     # 首次运行:把当前登录中的状态收编为账号A
+@@ -869,22 +972,24 @@
+     return 0
+ }
+ 
+-case "${1:-}" in
+-    check)  check ;;
+-    checkdetail)
+-        OUT_FILE="$BASE/last-check.txt"
+-        {
+-            echo "# $(date '+%F %T') pid=$$ 开始"
+-            checkdetail
+-            echo "# 结束"
+-        } > "$OUT_FILE" 2>&1
+-        cat "$OUT_FILE"
+-        ;;
+-    fix) fix ;;
+-    status) status ;;
+-    switch) switch_to "${2:-}" ;;
+-    set-region) set_region ;;
+-    update) self_update "${2:-}" ;;
+-    write-merge-rules) write_merge_rules ;;  # 隐藏入口:供安装器调用,保证两处合并逻辑一致
+-    *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]|diagnose-proxy [--proxy URL|--config FILE]"; exit 2 ;;
+-esac
++if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
++    case "${1:-}" in
++        check)  check ;;
++        checkdetail)
++            OUT_FILE="$BASE/last-check.txt"
++            {
++                echo "# $(date '+%F %T') pid=$$ 开始"
++                checkdetail
++                echo "# 结束"
++            } > "$OUT_FILE" 2>&1
++            cat "$OUT_FILE"
++            ;;
++        fix) fix ;;
++        status) status ;;
++        switch) switch_to "${2:-}" ;;
++        set-region) set_region ;;
++        update) self_update "${2:-}" ;;
++        write-merge-rules) write_merge_rules ;;  # 隐藏入口:供安装器调用,保证两处合并逻辑一致
++        *) echo "用法: claude-switch.sh check|checkdetail|fix|status|switch A|B|set-region|update [--auto]|diagnose-proxy [--proxy URL|--config FILE]"; exit 2 ;;
++    esac
++fi

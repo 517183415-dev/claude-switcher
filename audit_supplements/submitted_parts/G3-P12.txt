@@ -1,0 +1,1366 @@
+审核补充附件 G3-P12，逻辑组3，共17份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/crates/switcher-helper/src/root_operation.rs
+SHA256_ORIGINAL: 4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825
+ORIGINAL_LINES: 1-843
+000001 | //! Root-only, fixed operation runner. Its inherited flock outlives the GUI and its own parent.
+000002 | use serde::{Deserialize, Serialize};
+000003 | use std::{
+000004 |     fs::{self, File, OpenOptions},
+000005 |     os::{
+000006 |         fd::AsRawFd,
+000007 |         unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
+000008 |     },
+000009 |     path::{Path, PathBuf},
+000010 |     process::Command,
+000011 | };
+000012 | use switcher_domain::{
+000013 |     Edition,
+000014 |     system::{INSTALL_RECORD, SYSTEM_ROOT},
+000015 | };
+000016 | #[derive(Debug, Serialize, Deserialize)]
+000017 | #[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
+000018 | pub enum RootOperation {
+000019 |     InstallPackage {
+000020 |         source: PathBuf,
+000021 |         team: String,
+000022 |         window: Option<RootWindow>,
+000023 |         sha256: Option<String>,
+000024 |     },
+000025 |     ReplaceApp {
+000026 |         source: PathBuf,
+000027 |         edition: Edition,
+000028 |         team: String,
+000029 |         old: String,
+000030 |         new: String,
+000031 |         window: RootWindow,
+000032 |         cdhash: String,
+000033 |     },
+000034 |     RestoreApp {
+000035 |         edition: Edition,
+000036 |         team: String,
+000037 |         old: String,
+000038 |         new: String,
+000039 |     },
+000040 | }
+000041 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000042 | #[serde(deny_unknown_fields)]
+000043 | pub struct RootWindow {
+000044 |     pub issued: u64,
+000045 |     pub expires: u64,
+000046 |     pub utc: i64,
+000047 |     pub continuous_ms: u64,
+000048 |     pub boot_id: String,
+000049 | }
+000050 | impl RootWindow {
+000051 |     fn validate(&self) -> Result<(), &'static str> {
+000052 |         #[repr(C)]
+000053 |         struct Timebase {
+000054 |             n: u32,
+000055 |             d: u32,
+000056 |         }
+000057 |         unsafe extern "C" {
+000058 |             fn mach_continuous_time() -> u64;
+000059 |             fn mach_timebase_info(i: *mut Timebase) -> i32;
+000060 |         }
+000061 |         let mut t = Timebase { n: 0, d: 0 };
+000062 |         if unsafe { mach_timebase_info(&mut t) } != 0 || t.d == 0 {
+000063 |             return Err("root_clock");
+000064 |         }
+000065 |         let continuous = (u128::from(unsafe { mach_continuous_time() }) * u128::from(t.n)
+000066 |             / u128::from(t.d)
+000067 |             / 1_000_000)
+000068 |             .try_into()
+000069 |             .map_err(|_| "root_clock")?;
+000070 |         let utc = std::time::SystemTime::now()
+000071 |             .duration_since(std::time::UNIX_EPOCH)
+000072 |             .map_err(|_| "root_clock")?
+000073 |             .as_secs();
+000074 |         self.validate_observation(utc, continuous, &boot_id()?)
+000075 |     }
+000076 |     fn validate_observation(
+000077 |         &self,
+000078 |         utc: u64,
+000079 |         continuous: u64,
+000080 |         boot: &str,
+000081 |     ) -> Result<(), &'static str> {
+000082 |         if boot != self.boot_id || continuous < self.continuous_ms {
+000083 |             return Err("clock_recovery_required");
+000084 |         }
+000085 |         let elapsed = i128::from(continuous - self.continuous_ms);
+000086 |         if ((i128::from(utc) - i128::from(self.utc)) * 1000 - elapsed).abs() > 300_000 {
+000087 |             return Err("clock_recovery_required");
+000088 |         }
+000089 |         if utc < self.issued || utc >= self.expires {
+000090 |             return Err("metadata_expired");
+000091 |         }
+000092 |         Ok(())
+000093 |     }
+000094 | }
+000095 | fn ensure_claude_stopped(owner: u32) -> Result<(), &'static str> {
+000096 |     let out = Command::new("/bin/ps")
+000097 |         .args(["-ww", "-axo", "uid=,comm="])
+000098 |         .env_clear()
+000099 |         .env("LC_ALL", "C")
+000100 |         .output()
+000101 |         .map_err(|_| "process_inventory")?;
+000102 |     if !out.status.success() || out.stdout.len() > 1024 * 1024 {
+000103 |         return Err("process_inventory");
+000104 |     }
+000105 |     let text = std::str::from_utf8(&out.stdout).map_err(|_| "process_inventory")?;
+000106 |     for line in text.lines() {
+000107 |         let line = line.trim_start();
+000108 |         let at = line.find(char::is_whitespace).ok_or("process_inventory")?;
+000109 |         let uid: u32 = line[..at].parse().map_err(|_| "process_inventory")?;
+000110 |         let name = line[at..].trim();
+000111 |         if uid == owner && (name.contains("/Claude.app/Contents/") || name == "Claude") {
+000112 |             return Err("claude_running");
+000113 |         }
+000114 |     }
+000115 |     Ok(())
+000116 | }
+000117 | pub struct RootLock(File);
+000118 | impl RootLock {
+000119 |     pub fn acquire() -> Result<Self, &'static str> {
+000120 |         if unsafe { libc::geteuid() } != 0 {
+000121 |             return Err("root_required");
+000122 |         }
+000123 |         safe_root(Path::new(SYSTEM_ROOT))?;
+000124 |         let file = OpenOptions::new()
+000125 |             .read(true)
+000126 |             .write(true)
+000127 |             .create(true)
+000128 |             .mode(0o600)
+000129 |             .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+000130 |             .open(Path::new(SYSTEM_ROOT).join("root-operation.lock"))
+000131 |             .map_err(|_| "root_transaction_lock")?;
+000132 |         let meta = file.metadata().map_err(|_| "root_transaction_lock")?;
+000133 |         if !meta.is_file() || meta.uid() != 0 || meta.mode() & 0o077 != 0 || meta.nlink() != 1 {
+000134 |             return Err("root_transaction_lock_type");
+000135 |         }
+000136 |         let lock = Self::lock(file)?;
+000137 |         check_source_local_transaction(Path::new(SYSTEM_ROOT))?;
+000138 |         check_installer_barrier()?;
+000139 |         Ok(lock)
+000140 |     }
+000141 |     fn lock(file: File) -> Result<Self, &'static str> {
+000142 |         // Keep this descriptor through exec: installer/ditto retain the same open-file lock
+000143 |         // even if the GUI and this runner both die. A successor must acquire this lock too.
+000144 |         if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+000145 |             return Err("root_transaction_busy");
+000146 |         }
+000147 |         if unsafe { libc::fcntl(file.as_raw_fd(), libc::F_SETFD, 0) } != 0 {
+000148 |             return Err("root_transaction_fd");
+000149 |         }
+000150 |         Ok(Self(file))
+000151 |     }
+000152 |     pub fn held_fd(&self) -> i32 {
+000153 |         self.0.as_raw_fd()
+000154 |     }
+000155 | }
+000156 | pub(crate) fn boot_id() -> Result<String, &'static str> {
+000157 |     let out = Command::new("/usr/sbin/sysctl")
+000158 |         .args(["-n", "kern.bootsessionuuid"])
+000159 |         .output()
+000160 |         .map_err(|_| "root_boot_id")?;
+000161 |     let id = String::from_utf8(out.stdout)
+000162 |         .map_err(|_| "root_boot_id")?
+000163 |         .trim()
+000164 |         .to_owned();
+000165 |     if !out.status.success()
+000166 |         || id.len() != 36
+000167 |         || !id.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-')
+000168 |     {
+000169 |         return Err("root_boot_id");
+000170 |     }
+000171 |     Ok(id)
+000172 | }
+000173 | /// Only the independent local root installer may recover or remove this journal.
+000174 | /// Presence and metadata errors block ordinary root operations without reading untrusted contents.
+000175 | pub fn source_local_pending() -> Result<bool, &'static str> {
+000176 |     match check_source_local_transaction(Path::new(SYSTEM_ROOT)) {
+000177 |         Ok(()) => Ok(false),
+000178 |         Err("source_local_recovery_required") => Ok(true),
+000179 |         Err(error) => Err(error),
+000180 |     }
+000181 | }
+000182 | fn check_source_local_transaction(root: &Path) -> Result<(), &'static str> {
+000183 |     match fs::symlink_metadata(root.join("source-local-transaction.json")) {
+000184 |         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+000185 |         _ => Err("source_local_recovery_required"),
+000186 |     }
+000187 | }
+000188 | fn barrier_path() -> PathBuf {
+000189 |     Path::new(SYSTEM_ROOT).join("component-installer-active")
+000190 | }
+000191 | fn check_installer_barrier() -> Result<(), &'static str> {
+000192 |     use std::io::Read;
+000193 |     let path = barrier_path();
+000194 |     let file = match OpenOptions::new()
+000195 |         .read(true)
+000196 |         .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+000197 |         .open(&path)
+000198 |     {
+000199 |         Ok(f) => f,
+000200 |         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+000201 |         Err(_) => return Err("root_installer_active"),
+000202 |     };
+000203 |     let m = file.metadata().map_err(|_| "root_installer_active")?;
+000204 |     if !m.is_file() || m.uid() != 0 || m.mode() & 0o022 != 0 || m.len() > 64 {
+000205 |         return Err("root_installer_active");
+000206 |     }
+000207 |     let mut id = String::new();
+000208 |     file.take(65)
+000209 |         .read_to_string(&mut id)
+000210 |         .map_err(|_| "root_installer_active")?;
+000211 |     if id.trim() == boot_id()? {
+000212 |         return Err("root_installer_active");
+000213 |     }
+000214 |     // A prior boot's installd job cannot still own the filesystem. Its root backup remains.
+000215 |     fs::remove_file(path).map_err(|_| "root_installer_barrier_clear")
+000216 | }
+000217 | fn start_installer_barrier() -> Result<(), &'static str> {
+000218 |     use std::io::Write;
+000219 |     let mut file = OpenOptions::new()
+000220 |         .write(true)
+000221 |         .create_new(true)
+000222 |         .mode(0o644)
+000223 |         .custom_flags(libc::O_NOFOLLOW)
+000224 |         .open(barrier_path())
+000225 |         .map_err(|_| "root_installer_barrier")?;
+000226 |     file.write_all(boot_id()?.as_bytes())
+000227 |         .and_then(|_| file.sync_all())
+000228 |         .map_err(|_| "root_installer_barrier")?;
+000229 |     File::open(SYSTEM_ROOT)
+000230 |         .and_then(|f| f.sync_all())
+000231 |         .map_err(|_| "root_installer_barrier")
+000232 | }
+000233 | pub(crate) fn safe_root(path: &Path) -> Result<(), &'static str> {
+000234 |     for parent in path.ancestors() {
+000235 |         let m = fs::symlink_metadata(parent).map_err(|_| "root_directory")?;
+000236 |         if !m.is_dir() || m.file_type().is_symlink() || m.uid() != 0 || m.mode() & 0o022 != 0 {
+000237 |             return Err("root_directory_permissions");
+000238 |         }
+000239 |     }
+000240 |     Ok(())
+000241 | }
+000242 | fn run(program: &str, args: &[&std::ffi::OsStr]) -> Result<(), &'static str> {
+000243 |     let status = Command::new(program)
+000244 |         .args(args)
+000245 |         .env_clear()
+000246 |         .env("PATH", "/usr/bin:/bin:/usr/sbin:/sbin")
+000247 |         .env("LC_ALL", "C")
+000248 |         .status()
+000249 |         .map_err(|_| "root_command_spawn")?;
+000250 |     if status.success() {
+000251 |         Ok(())
+000252 |     } else {
+000253 |         Err("root_command_failed")
+000254 |     }
+000255 | }
+000256 | fn team_valid(team: &str) -> bool {
+000257 |     team.len() == 10
+000258 |         && team
+000259 |             .bytes()
+000260 |             .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit())
+000261 | }
+000262 | fn version_valid(v: &str) -> bool {
+000263 |     let p: Vec<_> = v.split('.').collect();
+000264 |     p.len() == 3
+000265 |         && p.iter()
+000266 |             .all(|x| !x.is_empty() && x.bytes().all(|b| b.is_ascii_digit()))
+000267 | }
+000268 | fn app_path(edition: Edition) -> PathBuf {
+000269 |     PathBuf::from(match edition {
+000270 |         Edition::Personal => "/Applications/Claude 切换器 Personal.app",
+000271 |         Edition::Public => "/Applications/Claude 切换器 Public.app",
+000272 |     })
+000273 | }
+000274 | fn backup_path(edition: Edition) -> PathBuf {
+000275 |     Path::new(SYSTEM_ROOT).join(match edition {
+000276 |         Edition::Personal => "app-Personal-previous.app",
+000277 |         Edition::Public => "app-Public-previous.app",
+000278 |     })
+000279 | }
+000280 | fn bundle(edition: Edition) -> &'static str {
+000281 |     match edition {
+000282 |         Edition::Personal => "local.claudeswitcher.personal",
+000283 |         Edition::Public => "local.claudeswitcher.public",
+000284 |     }
+000285 | }
+000286 | fn app_signature_args(path: &Path, edition: Edition, team: &str) -> Vec<std::ffi::OsString> {
+000287 |     let requirement = format!(
+000288 |         "=anchor apple generic and certificate leaf[subject.OU] = \"{team}\" and identifier \"{}\"",
+000289 |         bundle(edition)
+000290 |     );
+000291 |     [
+000292 |         "--verify",
+000293 |         "--deep",
+000294 |         "--strict",
+000295 |         "--test-requirement",
+000296 |         &requirement,
+000297 |     ]
+000298 |     .into_iter()
+000299 |     .map(std::ffi::OsString::from)
+000300 |     .chain(std::iter::once(path.as_os_str().to_owned()))
+000301 |     .collect()
+000302 | }
+000303 | #[cfg(test)]
+000304 | #[test]
+000305 | fn root_codesign_inline_requirement_argv() {
+000306 |     let path = Path::new("/isolated path/切换器.app");
+000307 |     for (edition, identifier) in [
+000308 |         (Edition::Personal, "local.claudeswitcher.personal"),
+000309 |         (Edition::Public, "local.claudeswitcher.public"),
+000310 |     ] {
+000311 |         assert_eq!(app_signature_args(path, edition, "ABCDEFGHIJ"), vec![
+000312 |             std::ffi::OsString::from("--verify"), "--deep".into(), "--strict".into(), "--test-requirement".into(),
+000313 |             format!("=anchor apple generic and certificate leaf[subject.OU] = \"ABCDEFGHIJ\" and identifier \"{identifier}\"").into(),
+000314 |             path.as_os_str().to_owned(),
+000315 |         ]);
+000316 |     }
+000317 | }
+000318 | 
+000319 | fn verify_app(
+000320 |     path: &Path,
+000321 |     edition: Edition,
+000322 |     team: &str,
+000323 |     version: Option<&str>,
+000324 | ) -> Result<(), &'static str> {
+000325 |     let m = fs::symlink_metadata(path).map_err(|_| "root_app_missing")?;
+000326 |     if !m.is_dir() || m.file_type().is_symlink() {
+000327 |         return Err("root_app_type");
+000328 |     }
+000329 |     let args = app_signature_args(path, edition, team);
+000330 |     run(
+000331 |         "/usr/bin/codesign",
+000332 |         &args.iter().map(|arg| arg.as_os_str()).collect::<Vec<_>>(),
+000333 |     )?;
+000334 |     if let Some(version) = version {
+000335 |         let out = Command::new("/usr/bin/plutil")
+000336 |             .args(["-extract", "CFBundleShortVersionString", "raw", "-o", "-"])
+000337 |             .arg(path.join("Contents/Info.plist"))
+000338 |             .output()
+000339 |             .map_err(|_| "root_app_version")?;
+000340 |         if !out.status.success() || String::from_utf8_lossy(&out.stdout).trim() != version {
+000341 |             return Err("root_app_version");
+000342 |         }
+000343 |     }
+000344 |     Ok(())
+000345 | }
+000346 | fn compare_cdhash(output: &[u8], expected: &str) -> Result<(), &'static str> {
+000347 |     if expected.len() != 40 || !expected.bytes().all(|b| b.is_ascii_hexdigit()) {
+000348 |         return Err("root_app_cdhash");
+000349 |     }
+000350 |     let text = std::str::from_utf8(output).map_err(|_| "root_app_cdhash")?;
+000351 |     let mut hashes = text.lines().filter_map(|line| line.strip_prefix("CDHash="));
+000352 |     match (hashes.next(), hashes.next()) {
+000353 |         (Some(hash), None) if hash.eq_ignore_ascii_case(expected) => Ok(()),
+000354 |         _ => Err("root_app_cdhash"),
+000355 |     }
+000356 | }
+000357 | fn verify_cdhash(path: &Path, expected: &str) -> Result<(), &'static str> {
+000358 |     let output = Command::new("/usr/bin/codesign")
+000359 |         .args(["--display", "--verbose=4"])
+000360 |         .arg(path)
+000361 |         .env_clear()
+000362 |         .env("LC_ALL", "C")
+000363 |         .output()
+000364 |         .map_err(|_| "root_app_cdhash")?;
+000365 |     if !output.status.success() || output.stderr.len() > 65536 {
+000366 |         return Err("root_app_cdhash");
+000367 |     }
+000368 |     compare_cdhash(&output.stderr, expected)
+000369 | }
+000370 | struct PrivateStage(PathBuf);
+000371 | impl PrivateStage {
+000372 |     fn new() -> Result<Self, &'static str> {
+000373 |         use std::ffi::{CStr, CString};
+000374 |         let path = Path::new(SYSTEM_ROOT).join(".transaction-XXXXXX");
+000375 |         let mut name = CString::new(path.as_os_str().as_encoded_bytes())
+000376 |             .map_err(|_| "root_stage_path")?
+000377 |             .into_bytes_with_nul();
+000378 |         let result = unsafe { libc::mkdtemp(name.as_mut_ptr().cast()) };
+000379 |         if result.is_null() {
+000380 |             return Err("root_stage_create");
+000381 |         }
+000382 |         let path = PathBuf::from(
+000383 |             unsafe { CStr::from_ptr(result) }
+000384 |                 .to_str()
+000385 |                 .map_err(|_| "root_stage_path")?,
+000386 |         );
+000387 |         fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
+000388 |             .map_err(|_| "root_stage_mode")?;
+000389 |         safe_root(&path)?;
+000390 |         Ok(Self(path))
+000391 |     }
+000392 | }
+000393 | impl Drop for PrivateStage {
+000394 |     fn drop(&mut self) {
+000395 |         let _ = fs::remove_dir_all(&self.0);
+000396 |     }
+000397 | }
+000398 | /// Run only after Authorization Services granted an administrator operation.
+000399 | /// Ordinary XPC callers cannot submit this enum or shell commands.
+000400 | pub fn execute(op: RootOperation) -> Result<(), &'static str> {
+000401 |     let _lock = RootLock::acquire()?;
+000402 |     if Path::new(SYSTEM_ROOT).join("repair-journal.json").exists() {
+000403 |         return Err("repair_recovery_required");
+000404 |     }
+000405 |     let team = match &op {
+000406 |         RootOperation::InstallPackage { team, .. }
+000407 |         | RootOperation::ReplaceApp { team, .. }
+000408 |         | RootOperation::RestoreApp { team, .. } => team,
+000409 |     };
+000410 |     if !team_valid(team) {
+000411 |         return Err("root_team");
+000412 |     }
+000413 |     let mut owner = fs::metadata("/dev/console")
+000414 |         .map_err(|_| "root_console_owner")?
+000415 |         .uid();
+000416 |     if Path::new(INSTALL_RECORD).exists() {
+000417 |         let record = crate::platform::load_root_record(Path::new(INSTALL_RECORD))?;
+000418 |         owner = record.owner_uid;
+000419 |         if record.developer_team()? != team {
+000420 |             return Err("root_team_changed");
+000421 |         }
+000422 |     }
+000423 |     match op {
+000424 |         RootOperation::InstallPackage {
+000425 |             source,
+000426 |             team,
+000427 |             window,
+000428 |             sha256,
+000429 |         } => {
+000430 |             if !source.is_absolute() {
+000431 |                 return Err("root_source");
+000432 |             }
+000433 |             let stage = PrivateStage::new()?;
+000434 |             let pkg = stage.0.join("components.pkg");
+000435 |             let input = OpenOptions::new()
+000436 |                 .read(true)
+000437 |                 .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+000438 |                 .open(&source)
+000439 |                 .map_err(|_| "root_package_source")?;
+000440 |             if !input
+000441 |                 .metadata()
+000442 |                 .map_err(|_| "root_package_source")?
+000443 |                 .is_file()
+000444 |             {
+000445 |                 return Err("root_package_type");
+000446 |             }
+000447 |             let mut output = OpenOptions::new()
+000448 |                 .write(true)
+000449 |                 .create_new(true)
+000450 |                 .mode(0o600)
+000451 |                 .open(&pkg)
+000452 |                 .map_err(|_| "root_package_stage")?;
+000453 |             std::io::copy(
+000454 |                 &mut std::io::Read::take(input, 1024 * 1024 * 1024 + 1),
+000455 |                 &mut output,
+000456 |             )
+000457 |             .map_err(|_| "root_package_copy")?;
+000458 |             if output.metadata().map_err(|_| "root_package_copy")?.len() > 1024 * 1024 * 1024 {
+000459 |                 return Err("root_package_size");
+000460 |             }
+000461 |             output.sync_all().map_err(|_| "root_package_sync")?;
+000462 |             if let Some(expected) = sha256 {
+000463 |                 if expected.len() != 64 || !expected.bytes().all(|b| b.is_ascii_hexdigit()) {
+000464 |                     return Err("root_package_hash");
+000465 |                 }
+000466 |                 let actual = Command::new("/usr/bin/shasum")
+000467 |                     .args(["-a", "256"])
+000468 |                     .arg(&pkg)
+000469 |                     .output()
+000470 |                     .map_err(|_| "root_package_hash")?;
+000471 |                 if !actual.status.success()
+000472 |                     || String::from_utf8_lossy(&actual.stdout)
+000473 |                         .split_whitespace()
+000474 |                         .next()
+000475 |                         != Some(expected.as_str())
+000476 |                 {
+000477 |                     return Err("root_package_hash");
+000478 |                 }
+000479 |             }
+000480 |             let proof = Command::new("/usr/sbin/pkgutil")
+000481 |                 .arg("--check-signature")
+000482 |                 .arg(&pkg)
+000483 |                 .env("LC_ALL", "C")
+000484 |                 .output()
+000485 |                 .map_err(|_| "root_package_signature")?;
+000486 |             if !proof.status.success()
+000487 |                 || !String::from_utf8_lossy(&proof.stdout).lines().any(|l| {
+000488 |                     l.contains("Developer ID Installer:")
+000489 |                         && l.trim().ends_with(&format!("({team})"))
+000490 |                 })
+000491 |             {
+000492 |                 return Err("root_package_signature");
+000493 |             }
+000494 |             run(
+000495 |                 "/usr/sbin/spctl",
+000496 |                 &[
+000497 |                     "--assess".as_ref(),
+000498 |                     "--type".as_ref(),
+000499 |                     "install".as_ref(),
+000500 |                     pkg.as_os_str(),
+000501 |                 ],
+000502 |             )?;
+000503 |             if let Some(window) = &window {
+000504 |                 window.validate()?;
+000505 |             }
+000506 |             ensure_claude_stopped(owner)?;
+000507 |             start_installer_barrier()?;
+000508 |             let result = run(
+000509 |                 "/usr/sbin/installer",
+000510 |                 &[
+000511 |                     "-pkg".as_ref(),
+000512 |                     pkg.as_os_str(),
+000513 |                     "-target".as_ref(),
+000514 |                     "/".as_ref(),
+000515 |                 ],
+000516 |             );
+000517 |             // A returned installer client confirms its request completed, even on failure.
+000518 |             // If this runner dies first, the signed package postinstall clears the barrier.
+000519 |             let cleared = match fs::remove_file(barrier_path()) {
+000520 |                 Ok(()) => Ok(()),
+000521 |                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+000522 |                 Err(_) => Err("root_installer_barrier_clear"),
+000523 |             };
+000524 |             result.and(cleared)
+000525 |         }
+000526 |         RootOperation::ReplaceApp {
+000527 |             source,
+000528 |             edition,
+000529 |             team,
+000530 |             old,
+000531 |             new,
+000532 |             window,
+000533 |             cdhash,
+000534 |         } => {
+000535 |             if !version_valid(&old) || !version_valid(&new) || !source.is_absolute() {
+000536 |                 return Err("root_app_parameters");
+000537 |             }
+000538 |             let stage = PrivateStage::new()?;
+000539 |             let incoming = stage.0.join("incoming.app");
+000540 |             let dest = app_path(edition);
+000541 |             let backup = backup_path(edition);
+000542 |             if fs::metadata("/Applications")
+000543 |                 .map_err(|_| "applications")?
+000544 |                 .dev()
+000545 |                 != fs::metadata(&stage.0).map_err(|_| "root_stage")?.dev()
+000546 |             {
+000547 |                 return Err("app_same_volume_required");
+000548 |             }
+000549 |             verify_app(&dest, edition, &team, Some(&old))?;
+000550 |             let identity = fs::symlink_metadata(&dest).map_err(|_| "root_app_metadata")?;
+000551 |             run(
+000552 |                 "/usr/bin/ditto",
+000553 |                 &[source.as_os_str(), incoming.as_os_str()],
+000554 |             )?;
+000555 |             run(
+000556 |                 "/usr/sbin/chown",
+000557 |                 &["-R".as_ref(), "root:wheel".as_ref(), incoming.as_os_str()],
+000558 |             )?;
+000559 |             run(
+000560 |                 "/bin/chmod",
+000561 |                 &["-R".as_ref(), "go-w".as_ref(), incoming.as_os_str()],
+000562 |             )?;
+000563 |             verify_app(&incoming, edition, &team, Some(&new))?;
+000564 |             verify_cdhash(&incoming, &cdhash)?;
+000565 |             run(
+000566 |                 "/usr/sbin/spctl",
+000567 |                 &[
+000568 |                     "--assess".as_ref(),
+000569 |                     "--type".as_ref(),
+000570 |                     "execute".as_ref(),
+000571 |                     incoming.as_os_str(),
+000572 |                 ],
+000573 |             )?;
+000574 |             window.validate()?;
+000575 |             ensure_claude_stopped(owner)?;
+000576 |             if backup.exists() {
+000577 |                 verify_app(&backup, edition, &team, None)?;
+000578 |                 fs::remove_dir_all(&backup).map_err(|_| "app_old_backup")?;
+000579 |             }
+000580 |             fs::rename(&dest, &backup).map_err(|_| "app_backup_rename")?;
+000581 |             let moved = fs::symlink_metadata(&backup).map_err(|_| "app_backup_metadata")?;
+000582 |             if moved.file_type().is_symlink()
+000583 |                 || (moved.dev(), moved.ino()) != (identity.dev(), identity.ino())
+000584 |             {
+000585 |                 return Err("app_identity_changed");
+000586 |             }
+000587 |             fs::File::open(SYSTEM_ROOT)
+000588 |                 .and_then(|f| f.sync_all())
+000589 |                 .map_err(|_| "app_backup_sync")?;
+000590 |             exclusive_rename(&incoming, &dest)?;
+000591 |             File::open("/Applications")
+000592 |                 .and_then(|f| f.sync_all())
+000593 |                 .map_err(|_| "app_install_sync")
+000594 |         }
+000595 |         RootOperation::RestoreApp {
+000596 |             edition,
+000597 |             team,
+000598 |             old,
+000599 |             new,
+000600 |         } => {
+000601 |             if !version_valid(&old) || !version_valid(&new) {
+000602 |                 return Err("root_app_parameters");
+000603 |             }
+000604 |             let dest = app_path(edition);
+000605 |             let backup = backup_path(edition);
+000606 |             ensure_claude_stopped(owner)?;
+000607 |             if verify_app(&dest, edition, &team, Some(&old)).is_ok() {
+000608 |                 return Ok(());
+000609 |             }
+000610 |             verify_app(&backup, edition, &team, Some(&old))?;
+000611 |             if dest.exists() {
+000612 |                 verify_app(&dest, edition, &team, Some(&new))?;
+000613 |                 fs::remove_dir_all(&dest).map_err(|_| "app_recovery_remove")?;
+000614 |             }
+000615 |             exclusive_rename(&backup, &dest)?;
+000616 |             File::open("/Applications")
+000617 |                 .and_then(|f| f.sync_all())
+000618 |                 .map_err(|_| "app_recovery_sync")
+000619 |         }
+000620 |     }
+000621 | }
+000622 | #[cfg(target_os = "macos")]
+000623 | fn exclusive_rename(from: &Path, to: &Path) -> Result<(), &'static str> {
+000624 |     use std::ffi::CString;
+000625 |     let from = CString::new(from.as_os_str().as_encoded_bytes()).map_err(|_| "app_path")?;
+000626 |     let to = CString::new(to.as_os_str().as_encoded_bytes()).map_err(|_| "app_path")?;
+000627 |     if unsafe { libc::renamex_np(from.as_ptr(), to.as_ptr(), libc::RENAME_EXCL) } == 0 {
+000628 |         Ok(())
+000629 |     } else {
+000630 |         Err("app_destination_changed")
+000631 |     }
+000632 | }
+000633 | #[cfg(not(target_os = "macos"))]
+000634 | fn exclusive_rename(_: &Path, _: &Path) -> Result<(), &'static str> {
+000635 |     Err("macos_required")
+000636 | }
+000637 | 
+000638 | #[cfg(test)]
+000639 | mod tests {
+000640 |     use super::*;
+000641 |     fn source_local_fixture(name: &str) -> PathBuf {
+000642 |         let root = std::env::temp_dir()
+000643 |             .canonicalize()
+000644 |             .unwrap()
+000645 |             .join(format!("switcher-local-root-{name}-{}", std::process::id()));
+000646 |         fs::create_dir(&root).unwrap();
+000647 |         root
+000648 |     }
+000649 |     #[test]
+000650 |     fn source_local_pending_survives_previous_boot_barrier_removal() {
+000651 |         let root = source_local_fixture("cross-boot");
+000652 |         let journal = root.join("source-local-transaction.json");
+000653 |         let contents = br#"{"stage":"replacing","boot_id":"previous-boot"}"#;
+000654 |         fs::write(&journal, contents).unwrap();
+000655 |         let barrier = root.join("component-installer-active");
+000656 |         fs::write(&barrier, b"previous-boot").unwrap();
+000657 |         assert_eq!(
+000658 |             check_source_local_transaction(&root),
+000659 |             Err("source_local_recovery_required")
+000660 |         );
+000661 |         // Model the next boot removing its obsolete temporary installer barrier.
+000662 |         fs::remove_file(&barrier).unwrap();
+000663 |         assert_eq!(
+000664 |             check_source_local_transaction(&root),
+000665 |             Err("source_local_recovery_required")
+000666 |         );
+000667 |         assert_eq!(fs::read(&journal).unwrap(), contents);
+000668 |         fs::remove_dir_all(root).unwrap();
+000669 |     }
+000670 |     #[test]
+000671 |     fn source_local_bad_journal_type_or_contents_never_bypass_gate() {
+000672 |         use std::os::unix::fs::symlink;
+000673 |         let root = source_local_fixture("bad-journal");
+000674 |         let journal = root.join("source-local-transaction.json");
+000675 |         for bytes in [b"invalid json".as_slice(), b"", b"{\"committed\":true}"] {
+000676 |             fs::write(&journal, bytes).unwrap();
+000677 |             assert_eq!(
+000678 |                 check_source_local_transaction(&root),
+000679 |                 Err("source_local_recovery_required")
+000680 |             );
+000681 |         }
+000682 |         fs::remove_file(&journal).unwrap();
+000683 |         fs::create_dir(&journal).unwrap();
+000684 |         assert_eq!(
+000685 |             check_source_local_transaction(&root),
+000686 |             Err("source_local_recovery_required")
+000687 |         );
+000688 |         fs::remove_dir(&journal).unwrap();
+000689 |         symlink(root.join("missing-journal-target"), &journal).unwrap();
+000690 |         assert_eq!(
+000691 |             check_source_local_transaction(&root),
+000692 |             Err("source_local_recovery_required")
+000693 |         );
+000694 |         fs::remove_file(&journal).unwrap();
+000695 |         let raw = std::ffi::CString::new(journal.as_os_str().as_encoded_bytes()).unwrap();
+000696 |         assert_eq!(unsafe { libc::mkfifo(raw.as_ptr(), 0o600) }, 0);
+000697 |         assert_eq!(
+000698 |             check_source_local_transaction(&root),
+000699 |             Err("source_local_recovery_required")
+000700 |         );
+000701 |         fs::remove_file(&journal).unwrap();
+000702 |         let not_directory = root.join("invalid-parent");
+000703 |         fs::write(&not_directory, b"file").unwrap();
+000704 |         assert_eq!(
+000705 |             check_source_local_transaction(&not_directory),
+000706 |             Err("source_local_recovery_required")
+000707 |         );
+000708 |         fs::remove_dir_all(root).unwrap();
+000709 |     }
+000710 |     #[test]
+000711 |     fn source_local_absent_journal_allows_normal_root_gate_to_continue() {
+000712 |         let root = source_local_fixture("no-journal");
+000713 |         assert_eq!(check_source_local_transaction(&root), Ok(()));
+000714 |         assert!(!root.join("source-local-transaction.json").exists());
+000715 |         fs::remove_dir(root).unwrap();
+000716 |     }
+000717 |     #[test]
+000718 |     fn copied_app_must_match_sealed_cdhash_exactly_once() {
+000719 |         let expected = "0123456789abcdef0123456789abcdef01234567";
+000720 |         assert!(compare_cdhash(format!("CDHash={expected}\n").as_bytes(), expected).is_ok());
+000721 |         assert_eq!(
+000722 |             compare_cdhash(
+000723 |                 b"CDHash=ffffffffffffffffffffffffffffffffffffffff\n",
+000724 |                 expected
+000725 |             ),
+000726 |             Err("root_app_cdhash")
+000727 |         );
+000728 |         assert_eq!(
+000729 |             compare_cdhash(
+000730 |                 format!("CDHash={expected}\nCDHash={expected}\n").as_bytes(),
+000731 |                 expected
+000732 |             ),
+000733 |             Err("root_app_cdhash")
+000734 |         );
+000735 |         assert_eq!(compare_cdhash(b"", expected), Err("root_app_cdhash"));
+000736 |         assert_eq!(
+000737 |             compare_cdhash(b"CDHash=bad\n", "bad"),
+000738 |             Err("root_app_cdhash")
+000739 |         );
+000740 |     }
+000741 |     #[test]
+000742 |     fn inherited_transaction_lock_survives_runner_descriptor_close() {
+000743 |         let path = std::env::temp_dir()
+000744 |             .canonicalize()
+000745 |             .unwrap()
+000746 |             .join(format!("switcher-root-lock-{}", std::process::id()));
+000747 |         let file = OpenOptions::new()
+000748 |             .read(true)
+000749 |             .write(true)
+000750 |             .create_new(true)
+000751 |             .mode(0o600)
+000752 |             .open(&path)
+000753 |             .unwrap();
+000754 |         let lock = RootLock::lock(file).unwrap();
+000755 |         assert_eq!(
+000756 |             unsafe { libc::fcntl(lock.held_fd(), libc::F_GETFD) } & libc::FD_CLOEXEC,
+000757 |             0
+000758 |         );
+000759 |         let mut child = Command::new("/bin/sleep").arg("0.3").spawn().unwrap();
+000760 |         drop(lock);
+000761 |         let competing = OpenOptions::new()
+000762 |             .read(true)
+000763 |             .write(true)
+000764 |             .open(&path)
+000765 |             .unwrap();
+000766 |         assert_eq!(
+000767 |             RootLock::lock(competing).err(),
+000768 |             Some("root_transaction_busy")
+000769 |         );
+000770 |         child.wait().unwrap();
+000771 |         let after = OpenOptions::new()
+000772 |             .read(true)
+000773 |             .write(true)
+000774 |             .open(&path)
+000775 |             .unwrap();
+000776 |         assert!(RootLock::lock(after).is_ok());
+000777 |         fs::remove_file(path).unwrap();
+000778 |     }
+000779 |     #[test]
+000780 |     fn exclusive_rename_does_not_follow_or_overwrite_destination_symlink() {
+000781 |         use std::os::unix::fs::symlink;
+000782 |         let base = std::env::temp_dir()
+000783 |             .canonicalize()
+000784 |             .unwrap()
+000785 |             .join(format!("switcher-root-rename-{}", std::process::id()));
+000786 |         fs::create_dir(&base).unwrap();
+000787 |         fs::create_dir(base.join("incoming")).unwrap();
+000788 |         fs::write(base.join("incoming/proof"), b"new").unwrap();
+000789 |         fs::create_dir(base.join("victim")).unwrap();
+000790 |         symlink(base.join("victim"), base.join("dest")).unwrap();
+000791 |         assert_eq!(
+000792 |             exclusive_rename(&base.join("incoming"), &base.join("dest")),
+000793 |             Err("app_destination_changed")
+000794 |         );
+000795 |         assert!(base.join("incoming/proof").is_file());
+000796 |         assert!(!base.join("victim/proof").exists());
+000797 |         assert!(
+000798 |             fs::symlink_metadata(base.join("dest"))
+000799 |                 .unwrap()
+000800 |                 .file_type()
+000801 |                 .is_symlink()
+000802 |         );
+000803 |         fs::remove_dir_all(base).unwrap();
+000804 |     }
+000805 |     #[test]
+000806 |     fn root_gate_rechecks_expiry_clock_and_boot_after_authorization() {
+000807 |         let window = RootWindow {
+000808 |             issued: 100,
+000809 |             expires: 200,
+000810 |             utc: 150,
+000811 |             continuous_ms: 1000,
+000812 |             boot_id: "boot".into(),
+000813 |         };
+000814 |         assert!(window.validate_observation(199, 50_000, "boot").is_ok());
+000815 |         assert_eq!(
+000816 |             window.validate_observation(200, 51_000, "boot"),
+000817 |             Err("metadata_expired")
+000818 |         );
+000819 |         assert_eq!(
+000820 |             window.validate_observation(151, 2000, "other"),
+000821 |             Err("clock_recovery_required")
+000822 |         );
+000823 |         assert_eq!(
+000824 |             window.validate_observation(1000, 2000, "boot"),
+000825 |             Err("clock_recovery_required")
+000826 |         );
+000827 |     }
+000828 |     #[test]
+000829 |     fn unprivileged_root_runner_fails_before_any_system_path_mutation() {
+000830 |         if unsafe { libc::geteuid() } == 0 {
+000831 |             return;
+000832 |         }
+000833 |         assert_eq!(
+000834 |             execute(RootOperation::RestoreApp {
+000835 |                 edition: Edition::Public,
+000836 |                 team: "TESTTEAM01".into(),
+000837 |                 old: "1.0.0".into(),
+000838 |                 new: "1.1.0".into()
+000839 |             }),
+000840 |             Err("root_required")
+000841 |         );
+000842 |     }
+000843 | }
+END_FILE_RANGE: current/crates/switcher-helper/src/root_operation.rs 1-843
+
+FILE: current/crates/switcher-helper/src/xpc.rs
+SHA256_ORIGINAL: 778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833
+ORIGINAL_LINES: 1-508
+000001 | //! Native XPC boundary. Every message obtains a fresh SecCode from its audit token.
+000002 | use crate::{
+000003 |     platform::Platform,
+000004 |     policy::{Service, VerifiedPeer},
+000005 | };
+000006 | use block2::Block;
+000007 | use std::{
+000008 |     ffi::{CString, c_char, c_void},
+000009 |     sync::{Arc, Mutex},
+000010 |     time::{SystemTime, UNIX_EPOCH},
+000011 | };
+000012 | use switcher_domain::system::*;
+000013 | type Obj = *mut c_void;
+000014 | #[link(name = "System")]
+000015 | unsafe extern "C" {
+000016 |     fn xpc_connection_create_mach_service(name: *const c_char, queue: Obj, flags: u64) -> Obj;
+000017 |     fn xpc_connection_set_event_handler(connection: Obj, handler: &Block<dyn Fn(Obj)>);
+000018 |     fn xpc_connection_activate(connection: Obj);
+000019 |     fn xpc_connection_cancel(connection: Obj);
+000020 |     fn xpc_connection_get_euid(connection: Obj) -> u32;
+000021 |     fn xpc_connection_send_message(connection: Obj, message: Obj);
+000022 |     fn xpc_dictionary_create_reply(message: Obj) -> Obj;
+000023 |     fn xpc_dictionary_get_data(
+000024 |         message: Obj,
+000025 |         key: *const c_char,
+000026 |         length: *mut usize,
+000027 |     ) -> *const c_void;
+000028 |     fn xpc_dictionary_set_data(
+000029 |         message: Obj,
+000030 |         key: *const c_char,
+000031 |         value: *const c_void,
+000032 |         length: usize,
+000033 |     );
+000034 |     fn xpc_dictionary_create(keys: *const *const c_char, values: *const Obj, count: usize) -> Obj;
+000035 |     fn xpc_get_type(object: Obj) -> Obj;
+000036 |     static _xpc_type_connection: u8;
+000037 |     static _xpc_type_dictionary: u8;
+000038 |     fn xpc_release(object: Obj);
+000039 |     fn dispatch_main() -> !;
+000040 | }
+000041 | #[link(name = "CoreFoundation", kind = "framework")]
+000042 | unsafe extern "C" {
+000043 |     fn CFStringCreateWithCString(allocator: Obj, text: *const c_char, encoding: u32) -> Obj;
+000044 |     fn CFRelease(object: Obj);
+000045 |     fn CFGetTypeID(object: Obj) -> usize;
+000046 |     fn CFDictionaryGetTypeID() -> usize;
+000047 |     fn CFStringGetTypeID() -> usize;
+000048 |     fn CFDictionaryGetValue(dictionary: Obj, key: Obj) -> Obj;
+000049 |     fn CFStringGetCString(string: Obj, buffer: *mut c_char, size: isize, encoding: u32) -> bool;
+000050 | }
+000051 | #[link(name = "Security", kind = "framework")]
+000052 | unsafe extern "C" {
+000053 |     fn SecCodeCreateWithXPCMessage(message: Obj, flags: u32, code: *mut Obj) -> i32;
+000054 |     fn SecCodeCheckValidity(code: Obj, flags: u32, requirement: Obj) -> i32;
+000055 |     fn SecCodeCopySelf(flags: u32, code: *mut Obj) -> i32;
+000056 |     fn SecCodeCopySigningInformation(code: Obj, flags: u32, information: *mut Obj) -> i32;
+000057 |     static kSecCodeInfoPList: Obj;
+000058 |     fn SecRequirementCreateWithString(text: Obj, flags: u32, requirement: *mut Obj) -> i32;
+000059 | }
+000060 | unsafe fn requirement(text: &str) -> Result<Obj, &'static str> {
+000061 |     let text = CString::new(text).map_err(|_| "signature_requirement")?;
+000062 |     let string =
+000063 |         unsafe { CFStringCreateWithCString(std::ptr::null_mut(), text.as_ptr(), 0x08000100) };
+000064 |     if string.is_null() {
+000065 |         return Err("signature_requirement");
+000066 |     }
+000067 |     let mut requirement = std::ptr::null_mut();
+000068 |     let status = unsafe { SecRequirementCreateWithString(string, 0, &mut requirement) };
+000069 |     unsafe { CFRelease(string) };
+000070 |     if status != 0 || requirement.is_null() {
+000071 |         Err("signature_requirement")
+000072 |     } else {
+000073 |         Ok(requirement)
+000074 |     }
+000075 | }
+000076 | fn version_parts(text: &str) -> Option<[u32; 3]> {
+000077 |     let parts: Vec<_> = text.split('.').collect();
+000078 |     if parts.len() != 3 {
+000079 |         return None;
+000080 |     }
+000081 |     let mut out = [0; 3];
+000082 |     for (i, part) in parts.iter().enumerate() {
+000083 |         if part.is_empty() || !part.bytes().all(|b| b.is_ascii_digit()) {
+000084 |             return None;
+000085 |         }
+000086 |         out[i] = part.parse().ok()?;
+000087 |     }
+000088 |     Some(out)
+000089 | }
+000090 | unsafe fn minimum_version(code: Obj, minimum: &str) -> bool {
+000091 |     let Some(minimum) = version_parts(minimum) else {
+000092 |         return false;
+000093 |     };
+000094 |     unsafe {
+000095 |         let mut info = std::ptr::null_mut();
+000096 |         if SecCodeCopySigningInformation(code, 2, &mut info) != 0 || info.is_null() {
+000097 |             return false;
+000098 |         }
+000099 |         let plist = CFDictionaryGetValue(info, kSecCodeInfoPList);
+000100 |         let key = CFStringCreateWithCString(
+000101 |             std::ptr::null_mut(),
+000102 |             c"CFBundleShortVersionString".as_ptr(),
+000103 |             0x08000100,
+000104 |         );
+000105 |         let value = if plist.is_null() || CFGetTypeID(plist) != CFDictionaryGetTypeID() {
+000106 |             std::ptr::null_mut()
+000107 |         } else {
+000108 |             CFDictionaryGetValue(plist, key)
+000109 |         };
+000110 |         let mut buffer = [0i8; 64];
+000111 |         let copied = !value.is_null()
+000112 |             && CFGetTypeID(value) == CFStringGetTypeID()
+000113 |             && CFStringGetCString(
+000114 |                 value,
+000115 |                 buffer.as_mut_ptr(),
+000116 |                 buffer.len() as isize,
+000117 |                 0x08000100,
+000118 |             );
+000119 |         let actual = if copied {
+000120 |             std::ffi::CStr::from_ptr(buffer.as_ptr())
+000121 |                 .to_str()
+000122 |                 .ok()
+000123 |                 .and_then(version_parts)
+000124 |         } else {
+000125 |             None
+000126 |         };
+000127 |         CFRelease(key);
+000128 |         CFRelease(info);
+000129 |         actual.is_some_and(|version| version >= minimum)
+000130 |     }
+000131 | }
+000132 | unsafe fn authenticate(
+000133 |     message: Obj,
+000134 |     connection: Obj,
+000135 |     record: &InstallRecord,
+000136 |     role: ClientRole,
+000137 | ) -> Result<VerifiedPeer, &'static str> {
+000138 |     let uid = unsafe { xpc_connection_get_euid(connection) };
+000139 |     if uid != record.owner_uid {
+000140 |         return Err("owner_uid");
+000141 |     }
+000142 |     let expression = record.client_requirement(role)?;
+000143 |     let mut code = std::ptr::null_mut();
+000144 |     if unsafe { SecCodeCreateWithXPCMessage(message, 0, &mut code) } != 0 || code.is_null() {
+000145 |         return Err("message_audit_identity");
+000146 |     }
+000147 |     let req = unsafe { requirement(&expression) };
+000148 |     let valid = match req {
+000149 |         Ok(req) => {
+000150 |             let status = unsafe { SecCodeCheckValidity(code, 0, req) };
+000151 |             unsafe { CFRelease(req) };
+000152 |             status == 0
+000153 |         }
+000154 |         Err(_) => false,
+000155 |     };
+000156 |     let version_ok = unsafe { minimum_version(code, &record.minimum_app_version) };
+000157 |     unsafe { CFRelease(code) };
+000158 |     if !version_ok {
+000159 |         return Err("client_version");
+000160 |     }
+000161 |     if !valid {
+000162 |         return Err("signature_identity");
+000163 |     }
+000164 |     Ok(VerifiedPeer {
+000165 |         uid,
+000166 |         role,
+000167 |         connection: connection as usize,
+000168 |     })
+000169 | }
+000170 | unsafe fn reply(connection: Obj, message: Obj, response: HelperResponse) {
+000171 |     let output = unsafe { xpc_dictionary_create_reply(message) };
+000172 |     if output.is_null() {
+000173 |         return;
+000174 |     }
+000175 |     if let Ok(bytes) = serde_json::to_vec(&response) {
+000176 |         unsafe {
+000177 |             xpc_dictionary_set_data(output, c"body".as_ptr(), bytes.as_ptr().cast(), bytes.len());
+000178 |             xpc_connection_send_message(connection, output);
+000179 |         }
+000180 |     }
+000181 |     unsafe { xpc_release(output) };
+000182 | }
+000183 | /// Runs only the fixed launchd Mach service. It never registers or installs it.
+000184 | pub fn serve(record: InstallRecord) -> Result<(), &'static str> {
+000185 |     if unsafe { libc::geteuid() } != 0 {
+000186 |         return Err("helper_requires_root");
+000187 |     }
+000188 |     record.validate()?;
+000189 |     let peer_requirement = CString::new(crate::policy::allowed_peer_requirement(&record)?)
+000190 |         .map_err(|_| "signature_requirement")?;
+000191 |     let service = Arc::new(Mutex::new(Service::new(record.clone())?));
+000192 |     let listener = unsafe {
+000193 |         xpc_connection_create_mach_service(
+000194 |             c"local.claudeswitcher.helper".as_ptr(),
+000195 |             std::ptr::null_mut(),
+000196 |             1,
+000197 |         )
+000198 |     };
+000199 |     if listener.is_null() {
+000200 |         return Err("xpc_listener_create");
+000201 |     }
+000202 |     let listener_handler = block2::RcBlock::new(move |connection: Obj| {
+000203 |         if unsafe { xpc_get_type(connection) }
+000204 |             != std::ptr::addr_of!(_xpc_type_connection).cast_mut().cast()
+000205 |         {
+000206 |             return;
+000207 |         }
+000208 |         if unsafe { xpc_connection_get_euid(connection) } != record.owner_uid {
+000209 |             unsafe { xpc_connection_cancel(connection) };
+000210 |             return;
+000211 |         }
+000212 |         // The system gates the peer before connection activation. Message checks remain supplemental.
+000213 |         if unsafe {
+000214 |             xpc_connection_set_peer_code_signing_requirement(connection, peer_requirement.as_ptr())
+000215 |         } != 0
+000216 |         {
+000217 |             unsafe { xpc_connection_cancel(connection) };
+000218 |             return;
+000219 |         }
+000220 |         let service = service.clone();
+000221 |         let record = record.clone();
+000222 |         let identity = connection as usize;
+000223 |         let handler = block2::RcBlock::new(move |message: Obj| {
+000224 |             let connection = identity as Obj;
+000225 |             if unsafe { xpc_get_type(message) }
+000226 |                 != std::ptr::addr_of!(_xpc_type_dictionary).cast_mut().cast()
+000227 |             {
+000228 |                 if let Ok(mut service) = service.lock() {
+000229 |                     service.disconnect(identity);
+000230 |                 }
+000231 |                 return;
+000232 |             }
+000233 |             let mut len = 0usize;
+000234 |             let bytes = unsafe { xpc_dictionary_get_data(message, c"body".as_ptr(), &mut len) };
+000235 |             let response = (|| {
+000236 |                 if bytes.is_null() || len > 16384 {
+000237 |                     return Err("message_size");
+000238 |                 }
+000239 |                 let request: HelperRequest = serde_json::from_slice(unsafe {
+000240 |                     std::slice::from_raw_parts(bytes.cast(), len)
+000241 |                 })
+000242 |                 .map_err(|_| "message_schema")?;
+000243 |                 let peer = unsafe { authenticate(message, connection, &record, request.role) }?;
+000244 |                 let now = SystemTime::now()
+000245 |                     .duration_since(UNIX_EPOCH)
+000246 |                     .map_err(|_| "clock_unavailable")?
+000247 |                     .as_secs();
+000248 |                 if matches!(
+000249 |                     request.operation,
+000250 |                     HelperAction::ReconcileManagedTimezone { .. }
+000251 |                 ) {
+000252 |                     crate::platform::require_idle_timezone_guard(std::path::Path::new(
+000253 |                         SYSTEM_ROOT,
+000254 |                     ))?;
+000255 |                 }
+000256 |                 let _root_operation = if crate::root_operation::source_local_pending()?
+000257 |                     && crate::installation_health::allows_pending_action(&request.operation)
+000258 |                 {
+000259 |                     None
+000260 |                 } else {
+000261 |                     Some(crate::root_operation::RootLock::acquire()?)
+000262 |                 };
+000263 |                 Ok(service
+000264 |                     .lock()
+000265 |                     .map_err(|_| "service_unavailable")?
+000266 |                     .handle(&peer, request, now, &Platform))
+000267 |             })()
+000268 |             .unwrap_or_else(|code| HelperResponse::status(code, false));
+000269 |             unsafe { reply(connection, message, response) };
+000270 |         });
+000271 |         unsafe {
+000272 |             xpc_connection_set_event_handler(connection, &handler);
+000273 |             xpc_connection_activate(connection)
+000274 |         };
+000275 |     });
+000276 |     unsafe {
+000277 |         xpc_connection_set_event_handler(listener, &listener_handler);
+000278 |         xpc_connection_activate(listener);
+000279 |         dispatch_main()
+000280 |     }
+000281 | }
+000282 | /// Read-only native probe. A synthetic dictionary must never authenticate as an XPC sender.
+000283 | pub fn signature_probe() -> (bool, bool, bool) {
+000284 |     unsafe {
+000285 |         let mut code = std::ptr::null_mut();
+000286 |         let self_valid = SecCodeCopySelf(0, &mut code) == 0
+000287 |             && !code.is_null()
+000288 |             && SecCodeCheckValidity(code, 0, std::ptr::null_mut()) == 0;
+000289 |         let apple_valid = match requirement("anchor apple generic") {
+000290 |             Ok(req) => {
+000291 |                 let valid = !code.is_null() && SecCodeCheckValidity(code, 0, req) == 0;
+000292 |                 CFRelease(req);
+000293 |                 valid
+000294 |             }
+000295 |             Err(_) => false,
+000296 |         };
+000297 |         if !code.is_null() {
+000298 |             CFRelease(code);
+000299 |         }
+000300 |         let message = xpc_dictionary_create(std::ptr::null(), std::ptr::null(), 0);
+000301 |         let mut forged = std::ptr::null_mut();
+000302 |         let forged_valid = SecCodeCreateWithXPCMessage(message, 0, &mut forged) == 0;
+000303 |         if !forged.is_null() {
+000304 |             CFRelease(forged);
+000305 |         }
+000306 |         xpc_release(message);
+000307 |         (self_valid, apple_valid, forged_valid)
+000308 |     }
+000309 | }
+000310 | #[cfg(test)]
+000311 | mod tests {
+000312 |     #[test]
+000313 |     fn versions_are_numeric_and_fail_closed() {
+000314 |         assert!(super::version_parts("1.10.0") > super::version_parts("1.2.0"));
+000315 |         assert!(super::version_parts("1.2.0-beta").is_none());
+000316 |     }
+000317 |     #[test]
+000318 |     fn synthetic_dictionary_has_no_sender_identity() {
+000319 |         assert!(!super::signature_probe().2);
+000320 |     }
+000321 | }
+000322 | 
+000323 | #[link(name = "System")]
+000324 | unsafe extern "C" {
+000325 |     fn xpc_connection_set_peer_code_signing_requirement(
+000326 |         connection: Obj,
+000327 |         requirement: *const c_char,
+000328 |     ) -> i32;
+000329 |     fn xpc_connection_send_message_with_reply(
+000330 |         connection: Obj,
+000331 |         message: Obj,
+000332 |         queue: Obj,
+000333 |         handler: &Block<dyn Fn(Obj)>,
+000334 |     );
+000335 | }
+000336 | /// A live connection owns its session. Tokens cannot be reused on another connection.
+000337 | pub struct NativeClient {
+000338 |     connection: usize,
+000339 |     role: ClientRole,
+000340 |     session: Option<String>,
+000341 |     sequence: u64,
+000342 | }
+000343 | fn request_budget(operation: &HelperAction) -> u64 {
+000344 |     match operation {
+000345 |         HelperAction::ApplyRepair { .. } | HelperAction::RecoverRepair { .. } => 150,
+000346 |         HelperAction::RepairStatus { .. } | HelperAction::ReconcileManagedTimezone { .. } => 20,
+000347 |         _ => 5,
+000348 |     }
+000349 | }
+000350 | impl NativeClient {
+000351 |     pub fn connect(record: &InstallRecord, role: ClientRole) -> Result<Self, &'static str> {
+000352 |         record.validate()?;
+000353 |         record.client_requirement(role)?;
+000354 |         if unsafe { libc::geteuid() } != record.owner_uid {
+000355 |             return Err("owner_uid");
+000356 |         }
+000357 |         let connection = unsafe {
+000358 |             xpc_connection_create_mach_service(
+000359 |                 c"local.claudeswitcher.helper".as_ptr(),
+000360 |                 std::ptr::null_mut(),
+000361 |                 2,
+000362 |             )
+000363 |         };
+000364 |         if connection.is_null() {
+000365 |             return Err("helper_unavailable");
+000366 |         }
+000367 |         let expression =
+000368 |             CString::new(record.helper_requirement()?).map_err(|_| "signature_requirement")?;
+000369 |         if unsafe {
+000370 |             xpc_connection_set_peer_code_signing_requirement(connection, expression.as_ptr())
+000371 |         } != 0
+000372 |         {
+000373 |             unsafe {
+000374 |                 xpc_connection_cancel(connection);
+000375 |                 xpc_release(connection);
+000376 |             }
+000377 |             return Err("helper_signature_requirement");
+000378 |         }
+000379 |         let handler = block2::RcBlock::new(|_: Obj| {});
+000380 |         unsafe {
+000381 |             xpc_connection_set_event_handler(connection, &handler);
+000382 |             xpc_connection_activate(connection)
+000383 |         };
+000384 |         let mut client = Self {
+000385 |             connection: connection as usize,
+000386 |             role,
+000387 |             session: None,
+000388 |             sequence: 0,
+000389 |         };
+000390 |         let response = client.call(HelperAction::BeginSession)?;
+000391 |         if !response.ok {
+000392 |             return Err("helper_session_rejected");
+000393 |         }
+000394 |         client.session = response.session;
+000395 |         if client.session.is_none() {
+000396 |             return Err("helper_session_missing");
+000397 |         }
+000398 |         Ok(client)
+000399 |     }
+000400 |     pub fn call(&mut self, operation: HelperAction) -> Result<HelperResponse, &'static str> {
+000401 |         // Mutation can use 25 bounded five-second commands including rollback/state reads.
+000402 |         // A timeout reports an unknown outcome; cancelling this connection does not cancel root.
+000403 |         let budget = request_budget(&operation);
+000404 |         let begin = matches!(operation, HelperAction::BeginSession);
+000405 |         if !begin {
+000406 |             self.sequence = self.sequence.checked_add(1).ok_or("sequence_exhausted")?;
+000407 |         }
+000408 |         let request = HelperRequest {
+000409 |             role: self.role,
+000410 |             session: self.session.clone(),
+000411 |             sequence: self.sequence,
+000412 |             operation,
+000413 |         };
+000414 |         let bytes = serde_json::to_vec(&request).map_err(|_| "request_schema")?;
+000415 |         let message = unsafe { xpc_dictionary_create(std::ptr::null(), std::ptr::null(), 0) };
+000416 |         if message.is_null() {
+000417 |             return Err("xpc_allocation");
+000418 |         }
+000419 |         unsafe {
+000420 |             xpc_dictionary_set_data(
+000421 |                 message,
+000422 |                 c"body".as_ptr(),
+000423 |                 bytes.as_ptr().cast(),
+000424 |                 bytes.len(),
+000425 |             )
+000426 |         };
+000427 |         let (tx, rx) = std::sync::mpsc::sync_channel(1);
+000428 |         let handler = block2::RcBlock::new(move |reply: Obj| {
+000429 |             let result = (|| {
+000430 |                 if unsafe { xpc_get_type(reply) }
+000431 |                     != std::ptr::addr_of!(_xpc_type_dictionary).cast_mut().cast()
+000432 |                 {
+000433 |                     return Err("helper_unavailable");
+000434 |                 }
+000435 |                 let mut len = 0;
+000436 |                 let bytes = unsafe { xpc_dictionary_get_data(reply, c"body".as_ptr(), &mut len) };
+000437 |                 if bytes.is_null() || len > 16384 {
+000438 |                     return Err("helper_response_size");
+000439 |                 }
+000440 |                 serde_json::from_slice(unsafe { std::slice::from_raw_parts(bytes.cast(), len) })
+000441 |                     .map_err(|_| "helper_response_schema")
+000442 |             })();
+000443 |             let _ = tx.try_send(result);
+000444 |         });
+000445 |         unsafe {
+000446 |             xpc_connection_send_message_with_reply(
+000447 |                 self.connection as Obj,
+000448 |                 message,
+000449 |                 std::ptr::null_mut(),
+000450 |                 &handler,
+000451 |             );
+000452 |             xpc_release(message);
+000453 |         }
+000454 |         rx.recv_timeout(std::time::Duration::from_secs(budget))
+000455 |             .map_err(|_| "helper_outcome_unknown")?
+000456 |     }
+000457 | }
+000458 | impl Drop for NativeClient {
+000459 |     fn drop(&mut self) {
+000460 |         unsafe {
+000461 |             xpc_connection_cancel(self.connection as Obj);
+000462 |             xpc_release(self.connection as Obj);
+000463 |         }
+000464 |     }
+000465 | }
+000466 | #[cfg(test)]
+000467 | mod native_client_tests {
+000468 |     #[test]
+000469 |     fn mutation_budget_covers_full_bounded_command_and_rollback_chain() {
+000470 |         use super::*;
+000471 |         assert!(
+000472 |             request_budget(&HelperAction::ApplyRepair {
+000473 |                 plan_id: "test".into()
+000474 |             }) >= 25 * 5
+000475 |         );
+000476 |         assert_eq!(
+000477 |             request_budget(&HelperAction::RecoverRepair {
+000478 |                 plan_id: "test".into()
+000479 |             }),
+000480 |             150
+000481 |         );
+000482 |         assert_eq!(request_budget(&HelperAction::ReadSystemState), 5);
+000483 |         assert_eq!(
+000484 |             request_budget(&HelperAction::RepairStatus {
+000485 |                 plan_id: "test".into()
+000486 |             }),
+000487 |             20
+000488 |         );
+000489 |     }
+000490 | 
+000491 |     use super::*;
+000492 |     #[test]
+000493 |     fn unregistered_or_wrong_signer_service_never_authenticates() {
+000494 |         let record = InstallRecord {
+000495 |             schema_version: 2,
+000496 |             owner_uid: unsafe { libc::geteuid() },
+000497 |             edition: switcher_domain::Edition::Personal,
+000498 |             trust: switcher_domain::system::InstallTrust::DeveloperId {
+000499 |                 team_id: "TESTTEAM01".into(),
+000500 |             },
+000501 |             helper_version: "0.2.0".into(),
+000502 |             minimum_app_version: "0.2.0".into(),
+000503 |         };
+000504 |         let start = std::time::Instant::now();
+000505 |         assert!(NativeClient::connect(&record, ClientRole::Gui).is_err());
+000506 |         assert!(start.elapsed() < std::time::Duration::from_secs(6));
+000507 |     }
+000508 | }
+END_FILE_RANGE: current/crates/switcher-helper/src/xpc.rs 1-508
+
+END_G3-P12_fbfe36d5bcb47874

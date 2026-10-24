@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-10-23T22:53:17.422802+00:00",
+  "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app",
+  "cli_sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+  "scope": "native CLI status/checkdetail/help; no Claude launch, account exchange, root repair or installation",
+  "help": {
+    "exit_code": 0,
+    "legacy_commands_listed": true
+  },
+  "status": {
+    "exit_code": 0,
+    "json": true,
+    "account_flags": {
+      "current": "A",
+      "recovery_pending": false
+    },
+    "keys": [
+      "accounts",
+      "login"
+    ]
+  },
+  "checkdetail": {
+    "exit_code": 1,
+    "rows": [
+      "代理内核=ok",
+      "TUN网卡=ok",
+      "出口IP=ok",
+      "IP一致=ok",
+      "时区=fail",
+      "地区=ok",
+      "IPv6=ok",
+      "DNS=ok",
+      "WebRTC=ok",
+      "保镖=ok",
+      "规则置顶=ok",
+      "客户端语言=ok",
+      "ASN属性=warn",
+      "生态可达性=ok"
+    ],
+    "row_count": 14,
+    "unique_count": 14
+  }
+}

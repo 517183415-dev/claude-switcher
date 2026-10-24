@@ -1,0 +1,6 @@
+- "locate-character" "Rich-Harris" "LICENSE": https://github.com/Rich-Harris/locate-character/issues
+- "locate-character" "Rich-Harris" "LICENSE": https://docs.eclecticiq.com/ic/3.4.1/install-configure-upgrade/license-information/licenses-ui/licenses-ui-17/
+- "locate-character" "Rich-Harris" "LICENSE": https://github.com/Rich-Harris/locate-character
+- "selectors" "servo/stylo" "MPL": https://github.com/servo/stylo/blob/main/README.md
+- "selectors" "servo/stylo" "MPL": https://crates.io/crates/stylo_selectors
+- "selectors" "servo/stylo" "MPL": https://sources.debian.org/src/firefox-esr/153.3.0esr-1/servo/components/style_traits/Cargo.toml

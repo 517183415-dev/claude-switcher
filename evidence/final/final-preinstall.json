@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-10-23T22:58:23.769389+00:00",
+  "frozen_source_files": 196,
+  "source_drift": [],
+  "script_sha256": "934d0b7da9515793f1053358538e156b8cd051b56b4af52ef7898b3da0573b18",
+  "read_only_script_validation": "pass",
+  "admin_install": "WAIT_USER_EXECUTION",
+  "native_window": "WAIT_UNLOCK"
+}

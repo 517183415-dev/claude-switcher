@@ -1,0 +1,70 @@
+--- original_HEAD/README.md
++++ current/README.md
+@@ -18,6 +18,22 @@
+ </div>
+ 
+ ---
++
++## Rust 版：从源码构建
++
++Rust 重写使用 Tauri 2、Svelte 和四个 Rust 包，提供 Personal/Public 两种构建。当前交付方式是 GitHub 源码与本地构建／安装脚本，无需 Apple 开发者会员。安装器在本机登记构建产物的代码指纹。
++
++在 macOS 上准备 Xcode Command Line Tools、Rust（版本见 `rust-toolchain.toml`）、Node/npm 和 Python 3，然后在仓库根目录运行：
++
++```bash
++bash scripts/build-rust.sh personal
++# 或构建 Public
++bash scripts/build-rust.sh public
++```
++
++产物位于 `target/<本机架构>-apple-darwin/release/bundle/macOS/`。本地构建不等于系统服务已安装。安装、升级和恢复步骤见 [Rust 使用说明](docs/usage/Rust使用说明.md) 与 [本地安装说明](packaging/macos/README.md)。实际验证边界见 [Rust 实施状态](docs/handoff/Rust-R4-实施状态.md)。
++
++源码安装通过拉取源码、重新构建和本地安装升级。Public 保留可信签名源的自动更新实现；源码安装不自动执行远端源码。下文的 SwiftUI、shell 安装和历史运行记录描述旧版，不能代替 Rust 版验收。
+ 
+ ## 为什么做这个
+ 
+@@ -91,14 +107,14 @@
+ 
+ ## 安装
+ 
+-**系统要求**：macOS · Clash Verge / Shadowrocket / sing-box / ClashX / Surge 任一（TUN 可用）· Claude 桌面版 · python3
++**系统要求**：macOS · Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud 任一（TUN 可用）· Claude 桌面版 · python3
+ 
+ > **Windows 用户**：[`windows/`](windows/) 目录提供 Windows 版（PowerShell + WPF，Beta），安装与注意事项见 [windows/README.md](windows/README.md)。
+ > **Linux 用户**：[`linux/`](linux/) 目录提供 Linux 版（bash + systemd，Beta），设计取舍（无官方桌面版→切换浏览器登录态）见 [linux/README.md](linux/README.md)。
+ 
+ ```bash
+ # 克隆后双击 installer/安装.command 即可,自动识别代理客户端、代理组名与地区目标
+-git clone https://github.com/YOURSJEYO/claude-switcher.git
++git clone https://github.com/517183415-dev/claude-switcher.git
+ ```
+ 
+ ## 地区自适应
+@@ -182,7 +198,7 @@
+ 
+ ## 问题反馈
+ 
+-- 提交 [Issue](https://github.com/YOURSJEYO/claude-switcher/issues)
++- 提交 [Issue](https://github.com/517183415-dev/claude-switcher/issues)
+ - 在 [Linux.do](https://linux.do) 论坛发帖讨论
+ - **安全问题请走非公开渠道**：见 [SECURITY.md](SECURITY.md)（GitHub Private Vulnerability Reporting 优先）
+ 
+@@ -199,15 +215,15 @@
+ - [ ] Linux 版稳定化：多发行版实测迭代
+ - [ ] Web 版环境检测页：手机/平板浏览器打开即测，零安装
+ - [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
+-- [x] 更多代理客户端适配：已支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge（含 auto 自动识别）
++- [x] 更多代理客户端适配：已支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud（含 auto 自动识别）
+ - [ ] 快照切换提速：增量归档（只写差量）
+ - [x] 应用内自动更新：launchd 每 12 小时自动检查更新，自检失败自动回滚，也可手动 `claude-switch.sh update` 保底
+ 
+-> 有想优先看到的功能，去 [Issues](https://github.com/YOURSJEYO/claude-switcher/issues) 投票或提需求，热度高的先做。
++> 有想优先看到的功能，去 [Issues](https://github.com/517183415-dev/claude-switcher/issues) 投票或提需求，热度高的先做。
+ 
+ ## 帮忙吆喝一声
+ 
+-如果这个工具让你少被封了一个号，希望有条件的佬哥能帮我们在 [Linux.do](https://linux.do) 论坛发个帖子推荐一下——仓库地址 <https://github.com/YOURSJEYO/claude-switcher>，一句话定位：**"Claude 账号的 Fail-Closed 环境保护罩：14 项环境审计不过就物理上不让启动"**。让更多被风控折磨的兄弟少走弯路。
++如果这个工具让你少被封了一个号，希望有条件的佬哥能帮我们在 [Linux.do](https://linux.do) 论坛发个帖子推荐一下——仓库地址 <https://github.com/517183415-dev/claude-switcher>，一句话定位：**"Claude 账号的 Fail-Closed 环境保护罩：14 项环境审计不过就物理上不让启动"**。让更多被风控折磨的兄弟少走弯路。
+ 
+ ## License
+ 

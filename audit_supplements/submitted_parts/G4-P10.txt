@@ -1,0 +1,1750 @@
+审核补充附件 G4-P10，逻辑组4，共19份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/experiments/p0/native/evidence/account-metadata.json
+SHA256_ORIGINAL: 53954e78c9a6553775f91fb933f760d416003d3309d2988c37833d8686ec29fc
+ORIGINAL_LINES: 1-571
+000001 | {
+000002 |   "recorded_at_utc": "2026-10-22T02:12:39.797316+00:00",
+000003 |   "claude_app": {
+000004 |     "CFBundleIdentifier": "com.anthropic.claudefordesktop",
+000005 |     "CFBundleName": "Claude",
+000006 |     "CFBundleShortVersionString": "3.1623.0",
+000007 |     "CFBundleVersion": "3.1623.0",
+000008 |     "LSMinimumSystemVersion": "13.0",
+000009 |     "CFBundleExecutable": "Claude"
+000010 |   },
+000011 |   "commands": [
+000012 |     {
+000013 |       "command": [
+000014 |         "sw_vers"
+000015 |       ],
+000016 |       "exit_code": 0,
+000017 |       "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+000018 |       "stderr": ""
+000019 |     },
+000020 |     {
+000021 |       "command": [
+000022 |         "uname",
+000023 |         "-m"
+000024 |       ],
+000025 |       "exit_code": 0,
+000026 |       "stdout": "arm64\n",
+000027 |       "stderr": ""
+000028 |     },
+000029 |     {
+000030 |       "command": [
+000031 |         "xcrun",
+000032 |         "--show-sdk-path"
+000033 |       ],
+000034 |       "exit_code": 0,
+000035 |       "stdout": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\n",
+000036 |       "stderr": ""
+000037 |     },
+000038 |     {
+000039 |       "command": [
+000040 |         "xcrun",
+000041 |         "--show-sdk-version"
+000042 |       ],
+000043 |       "exit_code": 0,
+000044 |       "stdout": "27.0\n",
+000045 |       "stderr": ""
+000046 |     },
+000047 |     {
+000048 |       "command": [
+000049 |         "codesign",
+000050 |         "-d",
+000051 |         "--verbose=4",
+000052 |         "/Applications/Claude.app"
+000053 |       ],
+000054 |       "exit_code": 0,
+000055 |       "stdout": "",
+000056 |       "stderr": "Executable=/Applications/Claude.app/Contents/MacOS/Claude\nIdentifier=com.anthropic.claudefordesktop\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=458 flags=0x10000(runtime) hashes=3+7 location=embedded\nVersionPlatform=1\nVersionMin=851968\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe\nCandidateCDHashFull sha256=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe59e0fdf1684f937d92ffb878\nHash choices=sha256\nCMSDigest=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe59e0fdf1684f937d92ffb878\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=42aa74dd7ae643ee21629e2ad55133c5a03dbfbe\nSignature size=9046\nAuthority=Developer ID Application: Anthropic PBC (Q6L2SF6YDW)\nAuthority=Developer ID Certification Authority\nAuthority=Apple Root CA\nTimestamp=Oct 20, 2026 at 2:11:19 PM\nNotarization Ticket=stapled\nInfo.plist entries=47\nTeamIdentifier=Q6L2SF6YDW\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=4477\nInternal requirements count=1 size=192\nTotal signatures=1\nChosen signature=1\n"
+000057 |     },
+000058 |     {
+000059 |       "command": [
+000060 |         "codesign",
+000061 |         "--verify",
+000062 |         "--strict",
+000063 |         "/Applications/Claude.app"
+000064 |       ],
+000065 |       "exit_code": 0,
+000066 |       "stdout": "",
+000067 |       "stderr": ""
+000068 |     },
+000069 |     {
+000070 |       "command": [
+000071 |         "codesign",
+000072 |         "-d",
+000073 |         "--entitlements",
+000074 |         "-",
+000075 |         "/Applications/Claude.app"
+000076 |       ],
+000077 |       "exit_code": 0,
+000078 |       "stdout": "[Dict]\n\t[Key] com.apple.application-identifier\n\t[Value]\n\t\t[String] Q6L2SF6YDW.com.anthropic.claudefordesktop\n\t[Key] com.apple.developer.team-identifier\n\t[Value]\n\t\t[String] Q6L2SF6YDW\n\t[Key] com.apple.security.automation.apple-events\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.cs.allow-jit\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.audio-input\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.bluetooth\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.camera\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.print\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.device.usb\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.personal-information.location\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.personal-information.photos-library\n\t[Value]\n\t\t[Bool] true\n\t[Key] com.apple.security.virtualization\n\t[Value]\n\t\t[Bool] true\n\t[Key] keychain-access-groups\n\t[Value]\n\t\t[Array]\n\t\t\t[String] Q6L2SF6YDW.com.anthropic.claude.webauthn\n\t\t\t[String] Q6L2SF6YDW.com.anthropic.claude.hwkey\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.identity.universalstorage\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.workplacejoin\n\t\t\t[String] Q6L2SF6YDW.com.microsoft.workplacejoin.v2\n",
+000079 |       "stderr": "Executable=/Applications/Claude.app/Contents/MacOS/Claude\n"
+000080 |     },
+000081 |     {
+000082 |       "command": [
+000083 |         "security",
+000084 |         "find-identity",
+000085 |         "-v",
+000086 |         "-p",
+000087 |         "codesigning"
+000088 |       ],
+000089 |       "exit_code": 0,
+000090 |       "stdout": "     0 valid identities found\n",
+000091 |       "stderr": ""
+000092 |     }
+000093 |   ],
+000094 |   "directories": {
+000095 |     "active_claude_data": {
+000096 |       "path": "~/Library/Application Support/Claude",
+000097 |       "kind": "directory",
+000098 |       "mode": "0o700",
+000099 |       "uid": 501,
+000100 |       "gid": 20,
+000101 |       "stat_size_bytes": 1792,
+000102 |       "entries": [
+000103 |         {
+000104 |           "kind": "directory",
+000105 |           "mode": "0o700",
+000106 |           "uid": 501,
+000107 |           "gid": 20,
+000108 |           "stat_size_bytes": 128,
+000109 |           "name": "Cache"
+000110 |         },
+000111 |         {
+000112 |           "kind": "directory",
+000113 |           "mode": "0o700",
+000114 |           "uid": 501,
+000115 |           "gid": 20,
+000116 |           "stat_size_bytes": 160,
+000117 |           "name": "Code Cache"
+000118 |         },
+000119 |         {
+000120 |           "kind": "file",
+000121 |           "mode": "0o600",
+000122 |           "uid": 501,
+000123 |           "gid": 20,
+000124 |           "stat_size_bytes": 32768,
+000125 |           "name": "Cookies"
+000126 |         },
+000127 |         {
+000128 |           "kind": "file",
+000129 |           "mode": "0o600",
+000130 |           "uid": 501,
+000131 |           "gid": 20,
+000132 |           "stat_size_bytes": 0,
+000133 |           "name": "Cookies-journal"
+000134 |         },
+000135 |         {
+000136 |           "kind": "directory",
+000137 |           "mode": "0o700",
+000138 |           "uid": 501,
+000139 |           "gid": 20,
+000140 |           "stat_size_bytes": 224,
+000141 |           "name": "Crashpad"
+000142 |         },
+000143 |         {
+000144 |           "kind": "file",
+000145 |           "mode": "0o600",
+000146 |           "uid": 501,
+000147 |           "gid": 20,
+000148 |           "stat_size_bytes": 36864,
+000149 |           "name": "<redacted-unknown-name>"
+000150 |         },
+000151 |         {
+000152 |           "kind": "directory",
+000153 |           "mode": "0o700",
+000154 |           "uid": 501,
+000155 |           "gid": 20,
+000156 |           "stat_size_bytes": 224,
+000157 |           "name": "DawnGraphiteCache"
+000158 |         },
+000159 |         {
+000160 |           "kind": "directory",
+000161 |           "mode": "0o700",
+000162 |           "uid": 501,
+000163 |           "gid": 20,
+000164 |           "stat_size_bytes": 224,
+000165 |           "name": "DawnWebGPUCache"
+000166 |         },
+000167 |         {
+000168 |           "kind": "directory",
+000169 |           "mode": "0o700",
+000170 |           "uid": 501,
+000171 |           "gid": 20,
+000172 |           "stat_size_bytes": 224,
+000173 |           "name": "GPUCache"
+000174 |         },
+000175 |         {
+000176 |           "kind": "directory",
+000177 |           "mode": "0o700",
+000178 |           "uid": 501,
+000179 |           "gid": 20,
+000180 |           "stat_size_bytes": 96,
+000181 |           "name": "<redacted-unknown-name>"
+000182 |         },
+000183 |         {
+000184 |           "kind": "directory",
+000185 |           "mode": "0o700",
+000186 |           "uid": 501,
+000187 |           "gid": 20,
+000188 |           "stat_size_bytes": 288,
+000189 |           "name": "<redacted-unknown-name>"
+000190 |         },
+000191 |         {
+000192 |           "kind": "directory",
+000193 |           "mode": "0o700",
+000194 |           "uid": 501,
+000195 |           "gid": 20,
+000196 |           "stat_size_bytes": 96,
+000197 |           "name": "IndexedDB"
+000198 |         },
+000199 |         {
+000200 |           "kind": "file",
+000201 |           "mode": "0o600",
+000202 |           "uid": 501,
+000203 |           "gid": 20,
+000204 |           "stat_size_bytes": 57,
+000205 |           "name": "Local State"
+000206 |         },
+000207 |         {
+000208 |           "kind": "directory",
+000209 |           "mode": "0o700",
+000210 |           "uid": 501,
+000211 |           "gid": 20,
+000212 |           "stat_size_bytes": 96,
+000213 |           "name": "Local Storage"
+000214 |         },
+000215 |         {
+000216 |           "kind": "file",
+000217 |           "mode": "0o600",
+000218 |           "uid": 501,
+000219 |           "gid": 20,
+000220 |           "stat_size_bytes": 6997,
+000221 |           "name": "Network Persistent State"
+000222 |         },
+000223 |         {
+000224 |           "kind": "directory",
+000225 |           "mode": "0o700",
+000226 |           "uid": 501,
+000227 |           "gid": 20,
+000228 |           "stat_size_bytes": 224,
+000229 |           "name": "<redacted-unknown-name>"
+000230 |         },
+000231 |         {
+000232 |           "kind": "file",
+000233 |           "mode": "0o600",
+000234 |           "uid": 501,
+000235 |           "gid": 20,
+000236 |           "stat_size_bytes": 270,
+000237 |           "name": "Preferences"
+000238 |         },
+000239 |         {
+000240 |           "kind": "directory",
+000241 |           "mode": "0o700",
+000242 |           "uid": 501,
+000243 |           "gid": 20,
+000244 |           "stat_size_bytes": 384,
+000245 |           "name": "Session Storage"
+000246 |         },
+000247 |         {
+000248 |           "kind": "directory",
+000249 |           "mode": "0o700",
+000250 |           "uid": 501,
+000251 |           "gid": 20,
+000252 |           "stat_size_bytes": 160,
+000253 |           "name": "Shared Dictionary"
+000254 |         },
+000255 |         {
+000256 |           "kind": "file",
+000257 |           "mode": "0o600",
+000258 |           "uid": 501,
+000259 |           "gid": 20,
+000260 |           "stat_size_bytes": 4096,
+000261 |           "name": "SharedStorage"
+000262 |         },
+000263 |         {
+000264 |           "kind": "file",
+000265 |           "mode": "0o600",
+000266 |           "uid": 501,
+000267 |           "gid": 20,
+000268 |           "stat_size_bytes": 3192,
+000269 |           "name": "TransportSecurity"
+000270 |         },
+000271 |         {
+000272 |           "kind": "file",
+000273 |           "mode": "0o600",
+000274 |           "uid": 501,
+000275 |           "gid": 20,
+000276 |           "stat_size_bytes": 36864,
+000277 |           "name": "Trust Tokens"
+000278 |         },
+000279 |         {
+000280 |           "kind": "file",
+000281 |           "mode": "0o600",
+000282 |           "uid": 501,
+000283 |           "gid": 20,
+000284 |           "stat_size_bytes": 0,
+000285 |           "name": "Trust Tokens-journal"
+000286 |         },
+000287 |         {
+000288 |           "kind": "directory",
+000289 |           "mode": "0o700",
+000290 |           "uid": 501,
+000291 |           "gid": 20,
+000292 |           "stat_size_bytes": 160,
+000293 |           "name": "<redacted-unknown-name>"
+000294 |         },
+000295 |         {
+000296 |           "kind": "directory",
+000297 |           "mode": "0o700",
+000298 |           "uid": 501,
+000299 |           "gid": 20,
+000300 |           "stat_size_bytes": 160,
+000301 |           "name": "WebStorage"
+000302 |         },
+000303 |         {
+000304 |           "kind": "file",
+000305 |           "mode": "0o600",
+000306 |           "uid": 501,
+000307 |           "gid": 20,
+000308 |           "stat_size_bytes": 148,
+000309 |           "name": "<redacted-unknown-name>"
+000310 |         },
+000311 |         {
+000312 |           "kind": "file",
+000313 |           "mode": "0o600",
+000314 |           "uid": 501,
+000315 |           "gid": 20,
+000316 |           "stat_size_bytes": 48,
+000317 |           "name": "<redacted-unknown-name>"
+000318 |         },
+000319 |         {
+000320 |           "kind": "directory",
+000321 |           "mode": "0o700",
+000322 |           "uid": 501,
+000323 |           "gid": 20,
+000324 |           "stat_size_bytes": 96,
+000325 |           "name": "blob_storage"
+000326 |         },
+000327 |         {
+000328 |           "kind": "file",
+000329 |           "mode": "0o600",
+000330 |           "uid": 501,
+000331 |           "gid": 20,
+000332 |           "stat_size_bytes": 69,
+000333 |           "name": "<redacted-unknown-name>"
+000334 |         },
+000335 |         {
+000336 |           "kind": "file",
+000337 |           "mode": "0o600",
+000338 |           "uid": 501,
+000339 |           "gid": 20,
+000340 |           "stat_size_bytes": 47,
+000341 |           "name": "<redacted-unknown-name>"
+000342 |         },
+000343 |         {
+000344 |           "kind": "directory",
+000345 |           "mode": "0o700",
+000346 |           "uid": 501,
+000347 |           "gid": 20,
+000348 |           "stat_size_bytes": 128,
+000349 |           "name": "<redacted-unknown-name>"
+000350 |         },
+000351 |         {
+000352 |           "kind": "directory",
+000353 |           "mode": "0o700",
+000354 |           "uid": 501,
+000355 |           "gid": 20,
+000356 |           "stat_size_bytes": 96,
+000357 |           "name": "<redacted-unknown-name>"
+000358 |         },
+000359 |         {
+000360 |           "kind": "directory",
+000361 |           "mode": "0o700",
+000362 |           "uid": 501,
+000363 |           "gid": 20,
+000364 |           "stat_size_bytes": 128,
+000365 |           "name": "<redacted-unknown-name>"
+000366 |         },
+000367 |         {
+000368 |           "kind": "file",
+000369 |           "mode": "0o600",
+000370 |           "uid": 501,
+000371 |           "gid": 20,
+000372 |           "stat_size_bytes": 6280,
+000373 |           "name": "claude_desktop_config.json"
+000374 |         },
+000375 |         {
+000376 |           "kind": "file",
+000377 |           "mode": "0o600",
+000378 |           "uid": 501,
+000379 |           "gid": 20,
+000380 |           "stat_size_bytes": 4839,
+000381 |           "name": "config.json"
+000382 |         },
+000383 |         {
+000384 |           "kind": "file",
+000385 |           "mode": "0o600",
+000386 |           "uid": 501,
+000387 |           "gid": 20,
+000388 |           "stat_size_bytes": 4827,
+000389 |           "name": "<redacted-unknown-name>"
+000390 |         },
+000391 |         {
+000392 |           "kind": "file",
+000393 |           "mode": "0o600",
+000394 |           "uid": 501,
+000395 |           "gid": 20,
+000396 |           "stat_size_bytes": 61,
+000397 |           "name": "<redacted-unknown-name>"
+000398 |         },
+000399 |         {
+000400 |           "kind": "file",
+000401 |           "mode": "0o600",
+000402 |           "uid": 501,
+000403 |           "gid": 20,
+000404 |           "stat_size_bytes": 32768,
+000405 |           "name": "<redacted-unknown-name>"
+000406 |         },
+000407 |         {
+000408 |           "kind": "file",
+000409 |           "mode": "0o600",
+000410 |           "uid": 501,
+000411 |           "gid": 20,
+000412 |           "stat_size_bytes": 0,
+000413 |           "name": "<redacted-unknown-name>"
+000414 |         },
+000415 |         {
+000416 |           "kind": "file",
+000417 |           "mode": "0o600",
+000418 |           "uid": 501,
+000419 |           "gid": 20,
+000420 |           "stat_size_bytes": 551,
+000421 |           "name": "<redacted-unknown-name>"
+000422 |         },
+000423 |         {
+000424 |           "kind": "file",
+000425 |           "mode": "0o600",
+000426 |           "uid": 501,
+000427 |           "gid": 20,
+000428 |           "stat_size_bytes": 40237,
+000429 |           "name": "<redacted-unknown-name>"
+000430 |         },
+000431 |         {
+000432 |           "kind": "directory",
+000433 |           "mode": "0o700",
+000434 |           "uid": 501,
+000435 |           "gid": 20,
+000436 |           "stat_size_bytes": 480,
+000437 |           "name": "<redacted-unknown-name>"
+000438 |         },
+000439 |         {
+000440 |           "kind": "file",
+000441 |           "mode": "0o600",
+000442 |           "uid": 501,
+000443 |           "gid": 20,
+000444 |           "stat_size_bytes": 8936,
+000445 |           "name": "<redacted-unknown-name>"
+000446 |         },
+000447 |         {
+000448 |           "kind": "directory",
+000449 |           "mode": "0o700",
+000450 |           "uid": 501,
+000451 |           "gid": 20,
+000452 |           "stat_size_bytes": 128,
+000453 |           "name": "<redacted-unknown-name>"
+000454 |         },
+000455 |         {
+000456 |           "kind": "file",
+000457 |           "mode": "0o600",
+000458 |           "uid": 501,
+000459 |           "gid": 20,
+000460 |           "stat_size_bytes": 11623,
+000461 |           "name": "<redacted-unknown-name>"
+000462 |         },
+000463 |         {
+000464 |           "kind": "file",
+000465 |           "mode": "0o600",
+000466 |           "uid": 501,
+000467 |           "gid": 20,
+000468 |           "stat_size_bytes": 97,
+000469 |           "name": "<redacted-unknown-name>"
+000470 |         },
+000471 |         {
+000472 |           "kind": "directory",
+000473 |           "mode": "0o700",
+000474 |           "uid": 501,
+000475 |           "gid": 20,
+000476 |           "stat_size_bytes": 96,
+000477 |           "name": "<redacted-unknown-name>"
+000478 |         },
+000479 |         {
+000480 |           "kind": "directory",
+000481 |           "mode": "0o755",
+000482 |           "uid": 501,
+000483 |           "gid": 20,
+000484 |           "stat_size_bytes": 96,
+000485 |           "name": "<redacted-unknown-name>"
+000486 |         },
+000487 |         {
+000488 |           "kind": "directory",
+000489 |           "mode": "0o700",
+000490 |           "uid": 501,
+000491 |           "gid": 20,
+000492 |           "stat_size_bytes": 288,
+000493 |           "name": "<redacted-unknown-name>"
+000494 |         },
+000495 |         {
+000496 |           "kind": "directory",
+000497 |           "mode": "0o700",
+000498 |           "uid": 501,
+000499 |           "gid": 20,
+000500 |           "stat_size_bytes": 96,
+000501 |           "name": "<redacted-unknown-name>"
+000502 |         },
+000503 |         {
+000504 |           "kind": "file",
+000505 |           "mode": "0o600",
+000506 |           "uid": 501,
+000507 |           "gid": 20,
+000508 |           "stat_size_bytes": 86,
+000509 |           "name": "<redacted-unknown-name>"
+000510 |         },
+000511 |         {
+000512 |           "kind": "directory",
+000513 |           "mode": "0o755",
+000514 |           "uid": 501,
+000515 |           "gid": 20,
+000516 |           "stat_size_bytes": 96,
+000517 |           "name": "<redacted-unknown-name>"
+000518 |         },
+000519 |         {
+000520 |           "kind": "file",
+000521 |           "mode": "0o600",
+000522 |           "uid": 501,
+000523 |           "gid": 20,
+000524 |           "stat_size_bytes": 194,
+000525 |           "name": "<redacted-unknown-name>"
+000526 |         },
+000527 |         {
+000528 |           "kind": "directory",
+000529 |           "mode": "0o700",
+000530 |           "uid": 501,
+000531 |           "gid": 20,
+000532 |           "stat_size_bytes": 64,
+000533 |           "name": "<redacted-unknown-name>"
+000534 |         }
+000535 |       ],
+000536 |       "top_level_entry_count": 54
+000537 |     },
+000538 |     "switcher_account_archives": {
+000539 |       "path": "~/.claude-switcher/accounts",
+000540 |       "kind": "directory",
+000541 |       "mode": "0o755",
+000542 |       "uid": 501,
+000543 |       "gid": 20,
+000544 |       "stat_size_bytes": 64,
+000545 |       "entries": [],
+000546 |       "top_level_entry_count": 0
+000547 |     }
+000548 |   },
+000549 |   "public_binary_literal_counts": [
+000550 |     {
+000551 |       "path": "/Applications/Claude.app/Contents/Resources/app.asar",
+000552 |       "literal_presence": {
+000553 |         "Claude Safe Storage": false,
+000554 |         " Safe Storage": true,
+000555 |         "safeStorage": true,
+000556 |         "keytar": true
+000557 |       }
+000558 |     },
+000559 |     {
+000560 |       "path": "/Applications/Claude.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+000561 |       "literal_presence": {
+000562 |         "Claude Safe Storage": false,
+000563 |         " Safe Storage": true,
+000564 |         "safeStorage": true,
+000565 |         "keytar": false
+000566 |       }
+000567 |     }
+000568 |   ],
+000569 |   "private_content_opened": false,
+000570 |   "keychain_secret_queries": 0
+000571 | }
+END_FILE_RANGE: current/experiments/p0/native/evidence/account-metadata.json 1-571
+
+FILE: current/experiments/p0/native/evidence/native-commands.json
+SHA256_ORIGINAL: 201e10134a818fa30c7a618e4797aa2afbff009d59217d1beac4c3d3a1778ec7
+ORIGINAL_LINES: 1-76
+000001 | [
+000002 |   {
+000003 |     "command": [
+000004 |       "rustfmt",
+000005 |       "--edition",
+000006 |       "2024",
+000007 |       "experiments/p0/native/native_probe.rs"
+000008 |     ],
+000009 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000010 |     "exit_code": 0,
+000011 |     "stdout": "",
+000012 |     "stderr": ""
+000013 |   },
+000014 |   {
+000015 |     "command": [
+000016 |       "rustc",
+000017 |       "--edition",
+000018 |       "2024",
+000019 |       "--target",
+000020 |       "aarch64-apple-darwin",
+000021 |       "-D",
+000022 |       "warnings",
+000023 |       "experiments/p0/native/native_probe.rs",
+000024 |       "-o",
+000025 |       "experiments/p0/native/build/native-probe"
+000026 |     ],
+000027 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000028 |     "exit_code": 0,
+000029 |     "stdout": "",
+000030 |     "stderr": ""
+000031 |   },
+000032 |   {
+000033 |     "command": [
+000034 |       "codesign",
+000035 |       "--force",
+000036 |       "--sign",
+000037 |       "-",
+000038 |       "experiments/p0/native/build/native-probe"
+000039 |     ],
+000040 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000041 |     "exit_code": 0,
+000042 |     "stdout": "",
+000043 |     "stderr": "experiments/p0/native/build/native-probe: replacing existing signature\n"
+000044 |   },
+000045 |   {
+000046 |     "command": [
+000047 |       "experiments/p0/native/build/native-probe"
+000048 |     ],
+000049 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000050 |     "exit_code": 0,
+000051 |     "stdout": "xpc_dictionary_roundtrip=PASS\nxpc_requirement_valid_rc=0\nxpc_requirement_invalid_rc=22\nsynthetic_xpc_identity_rc=-67071\nadhoc_self_validity_rc=0\nadhoc_rejected_by_apple_anchor_rc=-67050\nsmappservice_readonly_selectors=PASS\nnsxpc_signing_requirement_selector=PASS\nservices_activated=0 services_registered=0 privileged_actions=0 keychain_reads=0\n",
+000052 |     "stderr": ""
+000053 |   },
+000054 |   {
+000055 |     "command": [
+000056 |       "otool",
+000057 |       "-l",
+000058 |       "experiments/p0/native/build/native-probe"
+000059 |     ],
+000060 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000061 |     "exit_code": 0,
+000062 |     "stdout": "experiments/p0/native/build/native-probe:\nLoad command 0\n      cmd LC_SEGMENT_64\n  cmdsize 72\n  segname __PAGEZERO\n   vmaddr 0x0000000000000000\n   vmsize 0x0000000100000000\n  fileoff 0\n filesize 0\n  maxprot 0x00000000\n initprot 0x00000000\n   nsects 0\n    flags 0x0\nLoad command 1\n      cmd LC_SEGMENT_64\n  cmdsize 632\n  segname __TEXT\n   vmaddr 0x0000000100000000\n   vmsize 0x0000000000048000\n  fileoff 0\n filesize 294912\n  maxprot 0x00000005\n initprot 0x00000005\n   nsects 7\n    flags 0x0\nSection\n  sectname __text\n   segname __TEXT\n      addr 0x00000001000009a8\n      size 0x0000000000035c40\n    offset 2472\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000400\n reserved1 0\n reserved2 0\nSection\n  sectname __stubs\n   segname __TEXT\n      addr 0x00000001000365e8\n      size 0x00000000000003e4\n    offset 222696\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000408\n reserved1 0 (index into indirect symbol table)\n reserved2 12 (size of stubs)\nSection\n  sectname __gcc_except_tab\n   segname __TEXT\n      addr 0x00000001000369cc\n      size 0x00000000000011f0\n    offset 223692\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __cstring\n   segname __TEXT\n      addr 0x0000000100037bbc\n      size 0x0000000000001918\n    offset 228284\n     align 2^0 (1)\n    reloff 0\n    nreloc 0\n     flags 0x00000002\n reserved1 0\n reserved2 0\nSection\n  sectname __const\n   segname __TEXT\n      addr 0x00000001000394e0\n      size 0x000000000000335c\n    offset 234720\n     align 2^4 (16)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __unwind_info\n   segname __TEXT\n      addr 0x000000010003c83c\n      size 0x0000000000001418\n    offset 247868\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __eh_frame\n   segname __TEXT\n      addr 0x000000010003dc58\n      size 0x0000000000006c60\n    offset 253016\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x6800000b\n reserved1 0\n reserved2 0\nLoad command 2\n      cmd LC_SEGMENT_64\n  cmdsize 232\n  segname __DATA_CONST\n   vmaddr 0x0000000100048000\n   vmsize 0x0000000000004000\n  fileoff 294912\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 2\n    flags 0x10\nSection\n  sectname __const\n   segname __DATA_CONST\n      addr 0x0000000100048000\n      size 0x0000000000001d78\n    offset 294912\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __got\n   segname __DATA_CONST\n      addr 0x0000000100049d78\n      size 0x00000000000002b0\n    offset 302456\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000006\n reserved1 83 (index into indirect symbol table)\n reserved2 0\nLoad command 3\n      cmd LC_SEGMENT_64\n  cmdsize 552\n  segname __DATA\n   vmaddr 0x000000010004c000\n   vmsize 0x0000000000004000\n  fileoff 311296\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 6\n    flags 0x0\nSection\n  sectname __data\n   segname __DATA\n      addr 0x000000010004c000\n      size 0x00000000000009b8\n    offset 311296\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_vars\n   segname __DATA\n      addr 0x000000010004c9b8\n      size 0x0000000000000090\n    offset 313784\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000013\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_data\n   segname __DATA\n      addr 0x000000010004ca48\n      size 0x0000000000000020\n    offset 313928\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000011\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_bss\n   segname __DATA\n      addr 0x000000010004ca68\n      size 0x0000000000000038\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000012\n reserved1 0\n reserved2 0\nSection\n  sectname __common\n   segname __DATA\n      addr 0x000000010004caa0\n      size 0x0000000000000028\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nSection\n  sectname __bss\n   segname __DATA\n      addr 0x000000010004cac8\n      size 0x0000000000000088\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nLoad command 4\n      cmd LC_SEGMENT_64\n  cmdsize 72\n  segname __LINKEDIT\n   vmaddr 0x0000000100050000\n   vmsize 0x0000000000028000\n  fileoff 327680\n filesize 157856\n  maxprot 0x00000001\n initprot 0x00000001\n   nsects 0\n    flags 0x0\nLoad command 5\n      cmd LC_DYLD_CHAINED_FIXUPS\n  cmdsize 16\n  dataoff 327680\n datasize 1944\nLoad command 6\n      cmd LC_DYLD_EXPORTS_TRIE\n  cmdsize 16\n  dataoff 329624\n datasize 22408\nLoad command 7\n     cmd LC_SYMTAB\n cmdsize 24\n  symoff 352984\n   nsyms 2980\n  stroff 401344\n strsize 82952\nLoad command 8\n            cmd LC_DYSYMTAB\n        cmdsize 80\n      ilocalsym 0\n      nlocalsym 2627\n     iextdefsym 2627\n     nextdefsym 267\n      iundefsym 2894\n      nundefsym 86\n         tocoff 0\n           ntoc 0\n      modtaboff 0\n        nmodtab 0\n   extrefsymoff 0\n    nextrefsyms 0\n indirectsymoff 400664\n  nindirectsyms 169\n      extreloff 0\n        nextrel 0\n      locreloff 0\n        nlocrel 0\nLoad command 9\n          cmd LC_LOAD_DYLINKER\n      cmdsize 32\n         name /usr/lib/dyld (offset 12)\nLoad command 10\n     cmd LC_UUID\n cmdsize 24\n    uuid 616C49D5-7039-314A-978E-5A6AAEE2FA17\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform 1\n    minos 13.0\n      sdk 27.0\n   ntools 1\n     tool 3\n  version 27037.1\nLoad command 12\n      cmd LC_SOURCE_VERSION\n  cmdsize 16\n  version 0.0\nLoad command 13\n       cmd LC_MAIN\n   cmdsize 24\n  entryoff 6156\n stacksize 0\nLoad command 14\n          cmd LC_LOAD_DYLIB\n      cmdsize 56\n         name /usr/lib/libSystem.B.dylib (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 1359.0.0\ncompatibility version 1.0.0\nLoad command 15\n          cmd LC_LOAD_DYLIB\n      cmdsize 104\n         name /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 5027.0.69\ncompatibility version 150.0.0\nLoad command 16\n          cmd LC_LOAD_DYLIB\n      cmdsize 96\n         name /System/Library/Frameworks/Security.framework/Versions/A/Security (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 62460.1.2\ncompatibility version 1.0.0\nLoad command 17\n          cmd LC_LOAD_DYLIB\n      cmdsize 112\n         name /System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 3298.1.1\ncompatibility version 1.0.0\nLoad command 18\n          cmd LC_LOAD_DYLIB\n      cmdsize 96\n         name /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 5027.0.69\ncompatibility version 300.0.0\nLoad command 19\n          cmd LC_LOAD_DYLIB\n      cmdsize 56\n         name /usr/lib/libobjc.A.dylib (offset 24)\n   time stamp 2 Thu Jan  1 08:00:02 1970\n      current version 228.0.0\ncompatibility version 1.0.0\nLoad command 20\n      cmd LC_FUNCTION_STARTS\n  cmdsize 16\n  dataoff 352032\n datasize 952\nLoad command 21\n      cmd LC_DATA_IN_CODE\n  cmdsize 16\n  dataoff 352984\n datasize 0\nLoad command 22\n      cmd LC_CODE_SIGNATURE\n  cmdsize 16\n  dataoff 484304\n datasize 1232\n",
+000063 |     "stderr": ""
+000064 |   },
+000065 |   {
+000066 |     "command": [
+000067 |       "otool",
+000068 |       "-L",
+000069 |       "experiments/p0/native/build/native-probe"
+000070 |     ],
+000071 |     "MACOSX_DEPLOYMENT_TARGET": "13.0",
+000072 |     "exit_code": 0,
+000073 |     "stdout": "experiments/p0/native/build/native-probe:\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement (compatibility version 1.0.0, current version 3298.1.1)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n",
+000074 |     "stderr": ""
+000075 |   }
+000076 | ]
+END_FILE_RANGE: current/experiments/p0/native/evidence/native-commands.json 1-76
+
+FILE: current/experiments/p0/native/evidence/sdk-compile.json
+SHA256_ORIGINAL: f59994c7d7787e54de44b3f6911390a0db49b50f65f323fb95b2d5be4fa8b205
+ORIGINAL_LINES: 1-19
+000001 | {
+000002 |   "command": [
+000003 |     "clang",
+000004 |     "-target",
+000005 |     "arm64-apple-macos13.0",
+000006 |     "-isysroot",
+000007 |     "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+000008 |     "-fsyntax-only",
+000009 |     "-Wall",
+000010 |     "-Wextra",
+000011 |     "-Werror",
+000012 |     "-Werror=unguarded-availability",
+000013 |     "-Werror=unguarded-availability-new",
+000014 |     "experiments/p0/native/availability_probe.m"
+000015 |   ],
+000016 |   "exit_code": 0,
+000017 |   "stdout": "",
+000018 |   "stderr": ""
+000019 | }
+END_FILE_RANGE: current/experiments/p0/native/evidence/sdk-compile.json 1-19
+
+FILE: current/experiments/p0/native/native_probe.rs
+SHA256_ORIGINAL: 2fd4f390084945a07868ed0fc65773cd25120eadccf421d63881edf12765d12f
+ORIGINAL_LINES: 1-115
+000001 | //! P0: read-only, process-local macOS FFI checks. No service activation or registration.
+000002 | use std::ffi::{CStr, c_char, c_int, c_void};
+000003 | use std::ptr::{addr_of, null, null_mut};
+000004 | type Obj = *mut c_void;
+000005 | 
+000006 | #[link(name = "System")]
+000007 | unsafe extern "C" {
+000008 |     fn xpc_dictionary_create(keys: *const *const c_char, values: *const Obj, count: usize) -> Obj;
+000009 |     fn xpc_dictionary_set_string(object: Obj, key: *const c_char, value: *const c_char);
+000010 |     fn xpc_dictionary_get_string(object: Obj, key: *const c_char) -> *const c_char;
+000011 |     fn xpc_connection_create_mach_service(name: *const c_char, queue: Obj, flags: u64) -> Obj;
+000012 |     fn xpc_connection_set_peer_code_signing_requirement(
+000013 |         connection: Obj,
+000014 |         requirement: *const c_char,
+000015 |     ) -> c_int;
+000016 |     fn xpc_release(object: Obj);
+000017 | }
+000018 | #[link(name = "CoreFoundation", kind = "framework")]
+000019 | unsafe extern "C" {
+000020 |     fn CFStringCreateWithCString(allocator: Obj, text: *const c_char, encoding: u32) -> Obj;
+000021 |     fn CFRelease(object: Obj);
+000022 | }
+000023 | #[link(name = "Security", kind = "framework")]
+000024 | unsafe extern "C" {
+000025 |     fn SecCodeCopySelf(flags: u32, result: *mut Obj) -> i32;
+000026 |     fn SecCodeCheckValidity(code: Obj, flags: u32, requirement: Obj) -> i32;
+000027 |     fn SecCodeCreateWithXPCMessage(message: Obj, flags: u32, result: *mut Obj) -> i32;
+000028 |     fn SecRequirementCreateWithString(text: Obj, flags: u32, result: *mut Obj) -> i32;
+000029 | }
+000030 | #[link(name = "ServiceManagement", kind = "framework")]
+000031 | unsafe extern "C" {
+000032 |     #[link_name = "OBJC_CLASS_$_SMAppService"]
+000033 |     static SM_APP_SERVICE_CLASS: u8;
+000034 | }
+000035 | #[link(name = "Foundation", kind = "framework")]
+000036 | unsafe extern "C" {
+000037 |     #[link_name = "OBJC_CLASS_$_NSXPCConnection"]
+000038 |     static NS_XPC_CONNECTION_CLASS: u8;
+000039 | }
+000040 | #[link(name = "objc")]
+000041 | unsafe extern "C" {
+000042 |     fn sel_registerName(name: *const c_char) -> Obj;
+000043 |     fn class_getClassMethod(class: *const c_void, selector: Obj) -> Obj;
+000044 |     fn class_getInstanceMethod(class: *const c_void, selector: Obj) -> Obj;
+000045 | }
+000046 | 
+000047 | fn main() {
+000048 |     unsafe {
+000049 |         let dict = xpc_dictionary_create(null(), null(), 0);
+000050 |         assert!(!dict.is_null());
+000051 |         xpc_dictionary_set_string(dict, c"probe".as_ptr(), c"p0-local-only".as_ptr());
+000052 |         assert_eq!(
+000053 |             CStr::from_ptr(xpc_dictionary_get_string(dict, c"probe".as_ptr())),
+000054 |             c"p0-local-only"
+000055 |         );
+000056 |         println!("xpc_dictionary_roundtrip=PASS");
+000057 | 
+000058 |         // Keep these never-activated objects until process exit. No launchd connection is resumed.
+000059 |         for (label, requirement, expected_success) in [
+000060 |             ("valid", c"anchor apple", true),
+000061 |             ("invalid", c"not a requirement", false),
+000062 |         ] {
+000063 |             let connection = xpc_connection_create_mach_service(
+000064 |                 c"org.local.p0.unregistered".as_ptr(),
+000065 |                 null_mut(),
+000066 |                 0,
+000067 |             );
+000068 |             assert!(!connection.is_null());
+000069 |             let rc =
+000070 |                 xpc_connection_set_peer_code_signing_requirement(connection, requirement.as_ptr());
+000071 |             println!("xpc_requirement_{label}_rc={rc}");
+000072 |             assert_eq!(rc == 0, expected_success);
+000073 |         }
+000074 |         let mut identity = null_mut();
+000075 |         let synthetic_rc = SecCodeCreateWithXPCMessage(dict, 0, &mut identity);
+000076 |         println!("synthetic_xpc_identity_rc={synthetic_rc}");
+000077 |         assert_ne!(synthetic_rc, 0);
+000078 |         assert!(identity.is_null());
+000079 |         xpc_release(dict);
+000080 | 
+000081 |         let mut code = null_mut();
+000082 |         assert_eq!(SecCodeCopySelf(0, &mut code), 0);
+000083 |         let self_rc = SecCodeCheckValidity(code, 0, null_mut());
+000084 |         println!("adhoc_self_validity_rc={self_rc}");
+000085 |         assert_eq!(self_rc, 0);
+000086 |         let text = CFStringCreateWithCString(null_mut(), c"anchor apple".as_ptr(), 0x08000100);
+000087 |         let mut requirement = null_mut();
+000088 |         assert_eq!(SecRequirementCreateWithString(text, 0, &mut requirement), 0);
+000089 |         let anchor_rc = SecCodeCheckValidity(code, 0, requirement);
+000090 |         println!("adhoc_rejected_by_apple_anchor_rc={anchor_rc}");
+000091 |         assert_ne!(anchor_rc, 0);
+000092 |         CFRelease(requirement);
+000093 |         CFRelease(text);
+000094 |         CFRelease(code);
+000095 | 
+000096 |         let sm_class = addr_of!(SM_APP_SERVICE_CLASS).cast();
+000097 |         let main_method =
+000098 |             class_getClassMethod(sm_class, sel_registerName(c"mainAppService".as_ptr()));
+000099 |         let status_method = class_getInstanceMethod(sm_class, sel_registerName(c"status".as_ptr()));
+000100 |         assert!(!main_method.is_null() && !status_method.is_null());
+000101 |         println!("smappservice_readonly_selectors=PASS");
+000102 |         let connection_class = addr_of!(NS_XPC_CONNECTION_CLASS).cast();
+000103 |         assert!(
+000104 |             !class_getInstanceMethod(
+000105 |                 connection_class,
+000106 |                 sel_registerName(c"setCodeSigningRequirement:".as_ptr())
+000107 |             )
+000108 |             .is_null()
+000109 |         );
+000110 |         println!("nsxpc_signing_requirement_selector=PASS");
+000111 |         println!(
+000112 |             "services_activated=0 services_registered=0 privileged_actions=0 keychain_reads=0"
+000113 |         );
+000114 |     }
+000115 | }
+END_FILE_RANGE: current/experiments/p0/native/native_probe.rs 1-115
+
+FILE: current/experiments/p0/protocol/.gitignore
+SHA256_ORIGINAL: 306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368
+ORIGINAL_LINES: 1-1
+000001 | /target/
+END_FILE_RANGE: current/experiments/p0/protocol/.gitignore 1-1
+
+FILE: current/experiments/p0/protocol/Cargo.lock
+SHA256_ORIGINAL: e8fa20a1bdc921b47c7b672c4544920ad0fe54e0f6942e570fd75be41d99c88f
+ORIGINAL_LINES: 1-295
+000001 | # This file is automatically @generated by Cargo.
+000002 | # It is not intended for manual editing.
+000003 | version = 4
+000004 | 
+000005 | [[package]]
+000006 | name = "block-buffer"
+000007 | version = "0.12.1"
+000008 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000009 | checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
+000010 | dependencies = [
+000011 |  "hybrid-array",
+000012 | ]
+000013 | 
+000014 | [[package]]
+000015 | name = "cfg-if"
+000016 | version = "1.0.5"
+000017 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000018 | checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
+000019 | 
+000020 | [[package]]
+000021 | name = "const-oid"
+000022 | version = "0.10.2"
+000023 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000024 | checksum = "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c"
+000025 | 
+000026 | [[package]]
+000027 | name = "cpufeatures"
+000028 | version = "0.3.1"
+000029 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000030 | checksum = "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566"
+000031 | dependencies = [
+000032 |  "libc",
+000033 | ]
+000034 | 
+000035 | [[package]]
+000036 | name = "crypto-common"
+000037 | version = "0.2.2"
+000038 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000039 | checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
+000040 | dependencies = [
+000041 |  "hybrid-array",
+000042 | ]
+000043 | 
+000044 | [[package]]
+000045 | name = "curve25519-dalek"
+000046 | version = "5.0.0"
+000047 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000048 | checksum = "b5eed333089e2e1c1ac8c6c0398e5e2497b4c9926ca6d0365ed1e099afa5bc23"
+000049 | dependencies = [
+000050 |  "cfg-if",
+000051 |  "cpufeatures",
+000052 |  "curve25519-dalek-derive",
+000053 |  "digest",
+000054 |  "fiat-crypto",
+000055 |  "rustc_version",
+000056 |  "subtle",
+000057 |  "zeroize",
+000058 | ]
+000059 | 
+000060 | [[package]]
+000061 | name = "curve25519-dalek-derive"
+000062 | version = "0.1.1"
+000063 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000064 | checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
+000065 | dependencies = [
+000066 |  "proc-macro2",
+000067 |  "quote",
+000068 |  "syn 2.0.119",
+000069 | ]
+000070 | 
+000071 | [[package]]
+000072 | name = "digest"
+000073 | version = "0.11.3"
+000074 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000075 | checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+000076 | dependencies = [
+000077 |  "block-buffer",
+000078 |  "const-oid",
+000079 |  "crypto-common",
+000080 | ]
+000081 | 
+000082 | [[package]]
+000083 | name = "ed25519"
+000084 | version = "3.0.0"
+000085 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000086 | checksum = "29fcf32e6c73d1079f83ab4d782de2d81620346a5f38c6237a86a22f8368980a"
+000087 | dependencies = [
+000088 |  "signature",
+000089 | ]
+000090 | 
+000091 | [[package]]
+000092 | name = "ed25519-dalek"
+000093 | version = "3.0.0"
+000094 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000095 | checksum = "6ebaa1a2bf1290ab3bfe5a7b771d050ebffab2711c19a81691c683a5144a25de"
+000096 | dependencies = [
+000097 |  "curve25519-dalek",
+000098 |  "ed25519",
+000099 |  "sha2",
+000100 |  "subtle",
+000101 |  "zeroize",
+000102 | ]
+000103 | 
+000104 | [[package]]
+000105 | name = "fiat-crypto"
+000106 | version = "0.3.0"
+000107 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000108 | checksum = "64cd1e32ddd350061ae6edb1b082d7c54915b5c672c389143b9a63403a109f24"
+000109 | 
+000110 | [[package]]
+000111 | name = "hybrid-array"
+000112 | version = "0.4.15"
+000113 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000114 | checksum = "27f864f10dfb56725ce5ce5472bc52252c8f93a4ab86327122cebf62c5f59a17"
+000115 | dependencies = [
+000116 |  "typenum",
+000117 | ]
+000118 | 
+000119 | [[package]]
+000120 | name = "itoa"
+000121 | version = "1.0.18"
+000122 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000123 | checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+000124 | 
+000125 | [[package]]
+000126 | name = "libc"
+000127 | version = "0.2.191"
+000128 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000129 | checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
+000130 | 
+000131 | [[package]]
+000132 | name = "memchr"
+000133 | version = "2.8.3"
+000134 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000135 | checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
+000136 | 
+000137 | [[package]]
+000138 | name = "p0-protocol-fixture"
+000139 | version = "0.0.0"
+000140 | dependencies = [
+000141 |  "ed25519-dalek",
+000142 |  "semver",
+000143 |  "serde",
+000144 |  "serde_json",
+000145 |  "sha2",
+000146 | ]
+000147 | 
+000148 | [[package]]
+000149 | name = "proc-macro2"
+000150 | version = "1.0.107"
+000151 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000152 | checksum = "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9"
+000153 | dependencies = [
+000154 |  "unicode-ident",
+000155 | ]
+000156 | 
+000157 | [[package]]
+000158 | name = "quote"
+000159 | version = "1.0.47"
+000160 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000161 | checksum = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001"
+000162 | dependencies = [
+000163 |  "proc-macro2",
+000164 | ]
+000165 | 
+000166 | [[package]]
+000167 | name = "rustc_version"
+000168 | version = "0.4.1"
+000169 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000170 | checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
+000171 | dependencies = [
+000172 |  "semver",
+000173 | ]
+000174 | 
+000175 | [[package]]
+000176 | name = "semver"
+000177 | version = "1.0.28"
+000178 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000179 | checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
+000180 | dependencies = [
+000181 |  "serde",
+000182 |  "serde_core",
+000183 | ]
+000184 | 
+000185 | [[package]]
+000186 | name = "serde"
+000187 | version = "1.0.229"
+000188 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000189 | checksum = "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba"
+000190 | dependencies = [
+000191 |  "serde_core",
+000192 |  "serde_derive",
+000193 | ]
+000194 | 
+000195 | [[package]]
+000196 | name = "serde_core"
+000197 | version = "1.0.229"
+000198 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000199 | checksum = "67dca2c9c51e58a4791a4b1ed58308b39c64224d349a935ab5039aa360942a48"
+000200 | dependencies = [
+000201 |  "serde_derive",
+000202 | ]
+000203 | 
+000204 | [[package]]
+000205 | name = "serde_derive"
+000206 | version = "1.0.229"
+000207 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000208 | checksum = "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348"
+000209 | dependencies = [
+000210 |  "proc-macro2",
+000211 |  "quote",
+000212 |  "syn 3.0.9",
+000213 | ]
+000214 | 
+000215 | [[package]]
+000216 | name = "serde_json"
+000217 | version = "1.0.154"
+000218 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000219 | checksum = "e7e9cc8b1b85264074fbcc02a88680c4096b1e47df8f739dceb03bf482f04bd6"
+000220 | dependencies = [
+000221 |  "itoa",
+000222 |  "memchr",
+000223 |  "serde",
+000224 |  "serde_core",
+000225 |  "zmij",
+000226 | ]
+000227 | 
+000228 | [[package]]
+000229 | name = "sha2"
+000230 | version = "0.11.1"
+000231 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000232 | checksum = "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
+000233 | dependencies = [
+000234 |  "cfg-if",
+000235 |  "cpufeatures",
+000236 |  "digest",
+000237 | ]
+000238 | 
+000239 | [[package]]
+000240 | name = "signature"
+000241 | version = "3.0.0"
+000242 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000243 | checksum = "28d567dcbaf0049cb8ac2608a76cd95ff9e4412e1899d389ee400918ca7537f5"
+000244 | 
+000245 | [[package]]
+000246 | name = "subtle"
+000247 | version = "2.6.1"
+000248 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000249 | checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
+000250 | 
+000251 | [[package]]
+000252 | name = "syn"
+000253 | version = "2.0.119"
+000254 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000255 | checksum = "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297"
+000256 | dependencies = [
+000257 |  "proc-macro2",
+000258 |  "quote",
+000259 |  "unicode-ident",
+000260 | ]
+000261 | 
+000262 | [[package]]
+000263 | name = "syn"
+000264 | version = "3.0.9"
+000265 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000266 | checksum = "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
+000267 | dependencies = [
+000268 |  "proc-macro2",
+000269 |  "quote",
+000270 |  "unicode-ident",
+000271 | ]
+000272 | 
+000273 | [[package]]
+000274 | name = "typenum"
+000275 | version = "1.20.1"
+000276 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000277 | checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
+000278 | 
+000279 | [[package]]
+000280 | name = "unicode-ident"
+000281 | version = "1.0.27"
+000282 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000283 | checksum = "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563"
+000284 | 
+000285 | [[package]]
+000286 | name = "zeroize"
+000287 | version = "1.9.1"
+000288 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000289 | checksum = "e13084392c5e4bc371903e2935a5eaeed24905a7511356b883835e18a78f6879"
+000290 | 
+000291 | [[package]]
+000292 | name = "zmij"
+000293 | version = "1.0.23"
+000294 | source = "registry+https://github.com/rust-lang/crates.io-index"
+000295 | checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+END_FILE_RANGE: current/experiments/p0/protocol/Cargo.lock 1-295
+
+FILE: current/experiments/p0/protocol/Cargo.toml
+SHA256_ORIGINAL: 73d301a875ef7b2b283df90b6d1db7538e7d0b29ecfd901a88bc7fdee5f4a2b9
+ORIGINAL_LINES: 1-15
+000001 | [package]
+000002 | name = "p0-protocol-fixture"
+000003 | version = "0.0.0"
+000004 | edition = "2024"
+000005 | rust-version = "1.96"
+000006 | publish = false
+000007 | 
+000008 | [dependencies]
+000009 | ed25519-dalek = "=3.0.0"
+000010 | semver = { version = "=1.0.28", features = ["serde"] }
+000011 | serde = { version = "=1.0.229", features = ["derive"] }
+000012 | serde_json = "=1.0.154"
+000013 | sha2 = "=0.11.1"
+000014 | 
+000015 | [workspace]
+END_FILE_RANGE: current/experiments/p0/protocol/Cargo.toml 1-15
+
+FILE: current/experiments/p0/protocol/src/ads.rs
+SHA256_ORIGINAL: 3f076947a3cb01d5e5b5acee66b6ec9b61b693ce3360713e4fa714fabc645b01
+ORIGINAL_LINES: 1-1
+000001 | // P0 ad protocol slice follows after the signed-envelope check.
+END_FILE_RANGE: current/experiments/p0/protocol/src/ads.rs 1-1
+
+FILE: current/experiments/p0/protocol/src/lib.rs
+SHA256_ORIGINAL: c56444eba1c8562e2063ffac29abe5c8d08f72e48fa12da426c5fdc587d683f9
+ORIGINAL_LINES: 1-86
+000001 | //! P0-only protocol experiment. No HTTP, filesystem, installer, or account access.
+000002 | use ed25519_dalek::{Signature, VerifyingKey};
+000003 | use serde::{Deserialize, Serialize, de::DeserializeOwned};
+000004 | use sha2::{Digest, Sha256};
+000005 | 
+000006 | pub mod ads;
+000007 | pub mod publication;
+000008 | pub mod update;
+000009 | 
+000010 | pub type Result<T> = std::result::Result<T, &'static str>;
+000011 | 
+000012 | #[derive(Clone)]
+000013 | pub struct PinnedKey {
+000014 |     pub id: &'static str,
+000015 |     pub public: VerifyingKey,
+000016 | }
+000017 | 
+000018 | #[derive(Serialize, Deserialize)]
+000019 | #[serde(deny_unknown_fields)]
+000020 | pub struct Envelope {
+000021 |     // A JSON string transports the exact UTF-8 signed payload bytes.
+000022 |     pub payload: String,
+000023 |     pub signature: Vec<u8>,
+000024 | }
+000025 | 
+000026 | pub fn digest(bytes: &[u8]) -> String {
+000027 |     Sha256::digest(bytes).iter().map(|byte| format!("{byte:02x}")).collect()
+000028 | }
+000029 | 
+000030 | pub fn verify<T: DeserializeOwned>(wire: &[u8], key: &PinnedKey) -> Result<(T, String)> {
+000031 |     let envelope: Envelope = serde_json::from_slice(wire).map_err(|_| "envelope_json")?;
+000032 |     let signature = Signature::from_slice(&envelope.signature).map_err(|_| "signature_shape")?;
+000033 |     key.public
+000034 |         .verify_strict(envelope.payload.as_bytes(), &signature)
+000035 |         .map_err(|_| "signature")?;
+000036 |     let body = serde_json::from_str(&envelope.payload).map_err(|_| "payload_json")?;
+000037 |     Ok((body, digest(envelope.payload.as_bytes())))
+000038 | }
+000039 | 
+000040 | pub fn valid_time(issued: u64, expires: u64, now: u64, trusted: bool) -> Result<()> {
+000041 |     if !trusted { return Err("clock_untrusted"); }
+000042 |     if issued > now || expires <= now || expires <= issued { return Err("time"); }
+000043 |     Ok(())
+000044 | }
+000045 | 
+000046 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+000047 | pub enum Edition { Personal, Public }
+000048 | 
+000049 | #[derive(Default, Debug, Clone, PartialEq, Eq)]
+000050 | pub struct Sequence {
+000051 |     pub highest: u64,
+000052 |     pub payload_hash: Option<String>,
+000053 | }
+000054 | 
+000055 | impl Sequence {
+000056 |     pub fn check(&self, sequence: u64, hash: &str) -> Result<()> {
+000057 |         if sequence == 0 || sequence < self.highest { return Err("old_sequence"); }
+000058 |         if sequence == self.highest && self.payload_hash.as_deref() != Some(hash) {
+000059 |             return Err("sequence_conflict");
+000060 |         }
+000061 |         Ok(())
+000062 |     }
+000063 |     pub fn remember(&mut self, sequence: u64, hash: String) {
+000064 |         self.highest = sequence;
+000065 |         self.payload_hash = Some(hash);
+000066 |     }
+000067 | }
+000068 | 
+000069 | #[cfg(test)]
+000070 | pub mod fixture {
+000071 |     use super::*;
+000072 |     use ed25519_dalek::{Signer, SigningKey};
+000073 |     // PUBLIC TEST FIXTURES. These fixed bytes are deliberately not production secrets.
+000074 |     pub const UPDATE_SEED: [u8; 32] = [0x11; 32];
+000075 |     pub const AD_SEED: [u8; 32] = [0x22; 32];
+000076 |     pub fn key(seed: &[u8; 32], id: &'static str) -> PinnedKey {
+000077 |         PinnedKey { id, public: SigningKey::from_bytes(seed).verifying_key() }
+000078 |     }
+000079 |     pub fn sign_raw(payload: &str, seed: &[u8; 32]) -> Vec<u8> {
+000080 |         let signature = SigningKey::from_bytes(seed).sign(payload.as_bytes());
+000081 |         serde_json::to_vec(&Envelope { payload: payload.to_owned(), signature: signature.to_bytes().to_vec() }).unwrap()
+000082 |     }
+000083 |     pub fn sign<T: Serialize>(value: &T, seed: &[u8; 32]) -> Vec<u8> {
+000084 |         sign_raw(&serde_json::to_string(value).unwrap(), seed)
+000085 |     }
+000086 | }
+END_FILE_RANGE: current/experiments/p0/protocol/src/lib.rs 1-86
+
+FILE: current/experiments/p0/protocol/src/publication.rs
+SHA256_ORIGINAL: 6f01be5eb89662abde24a62f3e3e519f99c8927fc4fb37e635b4f37a2f4751df
+ORIGINAL_LINES: 1-1
+000001 | // P0 publication simulation follows after the signed-envelope check.
+END_FILE_RANGE: current/experiments/p0/protocol/src/publication.rs 1-1
+
+FILE: current/experiments/p0/protocol/src/update.rs
+SHA256_ORIGINAL: e12589c1fe63ca9cc6f3f577dec44ab55216851dea093ae84e52b1ce2b3dd447
+ORIGINAL_LINES: 1-1
+000001 | // P0 update protocol slice follows after the signed-envelope check.
+END_FILE_RANGE: current/experiments/p0/protocol/src/update.rs 1-1
+
+FILE: current/experiments/p0/protocol/tests/signed_payload.rs
+SHA256_ORIGINAL: 46994364ad48ee2e3766afa8f7c561c24b573149069f4a23d30d0b152fae1b82
+ORIGINAL_LINES: 1-24
+000001 | use ed25519_dalek::{Signer, SigningKey};
+000002 | use p0_protocol_fixture::{Envelope, PinnedKey, verify};
+000003 | use serde::Deserialize;
+000004 | 
+000005 | #[derive(Debug, Deserialize)]
+000006 | #[serde(deny_unknown_fields)]
+000007 | struct Body { value: u32 }
+000008 | 
+000009 | #[test]
+000010 | fn exact_raw_bytes_are_signed_before_strict_payload_parsing() {
+000011 |     let test_key = SigningKey::from_bytes(&[0x11; 32]);
+000012 |     let pin = PinnedKey { id: "test-only", public: test_key.verifying_key() };
+000013 |     let raw = "{\"value\":42}";
+000014 |     let mut envelope = Envelope { payload: raw.into(), signature: test_key.sign(raw.as_bytes()).to_bytes().to_vec() };
+000015 |     let wire = serde_json::to_vec(&envelope).unwrap();
+000016 |     assert_eq!(verify::<Body>(&wire, &pin).unwrap().0.value, 42);
+000017 |     envelope.payload = "{ \"value\":42}".into();
+000018 |     assert_eq!(verify::<Body>(&serde_json::to_vec(&envelope).unwrap(), &pin).unwrap_err(), "signature");
+000019 |     for bad in ["{\"value\":42,\"value\":43}", "{\"value\":42,\"command\":\"ignored\"}"] {
+000020 |         envelope.payload = bad.into();
+000021 |         envelope.signature = test_key.sign(bad.as_bytes()).to_bytes().to_vec();
+000022 |         assert_eq!(verify::<Body>(&serde_json::to_vec(&envelope).unwrap(), &pin).unwrap_err(), "payload_json");
+000023 |     }
+000024 | }
+END_FILE_RANGE: current/experiments/p0/protocol/tests/signed_payload.rs 1-24
+
+FILE: current/linux/README.md
+SHA256_ORIGINAL: afd837974de8b313a770d19d2c70c4333d6a93b2dd38491607af499322bb0028
+ORIGINAL_LINES: 1-59
+000001 | # Claude 切换器 · Linux 版 (Beta)
+000002 | 
+000003 | > ⚠️ **本版本为 Beta**。核心逻辑移植自 macOS 稳定版,但 Linux 发行版差异大,遇到问题请到 [Issues](https://github.com/517183415-dev/claude-switcher/issues) 反馈。
+000004 | 
+000005 | ## 先说最重要的设计差异(为什么是这些取舍)
+000006 | 
+000007 | 1. **Claude 官方没有 Linux 桌面版**——Linux 上的使用形态是「网页版(浏览器) + Claude Code CLI」。因此:
+000008 |    - **账号切换**切换的是**浏览器登录态**(对 `~/.config/google-chrome` 或 `~/.config/chromium` 做快照交换),切换前会完全退出浏览器
+000009 |    - **保镖**只终止 `claude` CLI 进程,**不会关你的浏览器**(网页版没有独立进程可归因,关浏览器体验太糟;网页端的保护由 TUN + 置顶规则兜底)
+000010 | 2. **没有图形界面**——Linux 桌面环境太多样,本版提供**终端交互菜单**(`claude-switch menu`)+ 完整命令行接口
+000011 | 3. **常驻服务用 systemd 用户单元**——免 root、登录自启、崩溃自动拉起
+000012 | 
+000013 | ## 系统要求
+000014 | 
+000015 | > **注意**：macOS 版已支持多代理客户端（Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud）与地区自适应（按出口国家自动锁定时区+地区格式，换节点后 `set-region` 一键重配）。Linux 版当前仍默认按美国出口设计，安装时会按 ipinfo 自动锁定时区；其他国家/地区的完整支持在路线图中。另外，自动更新（`update` 命令 + 12 小时自动检查）与 48 小时 IP 审查目前仅 macOS 版提供，后续版本同步。
+000016 | 
+000017 | - 任一现代发行版(Ubuntu/Debian/Fedora/Arch 等,systemd)
+000018 | - [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev) Linux 版,TUN 模式可用
+000019 | - python3、bash、curl
+000020 | - 建议安装 `dnsutils`(Debian/Ubuntu)或 `bind-utils`(Fedora)以获得 dig;没有也能跑(自动回退 nslookup/getent)
+000021 | 
+000022 | ## 安装
+000023 | 
+000024 | ```bash
+000025 | # 先开好代理(TUN + 美国节点),安装器会校验出口必须是美国
+000026 | bash install.sh
+000027 | ```
+000028 | 
+000029 | - 安装器自动识别代理组名和时区(按出口 IP)
+000030 | - 时区锁定和 IPv6 关闭需要一次 sudo 密码
+000031 | - IPv6 关闭会持久化到 `/etc/sysctl.d/90-claude-switcher.conf`;恢复:删掉该文件后 `sudo sysctl -p`
+000032 | 
+000033 | ## 使用
+000034 | 
+000035 | ```bash
+000036 | claude-switch menu          # 交互菜单(推荐)
+000037 | claude-switch checkdetail   # 14 项逐项检查
+000038 | claude-switch fix           # 一键修复
+000039 | claude-switch switch A      # 切到账号A(切换浏览器登录态)
+000040 | ```
+000041 | 
+000042 | ## 与 macOS/Windows 版的差异
+000043 | 
+000044 | | 项目 | Linux 版 |
+000045 | |---|---|
+000046 | | 账号切换对象 | 浏览器配置目录(Chrome/Chromium),不是独立 App |
+000047 | | 保镖保护对象 | `claude` CLI 进程(不关浏览器) |
+000048 | | 常驻方式 | systemd 用户服务(免 root) |
+000049 | | 界面 | 终端菜单 + CLI |
+000050 | | 时区/IPv6 | timedatectl / sysctl(需 sudo) |
+000051 | 
+000052 | ## 卸载
+000053 | 
+000054 | ```bash
+000055 | systemctl --user disable --now claude-bodyguard.service
+000056 | rm -f ~/.config/systemd/user/claude-bodyguard.service
+000057 | rm -rf ~/.claude-switcher ~/.local/bin/claude-switch
+000058 | sudo rm -f /etc/sysctl.d/90-claude-switcher.conf
+000059 | ```
+END_FILE_RANGE: current/linux/README.md 1-59
+
+FILE: current/linux/claude-bodyguard.sh
+SHA256_ORIGINAL: e0c5582f0b7cbf70bfea8f9757f3a9bfa4bba4939ec8f02a2ce4247189d7e254
+ORIGINAL_LINES: 1-15
+000001 | #!/bin/bash
+000002 | # Claude 保镖 (Linux) —— 代理离线时自动关闭 claude CLI 进程
+000003 | # 说明: Linux 上 Claude 使用形态是 网页版(浏览器) + Claude Code CLI。
+000004 | # 保镖只终止 claude CLI(掉了不会误伤你正在用的浏览器)。
+000005 | LOG="$HOME/.claude-switcher/bodyguard.log"
+000006 | 
+000007 | while true; do
+000008 |     if ! pgrep -f 'verge-mihomo|mihomo' >/dev/null 2>&1 || ! ip addr 2>/dev/null | grep -q 'inet 198\.18\.'; then
+000009 |         if pgrep -x claude >/dev/null 2>&1; then
+000010 |             pkill -x claude
+000011 |             echo "$(date '+%Y-%m-%d %H:%M:%S') 代理离线(内核或TUN丢失),已自动关闭 claude CLI" >>"$LOG"
+000012 |         fi
+000013 |     fi
+000014 |     sleep 10
+000015 | done
+END_FILE_RANGE: current/linux/claude-bodyguard.sh 1-15
+
+FILE: current/linux/claude-switch.sh
+SHA256_ORIGINAL: 8779c5b14097e52a503a869ec1f267293275e3a0a35513099ce6e41442c1f2dc
+ORIGINAL_LINES: 1-280
+000001 | #!/bin/bash
+000002 | # Claude 账号切换器 - Linux 核心脚本
+000003 | # 用法: claude-switch.sh checkdetail|status|fix|switch A|B|menu
+000004 | set -u
+000005 | export LC_ALL=en_US.UTF-8
+000006 | 
+000007 | # ============ 安装时可配置项(安装器自动改写) ============
+000008 | TZ_TARGET="America/New_York"     # 锁定时区,与出口IP城市一致
+000009 | PROXY_GROUP="GLOBAL"             # Clash 代理组名
+000010 | # =======================================================
+000011 | 
+000012 | BASE="$HOME/.claude-switcher"
+000013 | DATA="$HOME/.config/google-chrome"   # Web 版登录态目录(Chrome)
+000014 | [ -d "$HOME/.config/chromium" ] && [ ! -d "$DATA" ] && DATA="$HOME/.config/chromium"
+000015 | LOG="$BASE/claude-switch.log"
+000016 | CLASH_DIR="$HOME/.config/io.github.clash-verge-rev.clash-verge-rev"
+000017 | [ -d "$HOME/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev" ] && CLASH_DIR="$HOME/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
+000018 | mkdir -p "$BASE/accounts"
+000019 | 
+000020 | log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >>"$LOG"; }
+000021 | 
+000022 | tun_up() { ip addr 2>/dev/null | grep -q 'inet 198\.18\.'; }
+000023 | core_up() { pgrep -f 'verge-mihomo|mihomo' >/dev/null 2>&1; }
+000024 | 
+000025 | dns_query() {
+000026 |     # dig → nslookup → getent 逐级回退
+000027 |     if command -v dig >/dev/null 2>&1; then dig +short +time=3 +tries=1 "$1" 2>/dev/null | head -1
+000028 |     elif command -v nslookup >/dev/null 2>&1; then nslookup -timeout=3 "$1" 2>/dev/null | awk '/^Address: /{print $2}' | tail -1
+000029 |     else getent ahostsv4 "$1" 2>/dev/null | awk 'NR==1{print $1}'; fi
+000030 | }
+000031 | 
+000032 | egress() {
+000033 |     local t
+000034 |     t=$(curl -s --max-time 8 https://www.cloudflare.com/cdn-cgi/trace 2>/dev/null)
+000035 |     echo "$(echo "$t" | grep '^ip=' | cut -d= -f2) $(echo "$t" | grep '^loc=' | cut -d= -f2)"
+000036 | }
+000037 | 
+000038 | webrtc_test() { python3 "$BASE/stun-probe.py" 2>/dev/null; }
+000039 | 
+000040 | checkdetail() {
+000041 |     core_up && echo '代理内核=ok' || echo '代理内核=fail:未运行'
+000042 |     tun_up && echo 'TUN网卡=ok' || echo 'TUN网卡=fail:不在线'
+000043 | 
+000044 |     read -r ip loc <<< "$(egress)"
+000045 |     [ "$loc" = "US" ] && echo "出口IP=ok:$ip" || echo "出口IP=fail:${ip:-无}/${loc:-未知}"
+000046 | 
+000047 |     lastip=""; [ -f "$BASE/lastip" ] && lastip=$(cat "$BASE/lastip")
+000048 |     if [ -z "$ip" ]; then echo 'IP一致=fail:未获取到出口IP'
+000049 |     elif [ -z "$lastip" ]; then echo 'IP一致=ok:首次记录'
+000050 |     elif [ "$ip" = "$lastip" ]; then echo 'IP一致=ok'
+000051 |     else echo "IP一致=warn:$lastip → $ip"; fi
+000052 |     [ -n "$ip" ] && echo "$ip" > "$BASE/lastip"
+000053 | 
+000054 |     tz=$(timedatectl show -p Timezone --value 2>/dev/null)
+000055 |     [ "$tz" = "$TZ_TARGET" ] && echo '时区=ok' || echo "时区=fail:$tz"
+000056 | 
+000057 |     lang="${LANG:-$(localectl status 2>/dev/null | grep 'LANG=' | head -1 | cut -d= -f2)}"
+000058 |     case "$lang" in en_US*) echo '地区=ok' ;; *) echo "地区=fail:$lang" ;; esac
+000059 | 
+000060 |     v6=$(sysctl -n net.ipv6.conf.all.disable_ipv6 2>/dev/null)
+000061 |     [ "$v6" = "1" ] && echo 'IPv6=ok:已关闭' || echo 'IPv6=fail:未关闭'
+000062 | 
+000063 |     dnsip=$(dns_query claude.ai)
+000064 |     case "$dnsip" in 198.18.*) echo 'DNS=ok:走隧道' ;; *) echo "DNS=fail:未走隧道(${dnsip:-空})" ;; esac
+000065 | 
+000066 |     wr=$(webrtc_test)
+000067 |     case "$wr" in
+000068 |         RESULT:NONE) echo 'WebRTC=ok:UDP不出网,零暴露' ;;
+000069 |         RESULT:*)
+000070 |             wips=${wr#RESULT:}; leak=""
+000071 |             OLDIFS=$IFS; IFS=','
+000072 |             for w in $wips; do [ "$w" != "$ip" ] && leak="$leak $w"; done
+000073 |             IFS=$OLDIFS
+000074 |             [ -n "$leak" ] && echo "WebRTC=fail:暴露非代理IP:$leak" || echo 'WebRTC=ok:仅暴露代理IP' ;;
+000075 |         *) echo 'WebRTC=fail:检测异常' ;;
+000076 |     esac
+000077 | 
+000078 |     if systemctl --user is-active claude-bodyguard.service >/dev/null 2>&1; then
+000079 |         lastkill=$(tail -1 "$BASE/bodyguard.log" 2>/dev/null | cut -c1-40)
+000080 |         echo "保镖=ok:${lastkill:-待命}"
+000081 |     else
+000082 |         echo '保镖=fail:未运行'
+000083 |     fi
+000084 | 
+000085 |     grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null \
+000086 |         && echo '规则置顶=ok' || echo '规则置顶=fail:未生效'
+000087 | 
+000088 |     echo '客户端语言=ok:跟随系统'
+000089 | 
+000090 |     org=$(curl -s --max-time 6 https://ipinfo.io/json 2>/dev/null | grep '"org"' | cut -d'"' -f4)
+000091 |     case "$org" in
+000092 |         '') echo 'ASN属性=warn:未获取' ;;
+000093 |         *Comcast*|*AT\&T*|*Verizon*|*Spectrum*|*Charter*|*Cox*|*T-Mobile*|*Cable*|*esidential*) echo "ASN属性=ok:$org" ;;
+000094 |         *) echo "ASN属性=warn:疑似机房($org)" ;;
+000095 |     esac
+000096 | 
+000097 |     r1=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://claude.ai/ 2>/dev/null)
+000098 |     r2=$(curl -s --max-time 8 -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/models 2>/dev/null)
+000099 |     if [ "$r1" != "000" ] && [ "$r2" != "000" ]; then
+000100 |         echo "生态可达性=ok:claude.ai:$r1 api:$r2"
+000101 |     else
+000102 |         echo "生态可达性=fail:claude.ai:$r1 api:$r2"
+000103 |     fi
+000104 | }
+000105 | 
+000106 | fix() {
+000107 |     echo "FIX:开始一键修复"
+000108 | 
+000109 |     if ! core_up; then
+000110 |         echo "FIX:正在尝试启动 Clash Verge..."
+000111 |         (clash-verge >/dev/null 2>&1 &) || (clash-verge-rev >/dev/null 2>&1 &) || echo "FIX:未找到启动命令,请手动启动 Clash Verge"
+000112 |     fi
+000113 |     for i in $(seq 1 40); do
+000114 |         core_up && tun_up && break
+000115 |         sleep 1
+000116 |     done
+000117 |     if core_up && tun_up; then
+000118 |         echo "FIX:代理内核+TUN ✓"
+000119 |     else
+000120 |         echo "FIX:代理内核/TUN ✗(请检查 Clash Verge 的 TUN 开关与节点)"
+000121 |     fi
+000122 | 
+000123 |     # 时区/IPv6/DNS(sudo)
+000124 |     adminCmds=""
+000125 |     tz=$(timedatectl show -p Timezone --value 2>/dev/null)
+000126 |     [ "$tz" != "$TZ_TARGET" ] && adminCmds="${adminCmds}timedatectl set-timezone $TZ_TARGET; "
+000127 |     [ "$(sysctl -n net.ipv6.conf.all.disable_ipv6 2>/dev/null)" != "1" ] && adminCmds="${adminCmds}sysctl -w net.ipv6.conf.all.disable_ipv6=1; "
+000128 |     if [ -n "$adminCmds" ]; then
+000129 |         echo "FIX:修复时区/IPv6(需要 sudo 密码)..."
+000130 |         sudo bash -c "$adminCmds" && echo "FIX:时区/IPv6 ✓" || echo "FIX:时区/IPv6 ✗"
+000131 |     else
+000132 |         echo "FIX:时区/IPv6 无需修复 ✓"
+000133 |     fi
+000134 |     command -v resolvectl >/dev/null 2>&1 && resolvectl flush-caches 2>/dev/null
+000135 |     command -v systemd-resolve >/dev/null 2>&1 && systemd-resolve --flush-caches 2>/dev/null
+000136 | 
+000137 |     # 保镖(systemd user 服务,免 sudo)
+000138 |     if ! systemctl --user is-active claude-bodyguard.service >/dev/null 2>&1; then
+000139 |         echo "FIX:注册并启动保镖服务..."
+000140 |         mkdir -p "$HOME/.config/systemd/user"
+000141 |         cat > "$HOME/.config/systemd/user/claude-bodyguard.service" <<EOF
+000142 | [Unit]
+000143 | Description=Claude Bodyguard (kill claude CLI when proxy down)
+000144 | 
+000145 | [Service]
+000146 | ExecStart=/bin/bash $BASE/claude-bodyguard.sh
+000147 | Restart=always
+000148 | RestartSec=5
+000149 | 
+000150 | [Install]
+000151 | WantedBy=default.target
+000152 | EOF
+000153 |         systemctl --user daemon-reload
+000154 |         systemctl --user enable --now claude-bodyguard.service >/dev/null 2>&1 \
+000155 |             && echo "FIX:保镖 ✓" || echo "FIX:保镖 ✗"
+000156 |     fi
+000157 | 
+000158 |     # 置顶规则
+000159 |     if ! grep -q "DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP" "$CLASH_DIR/clash-verge.yaml" 2>/dev/null; then
+000160 |         echo "FIX:重写置顶规则..."
+000161 |         mkdir -p "$CLASH_DIR/profiles"
+000162 |         cat > "$CLASH_DIR/profiles/Merge.yaml" <<MEOF
+000163 | profile:
+000164 |   store-selected: true
+000165 | 
+000166 | prepend-rules:
+000167 |   - DOMAIN-SUFFIX,claude.ai,$PROXY_GROUP
+000168 |   - DOMAIN-SUFFIX,claude.com,$PROXY_GROUP
+000169 |   - DOMAIN-SUFFIX,anthropic.com,$PROXY_GROUP
+000170 |   - DOMAIN-SUFFIX,claudeusercontent.com,$PROXY_GROUP
+000171 |   - DOMAIN-SUFFIX,challenges.cloudflare.com,$PROXY_GROUP
+000172 |   - DOMAIN-SUFFIX,datadoghq.com,$PROXY_GROUP
+000173 |   - DOMAIN-SUFFIX,segment.io,$PROXY_GROUP
+000174 |   - DOMAIN-SUFFIX,stripe.com,$PROXY_GROUP
+000175 |   - DOMAIN-SUFFIX,stripe.network,$PROXY_GROUP
+000176 |   - DOMAIN-SUFFIX,stripecdn.com,$PROXY_GROUP
+000177 |   - DOMAIN-SUFFIX,intercom.io,$PROXY_GROUP
+000178 |   - DOMAIN-SUFFIX,intercomcdn.com,$PROXY_GROUP
+000179 |   - DOMAIN-SUFFIX,intercomassets.com,$PROXY_GROUP
+000180 | MEOF
+000181 |         echo "FIX:置顶规则已写入(请重启 Clash Verge 生效)"
+000182 |     fi
+000183 | 
+000184 |     sleep 2
+000185 |     read -r ip loc <<< "$(egress)"
+000186 |     [ "$loc" = "US" ] && echo "FIX:出口IP ✓ ($ip)" || echo "FIX:出口IP ✗ (${ip:-无}/${loc:-未知}) — 请换节点/线路"
+000187 |     echo "FIX:修复流程结束"
+000188 | }
+000189 | 
+000190 | status() {
+000191 |     cur="none"; [ -f "$BASE/current" ] && cur=$(cat "$BASE/current")
+000192 |     hasA=0; [ -d "$BASE/accounts/A" ] && hasA=1
+000193 |     hasB=0; [ -d "$BASE/accounts/B" ] && hasB=1
+000194 |     echo "current=$cur hasA=$hasA hasB=$hasB"
+000195 | }
+000196 | 
+000197 | quit_browser() {
+000198 |     pgrep -f 'chrome|chromium' >/dev/null 2>&1 || return 0
+000199 |     pkill -f "$DATA" 2>/dev/null
+000200 |     for i in $(seq 1 15); do
+000201 |         pgrep -f "$DATA" >/dev/null 2>&1 || return 0
+000202 |         sleep 1
+000203 |     done
+000204 |     return 1
+000205 | }
+000206 | 
+000207 | archive_current() {
+000208 |     cur="$1"
+000209 |     rm -rf "$BASE/accounts/$cur.tmp"
+000210 |     cp -a "$DATA" "$BASE/accounts/$cur.tmp" && rm -rf "$BASE/accounts/$cur" && mv "$BASE/accounts/$cur.tmp" "$BASE/accounts/$cur"
+000211 |     log "已存档账号$cur(浏览器登录态)"
+000212 | }
+000213 | 
+000214 | switch_to() {
+000215 |     target="$1"
+000216 |     cur="none"; [ -f "$BASE/current" ] && cur=$(cat "$BASE/current")
+000217 | 
+000218 |     if [ "$cur" = "none" ] && [ -d "$DATA" ] && [ -n "$(ls -A "$DATA" 2>/dev/null)" ]; then
+000219 |         quit_browser || { echo "FAIL:浏览器未能退出,请手动关闭后重试"; return 1; }
+000220 |         archive_current A
+000221 |         cur="A"; echo "$cur" > "$BASE/current"
+000222 |         log "首次运行:当前浏览器登录态已收编为账号A"
+000223 |         echo "NOTE:已将当前登录收编为账号A"
+000224 |     fi
+000225 | 
+000226 |     if [ "$cur" = "$target" ]; then
+000227 |         echo "INFO:当前已是账号$target"
+000228 |         return 0
+000229 |     fi
+000230 | 
+000231 |     quit_browser || { echo "FAIL:浏览器未能退出,请手动关闭后重试"; return 1; }
+000232 |     [ "$cur" != "none" ] && [ -d "$DATA" ] && archive_current "$cur"
+000233 | 
+000234 |     rm -rf "$DATA.new"
+000235 |     if [ -d "$BASE/accounts/$target" ]; then
+000236 |         cp -a "$BASE/accounts/$target" "$DATA.new"
+000237 |         log "已载入账号$target 存档"
+000238 |     else
+000239 |         mkdir -p "$DATA.new"
+000240 |         log "账号$target 无存档,将以全新状态初始化"
+000241 |     fi
+000242 |     rm -rf "$DATA" && mv "$DATA.new" "$DATA"
+000243 |     echo "$target" > "$BASE/current"
+000244 |     log "已切换到账号$target"
+000245 |     echo "OK:已切换到账号$target(请重新打开浏览器)"
+000246 | }
+000247 | 
+000248 | menu() {
+000249 |     while true; do
+000250 |         clear
+000251 |         echo "=============================="
+000252 |         echo "  Claude 账号切换器 (Linux)"
+000253 |         echo "=============================="
+000254 |         echo ""
+000255 |         echo "  1) 安全检查 (checkdetail)"
+000256 |         echo "  2) 一键修复 (fix)"
+000257 |         echo "  3) 切换到账号 A"
+000258 |         echo "  4) 切换到账号 B"
+000259 |         echo "  5) 查看状态 (status)"
+000260 |         echo "  0) 退出"
+000261 |         echo ""
+000262 |         read -r -p "选择: " c
+000263 |         case "$c" in
+000264 |             1) checkdetail; read -r -p "回车继续..." _ ;;
+000265 |             2) fix; read -r -p "回车继续..." _ ;;
+000266 |             3) switch_to A; read -r -p "回车继续..." _ ;;
+000267 |             4) switch_to B; read -r -p "回车继续..." _ ;;
+000268 |             5) status; read -r -p "回车继续..." _ ;;
+000269 |             0) exit 0 ;;
+000270 |         esac
+000271 |     done
+000272 | }
+000273 | 
+000274 | case "${1:-menu}" in
+000275 |     checkdetail) OUT="$BASE/last-check.txt"; { checkdetail; } > "$OUT" 2>&1; cat "$OUT" ;;
+000276 |     status) status ;;
+000277 |     fix) fix ;;
+000278 |     switch) switch_to "${2:-}" ;;
+000279 |     menu|*) menu ;;
+000280 | esac
+END_FILE_RANGE: current/linux/claude-switch.sh 1-280
+
+FILE: current/linux/install.sh
+SHA256_ORIGINAL: d92c78f5eca333e0ab1d16475c464eaf74037713421442ef2bfbc2377948a5d9
+ORIGINAL_LINES: 1-106
+000001 | #!/bin/bash
+000002 | # Claude 切换器 Linux 版 - 安装器
+000003 | # 用法: bash install.sh  (部分步骤需要 sudo)
+000004 | set -u
+000005 | BASE="$HOME/.claude-switcher"
+000006 | CLASH_DIR="$HOME/.config/io.github.clash-verge-rev.clash-verge-rev"
+000007 | [ -d "$HOME/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev" ] && CLASH_DIR="$HOME/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
+000008 | 
+000009 | echo "=================================="
+000010 | echo "  Claude 账号切换器 · Linux 安装"
+000011 | echo "=================================="
+000012 | echo ""
+000013 | 
+000014 | # ---- 前置检查 ----
+000015 | [ -d "$CLASH_DIR" ] || { echo "X 未检测到 Clash Verge 配置目录,请先安装并配置代理"; exit 1; }
+000016 | python3 --version >/dev/null 2>&1 || { echo "X 需要 python3,请先安装 (如: sudo apt install python3)"; exit 1; }
+000017 | systemctl --user --version >/dev/null 2>&1 || { echo "X 需要 systemd(用户服务)"; exit 1; }
+000018 | command -v dig >/dev/null 2>&1 || echo "提示: 未找到 dig,将使用 nslookup/getent 回退(建议安装 dnsutils/bind-utils)"
+000019 | echo "✓ 前置检查通过"
+000020 | 
+000021 | # ---- 出口必须美国 ----
+000022 | INFO=$(curl -s --max-time 8 https://ipinfo.io/json 2>/dev/null)
+000023 | CTRY=$(echo "$INFO" | grep '"country"' | cut -d'"' -f4)
+000024 | [ "$CTRY" = "US" ] || { echo "X 当前出口不在美国($CTRY),请先开代理(TUN模式)再运行"; exit 1; }
+000025 | echo "✓ 出口: $(echo "$INFO" | grep '"ip"' | cut -d'"' -f4) ($CTRY)"
+000026 | 
+000027 | # ---- 自动识别代理组名 ----
+000028 | GRP=$(awk '/^proxy-groups:/ {f=1; next} f && /^[a-zA-Z]/ {f=0} f && /- name:/ { n=$0; sub(/.*- name: */, "", n); gsub(/"/, "", n) } f && /type: *select/ { print n; exit }' "$CLASH_DIR/clash-verge.yaml" 2>/dev/null)
+000029 | [ -z "$GRP" ] && read -r -p "未能自动识别代理组名,请打开 Clash Verge 查看后输入: " GRP
+000030 | echo "✓ 代理组: $GRP"
+000031 | 
+000032 | # ---- 时区 ----
+000033 | TZV=$(echo "$INFO" | grep '"timezone"' | cut -d'"' -f4)
+000034 | [ -z "$TZV" ] && TZV="America/New_York"
+000035 | echo "✓ 锁定时区: $TZV (按出口IP识别)"
+000036 | 
+000037 | # ---- 安装文件 ----
+000038 | mkdir -p "$BASE"
+000039 | DIR="$(cd "$(dirname "$0")" && pwd)"
+000040 | cp "$DIR/claude-switch.sh" "$BASE/"
+000041 | cp "$DIR/claude-bodyguard.sh" "$BASE/"
+000042 | cp "$DIR/stun-probe.py" "$BASE/"
+000043 | chmod +x "$BASE/claude-switch.sh" "$BASE/claude-bodyguard.sh"
+000044 | sed -i "s|^TZ_TARGET=\".*\"|TZ_TARGET=\"$TZV\"|; s|^PROXY_GROUP=\".*\"|PROXY_GROUP=\"$GRP\"|" "$BASE/claude-switch.sh"
+000045 | echo "✓ 核心文件已安装到 $BASE"
+000046 | 
+000047 | # ---- 置顶规则 ----
+000048 | mkdir -p "$CLASH_DIR/profiles"
+000049 | cat > "$CLASH_DIR/profiles/Merge.yaml" <<EOF
+000050 | profile:
+000051 |   store-selected: true
+000052 | 
+000053 | prepend-rules:
+000054 |   - DOMAIN-SUFFIX,claude.ai,$GRP
+000055 |   - DOMAIN-SUFFIX,claude.com,$GRP
+000056 |   - DOMAIN-SUFFIX,anthropic.com,$GRP
+000057 |   - DOMAIN-SUFFIX,claudeusercontent.com,$GRP
+000058 |   - DOMAIN-SUFFIX,challenges.cloudflare.com,$GRP
+000059 |   - DOMAIN-SUFFIX,datadoghq.com,$GRP
+000060 |   - DOMAIN-SUFFIX,segment.io,$GRP
+000061 |   - DOMAIN-SUFFIX,stripe.com,$GRP
+000062 |   - DOMAIN-SUFFIX,stripe.network,$GRP
+000063 |   - DOMAIN-SUFFIX,stripecdn.com,$GRP
+000064 |   - DOMAIN-SUFFIX,intercom.io,$GRP
+000065 |   - DOMAIN-SUFFIX,intercomcdn.com,$GRP
+000066 |   - DOMAIN-SUFFIX,intercomassets.com,$GRP
+000067 | EOF
+000068 | echo "✓ Claude 域名置顶规则已写入(重启 Clash Verge 生效)"
+000069 | 
+000070 | # ---- 保镖 systemd 用户服务(免 sudo 常驻) ----
+000071 | mkdir -p "$HOME/.config/systemd/user"
+000072 | cat > "$HOME/.config/systemd/user/claude-bodyguard.service" <<EOF
+000073 | [Unit]
+000074 | Description=Claude Bodyguard (kill claude CLI when proxy down)
+000075 | 
+000076 | [Service]
+000077 | ExecStart=/bin/bash $BASE/claude-bodyguard.sh
+000078 | Restart=always
+000079 | RestartSec=5
+000080 | 
+000081 | [Install]
+000082 | WantedBy=default.target
+000083 | EOF
+000084 | systemctl --user daemon-reload
+000085 | systemctl --user enable --now claude-bodyguard.service >/dev/null 2>&1 \
+000086 |     && echo "✓ 保镖已注册并启动(systemd 用户服务,登录自启)" \
+000087 |     || echo "✗ 保镖注册失败,可稍后用 fix 自动补装"
+000088 | 
+000089 | # ---- 时区与 IPv6(需要 sudo) ----
+000090 | echo ""
+000091 | echo "接下来需要 sudo 密码: 锁定时区($TZV) + 关闭 IPv6"
+000092 | sudo timedatectl set-timezone "$TZV" && echo "✓ 时区已锁定"
+000093 | sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null && echo "✓ IPv6 已关闭(运行时)"
+000094 | echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee /etc/sysctl.d/90-claude-switcher.conf >/dev/null \
+000095 |     && echo "✓ IPv6 关闭已持久化(/etc/sysctl.d/90-claude-switcher.conf)"
+000096 | command -v resolvectl >/dev/null 2>&1 && resolvectl flush-caches 2>/dev/null
+000097 | 
+000098 | # ---- 终端入口 ----
+000099 | mkdir -p "$HOME/.local/bin"
+000100 | ln -sf "$BASE/claude-switch.sh" "$HOME/.local/bin/claude-switch" 2>/dev/null
+000101 | echo ""
+000102 | echo "=================================="
+000103 | echo "  ✅ 安装完成!"
+000104 | echo "  使用: 终端运行 claude-switch menu"
+000105 | echo "  (或 claude-switch checkdetail / fix / switch A|B)"
+000106 | echo "=================================="
+END_FILE_RANGE: current/linux/install.sh 1-106
+
+END_G4-P10_7e94624ad6ccef1b

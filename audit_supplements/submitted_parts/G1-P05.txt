@@ -1,0 +1,164 @@
+审核补充附件 G1-P05，逻辑组1，共11份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: documents/源码内开发说明/apps/desktop/src-tauri/src/publisher/README.md
+SHA256_ORIGINAL: 9d6d4182d26c18f6d51992f4a675e16bdfe6750d93ec689233acb713b3dadf23
+ORIGINAL_LINES: 1-61
+000001 | # Personal 本机广告运营
+000002 | 
+000003 | 用户已选择先在本机运营。当前唯一实际适配器是 `LocalObjectStore`。
+000004 | 它使用固定用户私有目录，不需要 R2、S3、云账号或网络凭据。
+000005 | `protocol::ObjectStore` 保留一个发布接口，没有预建多云架构。
+000006 | 
+000007 | ## 操作
+000008 | 
+000009 | 1. 在 Personal 的「广告运营」编辑三个广告位。每位最多两期，UTC 排期不能重叠。
+000010 | 2. 点击「生成广告签名密钥」。此明确操作把私钥存入 macOS Keychain；打开草稿不会生成密钥。
+000011 | 3. 导入 PNG/JPEG，检查图片和链接，再发布到本机预览或本机正式。
+000012 | 4. 本机预览保存到隔离预览目录。两个发行的普通广告区读取本机正式目录。
+000013 | 5. 暂停或恢复历史后，再发布到本机正式。历史恢复生成更高序号，不回退旧清单。
+000014 | 
+000015 | 两个发行仍分别保存广告开关与商家确认。需要开启广告位并确认用途，才显示广告。
+000016 | 本机正式发布不向其他设备或远程用户投放。远程上线仍是 WAIT。
+000017 | 
+000018 | ```text
+000019 | Personal 草稿 ── Keychain 签名 ── 不可变版本/素材
+000020 |                                     |
+000021 |                            本机 current 原子 CAS
+000022 |                                     |
+000023 |                             签名与素材回读验证
+000024 |                                     |
+000025 |                    Personal / Public 各自验证后展示
+000026 | ```
+000027 | 
+000028 | ## 固定目录与安全边界
+000029 | 
+000030 | - 草稿：`~/.claude-switcher/v2/personal/publisher`。
+000031 | - 本机发布：`~/.claude-switcher/v2/local-ads/{preview,production}`。
+000032 | - 公共验证材料：`local-ads/trust.json`，只含 schema、固定 key_id 和公钥。
+000033 | - 客户端缓存：`v2/{personal,public}/ads`。Public 不创建或修改 `local-ads` 发布树。
+000034 | - 私钥：Keychain。备份密码、私钥和凭据不进入命令参数、日志或普通配置文件。
+000035 | 
+000036 | 「公共验证材料」指同一用户的两个发行共享的公钥。发布文件仍是 0700 目录内的 0600 私有文件。
+000037 | 目录、文件所有者、链接、权限和读取上限均接受校验；IPC 不接受源路径或任意 URL。
+000038 | 素材与版本用同卷 `renamex_np(RENAME_EXCL)` 原子创建；既有内容不同则冲突。
+000039 | `current.json` 用文件哈希作 ETag，在同一生命周期锁内比较并原子替换。
+000040 | 任何提交写盘错误均视为结果未知；重试先回查同一个 release_id。
+000041 | 签名清单、不可变版本与所有素材回读全部通过后，才记录成功历史。
+000042 | 客户端不建立本机 HTTP 服务，不发送本机内容网络请求。
+000043 | 客户端仍检查签名、channel/key_id、最高序号、UTC、素材哈希与静态图片限制。
+000044 | 坏广告只收起广告并显示原因，不阻断账号工作台。
+000045 | 
+000046 | ## 加密备份与恢复
+000047 | 
+000048 | 备份采用 Argon2id 与 XChaCha20-Poly1305，包含草稿、历史、素材及 Keychain 私钥材料。
+000049 | 备份文件本身加密；请保存密码并复制到安全位置。
+000050 | 错误密码或不合格备份不会切换代际。恢复到未配置密钥的新草稿目录也可导入备份内的验证公钥。
+000051 | 已有不同公钥时拒绝覆盖。恢复后，正式发布先回读本机正式最高序号，再补齐素材并续发。
+000052 | 恢复旧备份不会降低本机已认证最高序号。
+000053 | 
+000054 | ## 验证与限制
+000055 | 
+000056 | 最新本地证据见 `docs/acceptance/evidence/e10/local-publisher-tests.log` 和 E09 的 `local-ad-runtime-tests.log`。
+000057 | 测试使用真实临时文件存储及内存 Vault，不写真实 Keychain。
+000058 | 测试覆盖 CAS、不可变对象、锁替换、硬链接/符号链接/宽权限拒绝、重启、两发行读取、暂停、历史、预览隔离和加密恢复。
+000059 | 真实原生窗口、实际用户明确生成 Keychain 密钥后的发布，应另记现场证据。
+000060 | 真实远程 HTTPS、云端权限、CDN 传播与连续 20min 在线验收仍 WAIT。
+000061 | 未来只有用户明确要求远程投放后，才选择一个服务并核对其条件写、固定 HTTPS 源和授权材料。
+END_FILE_RANGE: documents/源码内开发说明/apps/desktop/src-tauri/src/publisher/README.md 1-61
+
+FILE: documents/源码内开发说明/crates/switcher-core/src/ad_runtime/VALIDATION.md
+SHA256_ORIGINAL: 6efdf49f2f7d16cf3b363ba5add0c557d5196890a148d2fc869443464ac8612f
+ORIGINAL_LINES: 1-24
+000001 | # 广告客户端本地验证证据
+000002 | 
+000003 | 日期：2026-10-22。
+000004 | 
+000005 | 执行：`RUSTUP_TOOLCHAIN=stable cargo test --locked -p switcher-core ad_runtime::`。
+000006 | 结果：10 passed，0 failed。测试耗时 35.68 秒。
+000007 | 
+000008 | 1. `configured_pins_with_all_slots_off_make_zero_requests` 配置有效测试 pins 和 MemoryFetch 内容。
+000009 |    用户已确认请求用途，但三个广告位全部关闭。请求记录为空，最高序号仍为零。
+000010 | 2. `controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases` 使用真实 loopback TLS。
+000011 |    独立 CA:TRUE 根证书签发带 DNS SAN、serverAuth 和 CA:FALSE 的叶证书。
+000012 |    客户端只增加该测试根证书，固定域名解析到 loopback。清单与 PNG 完成下载、签名与素材校验并可展示。
+000013 | 3. 同一 HTTPS 测试拒绝未信任 CA、HTTP 重定向、签名篡改与超限响应。
+000014 |    捕获的两次成功请求只有固定 production 路径，没有 query、认证、Cookie、Referer、User-Agent 或账号/设备标识头。
+000015 | 4. 其余测试验证共享时钟恢复、离线期限、单广告位素材门控、调度持久化、失败素材保留最高序号、商家确认和缓存防重放。
+000016 | 
+000017 | 测试不使用 `danger_accept_invalid_certs` 或禁用主机名校验。
+000018 | 测试证书、签名密钥和 DNS 覆盖只存在于 `#[cfg(test)]` 模块。
+000019 | 测试使用本机 OpenSSL 和 Python 生成合成 TLS 服务。服务在 fixture 析构时终止，临时目录随后删除。
+000020 | 
+000021 | 生产 `ContentPins::production()` 仍为 `None`。
+000022 | 生产零请求等待不能替代已配置源的全关证明；两条路径有独立测试。
+000023 | 此证据不覆盖真实托管、真实生产证书链、真实 Keychain、远端 CAS 和线上持续运行验收。
+000024 | 实际单服务适配器所需材料见 Personal 发布器的 `publisher/README.md`。
+END_FILE_RANGE: documents/源码内开发说明/crates/switcher-core/src/ad_runtime/VALIDATION.md 1-24
+
+FILE: documents/源码内开发说明/linux/README.md
+SHA256_ORIGINAL: afd837974de8b313a770d19d2c70c4333d6a93b2dd38491607af499322bb0028
+ORIGINAL_LINES: 1-59
+000001 | # Claude 切换器 · Linux 版 (Beta)
+000002 | 
+000003 | > ⚠️ **本版本为 Beta**。核心逻辑移植自 macOS 稳定版,但 Linux 发行版差异大,遇到问题请到 [Issues](https://github.com/517183415-dev/claude-switcher/issues) 反馈。
+000004 | 
+000005 | ## 先说最重要的设计差异(为什么是这些取舍)
+000006 | 
+000007 | 1. **Claude 官方没有 Linux 桌面版**——Linux 上的使用形态是「网页版(浏览器) + Claude Code CLI」。因此:
+000008 |    - **账号切换**切换的是**浏览器登录态**(对 `~/.config/google-chrome` 或 `~/.config/chromium` 做快照交换),切换前会完全退出浏览器
+000009 |    - **保镖**只终止 `claude` CLI 进程,**不会关你的浏览器**(网页版没有独立进程可归因,关浏览器体验太糟;网页端的保护由 TUN + 置顶规则兜底)
+000010 | 2. **没有图形界面**——Linux 桌面环境太多样,本版提供**终端交互菜单**(`claude-switch menu`)+ 完整命令行接口
+000011 | 3. **常驻服务用 systemd 用户单元**——免 root、登录自启、崩溃自动拉起
+000012 | 
+000013 | ## 系统要求
+000014 | 
+000015 | > **注意**：macOS 版已支持多代理客户端（Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud）与地区自适应（按出口国家自动锁定时区+地区格式，换节点后 `set-region` 一键重配）。Linux 版当前仍默认按美国出口设计，安装时会按 ipinfo 自动锁定时区；其他国家/地区的完整支持在路线图中。另外，自动更新（`update` 命令 + 12 小时自动检查）与 48 小时 IP 审查目前仅 macOS 版提供，后续版本同步。
+000016 | 
+000017 | - 任一现代发行版(Ubuntu/Debian/Fedora/Arch 等,systemd)
+000018 | - [Clash Verge](https://github.com/clash-verge-rev/clash-verge-rev) Linux 版,TUN 模式可用
+000019 | - python3、bash、curl
+000020 | - 建议安装 `dnsutils`(Debian/Ubuntu)或 `bind-utils`(Fedora)以获得 dig;没有也能跑(自动回退 nslookup/getent)
+000021 | 
+000022 | ## 安装
+000023 | 
+000024 | ```bash
+000025 | # 先开好代理(TUN + 美国节点),安装器会校验出口必须是美国
+000026 | bash install.sh
+000027 | ```
+000028 | 
+000029 | - 安装器自动识别代理组名和时区(按出口 IP)
+000030 | - 时区锁定和 IPv6 关闭需要一次 sudo 密码
+000031 | - IPv6 关闭会持久化到 `/etc/sysctl.d/90-claude-switcher.conf`;恢复:删掉该文件后 `sudo sysctl -p`
+000032 | 
+000033 | ## 使用
+000034 | 
+000035 | ```bash
+000036 | claude-switch menu          # 交互菜单(推荐)
+000037 | claude-switch checkdetail   # 14 项逐项检查
+000038 | claude-switch fix           # 一键修复
+000039 | claude-switch switch A      # 切到账号A(切换浏览器登录态)
+000040 | ```
+000041 | 
+000042 | ## 与 macOS/Windows 版的差异
+000043 | 
+000044 | | 项目 | Linux 版 |
+000045 | |---|---|
+000046 | | 账号切换对象 | 浏览器配置目录(Chrome/Chromium),不是独立 App |
+000047 | | 保镖保护对象 | `claude` CLI 进程(不关浏览器) |
+000048 | | 常驻方式 | systemd 用户服务(免 root) |
+000049 | | 界面 | 终端菜单 + CLI |
+000050 | | 时区/IPv6 | timedatectl / sysctl(需 sudo) |
+000051 | 
+000052 | ## 卸载
+000053 | 
+000054 | ```bash
+000055 | systemctl --user disable --now claude-bodyguard.service
+000056 | rm -f ~/.config/systemd/user/claude-bodyguard.service
+000057 | rm -rf ~/.claude-switcher ~/.local/bin/claude-switch
+000058 | sudo rm -f /etc/sysctl.d/90-claude-switcher.conf
+000059 | ```
+END_FILE_RANGE: documents/源码内开发说明/linux/README.md 1-59
+
+END_G1-P05_2ba9757d70ed12b0

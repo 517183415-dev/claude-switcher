@@ -1,0 +1,25 @@
+--- original_HEAD/.gitignore
++++ current/.gitignore
+@@ -4,5 +4,22 @@
+ lastip
+ last-check.txt
+ *.log
++!docs/acceptance/evidence/**/*.log
+ 
+ _trash/
++
++# Rust rewrite build output (source and lockfiles remain tracked).
++/target/
++/apps/desktop/node_modules/
++/apps/desktop/dist/
++/apps/desktop/src-tauri/gen/
++/experiments/p0/**/target/
++/experiments/p0/desktop/node_modules/
++/experiments/p0/desktop/dist/
++/experiments/p0/desktop/src-tauri/gen/
++/output/playwright/
++/output/releases/
++/tests/__pycache__/
++/.playwright-cli/
++/apps/desktop/src-tauri/components/
++/output/native-verification/

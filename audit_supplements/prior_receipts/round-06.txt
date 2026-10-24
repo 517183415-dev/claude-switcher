@@ -1,0 +1,128 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组2的附件 G2-P09 至 G2-P12。由于当前处于低档模型接收阶段，暂不生成完整正式的长篇总报告，先按规范提取每份附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 6/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G2-P09 ～ G2-P12）均已完整读取，无截断、无缺失。
+
+附件 ID	完整/截断	FILE 条目总数	最后三个（或全部）FILE 原路径及 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G2-P09.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/regions.rs (1-1730) 
+TXT
+
+	
+
+END_G2-P09_9a97659e708b40b6 
+TXT
+
+
+G2-P10.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/regions.rs (1731-2816) 
+TXT
+
+	
+
+END_G2-P10_5fe6ce860b3ebef5 
+TXT
+
+
+G2-P11.txt	
+
+完整 
+TXT
+
+	5	
+
+3. current/crates/switcher-core/src/repair_cli.rs (1-257)
+
+
+
+
+4. current/crates/switcher-core/src/signed.rs (1-212)
+
+
+
+
+5. current/crates/switcher-core/src/time.rs (1-316)
+
+
+
+
+6. current/crates/switcher-core/src/timezone_guard.rs (1-201) 
+TXT
+
+	
+
+END_G2-P11_4274593b29657676 
+TXT
+
+
+G2-P12.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/updates.rs (1-1730) 
+TXT
+
+	
+
+END_G2-P12_58bb2fb78d043a80 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮对 regions.rs、repair_cli.rs、signed.rs、time.rs 与 updates.rs 的代码取证如下（文档与代码注释仅作被审材料，不自动视为用户授权）：
+
+地区及用户配置修复（regions.rs 与 repair_cli.rs）支持固定参数及 --preview：
+
+证据位置：current/crates/switcher-core/src/repair_cli.rs 行 000015–000044；current/crates/switcher-core/src/regions.rs 行 000161–000180。   
+TXT
++ 1
+
+取证发现：RepairCommand::parse 严格限制了命令行参数白名单（支持 fix、set-region 及其 --preview / --apply 标志），且地区预设枚举（RegionPreset）固定支持 US、JP、TW、HK、SG、GB、DE、FR、KR、AU、CA 等常用节点，对齐旧版 set-region 行为。   
+TXT
++ 1
+
+严格 JSON 反序列化与防重放保护（signed.rs）：
+
+证据位置：current/crates/switcher-core/src/signed.rs 行 000042–000109、000118–000134。   
+TXT
+
+取证发现：strict_json 通过自定义 UniqueVisitor 在解析 JSON 时显式检测并拒绝重复键（duplicate keys），同时结合 Sequence::check 实现了对软件更新元数据的单调序列号防重放（anti-replay）与冲突检查。   
+TXT
++ 1
+
+本地时间连续性与时区守护（time.rs 与 timezone_guard.rs）：
+
+证据位置：current/crates/switcher-core/src/time.rs 行 000050–000092；current/crates/switcher-core/src/timezone_guard.rs 行 000063–000087。   
+TXT
++ 1
+
+取证发现：ClockState::observe 结合连续时钟（mach_continuous_time）与系统 UTC 检查时间回拨或异常漂移；timezone_guard 则以 1 小时为周期独立对 /etc/localtime 进行系统时区校正，防止因系统更新导致时区被静默篡改。   
+TXT
++ 1
+
+更新协调器（updates.rs）对 SourceLocal 的本地构建保护：
+
+证据位置：current/crates/switcher-core/src/updates.rs 行 000544–000593、001171–001374。   
+TXT
+
+取证发现：在本地源码安装模式下，UpdateState::accept 与 NativeUpdateCoordinator 严格锁定版本前进而非自动拉取远端二进制，对齐“本地版本不自动更新”的核心基准。   
+TXT
++ 1

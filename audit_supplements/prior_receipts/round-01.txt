@@ -1,0 +1,73 @@
+Gemini 说
+一、 重复上传提醒与本轮附件读取覆盖核对表
+
+重要提示：本轮上传的 4 个文件（G1-P01_2.txt ～ G1-P04_2.txt）与第 1/17 轮已上传的 G1-P01.txt ～ G1-P04.txt 内容、原文件行号范围及末尾 END 标记完全一致（属于重复上传）。目前尚未收到 G1-P05 及之后的补充附件。   
+TXT
++ 3
+
+以下为本轮 4 份重传附件的独立核对记录（全部完整可读，无截断）：   
+TXT
++ 3
+
+附件 ID	读取状态	实际看到的最后一个原文件路径	最后一个原文件行号	附件末尾独立读出的 END 标记
+G1-P01_2.txt	完整（与 G1-P01 重复）	documents/docs/plans/rust-rewrite-plan-v2.2.md	000648	
+
+END_G1-P01_32d83e21120e5bff 
+TXT
+
+
+G1-P02_2.txt	完整（与 G1-P02 重复）	documents/docs/plans/工作组与任务拆分-v1.0.md	000181	
+
+END_G1-P02_9e3d2031a428364c 
+TXT
+
+
+G1-P03_2.txt	完整（与 G1-P03 重复）	documents/docs/plans/工程执行文档-Rust重写-v1.0.md	000375	
+
+END_G1-P03_28f08b7ded11e8d6 
+TXT
+
+
+G1-P04_2.txt	完整（与 G1-P04 重复）	documents/源码内开发说明/SECURITY.md	000027	
+
+END_G1-P04_79024bf8140eadd4 
+TXT
+
+二、 G1-P01 ～ G1-P04 取证发现补充与汇总
+
+结合用户原始目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），对本批 11 份原文档的取证要点补充细化如下（被审文档条文不自动视为用户授权）：
+
+旧版原始行为基线记录明确：
+
+documents/源码内开发说明/AGENTS.md 行 000010、000040、000050–000055 与 documents/源码内开发说明/README.md 行 000138–000141、000218 记载旧版标准流程为：双击打开 → 14 项检查 → 全绿则点选账号切换并启动、有红项则“一键修复”，且原生支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud。   
+TXT
+
+前期工程方案擅自增设业务门槛并缩减代理启动支持：
+
+拆分 UI 交互与增设 30 秒过期门禁：documents/docs/plans/rust-rewrite-plan-v2.2.md 行 000422、rust-rewrite-plan-v2.3.md 行 000150、000431 及 工程执行文档-Rust重写-v1.2.md 行 000088 将 GUI 改为“选择账号只切换档案”与“检查并启动”两步，并加入检查证据 30 秒过期阻断启动的限制。   
+TXT
++ 1
+
+增加单账号锁定与 Keychain/迁移收据门槛：documents/docs/plans/工程合同补充-v1.1.md 行 000044、000204–000212、000303 及 工程执行文档-Rust重写-v1.1.md 行 000355 规定在缺少第二账号（F-09 WAIT）时启用 single-account 标记，在 GUI/CLI 同时限制账号 B 初始化与切换，并要求真实 A 迁移绑定 Keychain 调查结果。   
+TXT
++ 1
+
+边缘化 Shadowrocket 与 ClashX 适配：documents/docs/plans/rust-rewrite-plan-v2.3.md 行 000051、000235–000236 与 工程执行文档-Rust重写-v1.0.md 行 000270、v1.1.md 行 000276 仅将 0dcloud 与 Clash Verge 纳入 P3-03 实现，未保留 Shadowrocket 与 ClashX 自动打开逻辑。   
+TXT
++ 2
+
+后期恢复计划与未安装落差：
+
+documents/docs/plans/旧版核心逻辑恢复执行计划-2026-10-23.md 行 000003–000018 记录按用户指令锁定 71 项旧行为恢复目标（含选账号即切换启动、成功后退出、移除新业务门槛、代理按名称启动兼容及 40 秒等待），但行 000003 明确披露最新原位建档补丁尚未安装，且旧账号被封禁导致真实登录与 A→B→A 未标通过。   
+TXT
+
+documents/docs/usage/Rust使用说明.md 行 000009、000035、000055 同样证实本机已安装的 r17 与当前恢复后源码不同，SourceLocal 不自动更新，且文档声称已恢复 Shadowrocket、ClashX 等按应用名称打开的旧路径（待后续源码核实）。   
+TXT
+
+广告停留在本地目录模拟阶段：
+
+documents/docs/plans/工程执行文档-Rust重写-v1.2.md 行 000016、000366 将广告列为“后置”；documents/docs/usage/广告运营说明.md 行 000003、000009 写明当前仅使用本机私有目录读写草稿/预览/正式区，未启用远程对象存储投放。   
+TXT
++ 1
+
+请继续上传 第 2/17 轮（从 G1-P05 开始） 的补充附件。

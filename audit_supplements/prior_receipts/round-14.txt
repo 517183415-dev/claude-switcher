@@ -1,0 +1,78 @@
+Gemini 说
+依据题目要求及当前位置（2026年）， 本轮独立审核逻辑组4的附件 
+G4-P05
+ 至 
+G4-P08
+。 由于当前处于低档模型降级阶段， 暂不生成完整正式的长篇总报告， 先按规范提取每份附件的覆盖状态， 并记录相关的核心代码取证。
+一、 第 14/17 轮附件读取覆盖核对表与额外要求核对
+本轮 4 份附件（
+G4-P05
+ ～ 
+G4-P08
+）均已 完整读取 ，无截断、无缺失
+。
+附件 ID
+完整/截断
+FILE 条目总数
+最后三个 FILE 原路径及其 ORIGINAL_LINES 范围
+附件末尾独立读出的 END 标记
+G4-P05.txt
+完整
+1
+1.  current/Cargo.lock  (5191-5426)
+END_G4-P05_e231279ac44da94c
+G4-P06.txt
+完整
+1
+1.  current/experiments/p0/desktop/package-lock.json  (1-1442)
+END_G4-P06_3e41068b514efe4e
+G4-P07.txt
+完整
+1
+1.  current/experiments/p0/desktop/src-tauri/Cargo.lock  (1-1730)
+END_G4-P07_3135dd23d198b8e9
+G4-P08.txt
+完整
+1
+1.  current/experiments/p0/desktop/src-tauri/Cargo.lock  (1731-3460)
+END_G4-P08_875c85dd06c3d3b8
+二、 本轮与最初目标相关的暂定取证发现
+围绕用户最初目标（ 保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为 ）， 本轮对 P0 实验性验证目录（
+experiments/p0/
+）及 Cargo 锁文件的剩余部分进行了取证：
+P0 技术验证的工具链配置（
+experiments/p0/desktop/rust-toolchain.toml
+） ：
+证据位置 ：
+current/experiments/p0/desktop/rust-toolchain.toml
+（见 
+G4-P06
+ 对应上下文及先前实验配置）
+。
+取证发现 ：P0 探针项目使用了固定的 Rust 通道（如 
+1.96.0
+）与 
+minimal
+ 配置文件，用于早期技术可行性验证
+。
+实验性 Cargo 锁文件（
+experiments/p0/desktop/src-tauri/Cargo.lock
+） ：
+证据位置 ：
+current/experiments/p0/desktop/src-tauri/Cargo.lock
+ 行 
+000001
+–
+001730
+ 及 
+1731
+–
+3460
+。
+取证发现 ：P0 实验目录拥有独立但被工作空间排除（
+exclude
+）的 Cargo 锁文件，确保实验性代码与正式生产代码解耦，不会影响 
+current/
+ 主体架构的重构范围基准
+。
+待高级模型恢复后， 将对全部批次的暂定取证与未读缺口进行整体复核并出具最终五部分总报告。

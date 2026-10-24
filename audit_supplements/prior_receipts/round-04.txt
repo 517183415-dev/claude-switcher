@@ -1,0 +1,130 @@
+Gemini 说
+一、 第 4/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G2-P01 ～ G2-P04）均已完整读取，无截断、无缺失。
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G2-P01.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/ad_runtime.rs (1-634) 
+TXT
+
+	
+
+END_G2-P01_7c3d1e515e754341 
+TXT
+
+
+G2-P02.txt	
+
+完整 
+TXT
+
+	3	
+
+1. current/crates/switcher-core/src/ads.rs (1-1217)
+
+
+
+
+2. current/crates/switcher-core/src/bin/claude-switcher.rs (1-237)
+
+
+
+
+3. current/crates/switcher-core/src/bin/keychain-metadata-probe.rs (1-11) 
+TXT
+
+	
+
+END_G2-P02_44249da491396140 
+TXT
+
+
+G2-P03.txt	
+
+完整 
+TXT
+
+	4	
+
+1. current/crates/switcher-core/src/config.rs (1-239)
+
+
+
+
+2. current/crates/switcher-core/src/diagnostics.rs (1-303)
+
+
+
+
+3. current/crates/switcher-core/src/bin/switcher-guardian.rs (1-75) 
+TXT
+
+	
+
+END_G2-P03_c098e96d656501b6 
+TXT
+
+
+G2-P04.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/guardian.rs (1-1568) 
+TXT
+
+	
+
+END_G2-P04_c5f2be74fc8885e1 
+TXT
+
+(注：上一轮 G1-P10 的路径矛盾已保留待复核；本轮所有附件的 FILE: 条目总数及最后三个文件的范围已按要求逐个核实无误。)
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮核心代码取证发现如下：
+
+广告运行时（ad_runtime.rs）隐私与生产环境 Pins 边界：
+
+证据位置：current/crates/switcher-core/src/ad_runtime.rs 行 000030–000033、000104–000115、000424–000428。   
+TXT
+
+取证发现：ContentPins::production() 明确写明返回 None（等待用户实际托管）。同时，HTTPS 抓取器（HttpsFetcher）强制开启 https_only(true)、禁用代理、不发送 referer 且不附带任何 Cookie 或认证头，确保广告外发请求符合“零账号隐私外发”的隐私合同。   
+TXT
++ 1
+
+核心 CLI 入口（claude-switcher.rs）支持双发行与兼容模式：
+
+证据位置：current/crates/switcher-core/src/bin/claude-switcher.rs 行 000026–000039、000108–000117、000143–000154。   
+TXT
+
+取证发现：CLI 入口支持 --edition personal 与 --edition public 参数分派，并原生实现了 check、checkdetail、status、start、switch A|B、recover 及 update 命令，完美对齐旧版 shell 脚本的命令语义。   
+TXT
++ 1
+
+检查引擎（checks.rs）严格对齐 14 项检查与旧版守护进程识别：
+
+证据位置：current/crates/switcher-core/src/checks.rs 行 000324–000435。   
+TXT
+
+取证发现：observe 函数完整实现了对 14 项环境指纹的 Rust 审查逻辑（包括代理进程、TUN、出口地区、时区、地区格式、IPv6、DNS、WebRTC、保镖守护、置顶规则等），并在 Guardian 检查中兼容了旧版 system/local.claude-bodyguard 服务及用户级守护进程的注册状态。   
+TXT
++ 1
+
+保镖守护进程（guardian.rs）实现独立停止通道与进程扫描：
+
+证据位置：current/crates/switcher-core/src/guardian.rs 行 000111–000149、000153–000175。   
+TXT
+
+取证发现：Guardian 在判定代理或 TUN 离线时发出 StopRequest，由 stop_verified_claude 通过受控的进程清单（ps -axo pid=,command=）精准定位包含 /Applications/Claude.app/Contents/MacOS/Claude 的进程并发送 SIGTERM 终止，且其生命周期完全独立于复杂的账号事务锁。   
+TXT
++ 1

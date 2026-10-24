@@ -1,0 +1,65 @@
+{
+  "note": "Existing logs inspected, not regenerated. Source remains frozen. Log extensions may be excluded by gitignore-aware discovery.",
+  "records": [
+    {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/legacy-restoration/first-a-in-place/red.log",
+      "bytes": 1446,
+      "sha256": "e74839a7665dcee0cce6d8e2fe2a7d1f40ba8dca0fabbca4a4b5a4155a2bfa72",
+      "result_lines": [
+        "    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.94s",
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.17s",
+        "error: test failed, to rerun pass `-p switcher-core --lib`"
+      ]
+    },
+    {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/legacy-restoration/first-a-in-place/green.log",
+      "bytes": 3005,
+      "sha256": "5ae50f3779cd4efcaa40193fe84263db9f2466c4b37714251eee56ddf54d5c6c",
+      "result_lines": [
+        "    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.33s",
+        "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 283 filtered out; finished in 3.14s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/legacy-restoration/first-a-in-place/migration.log",
+      "bytes": 2272,
+      "sha256": "06ea4dde2d5afbd63942b2691e66793ada07a73043efe8b73cd471a808773b01",
+      "result_lines": [
+        "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 289 filtered out; finished in 0.68s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/legacy-restoration/first-a-in-place/lifecycle.log",
+      "bytes": 2036,
+      "sha256": "00b6c776f24dae437f7eb5c84a156ff7ae7b0d5f050023e5969a39ed5a16773c",
+      "result_lines": [
+        "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 291 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/legacy-restoration/first-a-in-place/clippy.log",
+      "bytes": 460,
+      "sha256": "a2d6a7c752bbd8ff4ca49d7f72cad414ed916681a03a8b1bf07a8a18ca9eb8fd",
+      "result_lines": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.67s"
+      ]
+    }
+  ]
+}

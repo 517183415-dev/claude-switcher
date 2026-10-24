@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-10-23T22:52:57.787247+00:00",
+  "apps": [
+    {
+      "edition": "personal",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/personal/Claude 切换器 Personal.app",
+      "version": "0.2.0",
+      "bundle_id": "local.claudeswitcher.personal",
+      "codesign_deep_strict": "pass",
+      "binaries": {
+        "Contents/MacOS/switcher-desktop": {
+          "sha256": "afe6ce08256ec815686adf9b49447b909b87b610151b183ddc349a7ed18ac1db",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/switcher-helper": {
+          "sha256": "143ff86758c36fcbdb3a3f87283d92ffaf79f4783dc087fb53d31b84f028fd55",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/switcher-guardian": {
+          "sha256": "4a0fda2cc121315d13edc51d9a2a7e89f6709f874ff5d3b7a8ce76698b4cc81f",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/claude-switcher": {
+          "sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+          "file": "Mach-O 64-bit executable arm64"
+        }
+      }
+    },
+    {
+      "edition": "public",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261023/public/Claude 切换器 Public.app",
+      "version": "0.2.0",
+      "bundle_id": "local.claudeswitcher.public",
+      "codesign_deep_strict": "pass",
+      "binaries": {
+        "Contents/MacOS/switcher-desktop": {
+          "sha256": "0cefe31ab197f0d91c18c84ce9537f299d73eb9b8b26a6dba16c8ffbe19e5c93",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/switcher-helper": {
+          "sha256": "d3810de301a27585e9660f6a44ef1c4aecbc935410307f6ba64e0071521c355e",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/switcher-guardian": {
+          "sha256": "b1daadbea513f31861a2e7c497a742d885ae1fb5ee57550e9a294949bad8a055",
+          "file": "Mach-O 64-bit executable arm64"
+        },
+        "Contents/Resources/components/claude-switcher": {
+          "sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+          "file": "Mach-O 64-bit executable arm64"
+        }
+      }
+    }
+  ],
+  "source_changes_since_compile_freeze": [
+    "packaging/macos/README.md",
+    "packaging/macos/local_install.py",
+    "packaging/macos/test_local_install.py"
+  ]
+}

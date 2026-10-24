@@ -1,0 +1,85 @@
+Gemini 说
+一、 第 2/17 轮附件读取覆盖核对表
+
+本轮 4 份附件（G1-P05 ～ G1-P08）均已完整读取，无截断、无缺失。其中 G1-P08 已将首轮大附件中截断的 current/crates/switcher-core/src/accounts.rs（第 1273–2813 行）完整补齐。当前单文件与累计上下文均正常，不影响后续完整审查。   
+TXT
++ 4
+
+附件 ID	读取状态	实际看到的最后一个原文件路径	最后一个原文件行号	附件末尾独立读出的 END 标记
+G1-P05.txt	完整	documents/源码内开发说明/linux/README.md	000059	
+
+END_G1-P05_2ba9757d70ed12b0 
+TXT
+
+
+G1-P06.txt	完整	documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md	000537	
+
+END_G1-P06_67be27e53ccfdd39 
+TXT
+
+
+G1-P07.txt	完整	documents/源码内开发说明/windows/README.md	000040	
+
+END_G1-P07_8c13bb0c25bea104 
+TXT
+
+
+G1-P08.txt	完整	current/crates/switcher-core/src/accounts.rs	002813	
+
+END_G1-P08_726561661352a8f6 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户原始目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮取证发现如下（被审文档条文不自动视为用户授权）：
+
+广告功能仅实现本机私有目录读写，生产环境远程内容源仍为空（None）：
+
+证据位置：documents/源码内开发说明/apps/desktop/src-tauri/src/publisher/README.md 行 000003–000005、000016、000030–000034、000059–000060；documents/源码内开发说明/crates/switcher-core/src/ad_runtime/VALIDATION.md 行 000005–000023。   
+TXT
++ 1
+
+取证发现：发布器当前唯一适配器是 LocalObjectStore，仅写入本机 ~/.claude-switcher/v2/local-ads/{preview,production}，不向其他设备或远程用户投放；客户端生产配置 ContentPins::production() 仍为 None。且验证仅跑了 10 个基于内存 Vault 和本地回环合成 TLS 的单元测试，连本机真实 Keychain 密钥生成与真实原生窗口发布也未完成现场取证。   
+TXT
++ 2
+
+本地安装器叠床架屋（双套守护并存），且最新恢复源码尚未在本机执行统一安装：
+
+证据位置：documents/源码内开发说明/packaging/macos/README.md 行 000039、000048–000058、000064–000075、000110。   
+TXT
+
+取证发现：
+
+本地不自动更新：文档记载 SourceLocal 模式会停用旧自动更新 Agent（local.claude-update），并在进入远程更新协调器前拒绝远程安装，升级仅走本地源码重建安装（待后续在 local_install.py 与 updates.rs 核验代码实现）。   
+TXT
+
+双套后台服务叠床架屋：为同时满足旧行为恢复与前期过度设计的 Rust 架构，安装器既保留并安装旧版 root shell 守护（每 10 秒运行的 local.claude-bodyguard 和每 3600 秒运行的 local.tz-watchdog），又同时注册 Rust 新增的 local.claudeswitcher.guardian（LaunchAgent）和 local.claudeswitcher.helper（LaunchDaemon）。   
+TXT
+
+未安装实情：行 000058 明确承认本轮旧行为恢复目前仅完成隔离测试（91 项安装测试 + 4 项诊断测试），“当前源码版本尚需最终统一管理员安装及真实服务验收”。   
+TXT
+
+accounts.rs 底层仍残留旧版不存在的严苛校验与阻断门槛：
+
+证据位置：current/crates/switcher-core/src/accounts.rs 行 001273–001340、001441–001526、001588–001616、002043–002065、002721–002754、002781–002812。   
+TXT
+
+取证发现：
+
+虽然测试行 001588–001616 显示新增了 select_legacy_checked 以绕开备份许可要求，但底层 verify_copy_tree 与 access_control（行 001441–001526）仍对账号目录内所有文件做严格的扩展属性（xattr）和 Darwin ACL 检查：一旦存档内文件带有允许修改的扩展 ACL（tag == 1 && mask & MUTATING != 0），切换直接报 PermissionDenied 阻断（行 001511–001515、002741–002753）。   
+TXT
++ 1
+
+行 002781–002812 显示只要磁盘残留未完成的修复日志（v2/region-repair.json 或 v2/user-repairs/journal.json），哪怕没有锁冲突，AccountStore::new、常规切换与恢复均会被硬阻断并提示“先恢复修复事务”。下一批需重点核查 accounts/legacy.rs 是否受此影响。   
+TXT
+
+第三方依赖规模膨胀与许可证材料缺口：
+
+证据位置：documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md 行 000028–000033、000050–000651。   
+TXT
++ 1
+
+取证发现：相比原项目零第三方依赖，当前锁文件引入了 508 个 Cargo 包与 84 个 npm 包，其中 148 个 Cargo 包和 34 个 npm 包缺失许可证正文材料。   
+TXT
+
+请继续上传 第 3/17 轮 附件。

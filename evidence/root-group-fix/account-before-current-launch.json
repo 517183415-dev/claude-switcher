@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-10-24T06:04:10.469928+00:00",
+  "active_claude_directory": {
+    "exists": true,
+    "dev": 16777233,
+    "ino": 15628535,
+    "uid": 501,
+    "mode": "0o700"
+  },
+  "claude_before_launch_running": false
+}

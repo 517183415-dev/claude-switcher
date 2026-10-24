@@ -1,0 +1,8 @@
+- github madsmtm objc2 license MIT LICENSE: https://github.com/madsmtm/objc2
+- github madsmtm objc2 license MIT LICENSE: https://crates.io/crates/objc2/0.6.4
+- github dropbox rust-alloc-no-stdlib license BSD: https://github.com/dropbox/rust-alloc-no-stdlib
+- github dropbox rust-alloc-no-stdlib license BSD: https://crates.io/crates/alloc-no-stdlib/
+- github servo stylo license MPL selectors: https://github.com/servo/stylo
+- github servo stylo license MPL selectors: https://crates.io/crates/selectors
+- github Aleph-Alpha ts-rs license MIT: https://github.com/aleph-alpha/ts-rs
+- github Aleph-Alpha ts-rs license MIT: https://github.com/orgs/Aleph-Alpha/repositories

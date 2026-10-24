@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-status"
+description = "Enables the publisher_status command without any pre-configured scope."
+commands.allow = ["publisher_status"]
+
+[[permission]]
+identifier = "deny-publisher-status"
+description = "Denies the publisher_status command without any pre-configured scope."
+commands.deny = ["publisher_status"]

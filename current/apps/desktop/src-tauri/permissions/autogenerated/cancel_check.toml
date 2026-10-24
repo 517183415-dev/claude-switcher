@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-cancel-check"
+description = "Enables the cancel_check command without any pre-configured scope."
+commands.allow = ["cancel_check"]
+
+[[permission]]
+identifier = "deny-cancel-check"
+description = "Denies the cancel_check command without any pre-configured scope."
+commands.deny = ["cancel_check"]

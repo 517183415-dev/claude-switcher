@@ -1,0 +1,45 @@
+[workspace]
+members = ["crates/switcher-domain", "crates/switcher-core", "crates/switcher-helper", "apps/desktop/src-tauri"]
+exclude = ["experiments/p0/desktop/src-tauri", "experiments/p0/protocol"]
+resolver = "2"
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.96"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+switcher-domain = { path = "crates/switcher-domain" }
+switcher-core = { path = "crates/switcher-core" }
+switcher-helper = { path = "crates/switcher-helper" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+ts-rs = "=12.0.1"
+sha2 = "=0.11.1"
+ed25519-dalek = "=3.0.0"
+tokio = { version = "=1.54.1", features = ["rt-multi-thread", "macros", "time", "net", "process", "io-util", "sync"] }
+reqwest = { version = "=0.13.5", default-features = false, features = ["rustls", "socks", "json", "blocking"] }
+url = "=2.5.8"
+semver = { version = "=1.0.28", features = ["serde"] }
+libc = "=0.2.191"
+minisign-verify = "=0.3.0"
+block2 = "=0.6.2"
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg"] }
+chacha20poly1305 = "=0.10.1"
+argon2 = { version = "=0.5.3", default-features = false, features = ["alloc", "zeroize"] }
+zeroize = "=1.9.1"
+security-framework = { version = "=3.7.0", default-features = false, features = ["OSX_10_14"] }
+tar = "=0.4.46"
+flate2 = "=1.1.10"
+base64 = "=0.22.1"
+tauri = "=2.12.5"
+tauri-build = "=2.7.4"
+tauri-plugin-updater = "=2.14.0"
+
+[profile.release]
+# macOS 27 dyld rejects the stripped proc-macro LINKEDIT string pool.
+# Keep native symbols until the pinned toolchain passes the release smoke build.
+strip = false
+lto = "thin"

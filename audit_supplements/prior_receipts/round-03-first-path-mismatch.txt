@@ -1,0 +1,56 @@
+Gemini 说
+一、 第 3/17 轮附件读取覆盖核对表
+
+本轮 3 份附件（G1-P09 ～ G1-P11）均已完整读取，无截断、无缺失。当前上下文连续正常，未发生截断。   
+TXT
++ 2
+
+附件 ID	读取状态	实际看到的最后一个原文件路径	最后一个原文件行号	附件末尾独立读出的 END 标记
+G1-P09.txt	完整	current/crates/switcher-core/src/migration.rs	000479	
+
+END_G1-P09_6b57fbf0c5b238d2 
+TXT
+
+
+G1-P10.txt	完整	current/crates/switcher-core/src/storage.rs	000709	
+
+END_G1-P10_ab558b2997aca7f4 
+TXT
+
+
+G1-P11.txt	完整	current/crates/switcher-domain/src/system.rs	000545	
+
+END_G1-P11_32f4427aa0d2f169 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮通过深入阅读 migration.rs、storage.rs 及 system.rs 源码，获得以下关键取证发现（文档与代码注释仅作被审材料，不自动视为用户授权）：
+
+MigrationCoordinator 明确放弃 Keychain 调查，回归旧版“直接目录存档”行为：
+
+证据位置：current/crates/switcher-core/src/migration.rs 行 000045–000055、000185–000216、000267–000271。   
+TXT
+
+取证发现：KeychainMetadataProbe::run() 明确写明：“账号切换沿用旧版目录存档，不要求 Keychain 元数据调查”，且 create_verified_backup() 直接返回错误称“旧版账号切换会自动存档，无需迁移备份或隔离恢复步骤”。这直接印证了用户“保留旧版使用行为、不搞企业级过度设计”的最初目标。   
+TXT
+
+生命周期锁与私有目录写入机制具备严格的 Fail-Closed 与安全边界：
+
+证据位置：current/crates/switcher-core/src/storage.rs 行 000012–000088、000134–000162、000217–000257。   
+TXT
+
+取证发现：LifecycleLock::try_acquire 实现了基于文件锁（try_lock()）的互斥机制，并在加锁后校验目录身份（dev/ino）与权限（0o600），防止目录被恶意替换。同时，validate_no_symlinks 递归检查祖先路径是否存在符号链接或非目录祖先，防范路径遍历攻击。   
+TXT
++ 1
+
+系统特权边界与 SourceLocal 信任模型通过 system.rs 严格代码指纹（CDHash）绑定：
+
+证据位置：current/crates/switcher-domain/src/system.rs 行 000036–000050、000300–000353。   
+TXT
+
+取证发现：InstallTrust::SourceLocal 要求显式登记 generation 以及 gui_cdhash、guardian_cdhash、helper_cdhash（均需 40 位小写十六进制 CDHash），并通过 client_requirement 和 helper_requirement 生成精确的 cdhash H"..." 代码签名要求。这与用户同意的“GitHub 源码与本地构建/安装脚本、以 root 登记精确代码指纹”的本地构建交付方式完全对齐。   
+TXT
++ 1
+
+请继续上传 第 4/17 轮 附件。

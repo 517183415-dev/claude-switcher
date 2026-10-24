@@ -1,0 +1,45 @@
+{
+  "scope": "legacy checks restoration",
+  "source_sha256": {
+    "crates/switcher-core/src/checks.rs": "764d8244ec3c5d375564c0a01bec4538a21ee069bb8131c1ece2e9d539336a8b",
+    "crates/switcher-core/src/macos.rs": "1b251936dceb477f4b615559c275010cf8ddd13785f25d118cf5100e9c3630e7",
+    "crates/switcher-core/src/network.rs": "d57ad5a38867bb6b89bccbaac0f85a94bdebebfbdb4c2603334cbf3e1fd486b9",
+    "core/claude-switch.sh": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2"
+  },
+  "items": {
+    "C01": "RESTORED_ISOLATED_TESTS",
+    "C02": "RESTORED_ISOLATED_TESTS",
+    "C03": "RESTORED_ISOLATED_TESTS",
+    "C04": "RESTORED_ISOLATED_TESTS",
+    "C05": "RESTORED_ISOLATED_TESTS",
+    "C06": "RESTORED_ISOLATED_TESTS",
+    "C07": "RESTORED_ISOLATED_TESTS",
+    "C08": "RESTORED_ISOLATED_TESTS",
+    "C09": "RESTORED_ISOLATED_TESTS",
+    "C10": "RESTORED_ISOLATED_TESTS",
+    "C11": "RESTORED_ISOLATED_TESTS",
+    "C15": "RESTORED_ISOLATED_TESTS",
+    "C16": "RESTORED_ISOLATED_TESTS"
+  },
+  "verification": {
+    "checks_tests": "14 passed (STUN follow-up)",
+    "macos_tests": "5 passed",
+    "network_tests": "11 passed",
+    "cargo_check": "passed",
+    "core_all_tests": "prior revision: 274 passed; follow-up verified by 14 checks tests and strict clippy",
+    "clippy": "cargo clippy -p switcher-core --lib --offline -- -D warnings: passed"
+  },
+  "dependencies": [
+    "user_repairs::legacy_proxy_group reused for C04",
+    "switcher_domain::system::GUARDIAN_LABEL reused for C11"
+  ],
+  "notes": [
+    "No real HOME, App, services, accounts, or system settings changed during verification.",
+    "All command and network observations exercised through isolated command fixtures or loopback sockets.",
+    "SourceLocal update restriction unchanged.",
+    "C08 imports legacy lastip/iphistory.log into hashed private atomic JSON; only unexpired 48h records remain.",
+    "Network generation and per-row TTL fields remain schema metadata; they no longer block legacy launch decisions.",
+    "Regressions were added before implementation; initial red.log contains compilation failures from not-yet-implemented fixture/helper symbols.",
+    "No full-file formatter was run."
+  ]
+}

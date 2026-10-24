@@ -1,0 +1,120 @@
+Gemini 说
+
+依据题目要求及当前位置（2026年），本轮独立审核逻辑组4的附件 G4-P01 至 G4-P04。由于当前处于低档模型降级阶段，暂不生成完整正式的长篇总报告，先按规范提取每份附件的覆盖状态，并记录相关的核心代码取证。
+
+一、 第 13/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G4-P01 ～ G4-P04）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及其 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G4-P01.txt	
+
+完整 
+TXT
+
+	3	
+
+1. current/.cargo/config.toml (1-2)
+
+
+
+
+2. current/.gitignore (1-25)
+
+
+
+
+3. current/AGENTS.md (1-112) 
+TXT
+
+	
+
+END_G4-P01_147eefaf18fb2238 
+TXT
+
+
+G4-P02.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/Cargo.lock (1-1730) 
+TXT
+
+	
+
+END_G4-P02_377aa7c52b7f745c 
+TXT
+
+
+G4-P03.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/Cargo.lock (1731-3460) 
+TXT
+
+	
+
+END_G4-P03_f7d30e7dff6d2c7a 
+TXT
+
+
+G4-P04.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/Cargo.lock (3461-5190) 
+TXT
+
+	
+
+END_G4-P04_c8867bc5a18af5ad 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮对全局配置、忽略规则、交接提示词（AGENTS.md）及依赖锁（Cargo.lock）的核心取证如下：
+
+部署目标与编译配置（.cargo/config.toml 与 .gitignore）：
+
+证据位置：current/.cargo/config.toml 行 000001–000002；current/.gitignore 行 000011–000012。   
+TXT
++ 1
+
+取证发现：明确将 macOS 部署目标（MACOSX_DEPLOYMENT_TARGET）锁定为 13.0，并在 .gitignore 中规范排除了编译产物（/target/ 等），确保源码及锁文件的可追踪性。   
+TXT
+
+AI Agent 交接指引与操作基线（AGENTS.md）：
+
+证据位置：current/AGENTS.md 行 000016–000021、000074–000075。   
+TXT
++ 1
+
+取证发现：
+
+前置条件：明确要求当前出口 IP 所在国家不能是 CN，并按出口 IP 自动锁定地区目标（国家/时区/地区格式）。   
+TXT
+
+维护纪律：修改 core/、daemons/、installer/ 等目录文件后，提交前必须重新生成根目录的 SHA256SUMS，以确保自动更新对工件完整性的校验。   
+TXT
+
+Cargo 依赖树闭包（Cargo.lock）：
+
+证据位置：current/Cargo.lock 行 003674–003713。   
+TXT
+
+取证发现：锁文件中明确包含了 switcher-core、switcher-desktop、switcher-domain 及 switcher-helper 四个第一方 workspace 组件，依赖结构完整清晰，符合 Rust 重构的架构设计。   
+TXT
+
+待高级模型恢复后，将对全部批次的暂定取证与未读缺口进行整体复核并出具最终五部分总报告。

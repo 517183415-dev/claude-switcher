@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-23T22:54:51.884982+00:00",
+  "reviewer": "restore_integration_review",
+  "model": "gpt-6-astra",
+  "scope": [
+    "owner handoff rollback",
+    "indentless proxy-groups",
+    "discovery-only standard proxy environment",
+    "ordered three-provider geo fallback"
+  ],
+  "result": "scoped_clear",
+  "closed_findings": 3,
+  "reviewed_packaging_test_count": 91,
+  "not_run": [
+    "sudo",
+    "real network discovery",
+    "real owner handoff",
+    "native launchd mutation"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "live_process_check": "pass",
+  "processes": [
+    {
+      "label": "local.claudeswitcher.helper",
+      "pid": 80595,
+      "uid": 0,
+      "path": "/Library/PrivilegedHelperTools/local.claudeswitcher.helper"
+    },
+    {
+      "label": "local.claudeswitcher.guardian",
+      "pid": 80589,
+      "uid": 501,
+      "path": "/Library/Application Support/claude-switcher/switcher-guardian"
+    }
+  ]
+}

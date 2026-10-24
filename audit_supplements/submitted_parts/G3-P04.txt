@@ -1,0 +1,1253 @@
+审核补充附件 G3-P04，逻辑组3，共17份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/apps/desktop/src-tauri/src/publisher/mod.rs
+SHA256_ORIGINAL: 67ca13a152abcdb5a46a64d041fb8b94307d91c246098fa0eeab11f747f8cc2d
+ORIGINAL_LINES: 1-1031
+000001 | //! Personal-only local editor, recoverable publication and encrypted backup.
+000002 | pub mod backup;
+000003 | pub mod local_store;
+000004 | pub mod protocol;
+000005 | pub mod security;
+000006 | 
+000007 | use chacha20poly1305::aead::{OsRng, rand_core::RngCore};
+000008 | use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+000009 | use protocol::{ObjectStore, Pending, Phase, StoreError};
+000010 | use security::{Secrets, Vault};
+000011 | use serde::{Deserialize, Serialize};
+000012 | use std::{
+000013 |     fs::{self, OpenOptions},
+000014 |     io::Read,
+000015 |     os::unix::fs::{MetadataExt, OpenOptionsExt},
+000016 |     path::{Path, PathBuf},
+000017 | };
+000018 | use switcher_core::{ads, signed, storage};
+000019 | use switcher_domain::{
+000020 |     AdSlot,
+000021 |     ads::{AdChannel, AdManifest, ImageAsset, SlotContent},
+000022 | };
+000023 | use zeroize::Zeroizing;
+000024 | 
+000025 | pub type Result<T> = std::result::Result<T, Error>;
+000026 | #[derive(Debug)]
+000027 | pub enum Error {
+000028 |     Invalid(&'static str),
+000029 |     Io(std::io::Error),
+000030 |     SecretUnavailable,
+000031 |     Random,
+000032 |     MissingSource,
+000033 |     MissingSigningKey,
+000034 |     PendingOperation,
+000035 |     RecoveryReadRequired,
+000036 |     Store(StoreError),
+000037 | }
+000038 | impl From<std::io::Error> for Error {
+000039 |     fn from(error: std::io::Error) -> Self {
+000040 |         Self::Io(error)
+000041 |     }
+000042 | }
+000043 | impl std::fmt::Display for Error {
+000044 |     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+000045 |         match self {
+000046 |             Self::Invalid(reason) => write!(f, "发布数据无效：{reason}"),
+000047 |             Self::Io(_) => f.write_str("本地发布数据读写失败"),
+000048 |             Self::SecretUnavailable => f.write_str("Keychain 凭据不可用或访问被取消"),
+000049 |             Self::Random => f.write_str("安全随机数不可用"),
+000050 |             Self::MissingSigningKey => {
+000051 |                 f.write_str("尚未配置广告签名公钥，请先导入或明确生成广告密钥")
+000052 |             }
+000053 |             Self::MissingSource => f.write_str("尚未配置广告托管源，未执行远端发布"),
+000054 |             Self::PendingOperation => f.write_str("请先回查未完成发布，沿用已有 release_id"),
+000055 |             Self::RecoveryReadRequired => f.write_str("恢复备份后，必须先回读正式最高内容序号"),
+000056 |             Self::Store(StoreError::Conflict) => {
+000057 |                 f.write_str("内容已被其他发布者更改，请重新读取并合并")
+000058 |             }
+000059 |             Self::Store(StoreError::OutcomeUnknown) => {
+000060 |                 f.write_str("发布结果未知，将先回查已有 release_id")
+000061 |             }
+000062 |             Self::Store(StoreError::Unavailable) => f.write_str("托管源访问或公开回读失败"),
+000063 |             Self::Store(StoreError::Permission) => f.write_str("托管源访问被拒绝"),
+000064 |         }
+000065 |     }
+000066 | }
+000067 | impl std::error::Error for Error {}
+000068 | 
+000069 | const STATE_LIMIT: usize = 16 * 1024 * 1024;
+000070 | const HISTORY_LIMIT: usize = 256;
+000071 | const ASSET_LIMIT: usize = 128;
+000072 | 
+000073 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000074 | #[serde(deny_unknown_fields)]
+000075 | pub struct HistoryRecord {
+000076 |     pub manifest: AdManifest,
+000077 |     pub published_at: u64,
+000078 |     pub payload_hash: String,
+000079 | }
+000080 | 
+000081 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000082 | #[serde(deny_unknown_fields)]
+000083 | struct State {
+000084 |     schema: u32,
+000085 |     draft: AdManifest,
+000086 |     history: Vec<HistoryRecord>,
+000087 |     assets: Vec<ImageAsset>,
+000088 |     sequences: [signed::Sequence; 2],
+000089 |     pending: Option<Pending>,
+000090 |     recovery_required: bool,
+000091 | }
+000092 | 
+000093 | #[derive(Serialize, Deserialize)]
+000094 | #[serde(deny_unknown_fields)]
+000095 | struct Trust {
+000096 |     key_id: String,
+000097 |     public_key: [u8; 32],
+000098 | }
+000099 | 
+000100 | #[derive(Serialize, Deserialize)]
+000101 | #[serde(deny_unknown_fields)]
+000102 | struct Active {
+000103 |     schema: u32,
+000104 |     generation: String,
+000105 | }
+000106 | 
+000107 | #[derive(Serialize, Deserialize)]
+000108 | #[serde(deny_unknown_fields)]
+000109 | struct BackupAsset {
+000110 |     asset: ImageAsset,
+000111 |     bytes: Vec<u8>,
+000112 | }
+000113 | 
+000114 | #[derive(Serialize, Deserialize)]
+000115 | #[serde(deny_unknown_fields)]
+000116 | struct Snapshot {
+000117 |     schema: u32,
+000118 |     key_id: String,
+000119 |     public_key: [u8; 32],
+000120 |     state: State,
+000121 |     assets: Vec<BackupAsset>,
+000122 |     secrets: Secrets,
+000123 | }
+000124 | 
+000125 | #[derive(Debug, Clone)]
+000126 | pub struct Status {
+000127 |     pub phase: Option<Phase>,
+000128 |     pub pending_release_id: Option<String>,
+000129 |     pub recovery_required: bool,
+000130 |     pub history: Vec<HistoryRecord>,
+000131 | }
+000132 | 
+000133 | #[derive(Debug, Clone, PartialEq, Eq)]
+000134 | pub struct Publication {
+000135 |     pub release_id: String,
+000136 |     pub revision: u64,
+000137 |     pub channel: AdChannel,
+000138 | }
+000139 | 
+000140 | /// Keep one instance behind the desktop's mutex. The root lock excludes other
+000141 | /// Personal processes. No real source or Keychain write is implicit in `open`.
+000142 | pub struct Publisher {
+000143 |     root: PathBuf,
+000144 |     generation: String,
+000145 |     state: State,
+000146 |     key_id: String,
+000147 |     public_key: Option<VerifyingKey>,
+000148 |     _lock: storage::LifecycleLock,
+000149 | }
+000150 | 
+000151 | fn channel_index(channel: AdChannel) -> usize {
+000152 |     if channel == AdChannel::Preview { 0 } else { 1 }
+000153 | }
+000154 | fn random_id() -> Result<String> {
+000155 |     let mut bytes = [0; 16];
+000156 |     OsRng
+000157 |         .try_fill_bytes(&mut bytes)
+000158 |         .map_err(|_| Error::Random)?;
+000159 |     Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+000160 | }
+000161 | fn valid_generation(value: &str) -> bool {
+000162 |     value.len() == 32
+000163 |         && value
+000164 |             .bytes()
+000165 |             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+000166 | }
+000167 | fn encode<T: Serialize>(value: &T, limit: usize) -> Result<Vec<u8>> {
+000168 |     let bytes = serde_json::to_vec(value).map_err(|_| Error::Invalid("local_json"))?;
+000169 |     if bytes.len() > limit {
+000170 |         return Err(Error::Invalid("local_size"));
+000171 |     }
+000172 |     Ok(bytes)
+000173 | }
+000174 | fn read_private(path: &Path, limit: usize) -> Result<Vec<u8>> {
+000175 |     storage::validate_no_symlinks(path.parent().ok_or(Error::Invalid("local_path"))?)?;
+000176 |     let file = OpenOptions::new()
+000177 |         .read(true)
+000178 |         .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+000179 |         .open(path)?;
+000180 |     let metadata = file.metadata()?;
+000181 |     if !metadata.is_file()
+000182 |         || metadata.nlink() != 1
+000183 |         || metadata.uid() != fs::metadata(path.parent().ok_or(Error::Invalid("local_path"))?)?.uid()
+000184 |         || metadata.mode() & 0o077 != 0
+000185 |         || metadata.len() > limit as u64
+000186 |     {
+000187 |         return Err(Error::Invalid("unsafe_local_file"));
+000188 |     }
+000189 |     let mut bytes = Vec::new();
+000190 |     file.take(limit as u64 + 1).read_to_end(&mut bytes)?;
+000191 |     if bytes.len() > limit {
+000192 |         return Err(Error::Invalid("local_size"));
+000193 |     }
+000194 |     Ok(bytes)
+000195 | }
+000196 | impl Publisher {
+000197 |     pub fn open(
+000198 |         root: &Path,
+000199 |         key_id: &str,
+000200 |         public_key: Option<VerifyingKey>,
+000201 |         now: u64,
+000202 |     ) -> Result<Self> {
+000203 |         storage::create_private_directory(root)?;
+000204 |         let lock = storage::LifecycleLock::try_acquire(root)?;
+000205 |         let mut public_key = public_key;
+000206 |         match read_private(&root.join("trust.json"), 4096) {
+000207 |             Ok(bytes) => {
+000208 |                 let trust: Trust = signed::strict_json(&bytes, 4096).map_err(Error::Invalid)?;
+000209 |                 if trust.key_id != key_id {
+000210 |                     return Err(Error::Invalid("trust_key_id"));
+000211 |                 }
+000212 |                 let stored = VerifyingKey::from_bytes(&trust.public_key)
+000213 |                     .map_err(|_| Error::Invalid("trust_public_key"))?;
+000214 |                 if public_key.is_some_and(|key| key != stored) {
+000215 |                     return Err(Error::Invalid("trust_public_key_mismatch"));
+000216 |                 }
+000217 |                 public_key = Some(stored);
+000218 |             }
+000219 |             Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+000220 |             Err(error) => return Err(error),
+000221 |         }
+000222 |         let active_path = root.join("active.json");
+000223 |         let (generation, state) = match read_private(&active_path, 4096) {
+000224 |             Ok(bytes) => {
+000225 |                 let active: Active = signed::strict_json(&bytes, 4096).map_err(Error::Invalid)?;
+000226 |                 if active.schema != 1 || !valid_generation(&active.generation) {
+000227 |                     return Err(Error::Invalid("active_generation"));
+000228 |                 }
+000229 |                 let state = signed::strict_json(
+000230 |                     &read_private(
+000231 |                         &root.join(&active.generation).join("state.json"),
+000232 |                         STATE_LIMIT,
+000233 |                     )?,
+000234 |                     STATE_LIMIT,
+000235 |                 )
+000236 |                 .map_err(Error::Invalid)?;
+000237 |                 (active.generation, state)
+000238 |             }
+000239 |             Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {
+000240 |                 let generation = random_id()?;
+000241 |                 let draft = AdManifest {
+000242 |                     schema_version: 1,
+000243 |                     channel: AdChannel::Preview,
+000244 |                     content_revision: 1,
+000245 |                     key_id: key_id.into(),
+000246 |                     issued_at: now,
+000247 |                     expires_at: now
+000248 |                         .checked_add(ads::MAX_MANIFEST_LIFETIME)
+000249 |                         .ok_or(Error::Invalid("draft_time"))?,
+000250 |                     release_id: random_id()?,
+000251 |                     slots: AdSlot::ALL
+000252 |                         .into_iter()
+000253 |                         .map(|slot| SlotContent {
+000254 |                             slot,
+000255 |                             enabled: true,
+000256 |                             campaigns: vec![],
+000257 |                         })
+000258 |                         .collect(),
+000259 |                 };
+000260 |                 ads::validate_manifest(&draft, draft.channel, key_id, now)
+000261 |                     .map_err(Error::Invalid)?;
+000262 |                 let state = State {
+000263 |                     schema: 1,
+000264 |                     draft,
+000265 |                     history: vec![],
+000266 |                     assets: vec![],
+000267 |                     sequences: Default::default(),
+000268 |                     pending: None,
+000269 |                     recovery_required: false,
+000270 |                 };
+000271 |                 Self::write_generation(root, &generation, &state, &[])?;
+000272 |                 storage::atomic_write(
+000273 |                     &active_path,
+000274 |                     &encode(
+000275 |                         &Active {
+000276 |                             schema: 1,
+000277 |                             generation: generation.clone(),
+000278 |                         },
+000279 |                         4096,
+000280 |                     )?,
+000281 |                 )?;
+000282 |                 (generation, state)
+000283 |             }
+000284 |             Err(error) => return Err(error),
+000285 |         };
+000286 |         let publisher = Self {
+000287 |             root: root.into(),
+000288 |             generation,
+000289 |             state,
+000290 |             key_id: key_id.into(),
+000291 |             public_key,
+000292 |             _lock: lock,
+000293 |         };
+000294 |         publisher.validate_state(&publisher.state)?;
+000295 |         Ok(publisher)
+000296 |     }
+000297 | 
+000298 |     fn directory(&self) -> PathBuf {
+000299 |         self.root.join(&self.generation)
+000300 |     }
+000301 |     fn persist(&mut self, state: State) -> Result<()> {
+000302 |         self.validate_state(&state)?;
+000303 |         storage::atomic_write(
+000304 |             &self.directory().join("state.json"),
+000305 |             &encode(&state, STATE_LIMIT)?,
+000306 |         )?;
+000307 |         self.state = state;
+000308 |         Ok(())
+000309 |     }
+000310 |     fn validate_state(&self, state: &State) -> Result<()> {
+000311 |         if state.schema != 1
+000312 |             || state.history.len() > HISTORY_LIMIT
+000313 |             || state.assets.len() > ASSET_LIMIT
+000314 |         {
+000315 |             return Err(Error::Invalid("publisher_state"));
+000316 |         }
+000317 |         ads::validate_manifest(
+000318 |             &state.draft,
+000319 |             state.draft.channel,
+000320 |             &self.key_id,
+000321 |             state.draft.issued_at,
+000322 |         )
+000323 |         .map_err(Error::Invalid)?;
+000324 |         let mut hashes = std::collections::HashSet::new();
+000325 |         for asset in &state.assets {
+000326 |             ads::validate_asset(asset).map_err(Error::Invalid)?;
+000327 |             if !hashes.insert(&asset.sha256) {
+000328 |                 return Err(Error::Invalid("asset_duplicate"));
+000329 |             }
+000330 |         }
+000331 |         let mut releases = std::collections::HashSet::new();
+000332 |         for record in &state.history {
+000333 |             ads::validate_manifest(
+000334 |                 &record.manifest,
+000335 |                 record.manifest.channel,
+000336 |                 &self.key_id,
+000337 |                 record.manifest.issued_at,
+000338 |             )
+000339 |             .map_err(Error::Invalid)?;
+000340 |             if !releases.insert((
+000341 |                 &record.manifest.release_id,
+000342 |                 channel_index(record.manifest.channel),
+000343 |             )) || record.payload_hash
+000344 |                 != signed::digest(&encode(&record.manifest, ads::MAX_MANIFEST_BYTES)?)
+000345 |             {
+000346 |                 return Err(Error::Invalid("history_record"));
+000347 |             }
+000348 |         }
+000349 |         if let Some(pending) = &state.pending {
+000350 |             let manifest = if let Some(key) = &self.public_key {
+000351 |                 ads::verify_manifest(
+000352 |                     &pending.wire,
+000353 |                     key,
+000354 |                     pending.manifest.channel,
+000355 |                     &self.key_id,
+000356 |                     pending.manifest.issued_at,
+000357 |                     true,
+000358 |                 )
+000359 |                 .map_err(Error::Invalid)?
+000360 |                 .0
+000361 |             } else {
+000362 |                 let envelope: signed::Envelope =
+000363 |                     signed::strict_json(&pending.wire, ads::MAX_MANIFEST_BYTES)
+000364 |                         .map_err(Error::Invalid)?;
+000365 |                 let manifest: AdManifest =
+000366 |                     signed::strict_json(envelope.payload.as_bytes(), ads::MAX_MANIFEST_BYTES)
+000367 |                         .map_err(Error::Invalid)?;
+000368 |                 ads::validate_manifest(
+000369 |                     &manifest,
+000370 |                     pending.manifest.channel,
+000371 |                     &self.key_id,
+000372 |                     manifest.issued_at,
+000373 |                 )
+000374 |                 .map_err(Error::Invalid)?;
+000375 |                 manifest
+000376 |             };
+000377 |             if manifest != pending.manifest {
+000378 |                 return Err(Error::Invalid("pending_manifest"));
+000379 |             }
+000380 |             if pending.expected_etag.as_ref().is_some_and(|etag| {
+000381 |                 etag.is_empty() || etag.len() > 1024 || etag.chars().any(char::is_control)
+000382 |             }) {
+000383 |                 return Err(Error::Invalid("etag"));
+000384 |             }
+000385 |         }
+000386 |         Ok(())
+000387 |     }
+000388 |     pub fn draft_read(&self) -> AdManifest {
+000389 |         self.state.draft.clone()
+000390 |     }
+000391 |     pub fn draft_save(&mut self, mut manifest: AdManifest, now: u64) -> Result<AdManifest> {
+000392 |         if self
+000393 |             .state
+000394 |             .pending
+000395 |             .as_ref()
+000396 |             .is_some_and(|pending| pending.phase != Phase::Conflict)
+000397 |         {
+000398 |             return Err(Error::PendingOperation);
+000399 |         }
+000400 |         let next = self
+000401 |             .state
+000402 |             .sequences
+000403 |             .iter()
+000404 |             .map(|sequence| sequence.highest)
+000405 |             .chain([self.state.draft.content_revision])
+000406 |             .max()
+000407 |             .unwrap_or_default()
+000408 |             .checked_add(1)
+000409 |             .ok_or(Error::Invalid("revision_overflow"))?;
+000410 |         manifest.content_revision = next;
+000411 |         manifest.release_id = random_id()?;
+000412 |         manifest.issued_at = now;
+000413 |         manifest.expires_at = now
+000414 |             .checked_add(ads::MAX_MANIFEST_LIFETIME)
+000415 |             .ok_or(Error::Invalid("draft_time"))?;
+000416 |         ads::validate_manifest(&manifest, manifest.channel, &self.key_id, now)
+000417 |             .map_err(Error::Invalid)?;
+000418 |         let mut state = self.state.clone();
+000419 |         state.draft = manifest.clone();
+000420 |         state.pending = None;
+000421 |         self.persist(state)?;
+000422 |         Ok(manifest)
+000423 |     }
+000424 |     #[cfg(test)]
+000425 |     fn draft_save_bytes(&mut self, bytes: &[u8], now: u64) -> Result<AdManifest> {
+000426 |         self.draft_save(
+000427 |             signed::strict_json(bytes, ads::MAX_MANIFEST_BYTES).map_err(Error::Invalid)?,
+000428 |             now,
+000429 |         )
+000430 |     }
+000431 |     pub fn pause(&mut self, slot: Option<AdSlot>, now: u64) -> Result<AdManifest> {
+000432 |         let mut draft = self.draft_read();
+000433 |         for content in &mut draft.slots {
+000434 |             if slot.is_none_or(|slot| content.slot == slot) {
+000435 |                 content.enabled = false;
+000436 |             }
+000437 |         }
+000438 |         self.draft_save(draft, now)
+000439 |     }
+000440 |     pub fn restore_history(&mut self, release_id: &str, now: u64) -> Result<AdManifest> {
+000441 |         let manifest = self
+000442 |             .state
+000443 |             .history
+000444 |             .iter()
+000445 |             .rev()
+000446 |             .find(|record| record.manifest.release_id == release_id)
+000447 |             .ok_or(Error::Invalid("history_missing"))?
+000448 |             .manifest
+000449 |             .clone();
+000450 |         self.draft_save(manifest, now)
+000451 |     }
+000452 |     pub fn import_image(&mut self, bytes: &[u8], mime: &str) -> Result<ImageAsset> {
+000453 |         let (bytes, asset) = ads::normalize_image(bytes, mime).map_err(Error::Invalid)?;
+000454 |         if let Some(existing) = self
+000455 |             .state
+000456 |             .assets
+000457 |             .iter()
+000458 |             .find(|existing| existing.sha256 == asset.sha256)
+000459 |         {
+000460 |             if existing != &asset {
+000461 |                 return Err(Error::Invalid("asset_conflict"));
+000462 |             }
+000463 |             return Ok(existing.clone());
+000464 |         }
+000465 |         if self.state.assets.len() >= ASSET_LIMIT {
+000466 |             return Err(Error::Invalid("asset_capacity_no_history_pruned"));
+000467 |         }
+000468 |         storage::atomic_write(&self.directory().join("assets").join(&asset.sha256), &bytes)?;
+000469 |         let mut state = self.state.clone();
+000470 |         state.assets.push(asset.clone());
+000471 |         self.persist(state)?;
+000472 |         Ok(asset)
+000473 |     }
+000474 |     fn image_bytes(&self, asset: &ImageAsset) -> Result<Vec<u8>> {
+000475 |         ads::validate_asset(asset).map_err(Error::Invalid)?;
+000476 |         if !self.state.assets.contains(asset) {
+000477 |             return Err(Error::Invalid("asset_missing"));
+000478 |         }
+000479 |         let bytes = read_private(
+000480 |             &self.directory().join("assets").join(&asset.sha256),
+000481 |             ads::MAX_IMAGE_BYTES,
+000482 |         )?;
+000483 |         ads::validate_image(&bytes, asset).map_err(Error::Invalid)?;
+000484 |         Ok(bytes)
+000485 |     }
+000486 |     pub fn image_preview(&self, sha256: &str) -> Result<String> {
+000487 |         let asset = self
+000488 |             .state
+000489 |             .assets
+000490 |             .iter()
+000491 |             .find(|asset| asset.sha256 == sha256)
+000492 |             .ok_or(Error::Invalid("asset_missing"))?;
+000493 |         let bytes = self.image_bytes(asset)?;
+000494 |         use base64::Engine;
+000495 |         let result = format!(
+000496 |             "data:{};base64,{}",
+000497 |             asset.mime,
+000498 |             base64::engine::general_purpose::STANDARD.encode(bytes)
+000499 |         );
+000500 |         Ok(result)
+000501 |     }
+000502 |     pub fn status(&self) -> Status {
+000503 |         Status {
+000504 |             phase: self.state.pending.as_ref().map(|pending| pending.phase),
+000505 |             pending_release_id: self
+000506 |                 .state
+000507 |                 .pending
+000508 |                 .as_ref()
+000509 |                 .map(|pending| pending.manifest.release_id.clone()),
+000510 |             recovery_required: self.state.recovery_required,
+000511 |             history: self.state.history.clone(),
+000512 |         }
+000513 |     }
+000514 |     pub fn credentials_save(&mut self, vault: &mut dyn Vault, secrets: &Secrets) -> Result<()> {
+000515 |         let signer = self.check_signer(secrets)?;
+000516 |         vault.store(&self.generation, secrets)?;
+000517 |         storage::atomic_write(
+000518 |             &self.root.join("trust.json"),
+000519 |             &encode(
+000520 |                 &Trust {
+000521 |                     key_id: self.key_id.clone(),
+000522 |                     public_key: signer.verifying_key().to_bytes(),
+000523 |                 },
+000524 |                 4096,
+000525 |             )?,
+000526 |         )?;
+000527 |         self.public_key = Some(signer.verifying_key());
+000528 |         Ok(())
+000529 |     }
+000530 |     /// Call only for an explicit operator action. Opening drafts never generates a key.
+000531 |     pub fn generate_signing_key(
+000532 |         &mut self,
+000533 |         vault: &mut dyn Vault,
+000534 |         preview_credential: Vec<u8>,
+000535 |         production_credential: Vec<u8>,
+000536 |     ) -> Result<[u8; 32]> {
+000537 |         if self.public_key.is_some() {
+000538 |             return Err(Error::Invalid("signing_key_already_configured"));
+000539 |         }
+000540 |         let mut secrets = Secrets {
+000541 |             signing_seed: vec![0; 32],
+000542 |             preview_credential,
+000543 |             production_credential,
+000544 |         };
+000545 |         OsRng
+000546 |             .try_fill_bytes(&mut secrets.signing_seed)
+000547 |             .map_err(|_| Error::Random)?;
+000548 |         self.credentials_save(vault, &secrets)?;
+000549 |         Ok(self.verifying_key()?.to_bytes())
+000550 |     }
+000551 |     pub fn configured_public_key(&self) -> Option<[u8; 32]> {
+000552 |         self.public_key.map(|key| key.to_bytes())
+000553 |     }
+000554 |     fn verifying_key(&self) -> Result<&VerifyingKey> {
+000555 |         self.public_key.as_ref().ok_or(Error::MissingSigningKey)
+000556 |     }
+000557 |     fn check_signer(&self, secrets: &Secrets) -> Result<SigningKey> {
+000558 |         secrets.validate()?;
+000559 |         let seed: &[u8; 32] = secrets
+000560 |             .signing_seed
+000561 |             .as_slice()
+000562 |             .try_into()
+000563 |             .map_err(|_| Error::Invalid("signing_seed"))?;
+000564 |         let signer = SigningKey::from_bytes(seed);
+000565 |         if self
+000566 |             .public_key
+000567 |             .is_some_and(|key| signer.verifying_key() != key)
+000568 |         {
+000569 |             return Err(Error::Invalid("signing_public_key_mismatch"));
+000570 |         }
+000571 |         Ok(signer)
+000572 |     }
+000573 | 
+000574 |     pub fn publish(
+000575 |         &mut self,
+000576 |         channel: AdChannel,
+000577 |         now: u64,
+000578 |         source: Option<&mut dyn ObjectStore>,
+000579 |         vault: &dyn Vault,
+000580 |     ) -> Result<Publication> {
+000581 |         let source = source.ok_or(Error::MissingSource)?;
+000582 |         self.publish_with(source, vault, channel, now)
+000583 |     }
+000584 |     fn read_remote(
+000585 |         &mut self,
+000586 |         source: &mut dyn ObjectStore,
+000587 |         now: u64,
+000588 |     ) -> Result<Option<protocol::Object>> {
+000589 |         let current = source.current()?;
+000590 |         let channel = source.channel();
+000591 |         let mut state = self.state.clone();
+000592 |         if let Some(object) = &current {
+000593 |             if object.etag.is_empty()
+000594 |                 || object.etag.len() > 1024
+000595 |                 || object.etag.chars().any(char::is_control)
+000596 |             {
+000597 |                 return Err(Error::Invalid("etag"));
+000598 |             }
+000599 |             let (manifest, hash): (AdManifest, String) = signed::verify(
+000600 |                 &object.bytes,
+000601 |                 self.verifying_key()?,
+000602 |                 ads::MAX_MANIFEST_BYTES,
+000603 |             )
+000604 |             .map_err(Error::Invalid)?;
+000605 |             // Expired current still authenticates its replay watermark, never display.
+000606 |             ads::validate_manifest(&manifest, channel, &self.key_id, manifest.issued_at)
+000607 |                 .map_err(Error::Invalid)?;
+000608 |             if manifest.issued_at > now {
+000609 |                 return Err(Error::Invalid("remote_clock"));
+000610 |             }
+000611 |             state.sequences[channel_index(channel)]
+000612 |                 .remember(manifest.content_revision, hash)
+000613 |                 .map_err(Error::Invalid)?;
+000614 |         } else if state.sequences[channel_index(channel)].highest != 0 {
+000615 |             return Err(Error::Invalid(
+000616 |                 "remote_current_missing_after_authenticated_release",
+000617 |             ));
+000618 |         }
+000619 |         if channel == AdChannel::Production {
+000620 |             state.recovery_required = false;
+000621 |         }
+000622 |         self.persist(state)?;
+000623 |         Ok(current)
+000624 |     }
+000625 |     // Production publishing performs this read through publish_with. The test
+000626 |     // entry isolates recovery's watermark gate without publishing a new draft.
+000627 |     #[cfg(test)]
+000628 |     fn reconcile_production(&mut self, source: &mut dyn ObjectStore, now: u64) -> Result<()> {
+000629 |         protocol::require_scope(source, AdChannel::Production)?;
+000630 |         self.read_remote(source, now)?;
+000631 |         Ok(())
+000632 |     }
+000633 |     pub fn publish_with(
+000634 |         &mut self,
+000635 |         source: &mut dyn ObjectStore,
+000636 |         vault: &dyn Vault,
+000637 |         channel: AdChannel,
+000638 |         now: u64,
+000639 |     ) -> Result<Publication> {
+000640 |         protocol::require_scope(source, channel)?;
+000641 |         self.verifying_key()?;
+000642 |         self.validate_state(&self.state)?;
+000643 |         if self.state.recovery_required && channel != AdChannel::Production {
+000644 |             return Err(Error::RecoveryReadRequired);
+000645 |         }
+000646 |         if self.state.recovery_required {
+000647 |             self.read_remote(source, now)?;
+000648 |         }
+000649 |         if self.state.pending.is_none() {
+000650 |             if self.state.history.len() >= HISTORY_LIMIT {
+000651 |                 return Err(Error::Invalid("history_capacity_no_history_pruned"));
+000652 |             }
+000653 |             let current = self.read_remote(source, now)?;
+000654 |             if let Some(object) = &current {
+000655 |                 let (manifest, _): (AdManifest, String) = signed::verify(
+000656 |                     &object.bytes,
+000657 |                     self.verifying_key()?,
+000658 |                     ads::MAX_MANIFEST_BYTES,
+000659 |                 )
+000660 |                 .map_err(Error::Invalid)?;
+000661 |                 if manifest.expires_at > now
+000662 |                     && manifest == self.state.draft
+000663 |                     && self
+000664 |                         .state
+000665 |                         .history
+000666 |                         .iter()
+000667 |                         .any(|record| record.manifest == manifest)
+000668 |                 {
+000669 |                     let mut state = self.state.clone();
+000670 |                     state.pending = Some(Pending {
+000671 |                         manifest,
+000672 |                         wire: object.bytes.clone(),
+000673 |                         expected_etag: Some(object.etag.clone()),
+000674 |                         phase: Phase::ReadbackFailed,
+000675 |                     });
+000676 |                     self.persist(state)?;
+000677 |                     return self.finish_readback(source, now);
+000678 |                 }
+000679 |             }
+000680 |             let secrets = vault.load(&self.generation)?;
+000681 |             let signer = self.check_signer(&secrets)?;
+000682 |             let credential = if channel == AdChannel::Preview {
+000683 |                 &secrets.preview_credential
+000684 |             } else {
+000685 |                 &secrets.production_credential
+000686 |             };
+000687 |             if source.requires_credentials() && credential.is_empty() {
+000688 |                 return Err(Error::SecretUnavailable);
+000689 |             }
+000690 |             let mut manifest = self.draft_read();
+000691 |             manifest.channel = channel;
+000692 |             if self.state.history.iter().any(|record| {
+000693 |                 record.manifest.release_id == manifest.release_id
+000694 |                     && record.manifest.channel == channel
+000695 |             }) {
+000696 |                 manifest.release_id = random_id()?;
+000697 |             }
+000698 |             manifest.content_revision = manifest.content_revision.max(
+000699 |                 self.state.sequences[channel_index(channel)]
+000700 |                     .highest
+000701 |                     .checked_add(1)
+000702 |                     .ok_or(Error::Invalid("revision_overflow"))?,
+000703 |             );
+000704 |             manifest.issued_at = now;
+000705 |             manifest.expires_at = now
+000706 |                 .checked_add(ads::MAX_MANIFEST_LIFETIME)
+000707 |                 .ok_or(Error::Invalid("draft_time"))?;
+000708 |             ads::validate_manifest(&manifest, channel, &self.key_id, now)
+000709 |                 .map_err(Error::Invalid)?;
+000710 |             for campaign in manifest.slots.iter().flat_map(|slot| &slot.campaigns) {
+000711 |                 self.image_bytes(&campaign.image)?;
+000712 |             }
+000713 |             let payload = String::from_utf8(encode(&manifest, ads::MAX_MANIFEST_BYTES)?)
+000714 |                 .map_err(|_| Error::Invalid("manifest_utf8"))?;
+000715 |             let signature = signer.sign(payload.as_bytes()).to_bytes().to_vec();
+000716 |             let wire = encode(
+000717 |                 &signed::Envelope { payload, signature },
+000718 |                 ads::MAX_MANIFEST_BYTES,
+000719 |             )?;
+000720 |             let mut state = self.state.clone();
+000721 |             state.pending = Some(Pending {
+000722 |                 manifest,
+000723 |                 wire,
+000724 |                 expected_etag: current.map(|object| object.etag),
+000725 |                 phase: Phase::Prepared,
+000726 |             });
+000727 |             self.persist(state)?;
+000728 |         }
+000729 |         let pending = self
+000730 |             .state
+000731 |             .pending
+000732 |             .clone()
+000733 |             .ok_or(Error::Invalid("pending_missing"))?;
+000734 |         protocol::require_scope(source, pending.manifest.channel)?;
+000735 |         if pending.manifest.channel != channel {
+000736 |             return Err(Error::PendingOperation);
+000737 |         }
+000738 |         if pending.phase == Phase::Conflict {
+000739 |             return Err(Error::Store(StoreError::Conflict));
+000740 |         }
+000741 |         let public_current =
+000742 |             source.public_read(&protocol::current_key(channel), ads::MAX_MANIFEST_BYTES)?;
+000743 |         if protocol::same_object(&public_current, &pending.wire) {
+000744 |             return self.finish_readback(source, now);
+000745 |         }
+000746 |         if matches!(pending.phase, Phase::CommitUnknown | Phase::ReadbackFailed) {
+000747 |             // Resolve the ambiguous authenticated commit before another write.
+000748 |             let current = source.current()?;
+000749 |             if protocol::same_object(&current, &pending.wire) {
+000750 |                 return self.finish_readback(source, now);
+000751 |             }
+000752 |             if current.as_ref().map(|object| &object.etag) != pending.expected_etag.as_ref() {
+000753 |                 self.set_phase(Phase::Conflict)?;
+000754 |                 return Err(Error::Store(StoreError::Conflict));
+000755 |             }
+000756 |             let version = source.public_read(
+000757 |                 &protocol::version_key(&pending.manifest),
+000758 |                 ads::MAX_MANIFEST_BYTES,
+000759 |             )?;
+000760 |             if !protocol::same_object(&version, &pending.wire) {
+000761 |                 return Err(Error::Store(StoreError::OutcomeUnknown));
+000762 |             }
+000763 |         }
+000764 |         self.set_phase(Phase::Uploading)?;
+000765 |         for campaign in pending
+000766 |             .manifest
+000767 |             .slots
+000768 |             .iter()
+000769 |             .flat_map(|slot| &slot.campaigns)
+000770 |         {
+000771 |             let bytes = self.image_bytes(&campaign.image)?;
+000772 |             let key = protocol::asset_key(channel, &campaign.image);
+000773 |             source.put_immutable(&key, &bytes)?;
+000774 |         }
+000775 |         source.put_immutable(&protocol::version_key(&pending.manifest), &pending.wire)?;
+000776 |         // Persist the uncertain state BEFORE sending the CAS request.
+000777 |         self.set_phase(Phase::CommitUnknown)?;
+000778 |         match source.commit_current(pending.expected_etag.as_deref(), &pending.wire) {
+000779 |             Ok(()) => self.finish_readback(source, now),
+000780 |             Err(StoreError::Conflict) => {
+000781 |                 self.set_phase(Phase::Conflict)?;
+000782 |                 Err(Error::Store(StoreError::Conflict))
+000783 |             }
+000784 |             Err(error) => Err(Error::Store(error)),
+000785 |         }
+000786 |     }
+000787 |     fn set_phase(&mut self, phase: Phase) -> Result<()> {
+000788 |         let mut state = self.state.clone();
+000789 |         state
+000790 |             .pending
+000791 |             .as_mut()
+000792 |             .ok_or(Error::Invalid("pending_missing"))?
+000793 |             .phase = phase;
+000794 |         self.persist(state)
+000795 |     }
+000796 |     fn finish_readback(&mut self, source: &mut dyn ObjectStore, now: u64) -> Result<Publication> {
+000797 |         let result = self.verify_public_readback(source, now);
+000798 |         if result.is_err() {
+000799 |             self.set_phase(Phase::ReadbackFailed)?;
+000800 |         }
+000801 |         result
+000802 |     }
+000803 |     fn verify_public_readback(
+000804 |         &mut self,
+000805 |         source: &mut dyn ObjectStore,
+000806 |         now: u64,
+000807 |     ) -> Result<Publication> {
+000808 |         let pending = self
+000809 |             .state
+000810 |             .pending
+000811 |             .as_ref()
+000812 |             .ok_or(Error::Invalid("pending_missing"))?;
+000813 |         let current = source.public_read(
+000814 |             &protocol::current_key(pending.manifest.channel),
+000815 |             ads::MAX_MANIFEST_BYTES,
+000816 |         )?;
+000817 |         let current = current.ok_or(Error::Store(StoreError::Unavailable))?;
+000818 |         if current.bytes != pending.wire {
+000819 |             return Err(Error::Invalid("public_current_readback"));
+000820 |         }
+000821 |         let (manifest, hash) = ads::verify_manifest(
+000822 |             &current.bytes,
+000823 |             self.verifying_key()?,
+000824 |             pending.manifest.channel,
+000825 |             &self.key_id,
+000826 |             now,
+000827 |             true,
+000828 |         )
+000829 |         .map_err(Error::Invalid)?;
+000830 |         if manifest != pending.manifest {
+000831 |             return Err(Error::Invalid("readback_release"));
+000832 |         }
+000833 |         let version = source
+000834 |             .public_read(&protocol::version_key(&manifest), ads::MAX_MANIFEST_BYTES)?
+000835 |             .ok_or(Error::Store(StoreError::Unavailable))?;
+000836 |         if version.bytes != pending.wire {
+000837 |             return Err(Error::Invalid("public_version_readback"));
+000838 |         }
+000839 |         for campaign in manifest.slots.iter().flat_map(|slot| &slot.campaigns) {
+000840 |             let object = source
+000841 |                 .public_read(
+000842 |                     &protocol::asset_key(manifest.channel, &campaign.image),
+000843 |                     ads::MAX_IMAGE_BYTES,
+000844 |                 )?
+000845 |                 .ok_or(Error::Store(StoreError::Unavailable))?;
+000846 |             ads::validate_image(&object.bytes, &campaign.image).map_err(Error::Invalid)?;
+000847 |         }
+000848 |         let outcome = Publication {
+000849 |             release_id: manifest.release_id.clone(),
+000850 |             revision: manifest.content_revision,
+000851 |             channel: manifest.channel,
+000852 |         };
+000853 |         let mut state = self.state.clone();
+000854 |         state.sequences[channel_index(manifest.channel)]
+000855 |             .remember(manifest.content_revision, hash.clone())
+000856 |             .map_err(Error::Invalid)?;
+000857 |         if !state
+000858 |             .history
+000859 |             .iter()
+000860 |             .any(|record| record.manifest == manifest)
+000861 |         {
+000862 |             state.history.push(HistoryRecord {
+000863 |                 manifest: manifest.clone(),
+000864 |                 published_at: now,
+000865 |                 payload_hash: hash,
+000866 |             });
+000867 |         }
+000868 |         state.draft = manifest;
+000869 |         state.pending = None;
+000870 |         self.persist(state)?;
+000871 |         Ok(outcome)
+000872 |     }
+000873 | 
+000874 |     pub fn export_backup(&self, passphrase: &[u8], vault: &dyn Vault) -> Result<Vec<u8>> {
+000875 |         let secrets = vault.load(&self.generation)?;
+000876 |         self.check_signer(&secrets)?;
+000877 |         let assets = self
+000878 |             .state
+000879 |             .assets
+000880 |             .iter()
+000881 |             .map(|asset| {
+000882 |                 self.image_bytes(asset).map(|bytes| BackupAsset {
+000883 |                     asset: asset.clone(),
+000884 |                     bytes,
+000885 |                 })
+000886 |             })
+000887 |             .collect::<Result<Vec<_>>>()?;
+000888 |         let snapshot = Snapshot {
+000889 |             schema: 1,
+000890 |             key_id: self.key_id.clone(),
+000891 |             public_key: self.verifying_key()?.to_bytes(),
+000892 |             state: self.state.clone(),
+000893 |             assets,
+000894 |             secrets,
+000895 |         };
+000896 |         let plaintext = Zeroizing::new(encode(&snapshot, backup::LIMIT - 76)?);
+000897 |         backup::seal(&plaintext, passphrase)
+000898 |     }
+000899 |     pub fn restore_backup(
+000900 |         &mut self,
+000901 |         bytes: &[u8],
+000902 |         passphrase: &[u8],
+000903 |         vault: &mut dyn Vault,
+000904 |     ) -> Result<()> {
+000905 |         if self
+000906 |             .state
+000907 |             .pending
+000908 |             .as_ref()
+000909 |             .is_some_and(|pending| pending.phase != Phase::Conflict)
+000910 |         {
+000911 |             return Err(Error::PendingOperation);
+000912 |         }
+000913 |         let plaintext = backup::open(bytes, passphrase)?;
+000914 |         let mut snapshot: Snapshot =
+000915 |             signed::strict_json(&plaintext, backup::LIMIT).map_err(Error::Invalid)?;
+000916 |         if snapshot.schema != 1
+000917 |             || snapshot.key_id != self.key_id
+000918 |             || self
+000919 |                 .public_key
+000920 |                 .is_some_and(|key| snapshot.public_key != key.to_bytes())
+000921 |         {
+000922 |             return Err(Error::Invalid("backup_scope"));
+000923 |         }
+000924 |         let restored_key = VerifyingKey::from_bytes(&snapshot.public_key)
+000925 |             .map_err(|_| Error::Invalid("backup_public_key"))?;
+000926 |         if self.check_signer(&snapshot.secrets)?.verifying_key() != restored_key {
+000927 |             return Err(Error::Invalid("backup_secret_key_mismatch"));
+000928 |         }
+000929 |         if let Some(pending) = &snapshot.state.pending {
+000930 |             ads::verify_manifest(
+000931 |                 &pending.wire,
+000932 |                 &restored_key,
+000933 |                 pending.manifest.channel,
+000934 |                 &self.key_id,
+000935 |                 pending.manifest.issued_at,
+000936 |                 true,
+000937 |             )
+000938 |             .map_err(Error::Invalid)?;
+000939 |         }
+000940 |         self.validate_state(&snapshot.state)?;
+000941 |         if snapshot.assets.len() != snapshot.state.assets.len() {
+000942 |             return Err(Error::Invalid("backup_asset_index"));
+000943 |         }
+000944 |         let mut hashes = std::collections::HashSet::new();
+000945 |         for asset in &snapshot.assets {
+000946 |             if !snapshot.state.assets.contains(&asset.asset) || !hashes.insert(&asset.asset.sha256)
+000947 |             {
+000948 |                 return Err(Error::Invalid("backup_asset_index"));
+000949 |             }
+000950 |             ads::validate_image(&asset.bytes, &asset.asset).map_err(Error::Invalid)?;
+000951 |         }
+000952 |         // Keep the local replay watermark when restoring an older backup.
+000953 |         for index in 0..2 {
+000954 |             let local = &self.state.sequences[index];
+000955 |             if local.highest >= snapshot.state.sequences[index].highest {
+000956 |                 snapshot.state.sequences[index] = local.clone();
+000957 |             }
+000958 |         }
+000959 |         snapshot.state.recovery_required = true;
+000960 |         if snapshot.state.pending.is_none() {
+000961 |             // A previous installation may already have used this draft's ID.
+000962 |             snapshot.state.draft.release_id = random_id()?;
+000963 |             snapshot.state.draft.content_revision = snapshot
+000964 |                 .state
+000965 |                 .sequences
+000966 |                 .iter()
+000967 |                 .map(|sequence| sequence.highest)
+000968 |                 .chain([snapshot.state.draft.content_revision])
+000969 |                 .max()
+000970 |                 .unwrap_or_default()
+000971 |                 .checked_add(1)
+000972 |                 .ok_or(Error::Invalid("revision_overflow"))?;
+000973 |         }
+000974 |         self.validate_state(&snapshot.state)?;
+000975 |         let generation = random_id()?;
+000976 |         Self::write_generation(&self.root, &generation, &snapshot.state, &snapshot.assets)?;
+000977 |         // Both old active state and old Keychain item remain valid on any failure.
+000978 |         // New files and the new secret item become reachable in one pointer rename.
+000979 |         vault.store(&generation, &snapshot.secrets)?;
+000980 |         if self.public_key.is_none() {
+000981 |             storage::atomic_write(
+000982 |                 &self.root.join("trust.json"),
+000983 |                 &encode(
+000984 |                     &Trust {
+000985 |                         key_id: self.key_id.clone(),
+000986 |                         public_key: restored_key.to_bytes(),
+000987 |                     },
+000988 |                     4096,
+000989 |                 )?,
+000990 |             )?;
+000991 |             self.public_key = Some(restored_key);
+000992 |         }
+000993 |         let active = encode(
+000994 |             &Active {
+000995 |                 schema: 1,
+000996 |                 generation: generation.clone(),
+000997 |             },
+000998 |             4096,
+000999 |         )?;
+001000 |         let committed = storage::atomic_write(&self.root.join("active.json"), &active);
+001001 |         // Directory sync may fail after the rename commit point. Match the
+001002 |         // on-disk generation in memory while preserving the durability error.
+001003 |         if committed.is_ok()
+001004 |             || read_private(&self.root.join("active.json"), 4096).is_ok_and(|bytes| bytes == active)
+001005 |         {
+001006 |             self.generation = generation;
+001007 |             self.state = snapshot.state;
+001008 |         }
+001009 |         committed.map_err(Error::Io)
+001010 |     }
+001011 |     fn write_generation(
+001012 |         root: &Path,
+001013 |         generation: &str,
+001014 |         state: &State,
+001015 |         assets: &[BackupAsset],
+001016 |     ) -> Result<()> {
+001017 |         let directory = root.join(generation);
+001018 |         storage::create_private_directory(&directory)?;
+001019 |         let asset_directory = directory.join("assets");
+001020 |         storage::create_private_directory(&asset_directory)?;
+001021 |         for asset in assets {
+001022 |             storage::atomic_write(&asset_directory.join(&asset.asset.sha256), &asset.bytes)?;
+001023 |         }
+001024 |         storage::atomic_write(&directory.join("state.json"), &encode(state, STATE_LIMIT)?)?;
+001025 |         storage::sync_directory(root)?;
+001026 |         Ok(())
+001027 |     }
+001028 | }
+001029 | 
+001030 | #[cfg(test)]
+001031 | mod tests;
+END_FILE_RANGE: current/apps/desktop/src-tauri/src/publisher/mod.rs 1-1031
+
+FILE: current/apps/desktop/src-tauri/src/publisher/protocol.rs
+SHA256_ORIGINAL: a1302532121908867d8b7a07ca3c773ca483235b6c428361a81ea316a4f1ada3
+ORIGINAL_LINES: 1-111
+000001 | //! One-provider publication protocol; the actual provider is configured separately.
+000002 | use super::{Error, Result};
+000003 | use serde::{Deserialize, Serialize};
+000004 | use switcher_domain::ads::{AdChannel, AdManifest};
+000005 | 
+000006 | #[derive(Clone)]
+000007 | pub struct Object {
+000008 |     pub bytes: Vec<u8>,
+000009 |     pub etag: String,
+000010 | }
+000011 | 
+000012 | #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+000013 | pub enum StoreError {
+000014 |     Unavailable,
+000015 |     Conflict,
+000016 |     OutcomeUnknown,
+000017 |     Permission,
+000018 | }
+000019 | 
+000020 | /// All keys are product-relative and environment-prefixed, never user URLs.
+000021 | /// A provider must enforce bounded reads, anonymous public readback, immutable
+000022 | /// object create-if-absent, and CAS via If-Match / If-None-Match. Its credential
+000023 | /// must have write access only to this environment's advertisement directory.
+000024 | pub trait ObjectStore {
+000025 |     fn channel(&self) -> AdChannel;
+000026 |     fn requires_credentials(&self) -> bool {
+000027 |         true
+000028 |     }
+000029 |     fn current(&mut self) -> std::result::Result<Option<Object>, StoreError>;
+000030 |     fn public_read(
+000031 |         &mut self,
+000032 |         key: &str,
+000033 |         limit: usize,
+000034 |     ) -> std::result::Result<Option<Object>, StoreError>;
+000035 |     fn put_immutable(&mut self, key: &str, bytes: &[u8]) -> std::result::Result<(), StoreError>;
+000036 |     fn commit_current(
+000037 |         &mut self,
+000038 |         expected_etag: Option<&str>,
+000039 |         bytes: &[u8],
+000040 |     ) -> std::result::Result<(), StoreError>;
+000041 | }
+000042 | 
+000043 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+000044 | #[serde(rename_all = "snake_case")]
+000045 | pub enum Phase {
+000046 |     Prepared,
+000047 |     Uploading,
+000048 |     CommitUnknown,
+000049 |     Conflict,
+000050 |     ReadbackFailed,
+000051 |     Published,
+000052 | }
+000053 | 
+000054 | #[derive(Debug, Clone, Serialize, Deserialize)]
+000055 | #[serde(deny_unknown_fields)]
+000056 | pub struct Pending {
+000057 |     pub manifest: AdManifest,
+000058 |     pub wire: Vec<u8>,
+000059 |     pub expected_etag: Option<String>,
+000060 |     pub phase: Phase,
+000061 | }
+000062 | 
+000063 | pub fn prefix(channel: AdChannel) -> &'static str {
+000064 |     match channel {
+000065 |         AdChannel::Preview => "preview",
+000066 |         AdChannel::Production => "production",
+000067 |     }
+000068 | }
+000069 | 
+000070 | pub fn current_key(channel: AdChannel) -> String {
+000071 |     format!("{}/current.json", prefix(channel))
+000072 | }
+000073 | pub fn version_key(manifest: &AdManifest) -> String {
+000074 |     format!(
+000075 |         "{}/versions/{}.json",
+000076 |         prefix(manifest.channel),
+000077 |         manifest.release_id
+000078 |     )
+000079 | }
+000080 | pub fn asset_key(channel: AdChannel, asset: &switcher_domain::ads::ImageAsset) -> String {
+000081 |     format!(
+000082 |         "{}/assets/{}.{}",
+000083 |         prefix(channel),
+000084 |         asset.sha256,
+000085 |         if asset.mime == "image/png" {
+000086 |             "png"
+000087 |         } else {
+000088 |             "jpg"
+000089 |         }
+000090 |     )
+000091 | }
+000092 | 
+000093 | impl From<StoreError> for Error {
+000094 |     fn from(value: StoreError) -> Self {
+000095 |         Error::Store(value)
+000096 |     }
+000097 | }
+000098 | 
+000099 | pub(crate) fn same_object(actual: &Option<Object>, expected: &[u8]) -> bool {
+000100 |     actual
+000101 |         .as_ref()
+000102 |         .is_some_and(|object| object.bytes == expected)
+000103 | }
+000104 | 
+000105 | pub(crate) fn require_scope(store: &dyn ObjectStore, channel: AdChannel) -> Result<()> {
+000106 |     if store.channel() == channel {
+000107 |         Ok(())
+000108 |     } else {
+000109 |         Err(Error::Invalid("publisher_environment"))
+000110 |     }
+000111 | }
+END_FILE_RANGE: current/apps/desktop/src-tauri/src/publisher/protocol.rs 1-111
+
+FILE: current/apps/desktop/src-tauri/src/publisher/security.rs
+SHA256_ORIGINAL: 7e5faa297436be66fad91fef238ffae3d054ca0353e9de3546f3f4f1bbe87397
+ORIGINAL_LINES: 1-91
+000001 | //! Personal-only secret storage. No command line process receives secret bytes.
+000002 | use super::{Error, Result};
+000003 | use serde::{Deserialize, Serialize};
+000004 | use zeroize::Zeroize;
+000005 | 
+000006 | pub const SECRET_LIMIT: usize = 160 * 1024;
+000007 | 
+000008 | #[derive(Serialize, Deserialize)]
+000009 | #[serde(deny_unknown_fields)]
+000010 | pub struct Secrets {
+000011 |     pub signing_seed: Vec<u8>,
+000012 |     pub preview_credential: Vec<u8>,
+000013 |     pub production_credential: Vec<u8>,
+000014 | }
+000015 | 
+000016 | impl Secrets {
+000017 |     pub fn validate(&self) -> Result<()> {
+000018 |         if self.signing_seed.len() != 32
+000019 |             || self.preview_credential.len() > 16 * 1024
+000020 |             || self.production_credential.len() > 16 * 1024
+000021 |         {
+000022 |             return Err(Error::Invalid("secret_shape"));
+000023 |         }
+000024 |         Ok(())
+000025 |     }
+000026 | }
+000027 | 
+000028 | impl Drop for Secrets {
+000029 |     fn drop(&mut self) {
+000030 |         self.signing_seed.zeroize();
+000031 |         self.preview_credential.zeroize();
+000032 |         self.production_credential.zeroize();
+000033 |     }
+000034 | }
+000035 | 
+000036 | /// A generation uses one atomic Keychain item for its entire secret bundle.
+000037 | /// Implementations must not log, format or persist unencrypted secret bytes.
+000038 | pub trait Vault {
+000039 |     fn load(&self, generation: &str) -> Result<Secrets>;
+000040 |     fn store(&mut self, generation: &str, secrets: &Secrets) -> Result<()>;
+000041 | }
+000042 | 
+000043 | pub struct KeychainVault;
+000044 | 
+000045 | impl Vault for KeychainVault {
+000046 |     fn load(&self, generation: &str) -> Result<Secrets> {
+000047 |         #[cfg(target_os = "macos")]
+000048 |         {
+000049 |             let bytes = zeroize::Zeroizing::new(
+000050 |                 security_framework::passwords::get_generic_password(
+000051 |                     "com.claude-switcher.personal.publisher",
+000052 |                     generation,
+000053 |                 )
+000054 |                 .map_err(|_| Error::SecretUnavailable)?,
+000055 |             );
+000056 |             let secrets: Secrets =
+000057 |                 switcher_core::signed::strict_json(&bytes, SECRET_LIMIT).map_err(Error::Invalid)?;
+000058 |             secrets.validate()?;
+000059 |             Ok(secrets)
+000060 |         }
+000061 |         #[cfg(not(target_os = "macos"))]
+000062 |         {
+000063 |             let _ = generation;
+000064 |             Err(Error::SecretUnavailable)
+000065 |         }
+000066 |     }
+000067 | 
+000068 |     fn store(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
+000069 |         secrets.validate()?;
+000070 |         #[cfg(target_os = "macos")]
+000071 |         {
+000072 |             let bytes = zeroize::Zeroizing::new(
+000073 |                 serde_json::to_vec(secrets).map_err(|_| Error::Invalid("secret_encoding"))?,
+000074 |             );
+000075 |             if bytes.len() > SECRET_LIMIT {
+000076 |                 return Err(Error::Invalid("secret_size"));
+000077 |             }
+000078 |             security_framework::passwords::set_generic_password(
+000079 |                 "com.claude-switcher.personal.publisher",
+000080 |                 generation,
+000081 |                 &bytes,
+000082 |             )
+000083 |             .map_err(|_| Error::SecretUnavailable)
+000084 |         }
+000085 |         #[cfg(not(target_os = "macos"))]
+000086 |         {
+000087 |             let _ = generation;
+000088 |             Err(Error::SecretUnavailable)
+000089 |         }
+000090 |     }
+000091 | }
+END_FILE_RANGE: current/apps/desktop/src-tauri/src/publisher/security.rs 1-91
+
+END_G3-P04_933f5cc8d16a7832

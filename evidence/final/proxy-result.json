@@ -1,0 +1,50 @@
+{
+  "scope": [
+    "crates/switcher-core/src/proxy_repair.rs",
+    "crates/switcher-core/src/user_repairs.rs",
+    "crates/switcher-core/src/pinned_routes.rs"
+  ],
+  "restored": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P14",
+    "P15"
+  ],
+  "verification": [
+    {
+      "command": "cargo test -p switcher-core user_repairs --lib --offline",
+      "passed": 31,
+      "failed": 0,
+      "log": "user-tests.txt"
+    },
+    {
+      "command": "cargo test -p switcher-core proxy_repair --lib --offline",
+      "passed": 3,
+      "failed": 0,
+      "log": "proxy-tests.txt"
+    },
+    {
+      "command": "cargo check -p switcher-core --lib --offline",
+      "exit_code": 0,
+      "log": "check.txt"
+    },
+    {
+      "command": "cargo clippy -p switcher-core --lib --offline -- -D warnings",
+      "exit_code": 0,
+      "log": "clippy.txt"
+    },
+    {
+      "command": "rustfmt --edition 2024 --check [three owned Rust files]",
+      "exit_code": 0
+    }
+  ],
+  "native_acceptance": "NOT_RUN: no real proxy app, network, system settings, keychain or actual HOME mutation; injected commands/runtime and temporary homes only",
+  "compatibility": "Old AppOpenPlan observation JSON remains readable; absent mode defaults to the formerly supported Surge mode."
+}

@@ -1,0 +1,469 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.16s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 293 tests
+test accounts::legacy::tests::legacy_process_crash_child ... ok
+test accounts::tests::account_process_crash_child_fixture ... ok
+test accounts::legacy::tests::unsupported_fifo_times_out_in_native_ditto_without_touching_source ... ok
+test accounts::legacy::tests::changed_stage_is_preserved_instead_of_overwriting_account_data ... ok
+test accounts::legacy::tests::journal_write_error_after_rename_preserves_recoverable_stages ... ok
+test accounts::legacy::tests::cleanup_resumes_when_child_removed_before_stage_directory ... ok
+test accounts::tests::copy_provenance_addition_is_allowed_only_for_a_new_verified_copy ... ok
+test accounts::tests::copy_provenance_direction_and_existing_values_remain_strict ... ok
+test accounts::legacy::tests::writable_acl_is_copied_without_becoming_a_business_gate ... ok
+test accounts::legacy::tests::ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes ... ok
+test accounts::tests::copy_rejects_destination_child_replaced_after_proof ... ok
+test accounts::tests::copy_rejects_destination_content_changed_after_proof ... ok
+test accounts::tests::copy_rejects_destination_mtime_changed_after_proof ... ok
+test accounts::tests::graceful_quit_requests_once_waits_for_stop_and_bounds_retries ... ok
+test accounts::tests::copy_proof_rejects_other_xattrs_acl_content_and_mtime_changes ... ok
+test accounts::tests::derived_current_is_repaired_from_authoritative_state ... ok
+test accounts::tests::existing_a_missing_state_requires_matching_explicit_preview ... ok
+test accounts::tests::legacy_0755_archive_container_opens_without_changing_permissions ... ok
+test accounts::tests::journal_staged_hash_legacy_fallback_and_format_validation ... ok
+test accounts::tests::legacy_archive_compatibility_keeps_v2_directories_private ... ok
+test accounts::tests::legacy_archive_contents_and_metadata_survive_open ... ok
+test accounts::tests::legacy_archive_container_modes_and_acl_are_accepted_but_root_links_are_not ... ok
+test accounts::tests::malformed_journal_and_replaced_directory_preserve_every_directory ... ok
+test accounts::legacy::tests::pre_journal_failures_remove_stages_and_preserve_accounts ... ok
+test accounts::tests::missing_archive_container_is_created_private ... ok
+test accounts::tests::legacy_selection_recovers_interrupted_exchange_without_backup_permit ... ok
+test accounts::tests::copy_provenance_round_trip_and_separate_artifact_tampering ... ok
+test accounts::tests::readonly_inspection_uses_legacy_current_without_creating_v2 ... ok
+test accounts::tests::synthetic_process_records_block_account_initialization_without_running_apps ... ok
+test accounts::tests::pending_repairs_survive_lock_release_and_block_all_account_mutations ... ok
+test accounts::tests::synthetic_process_records_preserve_owner_and_path_boundaries ... ok
+test accounts::tests::missing_outgoing_archive_is_recreated_and_recovered_after_rename ... ok
+test ad_runtime::tests::configured_pins_with_all_slots_off_make_zero_requests ... ok
+test accounts::tests::unsafe_links_owners_space_and_lock_conflicts_fail_before_exchange ... ok
+test ad_runtime::tests::clock_jump_hides_content_and_baseline_needs_signed_refresh ... ok
+test accounts::tests::readonly_acl_is_preserved_and_write_grant_acl_is_rejected ... ok
+test ad_runtime::tests::failed_asset_keeps_authenticated_watermark_and_hides_old_content ... ok
+test ad_runtime::tests::local_trust_errors_are_explicit_and_public_open_never_creates_publication ... ok
+test ad_runtime::tests::malformed_state_is_not_reset_and_offline_content_expires ... ok
+test accounts::tests::synthetic_exchange_round_trip_keeps_latest_data_modes_and_xattrs ... ok
+test ad_runtime::tests::missing_pins_and_all_off_make_zero_requests ... ok
+test ad_runtime::tests::real_loopback_https_rejects_non_tls_peer_without_downgrade ... ok
+test ad_runtime::tests::passive_disabled_and_missing_materials_preserve_initialized_clock ... ok
+test ad_runtime::tests::controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases ... ok
+test ad_runtime::tests::transport_bounds_body_rejects_redirect_and_sends_no_identity ... ok
+test ads::tests::all_disabled_has_zero_request_permits_and_single_disabled_has_no_asset ... ok
+test ads::tests::animated_malformed_oversize_and_dimension_bombs_are_rejected ... ok
+test ads::tests::authentication_failures_never_refresh_cache_or_highest_revision ... ok
+test ads::tests::changing_merchant_or_normalized_host_requires_new_consent ... ok
+test ads::tests::earliest_offline_expiry_and_disk_restore_do_not_extend_success_time ... ok
+test ads::tests::future_cache_success_time_is_hidden_and_cannot_be_restored ... ok
+test ads::tests::manifest_scope_validity_and_ninety_day_limit ... ok
+test ads::tests::merchant_urls_reject_private_forms_and_normalize_idn ... ok
+test ads::tests::nested_unknown_and_duplicate_fields_are_rejected_after_signature ... ok
+test ads::tests::overlapping_disabled_campaign_still_requires_resolution ... ok
+test ads::tests::png_jpeg_normalization_and_hash_mime_dimensions_are_enforced ... ok
+test ads::tests::schedule_persists_jitter_remaining_time_backoff_and_merges_manual_requests ... ok
+test ads::tests::three_unique_slots_two_campaigns_and_global_ids ... ok
+test ads::tests::utc_boundaries_current_next_pause_and_slot_preferences ... ok
+test checks::tests::gate_requires_complete_unique_results_without_ttl_or_epoch_gate ... ok
+test ad_runtime::tests::passive_snapshots_and_images_preserve_initialized_files_both_editions ... ok
+test checks::tests::legacy_dns_routes_language_and_wifi_use_original_scope ... ok
+test checks::tests::legacy_guardian_registration_passes_without_health_signature ... ok
+test checks::tests::legacy_history_prunes_and_counts_distinct_hashes ... ok
+test checks::tests::legacy_https_accepts_any_nonzero_http_status ... ok
+test checks::tests::legacy_language_and_asn_conditions ... ok
+test checks::tests::incomplete_check_tasks_keep_all_ids_and_block_without_epoch_gate ... ok
+test checks::tests::legacy_stun_no_response_and_partial_response_pass_but_mismatch_blocks ... ok
+test checks::tests::only_two_advisory_warnings_can_pass_the_gate ... ok
+test checks::tests::required_region_uses_same_ip_fallback_and_blocks_unverified_country ... ok
+test ad_runtime::tests::stale_confirmation_and_slot_disabled_never_open_cached_target ... ok
+test checks::tests::stun_production_path_blocks_missing_or_different_egress ... ok
+test ad_runtime::tests::successful_refresh_persists_deadline_filters_slots_and_confirms_clicks ... ok
+test config::tests::installed_shim_literals_preserve_group_text_without_shell_evaluation ... ok
+test config::tests::shell_configuration_is_never_evaluated ... ok
+test diagnostics::tests::dead_proxy_does_not_fallback_or_modify_state ... ok
+test diagnostics::tests::explicit_proxy_validation_and_socks_dns_are_private ... ok
+test ad_runtime::tests::passive_no_work_refresh_preserves_clock_and_authenticated_history ... ok
+test diagnostics::tests::redaction_is_shared_and_idempotent ... ok
+test diagnostics::tests::legacy_config_accepts_unknown_fields_permissions_symlink_and_whitespace ... ok
+test guardian::health_tests::fifo_health_is_rejected_without_blocking ... ok
+test guardian::legacy_behavior_tests::legacy_path_scope_sends_term_once_per_matching_process_without_signature_gate ... ok
+test accounts::legacy::tests::destination_local_stages_resume_every_persisted_boundary_without_receipts ... ok
+test checks::tests::legacy_merge_group_and_hashed_history_persist_in_fixture_home ... ok
+test guardian::legacy_behavior_tests::only_proxy_or_tun_failure_requests_stop_for_every_event ... ok
+test guardian::native_tests::network_epoch_native_queue_overflow_still_invalidates_every_event ... ok
+test guardian::native_tests::read_only_native_event_registration_and_cleanup ... ok
+test guardian::public_update_codesign_inline_requirement_argv ... ok
+test guardian::legacy_behavior_tests::driver_checks_before_stop_and_events_config_or_heartbeat_cannot_stop ... ok
+test guardian::reload_tests::legacy_0755_root_keeps_permissions_and_private_v2 ... ok
+test guardian::retained_diagnostic_tests::inventory_child_is_deadline_limited_and_output_is_collected ... ok
+test accounts::legacy::tests::sigkill_recovers_destination_local_transactions_at_every_boundary ... ok
+test guardian::tests::stop_is_independent_of_lifecycle_lock ... ok
+test guardian::tests::unknown_and_wake_do_not_stop_without_failure ... ok
+test guardian_repair::legacy_tests::bodyguard_or_user_guardian_satisfies_readiness_without_watchdog_substitution ... ok
+test guardian_repair::legacy_tests::failed_bodyguard_does_not_discard_other_fixed_repairs ... ok
+test guardian_repair::legacy_tests::only_timezone_watchdog_never_satisfies_bodyguard_readiness ... ok
+test guardian::retained_diagnostic_tests::unsafe_legacy_roots_and_nonprivate_v2_are_rejected ... ok
+test guardian::legacy_behavior_tests::legacy_shell_only_configuration_loads_at_startup_and_refreshes ... ok
+test guardian_repair::tests::guardian_repair_failure_reports_committed_configuration ... ok
+test guardian_repair::tests::guardian_repair_identity_failure_and_healthy_noop_never_launch ... ok
+test guardian_repair::tests::guardian_repair_missing_and_stale_heartbeat_use_correct_action ... ok
+test guardian_repair::tests::guardian_repair_rejects_installation_change_before_or_during_health ... ok
+test guardian_repair::tests::guardian_repair_rejects_modified_plist ... ok
+test guardian_repair::tests::guardian_repair_releases_capability_before_waiting_for_health ... ok
+test guardian_repair::tests::guardian_repair_wait_does_not_accept_health_from_replaced_installation ... ok
+test guardian_repair::tests::guardian_repair_rejects_user_writable_component_paths ... ok
+test checks::tests::stun_production_path_does_not_wait_for_slow_asn ... ok
+test guardian::retained_diagnostic_tests::health_binds_current_complete_policy_without_needing_green_report ... ok
+test install::tests::edition_replacement_is_explicit_and_paths_fixed ... ok
+test guardian::native_tests::network_epoch_native_receiver_keeps_observer_alive_and_drop_is_detectable ... ok
+test install::update_transaction_tests::authorization_delay_and_clock_change_reject_expired_installation ... ok
+test install::tests::cancelled_authorization_preserves_old_components ... ok
+test install::update_transaction_tests::region_repair_reuses_only_the_correct_held_lock ... ok
+test install::update_transaction_tests::shell_sources_remain_literals ... ok
+test install::update_transaction_tests::codesign_generated_shell_passes_inline_requirement_as_one_argument ... ok
+test install::update_transaction_tests::codesign_direct_passes_inline_requirement_as_one_argument ... ok
+test installation_health::tests::failed_probe_worker_does_not_prevent_a_later_tick ... ok
+test installation_health::tests::guardian_probe_is_single_flight_and_does_not_block_ticks ... ok
+test installation_health::tests::guardian_zero_sequence_is_rejected_before_native_io ... ok
+test installation_health::tests::gui_context_requires_current_owner_edition_and_full_install_record ... ok
+test installation_health::tests::successful_pending_challenge_is_reported_again_after_retry_interval ... ok
+test lifecycle::tests::first_b_checks_before_selection_and_again_before_open ... ok
+test install::update_transaction_tests::update_journal_accepts_authenticated_state_larger_than_generic_metadata_limit ... ok
+test lifecycle::tests::ordinary_launch_needs_only_checks_and_system_open ... ok
+test lifecycle::tests::open_failure_is_reported_without_claiming_launch ... ok
+test lifecycle::tests::preflight_failure_does_not_quit_switch_or_open ... ok
+test lifecycle::tests::selected_account_change_during_check_prevents_wrong_account_launch ... ok
+test install::update_transaction_tests::source_local_signature_passes_exact_pin_requirement_as_one_argument ... ok
+test macos::test_observer::network_epoch_guardian_event_does_not_invalidate_unregistered_frontend ... ok
+test macos::test_observer::network_epoch_registration_is_reused_and_failure_is_sticky ... ok
+test macos::tests::automatic_proxy_adapter_includes_odcloud_and_clash_verge ... ok
+test macos::tests::generation_rejects_aba_and_events_during_observation ... ok
+test macos::tests::legacy_proxy_and_tun_observe_vpn_and_fake_ip_not_route ... ok
+test macos::tests::legacy_tun_and_shadowrocket_conditions ... ok
+test macos::tests::only_a_real_tunnel_interface_is_accepted ... ok
+test install::tests::durable_root_commit_prevents_rollback_after_lost_reply_or_restart ... ok
+test migration::tests::failed_quit_never_creates_store_or_changes_active_data ... ok
+test install::tests::recovery_failure_blocks_new_install ... ok
+test migration::tests::first_a_archives_without_requiring_existing_v2_or_backup ... ok
+test migration::tests::previous_in_place_journal_recovers_copy_without_version_keychain_or_backup ... ok
+test network::tests::authentication_and_access_do_not_assert_account_usability ... ok
+test migration::tests::missing_current_uses_existing_v2_account_selection ... ok
+test network::tests::geo_enrichment_keeps_source_identity_and_never_defaults_country ... ok
+test network::tests::geo_ip_sb_fallback_and_failure_are_distinct ... ok
+test network::tests::geo_same_ip_fallback_fills_missing_country ... ok
+test network::tests::explicit_proxy_authentication_tls_and_timeout_are_distinct ... ok
+test network::tests::legacy_inherited_proxy_child ... ok
+test network::tests::legacy_checks_inherit_proxy_in_an_isolated_child ... ok
+test network::tests::resolver_failure_has_a_dns_classification_without_network_requests ... ok
+test network::tests::socks_ipv6_uses_remote_domain_dns_without_http_connect_and_classifies_authentication ... ok
+test network::tests::stun_ipv6_xor_padding_and_magic_cookie_are_checked ... ok
+test network::tests::stun_validates_identity_source_lengths_and_family ... ok
+test proxy_repair::tests::legacy_named_apps_open_without_identity_preconditions_and_wait_forty_seconds ... ok
+test proxy_repair::tests::legacy_pending_plan_keeps_decoding_without_identity_restrictions ... ok
+test proxy_repair::tests::running_app_waits_for_tun_without_reopening_and_timeout_is_bounded ... ok
+test install::tests::every_mutation_failure_restores_and_persists ... ok
+test region_detection::tests::conflicting_country_cn_and_missing_timezone_fail ... ok
+test migration::tests::old_current_wins_and_replaced_live_directory_is_rebound_without_migration ... ok
+test region_detection::tests::legacy_target_accepts_geo_without_cloudflare_or_matching_ip ... ok
+test migration::tests::selecting_current_account_does_not_quit_or_rewrite_live_data ... ok
+test migration::tests::first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data ... ok
+test region_detection::tests::missing_cloudflare_and_different_ip_use_geo_fallback ... ok
+test regions::combined_tests::combined_authorization_denial_and_expiry_make_zero_user_writes ... ok
+test checks::tests::stun_no_response_passes_without_waiting_for_slow_geo ... ok
+test regions::combined_tests::cancelled_recovery_preserves_pending_files_and_both_journals ... ok
+test regions::combined_tests::combined_user_write_failure_never_calls_root_and_recovers_region_journal ... ok
+test regions::combined_tests::app_open_runs_before_user_preferences_and_failure_preserves_them ... ok
+test regions::combined_tests::combined_some_plan_commits_user_and_system_under_one_lock ... ok
+test regions::combined_tests::new_repair_preview_still_requires_installed_identity ... ok
+test regions::combined_tests::committed_repair_releases_lock_before_guardian_wait ... ok
+test regions::combined_tests::legacy_journal_without_runtime_state_remains_readable ... ok
+test regions::combined_tests::repair_preview_accepts_missing_or_stale_guardian_health ... ok
+test regions::combined_tests::combined_confirmed_root_failure_or_cancel_restores_complete_user_files ... ok
+test regions::combined_tests::combined_unknown_retains_both_journals_until_verified_recovery ... ok
+test regions::combined_tests::runtime_authorization_denied_has_no_intent_or_process_changes ... ok
+test regions::combined_tests::dangling_journal_markers_never_trigger_user_only_recovery ... ok
+test accounts::tests::all_durable_and_physical_interruption_points_recover_by_identity ... ok
+test accounts::tests::copy_provenance_exchange_recovers_all_existing_checkpoints ... ok
+test regions::combined_tests::runtime_applied_recovery_keeps_target_files_when_restart_fails ... ok
+test regions::combined_tests::runtime_external_rewrite_after_start_never_dispatches_root_or_overwrites_conflict ... ok
+test regions::combined_tests::runtime_crash_before_root_dispatch_restores_without_root_status ... ok
+test regions::combined_tests::runtime_original_restart_rewrite_does_not_report_restoration_complete ... ok
+test regions::combined_tests::runtime_stop_failure_never_writes_target_files ... ok
+test regions::legacy::tests::administrator_cancel_continues_user_items_and_retry_has_no_journal ... ok
+test regions::legacy::tests::administrator_script_runs_every_fixed_item_and_retains_failure ... ok
+test regions::legacy::tests::failed_proxy_gate_blocks_system_and_preferences ... ok
+test regions::legacy::tests::fix_egress_production_client_inherits_proxy_in_isolated_child ... ok
+test regions::legacy::tests::fix_egress_proxy_fixture_child ... ok
+test regions::legacy::tests::guardian_only_repair_includes_both_dns_commands ... ok
+test regions::legacy::tests::set_region_saves_target_and_locale_before_cancel_without_fix_expansion ... ok
+test regions::legacy::tests::unavailable_guardian_continues_fixed_system_and_user_repairs ... ok
+test regions::combined_tests::runtime_restored_files_with_failed_restart_keep_recoverable_journal ... ok
+test regions::legacy::tests::user_only_repair_never_requests_administrator ... ok
+test accounts::tests::killed_process_recovers_every_durable_and_physical_checkpoint ... ok
+test regions::combined_tests::runtime_country_failure_restores_files_and_original_running_state ... ok
+test regions::tests::app_open_intent_precedes_dispatch_and_recovery_never_replays_it ... ok
+test regions::tests::app_open_preview_binds_deadline_and_missing_app_does_not_block_other_repairs ... ok
+test regions::tests::app_open_denial_expiry_config_change_and_mode_mismatch_never_dispatch ... ok
+test regions::tests::changed_config_and_busy_lock_never_call_helper ... ok
+test regions::tests::app_open_rejection_and_unknown_result_keep_intent_until_explicit_recovery ... ok
+test regions::tests::authorization_cancelled_or_rejected_preserves_all_config_and_creates_no_journal ... ok
+test regions::combined_tests::runtime_target_start_failure_restores_original_files_before_restart ... ok
+test regions::tests::config_changed_during_authorization_never_creates_repair_journal ... ok
+test regions::tests::failed_apply_does_not_commit_country_or_timezone ... ok
+test regions::tests::commit_intent_survives_config_rename_and_never_rolls_back ... ok
+test regions::tests::interruption_before_root_dispatch_recovers_without_calling_root ... ok
+test regions::combined_tests::recovered_commit_finishes_guardian_only_after_releasing_lock ... ok
+test regions::tests::first_same_legacy_target_commit_materializes_guardian_policy ... ok
+test repair_cli::tests::command_allowlist_rejects_extra_arguments_and_paths ... ok
+test repair_cli::tests::edition_mismatch_and_unverified_gui_are_rejected ... ok
+test repair_cli::tests::fixed_commands_execute_by_default_with_explicit_preview ... ok
+test repair_cli::tests::serialized_forwarding_keeps_only_fixed_arguments ... ok
+test regions::tests::verified_no_start_clears_journal_without_changing_config ... ok
+test regions::tests::unknown_wrong_plan_and_external_config_keep_recovery_blocked ... ok
+test signed::tests::duplicate_nested_keys_unknown_fields_and_replay_are_rejected ... ok
+test signed::tests::exact_payload_roundtrip_tampering_wrong_key_and_limit ... ok
+test regions::tests::lost_root_reply_keeps_journal_then_verified_status_commits ... ok
+test signed::tests::sha256_is_fixed_lowercase_hex_with_leading_zeroes ... ok
+test regions::tests::successful_apply_commits_new_target_and_clears_egress_continuity ... ok
+test storage::tests::lifecycle_contention_child_fixture ... ok
+test storage::tests::lifecycle_lock_child_fixture ... ok
+test storage::tests::bounded_private_reads_reject_oversize_public_modes_and_fifo ... ok
+test storage::tests::atomic_metadata_replaces_privately_and_refuses_symlink_destination ... ok
+test storage::tests::lifecycle_lock_excludes_another_owner_and_os_releases_it ... ok
+test storage::tests::guardian_snapshot_lock_read_only_and_unsafe_paths ... ok
+test storage::tests::legacy_data_root_keeps_modes_and_rejects_unsafe_metadata ... ok
+test time::tests::forward_jump_and_monotonic_rollback_require_recovery ... ok
+test time::tests::passive_anomaly_is_sticky_after_reload_and_baseline_requires_verification ... ok
+test time::tests::passive_first_boot_forward_and_continuous_rollback_checkpoint ... ok
+test time::tests::passive_observation_keeps_normal_baseline_and_detects_cumulative_drift ... ok
+test time::tests::real_macos_continuous_sample_is_available ... ok
+test time::tests::repeated_small_rollbacks_cannot_cross_the_verified_anchor ... ok
+test time::tests::sleep_utc_timezone_and_recovery_do_not_reset_authenticated_history ... ok
+test storage::tests::lifecycle_lock_is_released_when_the_holding_process_is_killed ... ok
+test timezone_guard::tests::startup_then_hourly_schedule_is_preserved ... ok
+test storage::tests::lock_identity_replacement_and_duplicate_json_are_rejected ... ok
+test updates::tests::app_cdhash_requires_one_exact_fingerprint ... ok
+test updates::tests::bridge_release_is_required_before_new_signing_key ... ok
+test updates::tests::codesign_app_identity_passes_inline_requirement_in_production_argv ... ok
+test timezone_guard::tests::invalid_target_never_invokes_command ... ok
+test updates::tests::component_order_requires_a_compatible_intermediate_pair ... ok
+test updates::tests::download_proofs_cannot_cross_candidate_releases ... ok
+test updates::tests::e11_consent_personal_schedule_never_reuses_completed_action_after_roundtrip ... ok
+test updates::tests::minisign_proof_requires_exact_bytes_and_signed_version ... ok
+test updates::tests::metadata_is_bound_to_release_identity_time_version_and_source ... ok
+test updates::tests::persistent_failure_suppression_preserves_replay_watermark ... ok
+test updates::tests::personal_requires_each_action_public_schedule_pause_defer_backoff_survive_restart ... ok
+test timezone_guard::tests::startup_reconciles_target_despite_busy_lock_and_pending_repair ... ok
+test updates::transport_tests::actual_new_client_rejects_http_before_contacting_live_listener ... ok
+test regions::combined_tests::runtime_start_and_reload_are_durable_before_root_dispatch ... ok
+test updates::transport_tests::archive_paths_links_and_expansion_are_bounded_before_apple_assessment ... ok
+test regions::combined_tests::runtime_plan_expiry_after_verification_never_dispatches_root ... ok
+test user_repairs::pinned_routes::tests::create_replace_and_preserve_user_rules ... ok
+test user_repairs::pinned_routes::tests::select_group_subset_and_ambiguous_rejection ... ok
+test updates::tests::app_cdhash_binds_resigned_bundle_resources ... ok
+test updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint ... ok
+test storage::tests::three_process_writers_contend_and_os_releases_killed_holder ... ok
+test updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize ... ok
+test updates::transport_tests::controlled_tls_request_uses_production_user_agent ... ok
+test regions::combined_tests::recovery_entrypoints_accept_pending_journals_even_with_degraded_health ... ok
+test user_repairs::tests::filtered_copy_digest_retains_quarantine_custom_xattrs_and_acl ... ok
+test updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets ... ok
+test user_repairs::tests::legacy_language_skips_app_fallback_or_system_english_and_locale_is_independent ... ok
+test user_repairs::tests::legacy_merge_uses_saved_group_creates_directory_and_preserves_complex_yaml ... ok
+test user_repairs::tests::legacy_proxy_text_replaces_false_even_in_complex_documents ... ok
+test user_repairs::tests::legacy_tun_quits_before_edit_and_restarts_without_touching_real_apps ... ok
+test user_repairs::tests::failed_second_write_rolls_back_first_write ... ok
+test user_repairs::tests::durable_commit_decision_survives_archive_cleanup_crash_without_rollback ... ok
+test regions::tests::app_open_post_dispatch_expiry_and_config_conflicts_keep_intent ... ok
+test user_repairs::tests::ordinary_large_user_file_with_write_acl_is_accepted ... ok
+test user_repairs::tests::ordinary_symlink_hardlink_and_world_writable_source_are_accepted ... ok
+test user_repairs::tests::preview_is_read_only_redacted_and_fixed_enums ... ok
+test regions::combined_tests::recovery_entrypoint_rejections_preserve_journals_and_backups ... ok
+test user_repairs::tests::read_only_external_preference_copy_probe ... ok
+test user_repairs::tests::full_apply_and_restore_preserves_bytes_modes_xattrs_and_unrelated_plist_types ... ok
+test user_repairs::tests::restored_receipt_accepts_saved_real_copy_with_added_provenance ... ok
+test user_repairs::tests::provenance_copy_exception_is_directional_and_keeps_other_stamp_fields_strict ... ok
+test user_repairs::tests::large_preferences_keep_raw_targets_out_of_the_bounded_journal ... ok
+test user_repairs::tests::old_journal_missing_backup_stamp_keeps_strict_original_validation ... ok
+test user_repairs::tests::missing_client_preferences_restore_to_absent ... ok
+test user_repairs::tests::commit_retains_full_backup_receipt_and_rejects_post_apply_changes ... ok
+test user_repairs::tests::stopped_gate_runs_before_backups_or_writes ... ok
+test user_repairs::tests::unsupported_proxy_is_explicit_without_suppressing_safe_locale_items ... ok
+test user_repairs::tests::stale_preview_and_wrong_lock_never_write ... ok
+test user_repairs::tests::writable_ancestor_is_accepted ... ok
+test user_repairs::tests::recovery_rejects_unrelated_external_changes_and_corrupt_backup ... ok
+test user_repairs::tests::archived_commit_and_restore_are_idempotent_and_reject_arbitrary_ids ... ok
+test user_repairs::tests::restored_receipt_verifies_unattempted_original_and_legacy_journals_strictly ... ok
+test user_repairs::tests::recovery_is_idempotent_if_rollback_was_interrupted ... ok
+test user_repairs::tests::routes_create_preview_execute_restore_and_source_drift ... ok
+test user_repairs::tests::routes_replacement_preserves_user_rules_and_recovers_full_original ... ok
+test user_repairs::tests::crash_at_each_journal_checkpoint_restores_without_receipt_memory ... ok
+
+test result: ok. 293 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 22.28s
+
+     Running unittests src/bin/claude-switcher.rs (target/debug/deps/claude_switcher-c506376841127026)
+
+running 1 test
+test tests::legacy_report_keeps_fourteen_unique_rows_and_failures ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/keychain-metadata-probe.rs (target/debug/deps/keychain_metadata_probe-a35e18c09be72539)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/switcher-guardian.rs (target/debug/deps/switcher_guardian-81ab89098c9aab34)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/checks_cli.rs (target/debug/deps/checks_cli-b0302e329149b9c7)
+
+running 4 tests
+test unavailable_lifecycle_commands_never_start_or_modify_accounts ... ok
+test explicit_environment_and_private_file_need_no_curl_or_helpers_and_never_grant_launch ... ok
+test invalid_arguments_and_config_do_not_echo_paths_or_secrets ... ok
+test status_is_readonly_reports_login_unknown_and_rejects_arguments ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests/e11_privacy.rs (target/debug/deps/e11_privacy-685f341f192e20e1)
+
+running 8 tests
+test fixed_ad_source_cannot_be_replaced_by_response_links_or_account_data ... ok
+test common_redaction_survives_persistence_preview_and_export_serialization ... ok
+test stun_wire_is_only_a_twenty_byte_binding_request_with_no_account_payload ... ok
+test geo_production_lookup_reaches_third_ip_sb_source_after_failures ... ok
+test all_ads_disabled_and_personal_unrequested_updates_produce_no_request_targets ... ok
+test synthetic_account_markers_are_absent_from_captured_fixed_probe_requests ... ok
+test production_http_client_rejects_redirects_without_second_hop ... ok
+test injected_tls_fixture_rejects_redirects_without_second_hop ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running unittests src/lib.rs (target/debug/deps/switcher_domain-c7a5e6fe7ec5eec1)
+
+running 5 tests
+test system::install_trust_tests::developer_identity_keeps_apple_anchor_and_team ... ok
+test system::install_trust_tests::invalid_and_legacy_records_never_downgrade_to_local_trust ... ok
+test system::install_trust_tests::local_requirements_bind_fixed_role_and_exact_code ... ok
+test system::install_trust_tests::installation_challenge_binds_boot_expiry_record_and_local_generation ... ok
+test system::install_trust_tests::installation_receipt_requires_both_roles_loop_and_valid_observation_time ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/export-types.rs (target/debug/deps/export_types-ecee9b16a4378ffc)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/switcher_helper-bd933d494bb374bd)
+
+running 48 tests
+test installation_health::tests::tracker_binds_full_record_nonce_expiry_and_challenge_key ... ok
+test installation_health::tests::pending_exception_excludes_every_ordinary_root_action ... ok
+test installation_health::tests::session_role_proofs_require_both_real_roles_and_guardian_loop_before_receipt ... ok
+test platform::no_tun_test_io::no_tun_apply_plan_never_reaches_system_or_journal_writes ... ok
+test platform::dns_cache::test_io::dns_cache_failure_preserves_changes_and_journal_without_applied_completion ... ok
+test platform::dns_cache::test_io::dns_cache_no_system_change_skips_both_commands ... ok
+test platform::dns_cache::test_io::dns_cache_changed_repair_runs_fixed_commands_and_then_commits ... ok
+test platform::tests::actual_route_requires_one_real_tunnel_interface ... ok
+test platform::tests::entropy_is_fresh ... ok
+test platform::dns_cache::test_io::dns_cache_failed_refresh_recovers_pending_without_granting_timezone_authority ... ok
+test platform::tests::status_requires_matching_plan_and_pending_overrides_completed_receipt ... ok
+test platform::tests::timezone_rejects_injection_and_traversal ... ok
+test platform::timezone_guard::tests::unrelated_pending_transaction_does_not_disable_watchdog ... ok
+test platform::no_tun_test_io::no_tun_positive_control_trips_before_root_journal_io ... ok
+test platform::no_tun_test_io::no_tun_missing_boundary_fails_closed_and_unwind_resets_scope ... ok
+test platform::no_tun_test_io::no_tun_scope_is_thread_local_and_denies_unexpected_commands ... ok
+test platform::timezone_guard::tests::target_reconciles_without_managed_record_or_receipt ... ok
+test platform::timezone_guard::tests::invalid_target_and_failed_readback_do_not_report_success ... ok
+test policy::source_local_tests::source_local_system_gate_contains_only_fixed_gui_and_guardian_pins ... ok
+test policy::source_local_tests::source_local_installer_cannot_begin_session ... ok
+test policy::tests::apply_without_administrator_authorization_never_mutates ... ok
+test policy::source_local_tests::source_local_unknown_fields_missing_pins_and_legacy_records_are_rejected ... ok
+test policy::tests::expired_session_records_no_start_for_its_bound_unconsumed_plan ... ok
+test policy::tests::expired_matching_plan_records_no_start_before_any_mutation ... ok
+test policy::tests::authorized_apply_is_single_use_and_recovery_requires_new_scoped_proof ... ok
+test policy::tests::guardian_cannot_request_root_recovery_or_read_transaction_results ... ok
+test policy::tests::owner_role_session_sequence_and_expiry_matrix ... ok
+test policy::tests::guardian_cannot_write_and_plan_is_single_use ... ok
+test root_operation::root_codesign_inline_requirement_argv ... ok
+test policy::tests::timezone_guard_requires_guardian_owner_live_session_and_sequence ... ok
+test policy::tests::recovery_plan_change_or_apply_scope_cannot_authorize_recovery ... ok
+test root_operation::tests::copied_app_must_match_sealed_cdhash_exactly_once ... ok
+test policy::tests::native_proof_binding_rejects_invalid_expired_replayed_and_changed_plans ... ok
+test root_operation::tests::root_gate_rechecks_expiry_clock_and_boot_after_authorization ... ok
+test root_operation::tests::unprivileged_root_runner_fails_before_any_system_path_mutation ... ok
+test xpc::native_client_tests::mutation_budget_covers_full_bounded_command_and_rollback_chain ... ok
+test root_operation::tests::source_local_absent_journal_allows_normal_root_gate_to_continue ... ok
+test installation_health::tests::safe_challenge_io_rejects_wrong_mode_links_fifo_and_unknown_fields ... ok
+test installation_health::tests::receipt_atomic_write_keeps_private_file_and_complete_challenge ... ok
+test xpc::tests::versions_are_numeric_and_fail_closed ... ok
+test root_operation::tests::exclusive_rename_does_not_follow_or_overwrite_destination_symlink ... ok
+test root_operation::tests::source_local_pending_survives_previous_boot_barrier_removal ... ok
+test platform::tests::preview_receipt_survives_client_crash_and_cannot_overwrite_terminal_receipt ... ok
+test root_operation::tests::source_local_bad_journal_type_or_contents_never_bypass_gate ... ok
+test native_authorization::tests::malformed_and_forged_external_forms_are_rejected_without_interaction ... ok
+test xpc::tests::synthetic_dictionary_has_no_sender_identity ... ok
+test xpc::native_client_tests::unregistered_or_wrong_signer_service_never_authenticates ... ok
+test root_operation::tests::inherited_transaction_lock_survives_runner_descriptor_close ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running unittests src/main.rs (target/debug/deps/switcher_helper-e0516b034cb2c8a5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests switcher_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests switcher_domain
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests switcher_helper
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,98 @@
+Gemini 说
+依据题目要求及当前位置（2026年）， 本轮独立审核逻辑组4的附件 
+G4-P13
+ 至 
+G4-P16
+。 由于当前处于低档模型降级阶段， 暂不生成完整正式的长篇总报告， 先按规范提取每份附件的覆盖状态， 并记录相关的核心代码取证。
+一、 第 15/17 轮（逻辑组4）附件读取覆盖核对表与额外要求核对
+本轮 4 份附件（
+G4-P13
+ ～ 
+G4-P16
+）均已 完整读取 ，无截断、无缺失
+。
+附件 ID
+完整/截断
+FILE 条目总数
+最后三个 FILE 原路径及其 ORIGINAL_LINES 范围
+附件末尾独立读出的 END 标记
+G4-P13.txt
+完整
+1
+1.  SOURCE_MANIFEST.json  (1731-3096)
+END_G4-P13_f7473a055f1b1bb9
+G4-P14.txt
+完整
+3
+1.  codegraph/file-relations.csv  (1-700)
+2.  evidence/final/accounts-result.json  (1-38)
+3.  evidence/final/build-personal-final.log  (1-154)
+END_G4-P14_32eb1575325f83b7
+G4-P15.txt
+完整
+10
+8.  evidence/final/packaging-final.log  (1-96)
+9.  evidence/final/protected-source-final.json  (1-197)
+10.  evidence/final/proxy-result.json  (1-50)
+END_G4-P15_44846af61588a339
+G4-P16.txt
+完整
+4
+2.  evidence/final/regions-report.json  (1-34)
+3.  evidence/final/rust-tests-final-candidate.log  (1-469)
+4.  evidence/final/source-frozen-final.json  (1-207)
+END_G4-P16_ff549842c36f0249
+二、 本轮与最初目标相关的暂定取证发现
+围绕用户最初目标（ 保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为 ）， 本轮对最终构建日志、 测试证据及静态代码关系图谱（
+file-relations.csv
+）的核心代码取证如下：
+Rust 核心与桌面端构建及单元测试（
+build-personal-final.log
+ 与 
+rust-tests-final-candidate.log
+） ：
+证据位置 ：
+evidence/final/build-personal-final.log
+ 行 
+000141
+–
+000153
+；
+evidence/final/rust-tests-final-candidate.log
+ 行 
+000320
+–
+000327
+。
+取证发现 ：
+成功构建 ：Personal 版和 Public 版发布包（如 
+Claude 切换器 Personal.app
+）均已通过零严重警告的优化 Release 编译并完成 ad-hoc 签名（Signing with identity "-"）
+。
+测试通过 ：在核心单元测试中，共运行 293 项测试全部通过（
+test result: ok. 293 passed; 0 failed
+），充分覆盖了账号切换、账户隔离、生命周期检查及辅助管理等核心逻辑
+。
+代码关系图谱静态边追踪（
+file-relations.csv
+） ：
+证据位置 ：
+codegraph/file-relations.csv
+ 行 
+000003
+–
+000014
+。
+取证发现 ：精准记录了前端 Tauri 命令桥（
+bridge.rs
+）向底层核心服务（如 
+accounts.rs
+、
+ad_runtime.rs
+、
+guardian.rs
+、
+updates.rs
+）的调用静态边，确保重构后的架构调用链路清晰可溯
+。
+待最后一轮材料补齐后， 将对所有暂定取证与未读缺口进行整体复核并出具最终五部分总报告。

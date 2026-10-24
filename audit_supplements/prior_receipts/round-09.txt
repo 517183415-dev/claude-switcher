@@ -1,0 +1,120 @@
+Gemini 说
+
+根据用户的指示，本轮（第 9/17 轮，逻辑组 3）仅接收并记录附件 G3-P05 至 G3-P08 的内容。当前模型处于 Flash-Lite 降级阶段，仅作材料接收与暂定记录，所有结论待高级模型恢复后统一复核。
+
+一、 第 9/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G3-P05 ～ G3-P08）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个 FILE 原路径及其 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G3-P05.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/apps/desktop/src-tauri/src/publisher/tests.rs (1-816) 
+TXT
+
+	
+
+END_G3-P05_cc38753b230bf311 
+TXT
+
+
+G3-P06.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/apps/desktop/src-tauri/src/update_runtime.rs (1-1483) 
+TXT
+
+	
+
+END_G3-P06_c70419ea8e2477be 
+TXT
+
+
+G3-P07.txt	
+
+完整 
+TXT
+
+	8	
+
+6. current/apps/desktop/src-tauri/tests/e03_core_preparation.rs (1-302)
+
+
+
+
+7. current/apps/desktop/src-tauri/tests/e06_repair_preview.rs (1-60)
+
+
+
+
+8. current/apps/desktop/src-tauri/tests/e11_log_privacy.rs (1-87) 
+TXT
+
+	
+
+END_G3-P07_3a7cd620d7252834 
+TXT
+
+
+G3-P08.txt	
+
+完整 
+TXT
+
+	9	
+
+7. current/apps/desktop/tests/recovery-copy.test.mjs (1-69)
+
+
+
+
+8. current/apps/desktop/tests/repair-preview-queue.test.mjs (1-20)
+
+
+
+
+9. current/apps/desktop/tests/repair-preview.test.mjs (1-56) 
+TXT
+
+	
+
+END_G3-P08_2fcbfaa773c9c174 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+发布器测试与本地加解密保护（publisher/tests.rs & backup.rs）：
+
+证据位置：current/apps/desktop/src-tauri/src/publisher/tests.rs 行 000426–000479；current/apps/desktop/src-tauri/src/publisher/backup.rs 行 000017–000028。   
+TXT
++ 1
+
+取证发现：测试用例验证了 Argon2id + XChaCha20-Poly1305 加密备份的完整恢复流程，确保口令错误或备份损坏时不会破坏现有状态，并且在恢复后强制触发 recovery_required 状态。
+
+桌面端更新运行时（update_runtime.rs）对 SourceLocal 的本地构建保护：
+
+证据位置：current/apps/desktop/src-tauri/src/update_runtime.rs 行 000020、000938–000976。   
+TXT
++ 1
+
+取证发现：明确输出 SOURCE_LOCAL 提示（“源码构建版本；升级请拉取源码、重新构建并运行本地安装脚本”），且在无官方发布 Pins 时自动禁用自动下载与安装，完美切合“本地版本不自动更新”的要求。
+
+桌面端前端 UI 与测试（App.svelte, e11_privacy.rs, repair-preview.test.mjs 等）：
+
+证据位置：current/apps/desktop/src-tauri/tests/e11_privacy.rs 行 000309–000363。   
+TXT
+
+取证发现：隐私测试断言 Personal 版本的后台更新动作及所有广告关闭状态下均不会产生非预期网络请求，保障了本地及隐私合规基线。
+
+待高级模型恢复后，将结合此前各轮取证对全系统进行整体复核。

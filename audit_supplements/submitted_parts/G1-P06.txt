@@ -1,0 +1,547 @@
+审核补充附件 G1-P06，逻辑组1，共11份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md
+SHA256_ORIGINAL: 1b2080f74245e3764a2102b49ac05ebcfcf5e83e718b3d9cc6434decf10f47b7
+ORIGINAL_LINES: 1-537
+000001 | # 第三方依赖与许可声明材料
+000002 | 
+000003 | 本材料绑定当前锁文件。它是离线生成的 **overinclusive 锁全集**，不是最终二进制 SBOM，也不是法律审查通过证明。
+000004 | 生成器只读取项目锁文件、项目 node_modules、本机 crates.io registry 缓存和已归档的 supplements。生成器不联网、不安装或升级依赖。补充材料曾从官方发布源与精确提交采集。
+000005 | 
+000006 | ## 范围与打包边界
+000007 | 
+000008 | 1. Cargo 表包含根 Cargo.lock 的全部第三方版本。排除四个第一方 workspace 包，以及 experiments 的独立锁文件。
+000009 | 2. Cargo.lock 不区分运行时、proc-macro、构建工具、平台与 feature。此表保留所有目标条目，不能断言它们全部进入 macOS 工件。
+000010 | 3. npm 表保留 package-lock.json 的全部条目。dev 标记说明构建依赖图；其他条目属于 production 依赖图。Vite/Svelte 会编译、内联和消除代码，锁文件不能证明最终保留范围。
+000011 | 4. 未分析最终 app/helper 的链接映射与前端 bundle。不覆盖系统 SDK、编译器、系统动态库、Claude 应用及其账号数据。
+000012 | 5. 发行负责人仍须确认目标、features、实际工件、许可选择及再分发义务，并补齐适用包的缺失正文。
+000013 | 
+000014 | ## 收集方法与限制
+000015 | 
+000016 | Cargo license 标识优先取精确版本的缓存 Cargo.toml，再取同版本本地 sparse registry index。index checksum 必须匹配 Cargo.lock。
+000017 | Cargo 正文优先取本地 .crate 原始包，完整归档 SHA256 必须等于 Cargo.lock checksum。否则取源码缓存，有 .cargo-checksum.json 时校验；无校验材料时单独标注。npm 标识优先取锁文件；本地 package.json 必须同名同版本。
+000018 | npm 正文来自已安装目录，未对 npm tarball integrity 作独立复算。清单记录原始 integrity、文本文件路径和 SHA256。
+000019 | 递归收集名称为 LICENSE/LICENCE/NOTICE/COPYRIGHT 的文件，以及 Cargo license-file 指定文件；跳过 symlink、嵌套 node_modules、.git 与 target。
+000020 | 这是按文件名采集，不能保证捕获仅存在源码头注释中的声明或任意命名的许可证。双重许可表达式照录，未代替作者选择分支。
+000021 | 
+000022 | 补充材料逐包记录精确 .crate VCS 提交或 npm 发布 gitHead，以及来源 URL、适用依据和文本摘要。同版本 CLI/rolldown 主包全文用于其精确版本平台绑定，并保留主包 tarball 对锁文件 SRI 校验依据。
+000023 | objc2 系列和两个 Rich Harris 包没有上游项目专属完整版权通知。材料保留精确提交的原始许可声明，并附官方标准许可条款，保留版权占位符。**条款已归档不代表这 13 项通知缺口关闭。**
+000024 | 这些包在 inventory 的 upstream_notice_review_required 中单列。不得用规范模板代替真实版权署名，不得把此统计作为法律审定。详见 [补充证据说明](supplements/README.md)。
+000025 | 
+000026 | ## 本次覆盖
+000027 | 
+000028 | | 生态 | 第三方包条目 | 已归档许可材料 | 材料缺项 | 上游专属通知待核 | 标识 UNKNOWN |
+000029 | |---|---:|---:|---:|---:|---:|
+000030 | | cargo | 508 | 360 | 148 | 11 | 145 |
+000031 | | npm | 84 | 50 | 34 | 2 | 0 |
+000032 | 
+000033 | 正文缺项逐项见 [MISSING.md](notices/MISSING.md)。所有条目的文件归属、摘要和证据来源见 [inventory.json](notices/inventory.json)。
+000034 | 完整原文：[Cargo](notices/cargo-license-texts.txt)、[npm](notices/npm-license-texts.txt)。分隔行提供包名、版本和原始文件名，正文保持 UTF-8 原文。
+000035 | 
+000036 | ## 锁文件不变性
+000037 | 
+000038 | 生成前后 SHA256 一致：
+000039 | 
+000040 | | 文件 | SHA256 |
+000041 | |---|---|
+000042 | | `Cargo.lock` | `b535d6041b83fa8f5d203ba91829c2faf44cfb34530f2ae7bce2405de7c50f5c` |
+000043 | | `apps/desktop/package-lock.json` | `a7062c06e261a8ce4834fd23cb4506326802ad82ecea61f4b1a5ab6435b569e4` |
+000044 | 
+000045 | ## 复现
+000046 | 
+000047 | 在项目根目录执行 `python3 packaging/notices/generate.py`。需要 Python 3.11+ 和相同锁文件、本地依赖缓存。
+000048 | 可用 `--cargo-registry /path/to/.cargo/registry` 明确指定缓存。脚本不联网。缓存覆盖变化会改变正文覆盖计数。
+000049 | 
+000050 | ## cargo 锁定清单
+000051 | 
+000052 | | 包 | 版本 | 来源 | license 标识 | 图边界 | 正文文件数 |
+000053 | |---|---|---|---|---|---:|
+000054 | | adler2 | 2.0.1 | registry+https://github.com/rust-lang/crates.io-index | 0BSD OR MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000055 | | aead | 0.5.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000056 | | aho-corasick | 1.1.5 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000057 | | alloc-no-stdlib | 3.0.0 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000058 | | alloc-stdlib | 0.3.0 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000059 | | android_system_properties | 0.1.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000060 | | anyhow | 1.0.104 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000061 | | arbitrary | 1.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000062 | | argon2 | 0.5.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000063 | | atk | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000064 | | atk-sys | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000065 | | atomic-waker | 1.1.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000066 | | autocfg | 1.5.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000067 | | aws-lc-rs | 1.18.2 | registry+https://github.com/rust-lang/crates.io-index | ISC AND (Apache-2.0 OR ISC) | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000068 | | aws-lc-sys | 0.46.0 | registry+https://github.com/rust-lang/crates.io-index | ISC AND (Apache-2.0 OR ISC) AND Apache-2.0 AND MIT AND BSD-3-Clause AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR ISC OR MIT-0) | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000069 | | base64 | 0.21.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000070 | | base64 | 0.22.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000071 | | base64 | 0.23.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000072 | | base64ct | 1.8.3 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000073 | | bit-set | 0.8.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000074 | | bit-vec | 0.8.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000075 | | bitflags | 1.3.2 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000076 | | bitflags | 2.13.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000077 | | blake2 | 0.10.6 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000078 | | block-buffer | 0.10.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000079 | | block-buffer | 0.12.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000080 | | block2 | 0.6.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000081 | | brotli | 9.0.0 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause AND MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000082 | | brotli-decompressor | 6.0.1 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause/MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000083 | | bs58 | 0.5.1 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000084 | | bumpalo | 3.20.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000085 | | bytemuck | 1.25.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000086 | | byteorder | 1.5.0 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000087 | | byteorder-lite | 0.1.0 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000088 | | bytes | 1.12.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000089 | | cairo-rs | 0.18.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000090 | | cairo-sys-rs | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000091 | | camino | 1.2.6 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000092 | | cargo-platform | 0.1.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000093 | | cargo_metadata | 0.19.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000094 | | cargo_toml | 1.0.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000095 | | cc | 1.9.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000096 | | cesu8 | 1.1.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000097 | | cfb | 0.14.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000098 | | cfg-expr | 0.15.8 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000099 | | cfg-if | 1.0.5 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000100 | | cfg_aliases | 0.2.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000101 | | chacha20 | 0.9.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000102 | | chacha20 | 0.10.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000103 | | chacha20poly1305 | 0.10.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000104 | | chrono | 0.4.45 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000105 | | cipher | 0.4.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000106 | | cmake | 0.1.58 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000107 | | combine | 4.6.9 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000108 | | const-oid | 0.10.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000109 | | cookie | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000110 | | core-foundation | 0.9.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000111 | | core-foundation | 0.10.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000112 | | core-foundation-sys | 0.8.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000113 | | core-graphics | 0.25.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000114 | | core-graphics-types | 0.2.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000115 | | cpufeatures | 0.2.17 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000116 | | cpufeatures | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000117 | | crc32fast | 1.5.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000118 | | crossbeam-channel | 0.5.17 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000119 | | crossbeam-utils | 0.8.23 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000120 | | crypto-common | 0.1.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000121 | | crypto-common | 0.2.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000122 | | cssparser | 0.37.0 | registry+https://github.com/rust-lang/crates.io-index | MPL-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000123 | | cssparser-macros | 0.7.1 | registry+https://github.com/rust-lang/crates.io-index | MPL-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000124 | | ctor | 1.0.13 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000125 | | curve25519-dalek | 5.0.0 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000126 | | curve25519-dalek-derive | 0.1.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000127 | | darling | 0.24.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000128 | | darling_core | 0.24.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000129 | | darling_macro | 0.24.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000130 | | dbus | 0.9.12 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000131 | | defmt | 1.2.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000132 | | defmt-macros | 1.2.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000133 | | defmt-parser | 1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000134 | | deranged | 0.5.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000135 | | derive_arbitrary | 1.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000136 | | derive_more | 2.1.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000137 | | derive_more-impl | 2.1.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000138 | | digest | 0.10.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000139 | | digest | 0.11.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000140 | | dirs | 7.0.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000141 | | dirs-sys | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000142 | | dispatch2 | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000143 | | displaydoc | 0.2.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000144 | | dlopen2 | 0.8.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000145 | | dlopen2_derive | 0.4.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000146 | | dom_query | 0.28.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000147 | | dpi | 0.1.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 AND MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000148 | | dtoa | 1.0.11 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000149 | | dtoa-short | 0.3.5 | registry+https://github.com/rust-lang/crates.io-index | MPL-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000150 | | dunce | 1.0.5 | registry+https://github.com/rust-lang/crates.io-index | CC0-1.0 OR MIT-0 OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000151 | | dyn-clone | 1.0.20 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000152 | | ed25519 | 3.0.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000153 | | ed25519-dalek | 3.0.0 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000154 | | embed-resource | 3.0.12 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000155 | | embed_plist | 1.2.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000156 | | equivalent | 1.0.3 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000157 | | erased-serde | 0.4.10 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000158 | | errno | 0.3.14 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000159 | | fastrand | 2.5.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000160 | | fdeflate | 0.3.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000161 | | fiat-crypto | 0.3.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000162 | | field-offset | 0.3.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000163 | | filetime | 0.2.29 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000164 | | find-msvc-tools | 0.1.15 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000165 | | flate2 | 1.1.10 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000166 | | fnv | 1.0.7 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 / MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000167 | | foldhash | 0.2.0 | registry+https://github.com/rust-lang/crates.io-index | Zlib | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000168 | | foreign-types | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000169 | | foreign-types-macros | 0.2.4 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000170 | | foreign-types-shared | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000171 | | form_urlencoded | 1.2.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000172 | | fs_extra | 1.3.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000173 | | futures-channel | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000174 | | futures-core | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000175 | | futures-executor | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000176 | | futures-io | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000177 | | futures-macro | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000178 | | futures-sink | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000179 | | futures-task | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000180 | | futures-util | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000181 | | gdk | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000182 | | gdk-pixbuf | 0.18.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000183 | | gdk-pixbuf-sys | 0.18.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000184 | | gdk-sys | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000185 | | gdkwayland-sys | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000186 | | gdkx11 | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000187 | | gdkx11-sys | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000188 | | generic-array | 0.14.7 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000189 | | getrandom | 0.2.17 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000190 | | getrandom | 0.3.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000191 | | getrandom | 0.4.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000192 | | gio | 0.18.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000193 | | gio-sys | 0.18.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000194 | | glib | 0.18.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000195 | | glib-macros | 0.18.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000196 | | glib-sys | 0.18.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000197 | | glob | 0.3.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000198 | | gobject-sys | 0.18.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000199 | | gtk | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000200 | | gtk-sys | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000201 | | gtk3-macros | 0.18.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000202 | | hashbrown | 0.12.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000203 | | hashbrown | 0.17.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000204 | | heck | 0.4.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000205 | | heck | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000206 | | hex | 0.4.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000207 | | html5ever | 0.39.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000208 | | http | 1.5.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000209 | | http-body | 1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000210 | | http-body-util | 0.1.5 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000211 | | httparse | 1.10.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000212 | | hybrid-array | 0.4.15 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000213 | | hyper | 1.12.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000214 | | hyper-rustls | 0.27.10 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR ISC OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000215 | | hyper-util | 0.1.21 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000216 | | iana-time-zone | 0.1.65 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000217 | | iana-time-zone-haiku | 0.1.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000218 | | ico | 0.6.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000219 | | icu_collections | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000220 | | icu_locale_core | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000221 | | icu_normalizer | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000222 | | icu_normalizer_data | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000223 | | icu_properties | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000224 | | icu_properties_data | 2.3.0 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000225 | | icu_provider | 2.3.1 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000226 | | ident_case | 1.0.1 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000227 | | idna | 1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000228 | | idna_adapter | 1.2.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000229 | | image | 0.25.10 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000230 | | indexmap | 1.9.3 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000231 | | indexmap | 2.14.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000232 | | infer | 0.22.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000233 | | inout | 0.1.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000234 | | ipnet | 2.12.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000235 | | itoa | 1.0.18 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000236 | | javascriptcore-rs | 1.1.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000237 | | javascriptcore-rs-sys | 1.1.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000238 | | jiff | 0.2.38 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000239 | | jiff-core | 0.1.1 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000240 | | jiff-static | 0.2.38 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000241 | | jiff-tzdb | 0.1.9 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000242 | | jiff-tzdb-platform | 0.1.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000243 | | jni | 0.21.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000244 | | jni | 0.22.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000245 | | jni-macros | 0.22.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000246 | | jni-sys | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000247 | | jni-sys | 0.4.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000248 | | jni-sys-macros | 0.4.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000249 | | jobserver | 0.1.35 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000250 | | js-sys | 0.3.106 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000251 | | json-patch | 4.2.0 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000252 | | jsonptr | 0.7.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000253 | | keyboard-types | 0.8.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000254 | | libappindicator | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000255 | | libappindicator-sys | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000256 | | libc | 0.2.191 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000257 | | libdbus-sys | 0.2.7 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000258 | | libloading | 0.7.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000259 | | libredox | 0.1.25 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000260 | | linux-raw-sys | 0.12.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000261 | | litemap | 0.8.3 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000262 | | lock_api | 0.4.14 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000263 | | log | 0.4.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000264 | | lru-slab | 0.1.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 OR Zlib | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000265 | | markup5ever | 0.39.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000266 | | memchr | 2.8.3 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000267 | | memoffset | 0.9.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000268 | | mime | 0.3.17 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000269 | | minisign-verify | 0.3.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000270 | | miniz_oxide | 0.8.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Zlib OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000271 | | miniz_oxide | 0.9.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Zlib OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000272 | | mio | 1.2.4 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000273 | | moxcms | 0.8.1 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000274 | | muda | 0.20.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000275 | | ndk | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000276 | | ndk-context | 0.1.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000277 | | ndk-sys | 0.6.0+11769913 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000278 | | new_debug_unreachable | 1.0.6 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000279 | | num-conv | 0.2.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000280 | | num-traits | 0.2.19 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000281 | | num_enum | 0.7.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000282 | | num_enum_derive | 0.7.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000283 | | objc2 | 0.6.5 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000284 | | objc2-app-kit | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000285 | | objc2-cloud-kit | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000286 | | objc2-core-data | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000287 | | objc2-core-foundation | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000288 | | objc2-core-graphics | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000289 | | objc2-core-image | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000290 | | objc2-core-location | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000291 | | objc2-core-text | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000292 | | objc2-encode | 4.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000293 | | objc2-exception-helper | 0.1.1 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000294 | | objc2-foundation | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000295 | | objc2-io-surface | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000296 | | objc2-osa-kit | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000297 | | objc2-quartz-core | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000298 | | objc2-ui-kit | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000299 | | objc2-user-notifications | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000300 | | objc2-web-kit | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000301 | | once_cell | 1.21.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000302 | | opaque-debug | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000303 | | openssl-probe | 0.2.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000304 | | option-ext | 0.2.0 | registry+https://github.com/rust-lang/crates.io-index | MPL-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000305 | | osakit | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000306 | | pango | 0.18.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000307 | | pango-sys | 0.18.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000308 | | parking_lot | 0.12.5 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000309 | | parking_lot_core | 0.9.12 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000310 | | password-hash | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000311 | | percent-encoding | 2.3.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000312 | | phf | 0.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000313 | | phf_codegen | 0.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000314 | | phf_generator | 0.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000315 | | phf_macros | 0.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000316 | | phf_shared | 0.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000317 | | pin-project-lite | 0.2.17 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000318 | | pkg-config | 0.3.34 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000319 | | plist | 1.10.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000320 | | png | 0.18.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000321 | | poly1305 | 0.8.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000322 | | portable-atomic | 1.15.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000323 | | portable-atomic-util | 0.2.8 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000324 | | potential_utf | 0.1.6 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000325 | | powerfmt | 0.2.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000326 | | precomputed-hash | 0.1.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000327 | | proc-macro-crate | 1.3.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000328 | | proc-macro-crate | 2.0.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000329 | | proc-macro-crate | 3.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000330 | | proc-macro-error | 1.0.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000331 | | proc-macro-error-attr | 1.0.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000332 | | proc-macro2 | 1.0.107 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000333 | | pxfm | 0.1.30 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000334 | | quick-xml | 0.42.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000335 | | quinn | 0.11.12 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000336 | | quinn-proto | 0.11.19 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000337 | | quinn-udp | 0.5.16 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000338 | | quote | 1.0.47 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000339 | | r-efi | 5.3.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000340 | | r-efi | 6.0.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000341 | | rand | 0.10.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000342 | | rand_core | 0.6.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000343 | | rand_core | 0.10.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000344 | | rand_pcg | 0.10.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000345 | | raw-window-handle | 0.6.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 OR Zlib | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000346 | | redox_syscall | 0.5.18 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000347 | | redox_users | 0.5.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000348 | | ref-cast | 1.0.27 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000349 | | ref-cast-impl | 1.0.27 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000350 | | regex | 1.13.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000351 | | regex-automata | 0.4.18 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000352 | | regex-syntax | 0.8.11 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000353 | | reqwest | 0.13.5 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000354 | | ring | 0.17.14 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 AND ISC | overinclusive: targets/features/build/proc-macro/runtime unresolved | 6 |
+000355 | | rustc-hash | 2.1.3 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000356 | | rustc_version | 0.4.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000357 | | rustix | 1.1.5 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000358 | | rustls | 0.23.46 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR ISC OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000359 | | rustls-native-certs | 0.8.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000360 | | rustls-pki-types | 1.15.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000361 | | rustls-platform-verifier | 0.7.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000362 | | rustls-platform-verifier-android | 0.2.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000363 | | rustls-webpki | 0.103.16 | registry+https://github.com/rust-lang/crates.io-index | ISC | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000364 | | rustversion | 1.0.22 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000365 | | same-file | 1.0.6 | registry+https://github.com/rust-lang/crates.io-index | Unlicense/MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000366 | | schannel | 0.1.30 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000367 | | schemars | 0.8.22 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000368 | | schemars | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000369 | | schemars | 1.2.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000370 | | schemars_derive | 0.8.22 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000371 | | scopeguard | 1.2.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000372 | | security-framework | 3.7.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000373 | | security-framework-sys | 2.17.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000374 | | selectors | 0.38.0 | registry+https://github.com/rust-lang/crates.io-index | MPL-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000375 | | semver | 1.0.28 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000376 | | serde | 1.0.229 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000377 | | serde-untagged | 0.1.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000378 | | serde_core | 1.0.229 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000379 | | serde_derive | 1.0.229 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000380 | | serde_derive_internals | 0.29.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000381 | | serde_json | 1.0.154 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000382 | | serde_repr | 0.1.21 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000383 | | serde_spanned | 0.6.9 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000384 | | serde_spanned | 1.1.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000385 | | serde_with | 3.24.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000386 | | serde_with_macros | 3.24.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000387 | | serialize-to-javascript | 0.1.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000388 | | serialize-to-javascript-impl | 0.1.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000389 | | servo_arc | 0.4.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000390 | | sha2 | 0.10.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000391 | | sha2 | 0.11.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000392 | | shlex | 2.0.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000393 | | signal-hook-registry | 1.4.8 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000394 | | signature | 3.0.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000395 | | simd-adler32 | 0.3.10 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000396 | | simd_cesu8 | 1.2.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000397 | | simdutf8 | 0.1.5 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000398 | | siphasher | 1.0.4 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000399 | | slab | 0.4.12 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000400 | | smallvec | 1.16.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000401 | | socket2 | 0.6.5 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000402 | | softbuffer | 0.4.8 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000403 | | soup3 | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000404 | | soup3-sys | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000405 | | stable_deref_trait | 1.2.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000406 | | static_vcruntime | 3.0.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 OR Zlib | overinclusive: targets/features/build/proc-macro/runtime unresolved | 4 |
+000407 | | string_cache | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000408 | | string_cache_codegen | 0.6.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000409 | | strsim | 0.11.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000410 | | subtle | 2.6.1 | registry+https://github.com/rust-lang/crates.io-index | BSD-3-Clause | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000411 | | swift-rs | 1.0.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000412 | | syn | 1.0.109 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000413 | | syn | 2.0.119 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000414 | | syn | 3.0.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000415 | | sync_wrapper | 1.0.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000416 | | synstructure | 0.14.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000417 | | system-configuration | 0.7.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000418 | | system-configuration-sys | 0.6.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000419 | | system-deps | 6.2.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000420 | | tao | 0.37.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000421 | | tao-macros | 0.1.4 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000422 | | tar | 0.4.46 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000423 | | target-lexicon | 0.12.16 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000424 | | tauri | 2.12.5 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000425 | | tauri-build | 2.7.4 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000426 | | tauri-codegen | 2.7.4 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000427 | | tauri-macros | 2.7.4 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000428 | | tauri-plugin | 2.7.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000429 | | tauri-plugin-updater | 2.14.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000430 | | tauri-runtime | 2.12.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000431 | | tauri-runtime-wry | 2.12.3 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000432 | | tauri-utils | 2.10.2 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000433 | | tauri-winres | 0.3.7 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000434 | | tempfile | 3.27.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000435 | | tendril | 0.5.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000436 | | termcolor | 1.4.1 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000437 | | thiserror | 1.0.69 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000438 | | thiserror | 2.0.21 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000439 | | thiserror-impl | 1.0.69 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000440 | | thiserror-impl | 2.0.21 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000441 | | time | 0.3.55 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000442 | | time-core | 0.1.9 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000443 | | time-macros | 0.2.32 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000444 | | tinystr | 0.8.4 | registry+https://github.com/rust-lang/crates.io-index | Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000445 | | tinyvec | 1.13.3 | registry+https://github.com/rust-lang/crates.io-index | Zlib OR Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000446 | | tokio | 1.54.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000447 | | tokio-macros | 2.7.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000448 | | tokio-rustls | 0.26.6 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000449 | | tokio-util | 0.7.20 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000450 | | toml | 0.8.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000451 | | toml | 1.1.8+spec-1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000452 | | toml_datetime | 0.6.3 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000453 | | toml_datetime | 1.1.2+spec-1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000454 | | toml_edit | 0.19.15 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000455 | | toml_edit | 0.20.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000456 | | toml_edit | 0.25.17+spec-1.1.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000457 | | toml_parser | 1.1.5+spec-1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000458 | | toml_writer | 1.1.3+spec-1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000459 | | tower | 0.5.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000460 | | tower-http | 0.6.11 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000461 | | tower-layer | 0.3.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000462 | | tower-service | 0.3.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000463 | | tracing | 0.1.44 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000464 | | tracing-core | 0.1.36 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000465 | | tray-icon | 0.25.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000466 | | try-lock | 0.2.5 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000467 | | ts-rs | 12.0.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000468 | | ts-rs-macros | 12.0.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000469 | | typeid | 1.0.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000470 | | typenum | 1.20.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000471 | | unicode-ident | 1.0.27 | registry+https://github.com/rust-lang/crates.io-index | (MIT OR Apache-2.0) AND Unicode-3.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000472 | | unicode-segmentation | 1.13.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000473 | | universal-hash | 0.5.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000474 | | untrusted | 0.9.0 | registry+https://github.com/rust-lang/crates.io-index | ISC | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000475 | | url | 2.5.8 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000476 | | urlpattern | 0.6.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000477 | | utf8_iter | 1.0.4 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000478 | | uuid | 1.28.0 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000479 | | version-compare | 0.2.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000480 | | version_check | 0.9.5 | registry+https://github.com/rust-lang/crates.io-index | MIT/Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000481 | | vswhom | 0.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000482 | | vswhom-sys | 0.1.3 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000483 | | walkdir | 2.5.0 | registry+https://github.com/rust-lang/crates.io-index | Unlicense/MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000484 | | want | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000485 | | wasi | 0.11.1+wasi-snapshot-preview1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000486 | | wasip2 | 1.0.4+wasi-0.2.12 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000487 | | wasm-bindgen | 0.2.129 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000488 | | wasm-bindgen-futures | 0.4.79 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000489 | | wasm-bindgen-macro | 0.2.129 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000490 | | wasm-bindgen-macro-support | 0.2.129 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000491 | | wasm-bindgen-shared | 0.2.129 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000492 | | wasm-streams | 0.5.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000493 | | web-sys | 0.3.106 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000494 | | web-time | 1.1.0 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000495 | | web_atoms | 0.2.6 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000496 | | webkit2gtk | 2.0.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000497 | | webkit2gtk-sys | 2.0.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000498 | | webpki-root-certs | 1.0.10 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000499 | | webview2-com | 0.39.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000500 | | webview2-com-macros | 0.8.1 | registry+https://github.com/rust-lang/crates.io-index | MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000501 | | webview2-com-sys | 0.39.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000502 | | winapi | 0.3.9 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000503 | | winapi-i686-pc-windows-gnu | 0.4.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000504 | | winapi-util | 0.1.11 | registry+https://github.com/rust-lang/crates.io-index | Unlicense OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 1 |
+000505 | | winapi-x86_64-pc-windows-gnu | 0.4.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000506 | | window-vibrancy | 0.8.1 | registry+https://github.com/rust-lang/crates.io-index | Apache-2.0 OR MIT | overinclusive: targets/features/build/proc-macro/runtime unresolved | 3 |
+000507 | | windows | 0.62.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000508 | | windows-collections | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000509 | | windows-core | 0.62.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000510 | | windows-future | 0.3.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000511 | | windows-implement | 0.60.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000512 | | windows-interface | 0.59.3 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000513 | | windows-link | 0.2.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000514 | | windows-numerics | 0.3.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000515 | | windows-registry | 0.6.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000516 | | windows-result | 0.4.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000517 | | windows-strings | 0.5.1 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000518 | | windows-sys | 0.45.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000519 | | windows-sys | 0.52.0 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000520 | | windows-sys | 0.61.2 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000521 | | windows-targets | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000522 | | windows-targets | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000523 | | windows-threading | 0.2.1 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000524 | | windows-version | 0.1.7 | registry+https://github.com/rust-lang/crates.io-index | MIT OR Apache-2.0 | overinclusive: targets/features/build/proc-macro/runtime unresolved | 2 |
+000525 | | windows_aarch64_gnullvm | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000526 | | windows_aarch64_gnullvm | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000527 | | windows_aarch64_msvc | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000528 | | windows_aarch64_msvc | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000529 | | windows_i686_gnu | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000530 | | windows_i686_gnu | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000531 | | windows_i686_gnullvm | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000532 | | windows_i686_msvc | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000533 | | windows_i686_msvc | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000534 | | windows_x86_64_gnu | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000535 | | windows_x86_64_gnu | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000536 | | windows_x86_64_gnullvm | 0.42.2 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+000537 | | windows_x86_64_gnullvm | 0.52.6 | registry+https://github.com/rust-lang/crates.io-index | UNKNOWN | overinclusive: targets/features/build/proc-macro/runtime unresolved | 0 |
+END_FILE_RANGE: documents/源码内开发说明/packaging/THIRD-PARTY-NOTICES.md 1-537
+
+END_G1-P06_67be27e53ccfdd39

@@ -1,0 +1,1060 @@
+审核补充附件 G3-P05，逻辑组3，共17份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/apps/desktop/src-tauri/src/publisher/tests.rs
+SHA256_ORIGINAL: 3048653ce706daecfe255c0ef3251820a30b83bec53c19d1371c34ee5973c366
+ORIGINAL_LINES: 1-816
+000001 | use super::*;
+000002 | use protocol::Object;
+000003 | use std::collections::HashMap;
+000004 | use std::sync::atomic::{AtomicU64, Ordering};
+000005 | 
+000006 | static NEXT: AtomicU64 = AtomicU64::new(0);
+000007 | struct LocalRoot(PathBuf);
+000008 | impl LocalRoot {
+000009 |     fn new() -> Self {
+000010 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000011 |             "switcher-publisher-{}-{}",
+000012 |             std::process::id(),
+000013 |             NEXT.fetch_add(1, Ordering::Relaxed)
+000014 |         ));
+000015 |         Self(path)
+000016 |     }
+000017 | }
+000018 | impl Drop for LocalRoot {
+000019 |     fn drop(&mut self) {
+000020 |         let _ = fs::remove_dir_all(&self.0);
+000021 |     }
+000022 | }
+000023 | fn signer() -> SigningKey {
+000024 |     SigningKey::from_bytes(&[0x41; 32])
+000025 | }
+000026 | fn open(root: &LocalRoot) -> Publisher {
+000027 |     Publisher::open(
+000028 |         &root.0,
+000029 |         "local-ad-key",
+000030 |         Some(signer().verifying_key()),
+000031 |         1000,
+000032 |     )
+000033 |     .unwrap()
+000034 | }
+000035 | #[derive(Default)]
+000036 | struct MemoryVault {
+000037 |     items: HashMap<String, Vec<u8>>,
+000038 |     fail: bool,
+000039 | }
+000040 | impl Drop for MemoryVault {
+000041 |     fn drop(&mut self) {
+000042 |         use zeroize::Zeroize;
+000043 |         for value in self.items.values_mut() {
+000044 |             value.zeroize();
+000045 |         }
+000046 |     }
+000047 | }
+000048 | impl Vault for MemoryVault {
+000049 |     fn load(&self, generation: &str) -> Result<Secrets> {
+000050 |         let bytes = self.items.get(generation).ok_or(Error::SecretUnavailable)?;
+000051 |         signed::strict_json(bytes, security::SECRET_LIMIT).map_err(Error::Invalid)
+000052 |     }
+000053 |     fn store(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
+000054 |         if self.fail {
+000055 |             return Err(Error::SecretUnavailable);
+000056 |         }
+000057 |         self.items
+000058 |             .insert(generation.into(), serde_json::to_vec(secrets).unwrap());
+000059 |         Ok(())
+000060 |     }
+000061 | }
+000062 | fn vault(publisher: &mut Publisher) -> MemoryVault {
+000063 |     let mut vault = MemoryVault::default();
+000064 |     publisher
+000065 |         .credentials_save(
+000066 |             &mut vault,
+000067 |             &Secrets {
+000068 |                 signing_seed: vec![0x41; 32],
+000069 |                 preview_credential: b"synthetic-preview-only".to_vec(),
+000070 |                 production_credential: b"synthetic-production-only".to_vec(),
+000071 |             },
+000072 |         )
+000073 |         .unwrap();
+000074 |     vault
+000075 | }
+000076 | 
+000077 | struct MemoryStore {
+000078 |     channel: AdChannel,
+000079 |     objects: HashMap<String, Object>,
+000080 |     commits: usize,
+000081 |     conflict: bool,
+000082 |     unknown_after_commit: bool,
+000083 |     unknown_before_commit: bool,
+000084 |     corrupt_readback: bool,
+000085 |     hide_current: bool,
+000086 |     next_etag: u64,
+000087 |     accesses: Vec<String>,
+000088 | }
+000089 | impl MemoryStore {
+000090 |     fn new(channel: AdChannel) -> Self {
+000091 |         Self {
+000092 |             channel,
+000093 |             objects: HashMap::new(),
+000094 |             commits: 0,
+000095 |             conflict: false,
+000096 |             unknown_after_commit: false,
+000097 |             unknown_before_commit: false,
+000098 |             corrupt_readback: false,
+000099 |             hide_current: false,
+000100 |             next_etag: 0,
+000101 |             accesses: vec![],
+000102 |         }
+000103 |     }
+000104 |     fn key(&self) -> String {
+000105 |         protocol::current_key(self.channel)
+000106 |     }
+000107 | }
+000108 | impl ObjectStore for MemoryStore {
+000109 |     fn channel(&self) -> AdChannel {
+000110 |         self.channel
+000111 |     }
+000112 |     fn current(&mut self) -> std::result::Result<Option<Object>, StoreError> {
+000113 |         Ok(self.objects.get(&self.key()).cloned())
+000114 |     }
+000115 |     fn public_read(
+000116 |         &mut self,
+000117 |         key: &str,
+000118 |         limit: usize,
+000119 |     ) -> std::result::Result<Option<Object>, StoreError> {
+000120 |         self.accesses.push(key.into());
+000121 |         if self.hide_current && key == self.key() {
+000122 |             return Ok(None);
+000123 |         }
+000124 |         let mut object = self.objects.get(key).cloned();
+000125 |         if object
+000126 |             .as_ref()
+000127 |             .is_some_and(|object| object.bytes.len() > limit)
+000128 |         {
+000129 |             return Err(StoreError::Unavailable);
+000130 |         }
+000131 |         if self.corrupt_readback
+000132 |             && key.contains("/assets/")
+000133 |             && let Some(object) = &mut object
+000134 |         {
+000135 |             object.bytes[0] ^= 1;
+000136 |         }
+000137 |         Ok(object)
+000138 |     }
+000139 |     fn put_immutable(&mut self, key: &str, bytes: &[u8]) -> std::result::Result<(), StoreError> {
+000140 |         if !key.starts_with(&format!("{}/", protocol::prefix(self.channel))) {
+000141 |             return Err(StoreError::Permission);
+000142 |         }
+000143 |         if let Some(existing) = self.objects.get(key) {
+000144 |             return if existing.bytes == bytes {
+000145 |                 Ok(())
+000146 |             } else {
+000147 |                 Err(StoreError::Conflict)
+000148 |             };
+000149 |         }
+000150 |         self.objects.insert(
+000151 |             key.into(),
+000152 |             Object {
+000153 |                 bytes: bytes.into(),
+000154 |                 etag: "immutable".into(),
+000155 |             },
+000156 |         );
+000157 |         Ok(())
+000158 |     }
+000159 |     fn commit_current(
+000160 |         &mut self,
+000161 |         expected_etag: Option<&str>,
+000162 |         bytes: &[u8],
+000163 |     ) -> std::result::Result<(), StoreError> {
+000164 |         self.commits += 1;
+000165 |         if self.conflict
+000166 |             || self
+000167 |                 .objects
+000168 |                 .get(&self.key())
+000169 |                 .map(|object| object.etag.as_str())
+000170 |                 != expected_etag
+000171 |         {
+000172 |             return Err(StoreError::Conflict);
+000173 |         }
+000174 |         if self.unknown_before_commit {
+000175 |             self.unknown_before_commit = false;
+000176 |             return Err(StoreError::OutcomeUnknown);
+000177 |         }
+000178 |         self.next_etag += 1;
+000179 |         self.objects.insert(
+000180 |             self.key(),
+000181 |             Object {
+000182 |                 bytes: bytes.into(),
+000183 |                 etag: format!("etag-{}", self.next_etag),
+000184 |             },
+000185 |         );
+000186 |         if self.unknown_after_commit {
+000187 |             self.unknown_after_commit = false;
+000188 |             Err(StoreError::OutcomeUnknown)
+000189 |         } else {
+000190 |             Ok(())
+000191 |         }
+000192 |     }
+000193 | }
+000194 | 
+000195 | fn attach_campaign(publisher: &mut Publisher, now: u64) {
+000196 |     // Minimal static 1x1 PNG, locally generated fixture without real data.
+000197 |     let png: &[u8] = &[
+000198 |         137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2,
+000199 |         0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 120, 156, 99, 96, 96, 96, 0, 0, 0,
+000200 |         4, 0, 1, 246, 23, 56, 85, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+000201 |     ];
+000202 |     let asset = publisher.import_image(png, "image/png").unwrap();
+000203 |     let mut draft = publisher.draft_read();
+000204 |     draft.slots[0].campaigns = vec![switcher_domain::ads::Campaign {
+000205 |         campaign_id: "synthetic-campaign".into(),
+000206 |         merchant_id: "synthetic-merchant".into(),
+000207 |         merchant_name: "合成商家".into(),
+000208 |         title: "合成广告".into(),
+000209 |         description: "不含真实资料".into(),
+000210 |         image: asset,
+000211 |         button_text: "查看".into(),
+000212 |         target_url: "https://merchant.example.com/public-offer".into(),
+000213 |         starts_at: 1000,
+000214 |         ends_at: 2000,
+000215 |         enabled: true,
+000216 |     }];
+000217 |     publisher.draft_save(draft, now).unwrap();
+000218 | }
+000219 | 
+000220 | #[test]
+000221 | fn strict_local_draft_atomic_lock_pause_history_and_private_images() {
+000222 |     let root = LocalRoot::new();
+000223 |     let mut publisher = open(&root);
+000224 |     assert!(
+000225 |         Publisher::open(
+000226 |             &root.0,
+000227 |             "local-ad-key",
+000228 |             Some(signer().verifying_key()),
+000229 |             1000
+000230 |         )
+000231 |         .is_err()
+000232 |     );
+000233 |     let before = publisher.draft_read();
+000234 |     let bytes = serde_json::to_string(&before).unwrap().replace(
+000235 |         "\"schema_version\":1",
+000236 |         "\"schema_version\":1,\"schema_version\":1",
+000237 |     );
+000238 |     assert!(publisher.draft_save_bytes(bytes.as_bytes(), 1001).is_err());
+000239 |     assert_eq!(publisher.draft_read(), before);
+000240 |     attach_campaign(&mut publisher, 1001);
+000241 |     let hash = publisher.draft_read().slots[0].campaigns[0]
+000242 |         .image
+000243 |         .sha256
+000244 |         .clone();
+000245 |     assert!(
+000246 |         publisher
+000247 |             .image_preview(&hash)
+000248 |             .unwrap()
+000249 |             .starts_with("data:image/png;base64,iVBORw0KGgo")
+000250 |     );
+000251 |     assert!(publisher.image_preview("../../outside").is_err());
+000252 |     let paused = publisher
+000253 |         .pause(Some(AdSlot::ResidentialBroadband), 1002)
+000254 |         .unwrap();
+000255 |     assert!(!paused.slots[0].enabled);
+000256 |     assert!(paused.slots[1].enabled);
+000257 |     assert!(paused.content_revision > before.content_revision);
+000258 |     let generation = publisher.generation.clone();
+000259 |     drop(publisher);
+000260 |     let reopened = open(&root);
+000261 |     assert_eq!(reopened.draft_read(), paused);
+000262 |     assert_eq!(
+000263 |         fs::metadata(root.0.join(generation).join("state.json"))
+000264 |             .unwrap()
+000265 |             .mode()
+000266 |             & 0o777,
+000267 |         0o600
+000268 |     );
+000269 | }
+000270 | 
+000271 | #[test]
+000272 | fn cas_success_repeat_idempotence_pause_history_and_environment_isolation() {
+000273 |     let root = LocalRoot::new();
+000274 |     let mut publisher = open(&root);
+000275 |     attach_campaign(&mut publisher, 1001);
+000276 |     let vault = vault(&mut publisher);
+000277 |     let mut store = MemoryStore::new(AdChannel::Production);
+000278 |     let first = publisher
+000279 |         .publish_with(&mut store, &vault, AdChannel::Production, 1002)
+000280 |         .unwrap();
+000281 |     let repeated = publisher
+000282 |         .publish_with(&mut store, &vault, AdChannel::Production, 1003)
+000283 |         .unwrap();
+000284 |     assert_eq!(first, repeated);
+000285 |     assert_eq!(store.commits, 1);
+000286 |     assert_eq!(publisher.status().history.len(), 1);
+000287 |     let paused = publisher.pause(None, 1004).unwrap();
+000288 |     assert!(paused.slots.iter().all(|slot| !slot.enabled));
+000289 |     let second = publisher
+000290 |         .publish_with(&mut store, &vault, AdChannel::Production, 1005)
+000291 |         .unwrap();
+000292 |     assert!(second.revision > first.revision);
+000293 |     let restored = publisher.restore_history(&first.release_id, 1006).unwrap();
+000294 |     assert!(restored.slots[0].enabled);
+000295 |     assert!(restored.content_revision > second.revision);
+000296 |     let third = publisher
+000297 |         .publish_with(&mut store, &vault, AdChannel::Production, 1007)
+000298 |         .unwrap();
+000299 |     assert!(third.revision > second.revision);
+000300 |     assert_eq!(publisher.status().history.len(), 3);
+000301 |     assert!(
+000302 |         store
+000303 |             .accesses
+000304 |             .iter()
+000305 |             .all(|path| path.starts_with("production/"))
+000306 |     );
+000307 |     let commits = store.commits;
+000308 |     assert!(
+000309 |         publisher
+000310 |             .publish_with(&mut store, &vault, AdChannel::Preview, 1008)
+000311 |             .is_err()
+000312 |     );
+000313 |     assert_eq!(store.commits, commits);
+000314 |     assert!(matches!(
+000315 |         publisher.publish(AdChannel::Production, 1009, None, &vault),
+000316 |         Err(Error::MissingSource)
+000317 |     ));
+000318 | }
+000319 | 
+000320 | #[test]
+000321 | fn cas_conflict_requires_explicit_edit_and_never_reports_success() {
+000322 |     let root = LocalRoot::new();
+000323 |     let mut publisher = open(&root);
+000324 |     let vault = vault(&mut publisher);
+000325 |     let mut store = MemoryStore::new(AdChannel::Preview);
+000326 |     store.conflict = true;
+000327 |     assert!(matches!(
+000328 |         publisher.publish_with(&mut store, &vault, AdChannel::Preview, 1001),
+000329 |         Err(Error::Store(StoreError::Conflict))
+000330 |     ));
+000331 |     assert_eq!(publisher.status().phase, Some(Phase::Conflict));
+000332 |     assert!(publisher.status().history.is_empty());
+000333 |     let id = publisher.status().pending_release_id;
+000334 |     assert!(
+000335 |         publisher
+000336 |             .publish_with(&mut store, &vault, AdChannel::Preview, 1002)
+000337 |             .is_err()
+000338 |     );
+000339 |     assert_eq!(publisher.status().pending_release_id, id);
+000340 |     publisher.draft_save(publisher.draft_read(), 1003).unwrap();
+000341 |     store.conflict = false;
+000342 |     publisher
+000343 |         .publish_with(&mut store, &vault, AdChannel::Preview, 1004)
+000344 |         .unwrap();
+000345 | }
+000346 | 
+000347 | #[test]
+000348 | fn unknown_result_recovers_same_release_after_restart_without_duplicate_commit() {
+000349 |     let root = LocalRoot::new();
+000350 |     let mut publisher = open(&root);
+000351 |     let vault = vault(&mut publisher);
+000352 |     let mut store = MemoryStore::new(AdChannel::Production);
+000353 |     store.unknown_after_commit = true;
+000354 |     assert!(matches!(
+000355 |         publisher.publish_with(&mut store, &vault, AdChannel::Production, 1001),
+000356 |         Err(Error::Store(StoreError::OutcomeUnknown))
+000357 |     ));
+000358 |     let id = publisher.status().pending_release_id.unwrap();
+000359 |     assert!(publisher.draft_save(publisher.draft_read(), 1002).is_err());
+000360 |     drop(publisher);
+000361 |     let mut publisher = open(&root);
+000362 |     let result = publisher
+000363 |         .publish_with(&mut store, &vault, AdChannel::Production, 1003)
+000364 |         .unwrap();
+000365 |     assert_eq!(result.release_id, id);
+000366 |     assert_eq!(store.commits, 1);
+000367 | }
+000368 | 
+000369 | #[test]
+000370 | fn unknown_before_commit_rechecks_version_and_retries_same_id() {
+000371 |     let root = LocalRoot::new();
+000372 |     let mut publisher = open(&root);
+000373 |     let vault = vault(&mut publisher);
+000374 |     let mut store = MemoryStore::new(AdChannel::Preview);
+000375 |     store.unknown_before_commit = true;
+000376 |     assert!(
+000377 |         publisher
+000378 |             .publish_with(&mut store, &vault, AdChannel::Preview, 1001)
+000379 |             .is_err()
+000380 |     );
+000381 |     let id = publisher.status().pending_release_id.unwrap();
+000382 |     let result = publisher
+000383 |         .publish_with(&mut store, &vault, AdChannel::Preview, 1002)
+000384 |         .unwrap();
+000385 |     assert_eq!(result.release_id, id);
+000386 |     assert_eq!(store.commits, 2);
+000387 |     assert_eq!(publisher.status().history.len(), 1);
+000388 | }
+000389 | 
+000390 | #[test]
+000391 | fn public_readback_must_validate_all_images_and_current_before_success() {
+000392 |     let root = LocalRoot::new();
+000393 |     let mut publisher = open(&root);
+000394 |     attach_campaign(&mut publisher, 1001);
+000395 |     let vault = vault(&mut publisher);
+000396 |     let mut store = MemoryStore::new(AdChannel::Production);
+000397 |     store.corrupt_readback = true;
+000398 |     assert!(
+000399 |         publisher
+000400 |             .publish_with(&mut store, &vault, AdChannel::Production, 1002)
+000401 |             .is_err()
+000402 |     );
+000403 |     assert_eq!(publisher.status().phase, Some(Phase::ReadbackFailed));
+000404 |     assert!(publisher.status().history.is_empty());
+000405 |     let id = publisher.status().pending_release_id.unwrap();
+000406 |     store.corrupt_readback = false;
+000407 |     store.hide_current = true;
+000408 |     assert!(matches!(
+000409 |         publisher.publish_with(&mut store, &vault, AdChannel::Production, 1003),
+000410 |         Err(Error::Store(StoreError::Unavailable))
+000411 |     ));
+000412 |     assert_eq!(publisher.status().phase, Some(Phase::ReadbackFailed));
+000413 |     assert!(publisher.status().history.is_empty());
+000414 |     store.hide_current = false;
+000415 |     assert_eq!(
+000416 |         publisher
+000417 |             .publish_with(&mut store, &vault, AdChannel::Production, 1004)
+000418 |             .unwrap()
+000419 |             .release_id,
+000420 |         id
+000421 |     );
+000422 |     assert_eq!(store.commits, 1);
+000423 | }
+000424 | 
+000425 | #[test]
+000426 | fn encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_restore() {
+000427 |     let root = LocalRoot::new();
+000428 |     let mut publisher = open(&root);
+000429 |     attach_campaign(&mut publisher, 1001);
+000430 |     let mut vault = vault(&mut publisher);
+000431 |     let passphrase = b"local synthetic long passphrase";
+000432 |     let backup = publisher.export_backup(passphrase, &vault).unwrap();
+000433 |     let second = publisher.export_backup(passphrase, &vault).unwrap();
+000434 |     assert_ne!(backup, second);
+000435 |     assert!(!backup.windows(32).any(|window| window == [0x41; 32]));
+000436 |     let before = publisher.generation.clone();
+000437 |     let before_draft = publisher.draft_read();
+000438 |     assert!(
+000439 |         publisher
+000440 |             .restore_backup(&backup, b"wrong synthetic passphrase", &mut vault)
+000441 |             .is_err()
+000442 |     );
+000443 |     assert_eq!(publisher.generation, before);
+000444 |     assert_eq!(publisher.draft_read(), before_draft);
+000445 |     let mut malicious = backup.clone();
+000446 |     malicious[8..12].copy_from_slice(&u32::MAX.to_be_bytes());
+000447 |     assert!(matches!(
+000448 |         backup::open(&malicious, passphrase),
+000449 |         Err(Error::Invalid("backup_kdf_parameters"))
+000450 |     ));
+000451 |     vault.fail = true;
+000452 |     assert!(
+000453 |         publisher
+000454 |             .restore_backup(&backup, passphrase, &mut vault)
+000455 |             .is_err()
+000456 |     );
+000457 |     assert_eq!(publisher.generation, before);
+000458 |     vault.fail = false;
+000459 |     publisher
+000460 |         .restore_backup(&backup, passphrase, &mut vault)
+000461 |         .unwrap();
+000462 |     assert_ne!(publisher.generation, before);
+000463 |     assert_eq!(publisher.draft_read().slots, before_draft.slots);
+000464 |     assert!(publisher.draft_read().content_revision > before_draft.content_revision);
+000465 |     assert!(publisher.status().recovery_required);
+000466 |     let mut preview = MemoryStore::new(AdChannel::Preview);
+000467 |     assert!(matches!(
+000468 |         publisher.publish_with(&mut preview, &vault, AdChannel::Preview, 1002),
+000469 |         Err(Error::RecoveryReadRequired)
+000470 |     ));
+000471 |     let mut production = MemoryStore::new(AdChannel::Production);
+000472 |     publisher
+000473 |         .reconcile_production(&mut production, 1002)
+000474 |         .unwrap();
+000475 |     assert!(!publisher.status().recovery_required);
+000476 |     publisher
+000477 |         .publish_with(&mut production, &vault, AdChannel::Production, 1003)
+000478 |         .unwrap();
+000479 | }
+000480 | 
+000481 | #[test]
+000482 | fn restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets() {
+000483 |     let root = LocalRoot::new();
+000484 |     let mut publisher = open(&root);
+000485 |     attach_campaign(&mut publisher, 1001);
+000486 |     let mut vault = vault(&mut publisher);
+000487 |     let passphrase = b"local synthetic long passphrase";
+000488 |     let backup = publisher.export_backup(passphrase, &vault).unwrap();
+000489 |     let mut store = MemoryStore::new(AdChannel::Production);
+000490 |     let first = publisher
+000491 |         .publish_with(&mut store, &vault, AdChannel::Production, 1002)
+000492 |         .unwrap();
+000493 |     publisher.pause(None, 1003).unwrap();
+000494 |     let second = publisher
+000495 |         .publish_with(&mut store, &vault, AdChannel::Production, 1004)
+000496 |         .unwrap();
+000497 |     assert!(second.revision > first.revision);
+000498 |     publisher
+000499 |         .restore_backup(&backup, passphrase, &mut vault)
+000500 |         .unwrap();
+000501 |     store.objects.retain(|key, _| !key.contains("/assets/"));
+000502 |     let restored = publisher
+000503 |         .publish_with(&mut store, &vault, AdChannel::Production, 1005)
+000504 |         .unwrap();
+000505 |     assert!(restored.revision > second.revision);
+000506 |     assert!(store.objects.keys().any(|key| key.contains("/assets/")));
+000507 | }
+000508 | 
+000509 | #[test]
+000510 | fn drafts_need_no_key_and_explicit_generation_persists_only_public_trust_on_disk() {
+000511 |     let root = LocalRoot::new();
+000512 |     let mut publisher = Publisher::open(&root.0, "local-ad-key", None, 1000).unwrap();
+000513 |     assert!(publisher.configured_public_key().is_none());
+000514 |     attach_campaign(&mut publisher, 1001);
+000515 |     let mut vault = MemoryVault::default();
+000516 |     let mut store = MemoryStore::new(AdChannel::Preview);
+000517 |     assert!(matches!(
+000518 |         publisher.publish_with(&mut store, &vault, AdChannel::Preview, 1002),
+000519 |         Err(Error::MissingSigningKey)
+000520 |     ));
+000521 |     assert_eq!(store.commits, 0);
+000522 |     let public = publisher
+000523 |         .generate_signing_key(
+000524 |             &mut vault,
+000525 |             b"synthetic-preview".to_vec(),
+000526 |             b"synthetic-production".to_vec(),
+000527 |         )
+000528 |         .unwrap();
+000529 |     assert_eq!(publisher.configured_public_key(), Some(public));
+000530 |     let secrets = vault.load(&publisher.generation).unwrap();
+000531 |     let trust = read_private(&root.0.join("trust.json"), 4096).unwrap();
+000532 |     assert!(
+000533 |         !trust
+000534 |             .windows(32)
+000535 |             .any(|window| window == secrets.signing_seed)
+000536 |     );
+000537 |     assert!(
+000538 |         publisher
+000539 |             .generate_signing_key(&mut vault, vec![], vec![])
+000540 |             .is_err()
+000541 |     );
+000542 |     drop(publisher);
+000543 |     let publisher = Publisher::open(&root.0, "local-ad-key", None, 1003).unwrap();
+000544 |     assert_eq!(publisher.configured_public_key(), Some(public));
+000545 | }
+000546 | 
+000547 | #[test]
+000548 | fn missing_or_wrong_signing_credentials_never_create_remote_objects() {
+000549 |     let root = LocalRoot::new();
+000550 |     let mut publisher = open(&root);
+000551 |     let mut vault = MemoryVault::default();
+000552 |     let mut store = MemoryStore::new(AdChannel::Production);
+000553 |     assert!(
+000554 |         publisher
+000555 |             .publish_with(&mut store, &vault, AdChannel::Production, 1001)
+000556 |             .is_err()
+000557 |     );
+000558 |     assert!(store.objects.is_empty());
+000559 |     assert!(
+000560 |         publisher
+000561 |             .credentials_save(
+000562 |                 &mut vault,
+000563 |                 &Secrets {
+000564 |                     signing_seed: vec![0x42; 32],
+000565 |                     preview_credential: vec![],
+000566 |                     production_credential: b"synthetic".to_vec()
+000567 |                 }
+000568 |             )
+000569 |             .is_err()
+000570 |     );
+000571 |     assert!(vault.items.is_empty());
+000572 | }
+000573 | 
+000574 | #[test]
+000575 | fn local_store_fixed_scope_cas_immutable_private_files_and_restart() {
+000576 |     use local_store::LocalObjectStore;
+000577 |     use switcher_core::ad_runtime::local::{LocalTrust, directory};
+000578 |     let root = LocalRoot::new();
+000579 |     storage::create_private_directory(&root.0).unwrap();
+000580 |     storage::create_private_directory(&root.0.join("v2")).unwrap();
+000581 |     let trust = LocalTrust {
+000582 |         schema: 1,
+000583 |         key_id: "ads-personal-v1".into(),
+000584 |         public_key: signer().verifying_key().to_bytes(),
+000585 |     };
+000586 |     let mut store = LocalObjectStore::open(&root.0, AdChannel::Production, &trust).unwrap();
+000587 |     assert!(!store.requires_credentials());
+000588 |     assert!(LocalObjectStore::open(&root.0, AdChannel::Preview, &trust).is_err());
+000589 |     let key = "production/versions/local-release.json";
+000590 |     store.put_immutable(key, b"version").unwrap();
+000591 |     store.put_immutable(key, b"version").unwrap();
+000592 |     assert_eq!(
+000593 |         store.put_immutable(key, b"overwrite"),
+000594 |         Err(StoreError::Conflict)
+000595 |     );
+000596 |     assert_eq!(
+000597 |         store.put_immutable("preview/versions/x.json", b"x"),
+000598 |         Err(StoreError::Permission)
+000599 |     );
+000600 |     assert_eq!(
+000601 |         store.public_read("production/../trust.json", 100).err(),
+000602 |         Some(StoreError::Permission)
+000603 |     );
+000604 |     assert!(store.public_read(key, 2).is_err());
+000605 |     store.commit_current(None, b"one").unwrap();
+000606 |     assert_eq!(
+000607 |         store.commit_current(None, b"two"),
+000608 |         Err(StoreError::Conflict)
+000609 |     );
+000610 |     let etag = store.current().unwrap().unwrap().etag;
+000611 |     store.commit_current(Some(&etag), b"two").unwrap();
+000612 |     // A crash before exclusive rename leaves an unreachable temporary file only.
+000613 |     storage::atomic_write(
+000614 |         &directory(&root.0).join("production/versions/.publish-interrupted"),
+000615 |         b"unused",
+000616 |     )
+000617 |     .unwrap();
+000618 |     drop(store);
+000619 |     let mut store = LocalObjectStore::open(&root.0, AdChannel::Production, &trust).unwrap();
+000620 |     assert_eq!(store.current().unwrap().unwrap().bytes, b"two");
+000621 |     assert_eq!(
+000622 |         store.public_read(key, 100).unwrap().unwrap().bytes,
+000623 |         b"version"
+000624 |     );
+000625 |     let bad = directory(&root.0).join("production/versions/symlink.json");
+000626 |     std::os::unix::fs::symlink(directory(&root.0).join(key), bad).unwrap();
+000627 |     assert!(
+000628 |         store
+000629 |             .public_read("production/versions/symlink.json", 100)
+000630 |             .is_err()
+000631 |     );
+000632 |     let hard = directory(&root.0).join("production/versions/hardlink.json");
+000633 |     fs::hard_link(directory(&root.0).join(key), &hard).unwrap();
+000634 |     assert!(store.public_read(key, 100).is_err());
+000635 |     fs::remove_file(hard).unwrap();
+000636 |     use std::os::unix::fs::PermissionsExt;
+000637 |     fs::set_permissions(
+000638 |         directory(&root.0).join(key),
+000639 |         fs::Permissions::from_mode(0o644),
+000640 |     )
+000641 |     .unwrap();
+000642 |     assert!(store.public_read(key, 100).is_err());
+000643 |     fs::set_permissions(
+000644 |         directory(&root.0).join(key),
+000645 |         fs::Permissions::from_mode(0o600),
+000646 |     )
+000647 |     .unwrap();
+000648 |     fs::rename(
+000649 |         directory(&root.0).join("lifecycle.lock"),
+000650 |         directory(&root.0).join("old-lock"),
+000651 |     )
+000652 |     .unwrap();
+000653 |     storage::atomic_write(&directory(&root.0).join("lifecycle.lock"), b"").unwrap();
+000654 |     assert_eq!(
+000655 |         store.commit_current(Some("anything"), b"replaced"),
+000656 |         Err(StoreError::Permission)
+000657 |     );
+000658 |     let mut changed = trust.clone();
+000659 |     changed.public_key = [0x42; 32];
+000660 |     drop(store);
+000661 |     assert!(LocalObjectStore::open(&root.0, AdChannel::Production, &changed).is_err());
+000662 | }
+000663 | 
+000664 | #[test]
+000665 | fn local_publication_both_editions_pause_history_backup_and_signature_verification() {
+000666 |     use local_store::LocalObjectStore;
+000667 |     use switcher_core::ad_runtime::{AdRuntime, local::LocalTrust};
+000668 |     use switcher_domain::{Edition, ads::AdPreferences};
+000669 |     let root = LocalRoot::new();
+000670 |     storage::create_private_directory(&root.0).unwrap();
+000671 |     storage::create_private_directory(&root.0.join("v2")).unwrap();
+000672 |     let now = switcher_core::checks::unix_now();
+000673 |     let mut p = Publisher::open(
+000674 |         &root.0.join("drafts"),
+000675 |         "ads-personal-v1",
+000676 |         Some(signer().verifying_key()),
+000677 |         now,
+000678 |     )
+000679 |     .unwrap();
+000680 |     let mut vault = vault(&mut p);
+000681 |     // No fabricated provider credential is needed in local mode.
+000682 |     let mut secrets = vault.load(&p.generation).unwrap();
+000683 |     secrets.preview_credential.clear();
+000684 |     secrets.production_credential.clear();
+000685 |     vault.store(&p.generation, &secrets).unwrap();
+000686 |     attach_campaign(&mut p, now);
+000687 |     let mut draft = p.draft_read();
+000688 |     draft.slots[0].campaigns[0].starts_at = now;
+000689 |     draft.slots[0].campaigns[0].ends_at = now + 3600;
+000690 |     p.draft_save(draft, now).unwrap();
+000691 |     let trust = LocalTrust {
+000692 |         schema: 1,
+000693 |         key_id: "ads-personal-v1".into(),
+000694 |         public_key: signer().verifying_key().to_bytes(),
+000695 |     };
+000696 |     let mut store = LocalObjectStore::open(&root.0, AdChannel::Production, &trust).unwrap();
+000697 |     let first = p
+000698 |         .publish(AdChannel::Production, now, Some(&mut store), &vault)
+000699 |         .unwrap();
+000700 |     let first_id = p.draft_read().release_id;
+000701 |     let preferences = AdPreferences {
+000702 |         slots_enabled: [true; 3],
+000703 |         request_purpose_acknowledged: true,
+000704 |     };
+000705 |     let before_reads = local_tree(&switcher_core::ad_runtime::local::directory(&root.0));
+000706 |     for edition in [Edition::Personal, Edition::Public] {
+000707 |         let visible = AdRuntime::new(root.0.clone(), edition)
+000708 |             .snapshot(&preferences)
+000709 |             .unwrap()
+000710 |             .unwrap();
+000711 |         assert_eq!(visible.release_id, first_id);
+000712 |         assert_eq!(visible.slots[0].campaigns.len(), 1);
+000713 |     }
+000714 |     assert_eq!(
+000715 |         local_tree(&switcher_core::ad_runtime::local::directory(&root.0)),
+000716 |         before_reads
+000717 |     );
+000718 |     let backup = p.export_backup(b"local-backup-password", &vault).unwrap();
+000719 |     p.pause(None, now).unwrap();
+000720 |     p.publish(AdChannel::Production, now, Some(&mut store), &vault)
+000721 |         .unwrap();
+000722 |     for edition in [Edition::Personal, Edition::Public] {
+000723 |         assert!(
+000724 |             AdRuntime::new(root.0.clone(), edition)
+000725 |                 .snapshot(&preferences)
+000726 |                 .unwrap()
+000727 |                 .is_none()
+000728 |         );
+000729 |     }
+000730 |     p.restore_history(&first_id, now).unwrap();
+000731 |     p.publish(AdChannel::Production, now, Some(&mut store), &vault)
+000732 |         .unwrap();
+000733 |     assert!(
+000734 |         AdRuntime::new(root.0.clone(), Edition::Public)
+000735 |             .snapshot(&preferences)
+000736 |             .unwrap()
+000737 |             .is_some()
+000738 |     );
+000739 |     p.restore_backup(&backup, b"local-backup-password", &mut vault)
+000740 |         .unwrap();
+000741 |     p.publish(AdChannel::Production, now, Some(&mut store), &vault)
+000742 |         .unwrap();
+000743 |     assert!(p.status().history.last().unwrap().manifest.content_revision > first.revision);
+000744 |     // Restoring on a fresh installation requires no pre-existing public key.
+000745 |     let fresh_root = root.0.join("restored-drafts");
+000746 |     let mut fresh = Publisher::open(&fresh_root, "ads-personal-v1", None, now).unwrap();
+000747 |     let before = fs::read(fresh_root.join("active.json")).unwrap();
+000748 |     assert!(
+000749 |         fresh
+000750 |             .restore_backup(&backup, b"wrong-password", &mut vault)
+000751 |             .is_err()
+000752 |     );
+000753 |     assert_eq!(fs::read(fresh_root.join("active.json")).unwrap(), before);
+000754 |     assert!(!fresh_root.join("trust.json").exists());
+000755 |     fresh
+000756 |         .restore_backup(&backup, b"local-backup-password", &mut vault)
+000757 |         .unwrap();
+000758 |     assert!(fresh.status().recovery_required);
+000759 |     fresh
+000760 |         .publish(AdChannel::Production, now, Some(&mut store), &vault)
+000761 |         .unwrap();
+000762 |     assert!(!fresh.status().recovery_required);
+000763 |     let restored_revision = fresh.draft_read().content_revision;
+000764 |     drop(fresh);
+000765 |     assert_eq!(
+000766 |         Publisher::open(&fresh_root, "ads-personal-v1", None, now)
+000767 |             .unwrap()
+000768 |             .draft_read()
+000769 |             .content_revision,
+000770 |         restored_revision
+000771 |     );
+000772 |     // Preview writes are separate from the normal advertisement display channel.
+000773 |     let production = store.current().unwrap().unwrap().bytes;
+000774 |     drop(store);
+000775 |     let mut preview = LocalObjectStore::open(&root.0, AdChannel::Preview, &trust).unwrap();
+000776 |     p.publish(AdChannel::Preview, now, Some(&mut preview), &vault)
+000777 |         .unwrap();
+000778 |     drop(preview);
+000779 |     let mut store = LocalObjectStore::open(&root.0, AdChannel::Production, &trust).unwrap();
+000780 |     assert_eq!(store.current().unwrap().unwrap().bytes, production);
+000781 |     // An edited local signature cannot become visible, even under private permissions.
+000782 |     storage::atomic_write(
+000783 |         &switcher_core::ad_runtime::local::directory(&root.0).join("production/current.json"),
+000784 |         b"{}",
+000785 |     )
+000786 |     .unwrap();
+000787 |     assert!(
+000788 |         AdRuntime::new(root.0.clone(), Edition::Public)
+000789 |             .snapshot(&preferences)
+000790 |             .is_err()
+000791 |     );
+000792 |     // Failure backoff retains a diagnostic without re-parsing each UI poll.
+000793 |     assert_eq!(
+000794 |         AdRuntime::new(root.0.clone(), Edition::Public)
+000795 |             .snapshot(&preferences)
+000796 |             .unwrap_err(),
+000797 |         "local_ad_previous_content_verification_failed"
+000798 |     );
+000799 | }
+000800 | 
+000801 | fn local_tree(path: &Path) -> Vec<(PathBuf, String)> {
+000802 |     let mut files = Vec::new();
+000803 |     for entry in fs::read_dir(path).unwrap() {
+000804 |         let entry = entry.unwrap();
+000805 |         if entry.file_type().unwrap().is_dir() {
+000806 |             files.extend(local_tree(&entry.path()));
+000807 |         } else {
+000808 |             files.push((
+000809 |                 entry.path(),
+000810 |                 signed::digest(&fs::read(entry.path()).unwrap()),
+000811 |             ));
+000812 |         }
+000813 |     }
+000814 |     files.sort();
+000815 |     files
+000816 | }
+END_FILE_RANGE: current/apps/desktop/src-tauri/src/publisher/tests.rs 1-816
+
+FILE: current/apps/desktop/src-tauri/src/publisher_commands.rs
+SHA256_ORIGINAL: 0fc97bfd3b8863df227ba8a8a677b83d6382cbd2fb60e3aca9e3116aad1f1316
+ORIGINAL_LINES: 1-229
+000001 | //! Compiled into Personal only. No input accepts a filesystem path or content-source URL.
+000002 | use crate::{
+000003 |     bridge::{self, DesktopState},
+000004 |     publisher::{self, Publisher, local_store::LocalObjectStore, security::KeychainVault},
+000005 | };
+000006 | use std::sync::Arc;
+000007 | use switcher_domain::{
+000008 |     AdSlot,
+000009 |     ads::{AdChannel, AdManifest},
+000010 |     desktop::*,
+000011 | };
+000012 | use tauri::State;
+000013 | 
+000014 | type Desktop<'a> = State<'a, Arc<DesktopState>>;
+000015 | fn with_publisher<T>(
+000016 |     state: &DesktopState,
+000017 |     run: impl FnOnce(&mut Publisher) -> publisher::Result<T>,
+000018 | ) -> Result<T, String> {
+000019 |     state.prepare_directory()?;
+000020 |     let directory = state.directory().join("publisher");
+000021 |     let mut publisher = Publisher::open(
+000022 |         &directory,
+000023 |         "ads-personal-v1",
+000024 |         None,
+000025 |         switcher_core::checks::unix_now(),
+000026 |     )
+000027 |     .map_err(|e| e.to_string())?;
+000028 |     run(&mut publisher).map_err(|e| e.to_string())
+000029 | }
+000030 | 
+000031 | #[tauri::command]
+000032 | pub fn ad_draft_read(state: Desktop<'_>) -> Result<AdManifest, String> {
+000033 |     with_publisher(&state, |p| Ok(p.draft_read()))
+000034 | }
+000035 | #[tauri::command]
+000036 | pub fn ad_draft_save(state: Desktop<'_>, manifest: AdManifest) -> Result<AdManifest, String> {
+000037 |     with_publisher(&state, |p| {
+000038 |         p.draft_save(manifest, switcher_core::checks::unix_now())
+000039 |     })
+000040 | }
+000041 | #[tauri::command]
+000042 | pub fn import_ad_image(state: Desktop<'_>, bytes: Vec<u8>) -> Result<ImportedImage, String> {
+000043 |     if bytes.len() > 1024 * 1024 {
+000044 |         return Err("图片超过 1 MiB 上限".into());
+000045 |     }
+000046 |     let mime = if bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+000047 |         "image/png"
+000048 |     } else if bytes.starts_with(b"\xff\xd8\xff") {
+000049 |         "image/jpeg"
+000050 |     } else {
+000051 |         return Err("请选择静态 PNG 或 JPEG 图片".into());
+000052 |     };
+000053 |     with_publisher(&state, |p| {
+000054 |         let asset = p.import_image(&bytes, mime)?;
+000055 |         let preview_data_url = p.image_preview(&asset.sha256)?;
+000056 |         Ok(ImportedImage {
+000057 |             asset,
+000058 |             preview_data_url,
+000059 |         })
+000060 |     })
+000061 | }
+000062 | #[tauri::command]
+000063 | pub fn ad_image_preview(state: Desktop<'_>, sha256: String) -> Result<String, String> {
+000064 |     with_publisher(&state, |p| p.image_preview(&sha256))
+000065 | }
+000066 | #[tauri::command]
+000067 | pub fn publisher_status(state: Desktop<'_>) -> Result<PublisherView, String> {
+000068 |     with_publisher(&state, |p| {
+000069 |         let status = p.status();
+000070 |         let key_status = if p.configured_public_key().is_some() {
+000071 |             "签名公钥已配置。"
+000072 |         } else {
+000073 |             "尚未生成广告签名密钥。"
+000074 |         };
+000075 |         let pending_status = status
+000076 |             .pending_release_id
+000077 |             .as_ref()
+000078 |             .map_or_else(String::new, |id| {
+000079 |                 format!(" 未完成发布：{id}；重新发布时先核对本机结果。")
+000080 |             });
+000081 |         Ok(PublisherView {
+000082 |             source: Some("本机私有目录".into()),
+000083 |             status: if status.recovery_required {
+000084 |                 "recovery_required"
+000085 |             } else if status.phase.is_some() {
+000086 |                 "pending"
+000087 |             } else if p.configured_public_key().is_none() {
+000088 |                 "wait_signing_key"
+000089 |             } else {
+000090 |                 "ready_local"
+000091 |             }
+000092 |             .into(),
+000093 |             message: format!(
+000094 |                 "本地草稿可用。{key_status}{pending_status} 本机预览与正式目录已可运营；不会发布到远程用户。"
+000095 |             ),
+000096 |             history: status
+000097 |                 .history
+000098 |                 .into_iter()
+000099 |                 .map(|record| PublishRecord {
+000100 |                     release_id: record.manifest.release_id,
+000101 |                     revision: record.manifest.content_revision,
+000102 |                     channel: match record.manifest.channel {
+000103 |                         AdChannel::Preview => "preview",
+000104 |                         AdChannel::Production => "production",
+000105 |                     }
+000106 |                     .into(),
+000107 |                     published_at: record.published_at,
+000108 |                     payload_hash: record.payload_hash,
+000109 |                     verified: true,
+000110 |                 })
+000111 |                 .collect(),
+000112 |         })
+000113 |     })
+000114 | }
+000115 | #[tauri::command]
+000116 | pub async fn publish_ad(
+000117 |     state: Desktop<'_>,
+000118 |     channel: AdChannel,
+000119 | ) -> Result<OperationOutcome, String> {
+000120 |     let state = state.inner().clone();
+000121 |     tokio::task::spawn_blocking(move || {
+000122 |         with_publisher(&state, |p| {
+000123 |             let public_key = p
+000124 |                 .configured_public_key()
+000125 |                 .ok_or(publisher::Error::MissingSigningKey)?;
+000126 |             let trust = switcher_core::ad_runtime::local::LocalTrust {
+000127 |                 schema: 1,
+000128 |                 key_id: "ads-personal-v1".into(),
+000129 |                 public_key,
+000130 |             };
+000131 |             let mut source = LocalObjectStore::open(&state.root, channel, &trust)?;
+000132 |             p.publish(
+000133 |                 channel,
+000134 |                 switcher_core::checks::unix_now(),
+000135 |                 Some(&mut source),
+000136 |                 &KeychainVault,
+000137 |             )?;
+000138 |             Ok(bridge::completed("本机签名内容及素材已通过回读验证"))
+000139 |         })
+000140 |     })
+000141 |     .await
+000142 |     .map_err(|_| "发布操作被中断".to_owned())?
+000143 | }
+000144 | #[tauri::command]
+000145 | pub fn pause_ad(state: Desktop<'_>, slot: Option<AdSlot>) -> Result<AdManifest, String> {
+000146 |     with_publisher(&state, |p| p.pause(slot, switcher_core::checks::unix_now()))
+000147 | }
+000148 | #[tauri::command]
+000149 | pub fn restore_ad_history(state: Desktop<'_>, release_id: String) -> Result<AdManifest, String> {
+000150 |     with_publisher(&state, |p| {
+000151 |         p.restore_history(&release_id, switcher_core::checks::unix_now())
+000152 |     })
+000153 | }
+000154 | #[tauri::command]
+000155 | pub fn create_ad_signing_key(state: Desktop<'_>) -> Result<OperationOutcome, String> {
+000156 |     with_publisher(&state, |p| {
+000157 |         let key = p.generate_signing_key(&mut KeychainVault, Vec::new(), Vec::new())?;
+000158 |         let hex: String = key.iter().map(|byte| format!("{byte:02x}")).collect();
+000159 |         Ok(bridge::completed(format!(
+000160 |             "广告签名私钥已保存到本机钥匙串。公开验证公钥：{hex}"
+000161 |         )))
+000162 |     })
+000163 | }
+000164 | #[tauri::command]
+000165 | pub async fn export_publisher_backup(
+000166 |     state: Desktop<'_>,
+000167 |     passphrase: String,
+000168 | ) -> Result<OperationOutcome, String> {
+000169 |     let state = state.inner().clone();
+000170 |     tokio::task::spawn_blocking(move || {
+000171 |         let passphrase = zeroize::Zeroizing::new(passphrase);
+000172 |         with_publisher(&state, |p| {
+000173 |             let bytes = p.export_backup(passphrase.as_bytes(), &KeychainVault)?;
+000174 |             let directory = state.directory().join("publisher/backups");
+000175 |             switcher_core::storage::create_private_directory(&directory)?;
+000176 |             let digest = switcher_core::signed::digest(&bytes);
+000177 |             let filename = format!(
+000178 |                 "backup-{}-{}.csbackup",
+000179 |                 switcher_core::checks::unix_now(),
+000180 |                 &digest[..12]
+000181 |             );
+000182 |             switcher_core::storage::atomic_write(&directory.join(&filename), &bytes)?;
+000183 |             Ok(bridge::completed(format!(
+000184 |                 "已保存加密备份：{filename}。请打开备份目录，将备份复制到安全位置。"
+000185 |             )))
+000186 |         })
+000187 |     })
+000188 |     .await
+000189 |     .map_err(|_| "备份操作被中断".to_owned())?
+000190 | }
+000191 | #[tauri::command]
+000192 | pub async fn restore_publisher_backup(
+000193 |     state: Desktop<'_>,
+000194 |     bytes: Vec<u8>,
+000195 |     passphrase: String,
+000196 | ) -> Result<OperationOutcome, String> {
+000197 |     if bytes.len() > 32 * 1024 * 1024 {
+000198 |         return Err("备份文件超过 32 MiB 上限".into());
+000199 |     }
+000200 |     let state = state.inner().clone();
+000201 |     tokio::task::spawn_blocking(move || {
+000202 |         let passphrase = zeroize::Zeroizing::new(passphrase);
+000203 |         with_publisher(&state, |p| {
+000204 |             p.restore_backup(&bytes, passphrase.as_bytes(), &mut KeychainVault)?;
+000205 |             Ok(bridge::waiting(
+000206 |                 "已恢复加密备份中的本地资料",
+000207 |                 "再次发布到本机正式目录时，将先回读最高序号，并补齐缺失素材",
+000208 |             ))
+000209 |         })
+000210 |     })
+000211 |     .await
+000212 |     .map_err(|_| "恢复操作被中断".to_owned())?
+000213 | }
+000214 | #[tauri::command]
+000215 | pub fn open_publisher_backup_folder(state: Desktop<'_>) -> Result<OperationOutcome, String> {
+000216 |     let directory = state.directory().join("publisher/backups");
+000217 |     if !directory.is_dir() {
+000218 |         return Err("尚无已保存的加密备份".into());
+000219 |     }
+000220 |     let status = std::process::Command::new("/usr/bin/open")
+000221 |         .arg(directory)
+000222 |         .status()
+000223 |         .map_err(|_| "无法打开备份目录")?;
+000224 |     if status.success() {
+000225 |         Ok(bridge::completed("已打开本机加密备份目录"))
+000226 |     } else {
+000227 |         Err("无法打开备份目录".into())
+000228 |     }
+000229 | }
+END_FILE_RANGE: current/apps/desktop/src-tauri/src/publisher_commands.rs 1-229
+
+END_G3-P05_cc38753b230bf311

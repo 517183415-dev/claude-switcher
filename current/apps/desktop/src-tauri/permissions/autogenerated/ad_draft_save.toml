@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ad-draft-save"
+description = "Enables the ad_draft_save command without any pre-configured scope."
+commands.allow = ["ad_draft_save"]
+
+[[permission]]
+identifier = "deny-ad-draft-save"
+description = "Denies the ad_draft_save command without any pre-configured scope."
+commands.deny = ["ad_draft_save"]

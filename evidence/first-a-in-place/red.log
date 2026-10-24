@@ -1,0 +1,34 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.94s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 1 test
+test accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity ... FAILED
+
+failures:
+
+---- accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity stdout ----
+
+thread 'accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity' (23910531) panicked at crates/switcher-core/src/accounts/legacy.rs:506:13:
+assertion `left == right` failed
+  left: Identity { device: 16777233, inode: 61801767 }
+ right: Identity { device: 16777233, inode: 61801755 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `-p switcher-core --lib`

@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-10-24T06:15:13.180309+00:00",
+  "build_scope": "installed legacy-restored-20261023 candidate; before first-A in-place patch",
+  "personal_native_window": {
+    "automatic_checks": {
+      "rows": 14,
+      "pass": 12,
+      "warn": 2,
+      "block": 0
+    },
+    "warnings": [
+      "ip_change",
+      "asn"
+    ],
+    "native_gui_to_rust_ipc": "observed"
+  },
+  "launch": {
+    "entry": "Personal accounts/start current A",
+    "result": "Claude process and login window observed; switcher automatically exited",
+    "authentication_state": "login page; no authenticated baseline",
+    "private_content_recorded": false,
+    "claude_running_after_test": true
+  },
+  "account_state": {
+    "current": "A",
+    "active_identity": {
+      "dev": 16777233,
+      "ino": 61761011,
+      "uid": 501,
+      "mode": "0o700"
+    },
+    "a_saved": true,
+    "b_saved": false,
+    "legacy_journal_exists": false,
+    "stage_exists": false
+  },
+  "account_limit": "No real authenticated login or A-B-A claim. No real B created. First A inode replacement identified and fixed separately in source; installed candidate predates that patch.",
+  "history_reference": {
+    "thread_id": "01a1368a-2d62-7d22-9490-74b1f2e77db6",
+    "title": "卸载并清理Claude Code",
+    "confirmed_scope": "Claude Code CLI logout/uninstall and bounded local cleanup; Claude Desktop retained",
+    "latest_user_context": "User states the former account was banned; no former valid account is assumed available.",
+    "desktop_login_page_cause": "not established"
+  }
+}

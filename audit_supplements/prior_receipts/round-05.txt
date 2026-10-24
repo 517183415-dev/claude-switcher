@@ -1,0 +1,137 @@
+Gemini 说
+一、 第 5/17 轮附件读取覆盖核对表与额外要求核对
+
+本轮 4 份附件（G2-P05 ～ G2-P08）均已完整读取，无截断、无缺失。   
+TXT
++ 3
+
+附件 ID	完整/截断	FILE 条目总数	最后三个（或全部）FILE 原路径及 ORIGINAL_LINES 范围	附件末尾独立读出的 END 标记
+G2-P05.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/guardian_repair.rs (1-494) 
+TXT
+
+	
+
+END_G2-P05_5e17baaf19f6b5c4 
+TXT
+
+
+G2-P06.txt	
+
+完整 
+TXT
+
+	1	
+
+1. current/crates/switcher-core/src/install.rs (1-1624) 
+TXT
+
+	
+
+END_G2-P06_157c52034186ce72 
+TXT
+
+
+G2-P07.txt	
+
+完整 
+TXT
+
+	5	
+
+3. current/crates/switcher-core/src/installation_health.rs (1-278)
+
+
+
+
+4. current/crates/switcher-core/src/lib.rs (1-43)
+
+
+
+
+5. current/crates/switcher-core/src/lifecycle.rs (1-573)
+
+
+
+
+6. current/crates/switcher-core/src/macos.rs (1-466) 
+TXT
+
+	
+
+END_G2-P07_7aa934f07ac70468 
+TXT
+
+
+G2-P08.txt	
+
+完整 
+TXT
+
+	5	
+
+1. current/crates/switcher-core/src/network.rs (1-879)
+
+
+
+
+2. current/crates/switcher-core/src/pinned_routes.rs (1-301)
+
+
+
+
+3. current/crates/switcher-core/src/proxy_repair.rs (1-313)
+
+
+
+
+4. current/crates/switcher-core/src/region_detection.rs (1-142) 
+TXT
+
+	
+
+END_G2-P08_3c8e197cbbaa7997 
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户最初目标（保留原项目行为的Rust重构 + 广告 + 本地版本不自动更新；Shadowrocket和ClashX自动打开维持旧行为），本轮核心代码取证发现如下：
+
+旧版代理自动打开与兼容路径（proxy_repair.rs）在 Rust 中得到完整映射：
+
+证据位置：current/crates/switcher-core/src/proxy_repair.rs 行 000126–000147、000184–000194、000248–000276。   
+TXT
+
+取证发现：app_name 与 proxy_process_names 明确支持 ClashVerge、Shadowrocket、ClashX、Surge 等旧版兼容路径。当代理未运行时，通过 open -a <App名称> 尝试拉起应用，并进行最长 40 秒的进程与 TUN 就绪轮询，符合旧项目行为基线。   
+TXT
++ 1
+
+守护组件修复（guardian_repair.rs）兼顾旧版 root 守护与新版用户级 LaunchAgent：
+
+证据位置：current/crates/switcher-core/src/guardian_repair.rs 行 000342–000426。   
+TXT
+
+取证发现：legacy_admin_commands 负责恢复根目录下的旧版 local.claude-bodyguard 与 local.tz-watchdog 服务，同时通过 restore_after_commit 恢复用户级 local.claudeswitcher.guardian，确保双轨守护平稳过渡。   
+TXT
+
+安装事务协调器（install.rs）实现原子级回滚与事务持久化：
+
+证据位置：current/crates/switcher-core/src/install.rs 行 000054–000064、000147–000215。   
+TXT
+
+取证发现：Installer 通过 installation.json 记录安装各阶段（Preview、Authorized、BackupSaved、ComponentsStaged、HealthVerified、Committed）。若突发故障，支持通过 rollback 和 restore_backup 安全撤回，保障系统及账号资料不被损坏。   
+TXT
+
+网络诊断与代理客户端（network.rs）继承环境变量代理逻辑：
+
+证据位置：current/crates/switcher-core/src/network.rs 行 000043–000071。   
+TXT
+
+取证发现：inherited_client() 允许普通检查继承系统的 https_proxy、http_proxy、all_proxy 环境变量，而显式诊断（diagnose-proxy）则使用 client() 隔离环境继承，兼顾了灵活性与安全性。   
+TXT

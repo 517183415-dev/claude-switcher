@@ -1,0 +1,197 @@
+{
+  "timestamp": "2026-10-23T22:54:00.468025+00:00",
+  "handoff_id": "CS-RUST-20261022-R4",
+  "baseline_head": "2cf108596a7bb382acbc62c2d1dd9b89e17e1d71",
+  "files": [
+    {
+      "path": "app/main.swift",
+      "matches_handoff": true
+    },
+    {
+      "path": "core/claude-switch.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "core/stun-probe.py",
+      "matches_handoff": true
+    },
+    {
+      "path": "daemons/claude-bodyguard.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "daemons/local.claude-bodyguard.plist",
+      "matches_handoff": true
+    },
+    {
+      "path": "daemons/local.claude-update.plist",
+      "matches_handoff": true
+    },
+    {
+      "path": "daemons/local.tz-watchdog.plist",
+      "matches_handoff": true
+    },
+    {
+      "path": "daemons/tz-watchdog.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/index.html",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/package-lock.json",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/package.json",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/rust-toolchain.toml",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src/App.svelte",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src/main.ts",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/Cargo.lock",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/Cargo.toml",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/build.rs",
+      "matches_handoff": false
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/capabilities/main.json",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/src/contract.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/src/main.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/src-tauri/tauri.conf.json",
+      "matches_handoff": false
+    },
+    {
+      "path": "experiments/p0/desktop/tsconfig.json",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/desktop/vite.config.ts",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/native/availability_probe.m",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/native/collect_metadata.py",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/native/native_probe.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/Cargo.lock",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/Cargo.toml",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/src/ads.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/src/lib.rs",
+      "matches_handoff": false
+    },
+    {
+      "path": "experiments/p0/protocol/src/publication.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/src/update.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "experiments/p0/protocol/tests/signed_payload.rs",
+      "matches_handoff": true
+    },
+    {
+      "path": "installer/卸载.command",
+      "matches_handoff": true
+    },
+    {
+      "path": "installer/安装.command",
+      "matches_handoff": true
+    },
+    {
+      "path": "linux/claude-bodyguard.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "linux/claude-switch.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "linux/install.sh",
+      "matches_handoff": true
+    },
+    {
+      "path": "linux/stun-probe.py",
+      "matches_handoff": true
+    },
+    {
+      "path": "tests/test_proxy_diagnose.py",
+      "matches_handoff": true
+    },
+    {
+      "path": "tests/test_switch_safety.py",
+      "matches_handoff": true
+    },
+    {
+      "path": "windows/SwitcherUI.ps1",
+      "matches_handoff": true
+    },
+    {
+      "path": "windows/claude-bodyguard.ps1",
+      "matches_handoff": true
+    },
+    {
+      "path": "windows/claude-switch.ps1",
+      "matches_handoff": true
+    },
+    {
+      "path": "windows/install.ps1",
+      "matches_handoff": true
+    }
+  ],
+  "total": 45,
+  "matches": 42,
+  "mismatches": [
+    "experiments/p0/desktop/src-tauri/build.rs",
+    "experiments/p0/desktop/src-tauri/tauri.conf.json",
+    "experiments/p0/protocol/src/lib.rs"
+  ],
+  "preexisting_p0_differences_unchanged": true,
+  "old_product_source_unchanged": true,
+  "restoration_introduced_protected_file_changes": []
+}

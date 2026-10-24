@@ -1,0 +1,22 @@
+{
+  "name": "rolldown",
+  "version": "1.2.15",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rolldown/rolldown.git",
+    "directory": "packages/rolldown"
+  },
+  "platform_binding": {
+    "@rolldown/binding-darwin-arm64": "1.2.15"
+  },
+  "parent_lock_integrity": "sha512-6odND+fel5zVw3I4Yc2e69gvguDnX0CAAGiNDZSq4ik5WUcaLrkD2GLuog0XcODbor31hZ5ayEMgVDno+KPV5g==",
+  "parent_tarball_sha256": "0f4e689f37f168b87605f3b9756b150c63bd1cb52bd04ba5d90e156794625067",
+  "platform_license": "MIT",
+  "platform_repository": {
+    "url": "git+https://github.com/rolldown/rolldown.git",
+    "type": "git",
+    "directory": "packages/rolldown"
+  },
+  "platform_lock_integrity": "sha512-m2WuQ6r0B4OTYxyPpNLtXaMRbRDUbG8YQV2Q3KTdSSK8Th6KHCnC8jVCJt8bvYeSB5WivkkNbc85mKadaSdOxA=="
+}

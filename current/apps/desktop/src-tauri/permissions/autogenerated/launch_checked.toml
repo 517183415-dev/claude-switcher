@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-launch-checked"
+description = "Enables the launch_checked command without any pre-configured scope."
+commands.allow = ["launch_checked"]
+
+[[permission]]
+identifier = "deny-launch-checked"
+description = "Denies the launch_checked command without any pre-configured scope."
+commands.deny = ["launch_checked"]

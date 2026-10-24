@@ -1,0 +1,876 @@
+{
+  "handoff_id": "CS-RUST-20261022-R4",
+  "instruction": "除本地版本不自动更新外恢复旧版逻辑；完成旧版核心；无需密码测试优先；最后统一安装。",
+  "items": [
+    {
+      "id": "P01",
+      "title": "Shadowrocket 自动打开",
+      "target": "代理未运行时按 App 名尝试打开，再等待代理与 TUN；不承诺自动连接 VPN。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P02",
+      "title": "ClashX 自动打开",
+      "target": "代理未运行时按 App 名尝试打开，再等待代理与 TUN。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P03",
+      "title": "Surge 打开条件",
+      "target": "按名称 open -a Surge，不固定发行签名。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P04",
+      "title": "系统级代理和混用限制",
+      "target": "按所选模式判断代理与 TUN；不扫描其他代理的系统 helper 文件来禁止打开。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P05",
+      "title": "Clash GUI／核心配对",
+      "target": "主要按进程名判断，按 App 名退出和重启。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P06",
+      "title": "打开和重启等待",
+      "target": "Clash 退出后等待 3 秒；启动后最多约 40 秒等待代理和 TUN。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P07",
+      "title": "TUN 配置解析",
+      "target": "文本识别 enable_tun_mode: false，并用 sed 改为 true。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P08",
+      "title": "Merge 路径和代理组",
+      "target": "可创建 Merge 目录；使用旧脚本 PROXY_GROUP 并合并文本规则。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P09",
+      "title": "写规则与重启条件",
+      "target": "已有置顶配置或行为路由任一通过，就跳过改写与重启。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P10",
+      "title": "fix／set-region 默认行为",
+      "target": "CLI 直接执行修复或地区设置。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P11",
+      "title": "修复授权范围",
+      "target": "仅时区、IPv6、系统守护等操作申请管理员授权；用户偏好另行写。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P12",
+      "title": "修复依赖新安装登记",
+      "target": "旧脚本在代理、TUN、目标出口通过后可执行修复；缺守护时依赖已有 plist 尝试 bootstrap。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P13",
+      "title": "DNS 缓存刷新",
+      "target": "只要存在管理员命令，就在该批命令后刷新，包括只修保镖。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P14",
+      "title": "修复客户端语言",
+      "target": "已有 en-US 或系统首选英语时跳过写入。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P15",
+      "title": "用户配置文件接收范围",
+      "target": "按普通用户文件路径读写。",
+      "lane": "proxy-user-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/proxy/result.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P16",
+      "title": "修复失败和恢复顺序",
+      "target": "逐项修复；系统授权失败可报错后继续处理部分用户项。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P17",
+      "title": "自动地区数据要求",
+      "target": "Cloudflare 有结果时交叉核对；无结果时可采用 geo 查询。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P18",
+      "title": "set-region 作用范围",
+      "target": "更新国家／时区／locale 目标、用户 locale、时区与看门狗。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P19",
+      "title": "set-region 取消结果",
+      "target": "先写目标和 locale，再申请系统授权；取消可留下已写部分。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "P20",
+      "title": "缺失守护的修复入口",
+      "target": "尝试加载旧 root LaunchDaemon。",
+      "lane": "regions-repair",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/regions/report.json",
+        "output/tmp/legacy-restoration/regions/integration-report.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C01",
+      "title": "代理运行识别",
+      "target": "Shadowrocket 优先看 scutil VPN 连接状态；其他模式使用进程名模式匹配。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C02",
+      "title": "TUN 判定",
+      "target": "检查是否存在带 198.18.* 地址的接口。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C03",
+      "title": "DNS 通过条件",
+      "target": "claude.ai 的首个解析结果为 198.18.* 即通过。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C04",
+      "title": "服务路由通过条件",
+      "target": "Clash 配置或三个域名的首个 Fake-IP 行为结果可通过。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C05",
+      "title": "STUN 全无响应",
+      "target": "探针明确返回 RESULT:NONE 时，通过并视为无 UDP 暴露。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C06",
+      "title": "STUN 部分失败",
+      "target": "比较已返回的出口；无不同出口即可通过。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C07",
+      "title": "语言检查优先级",
+      "target": "App 有 en-US 或系统首选英语可通过。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C08",
+      "title": "出口 IP 历史",
+      "target": "自动记录上次 IP，维护 48 小时记录；不同 IP 达 3 个发提示。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C09",
+      "title": "ASN 分类",
+      "target": "命中住宅运营商名单才显示正常；其余提示疑似机房。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C10",
+      "title": "报告有效性和时限",
+      "target": "14 项完整唯一与状态校验；启动前执行检查，没有 30 秒有效期和网络代次字段。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C11",
+      "title": "守护检查",
+      "target": "查询旧 root 保镖的 launchd 注册状态。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C12",
+      "title": "检查之外的启动门槛",
+      "target": "通过旧版预检后切换并打开 Claude。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C13",
+      "title": "Claude 路径和系统观察器",
+      "target": "通过 open -a Claude 按名称启动。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C14",
+      "title": "检查 CLI 输出与退出码",
+      "target": "check 输出 OK／FAIL；checkdetail 输出逐行结果并保存 last-check.txt。",
+      "lane": "root-ui-cli",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/integration/frontend-tests.log",
+        "output/tmp/legacy-restoration/integration/desktop-personal-tests.log",
+        "output/tmp/legacy-restoration/integration/native-cli.json",
+        "docs/acceptance/evidence/legacy-restoration-20261023/final/native-cli-final.json"
+      ],
+      "native_status": "native_readonly_pass"
+    },
+    {
+      "id": "C15",
+      "title": "普通 HTTPS 检查上下文",
+      "target": "curl 获取 HTTP 状态，非 000 视为可达；可继承环境代理。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "C16",
+      "title": "IPv6 检查对象",
+      "target": "固定检查 Wi-Fi。",
+      "lane": "checks",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/checks/summary.json",
+        "output/tmp/legacy-restoration/checks/stun-slow-geo-summary.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A01",
+      "title": "首次保存 A",
+      "target": "首次 switch 可自动保存 A；当前账号原位建档不替换活动资料目录。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log",
+        "docs/acceptance/evidence/legacy-restoration-20261023/first-a-in-place/green.log",
+        "docs/acceptance/evidence/legacy-restoration-20261023/first-a-in-place/independent-review.json"
+      ],
+      "native_status": "installed_20261023_saved_A_but_replaced_inode; in_place_followup_isolated_pass_not_installed"
+    },
+    {
+      "id": "A02",
+      "title": "首次使用 B",
+      "target": "没有目标存档时建立空的活动资料目录，再启动 Claude 供首次登录。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_real_B_or_real_A_B_A; isolated_interruption_tests_passed"
+    },
+    {
+      "id": "A03",
+      "title": "选择与启动",
+      "target": "旧 GUI 选择账号后切换并启动。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "installed_current_A_opened_Claude_login_and_switcher_exited; authentication_unverified"
+    },
+    {
+      "id": "A04",
+      "title": "退出 Claude 的责任",
+      "target": "切换器主动请求退出 Claude，最多等待约 15 秒。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A05",
+      "title": "当前账号标记",
+      "target": "current 文件是主要当前账号依据。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "current_A_and_saved_A_observed; real_B_absent"
+    },
+    {
+      "id": "A06",
+      "title": "恢复 A 的关联",
+      "target": "缺少 current 时可以采用旧默认和首次快照行为。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A07",
+      "title": "独立备份与隔离恢复门槛",
+      "target": "切换时保存当前存档；没有独立迁移备份收据门槛。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A08",
+      "title": "固定 Claude 版本和文件调查",
+      "target": "不以一组固定 Claude／Electron 版本和文件哈希作切换前提。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A09",
+      "title": "Keychain 元数据门槛",
+      "target": "旧脚本没有单独的 Keychain 调查收据门槛。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "A10",
+      "title": "账号目录接受范围",
+      "target": "ditto 复制既存资料树。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "恢复ditto和各自卷内的暂存/rename路径；真实双卷与真实登录资料未运行。特殊FIFO的复制超时保留现场，不声称全部特殊文件已验收。"
+    },
+    {
+      "id": "A11",
+      "title": "账号交换和中断恢复",
+      "target": "复制当前资料，再删除／移动活动目录并写 current。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_real_B_or_real_A_B_A; isolated_interruption_tests_passed"
+    },
+    {
+      "id": "A12",
+      "title": "备份与当前状态绑定",
+      "target": "现有账号快照不存在全套 v2 源摘要时效门槛。",
+      "lane": "accounts-lifecycle",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/accounts/result.json",
+        "output/tmp/legacy-restoration/integration/rust-tests-final.log"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "G01",
+      "title": "常驻检查范围和周期",
+      "target": "约 10 秒检查代理存活和 TUN；失败后请求关闭 Claude。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "G02",
+      "title": "唤醒／网络事件顺序",
+      "target": "没有事件驱动的先停止路径；等待周期检查代理和 TUN。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "G03",
+      "title": "配置／策略异常",
+      "target": "只按旧脚本内的代理模式和 TUN 检查。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "G04",
+      "title": "停止目标范围",
+      "target": "root 保镖按 Claude 路径模式匹配进程。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "固定root模板和事务已实现；真实root权限、launchd、跨用户TERM/周期纠偏等待统一安装。"
+    },
+    {
+      "id": "G05",
+      "title": "强制停止升级",
+      "target": "默认 TERM 请求，没有同一逻辑中的 1 秒后 KILL。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "G06",
+      "title": "时区看门狗授权与调度",
+      "target": "root 脚本启动即检查，之后每小时按模板目标纠正。",
+      "lane": "guardian",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/guardian/result.json",
+        "output/tmp/legacy-restoration/install/implementation-notes.md"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "固定root模板和事务已实现；真实root权限、launchd、跨用户TERM/周期纠偏等待统一安装。"
+    },
+    {
+      "id": "D01",
+      "title": "安装单位",
+      "target": "复制脚本、编译 App、安装守护模板。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "四包和系统组件事务保留；普通启动/切换/修复不再依赖新增安装健康登记。系统组件仍由管理员安装，helper XPC身份边界保留。"
+    },
+    {
+      "id": "D02",
+      "title": "重建后的信任登记",
+      "target": "App 可本机临时签名；没有三个组件精确代码指纹登记门槛。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "四包和系统组件事务保留；普通启动/切换/修复不再依赖新增安装健康登记。系统组件仍由管理员安装，helper XPC身份边界保留。"
+    },
+    {
+      "id": "D03",
+      "title": "安装计划摘要",
+      "target": "没有同一套公开 plan 摘要提交协议。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D04",
+      "title": "安装与替换命令",
+      "target": "旧安装器可覆盖更新已有安装。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D05",
+      "title": "发行／owner 替换",
+      "target": "旧版没有 Personal／Public 和登记 owner 的区分。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "同owner换版及管理员owner交接完成，91项安装器隔离测试通过；独立复核通过。真实跨用户交接未执行。"
+    },
+    {
+      "id": "D06",
+      "title": "管理员命令范围",
+      "target": "安装系统服务和系统设置需要管理员；不是全部检查都走 root。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D07",
+      "title": "安装前退出程序",
+      "target": "旧安装器可主动退出切换器。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D08",
+      "title": "安装备份与完成判定",
+      "target": "备份旧文件并做旧自检。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D09",
+      "title": "已修复系统记录与重装／卸载",
+      "target": "没有这套 root 修复原值和收据交接门槛。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D10",
+      "title": "旧后台服务交接",
+      "target": "使用旧保镖、时区守护和 12 小时更新 LaunchAgent。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "恢复两个固定root旧守护模板；旧自动更新Agent按D11停用。"
+    },
+    {
+      "id": "D11",
+      "title": "当前安装的更新能力",
+      "target": "SourceLocal 保持禁止远程自动更新，使用源码和本地构建/安装脚本。",
+      "lane": "keep-source-local-no-auto-update",
+      "status": "retained",
+      "evidence": [
+        "crates/switcher-domain/src/system.rs",
+        "crates/switcher-core/src/lifecycle.rs",
+        "apps/desktop/src-tauri/src/update_runtime.rs"
+      ]
+    },
+    {
+      "id": "D12",
+      "title": "可信远程更新分支的安装条件",
+      "target": "旧脚本校验 SHA 后替换；并非每次更新都安装 App／PKG。",
+      "lane": "installer-diagnostics",
+      "status": "covered_by_source_local_update_exception",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate",
+      "note": "用户选择GitHub源码+本地构建脚本。当前SourceLocal不走远程可信更新，不要求发布证书或更新托管。"
+    },
+    {
+      "id": "D13",
+      "title": "打开界面后的检查",
+      "target": "旧 Swift 窗口出现时自动运行检查。",
+      "lane": "root-ui-cli",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/integration/frontend-tests.log",
+        "output/tmp/legacy-restoration/integration/desktop-personal-tests.log",
+        "output/tmp/legacy-restoration/integration/native-cli.json"
+      ],
+      "native_status": "wait_unlock_and_final_install"
+    },
+    {
+      "id": "D14",
+      "title": "启动成功后的窗口",
+      "target": "旧 GUI 启动成功后约 2.2 秒退出。",
+      "lane": "root-ui-cli",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/integration/frontend-tests.log",
+        "output/tmp/legacy-restoration/integration/desktop-personal-tests.log",
+        "output/tmp/legacy-restoration/integration/native-cli.json"
+      ],
+      "native_status": "wait_unlock_and_final_install"
+    },
+    {
+      "id": "D15",
+      "title": "日常 CLI 安装入口",
+      "target": "使用 ~/.local/bin/claude-switch.sh。",
+      "lane": "root-ui-cli",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/integration/frontend-tests.log",
+        "output/tmp/legacy-restoration/integration/desktop-personal-tests.log",
+        "output/tmp/legacy-restoration/integration/native-cli.json"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D16",
+      "title": "独立代理诊断配置",
+      "target": "读取明确代理配置文件；可忽略未知字段，输入可去除部分空白。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    },
+    {
+      "id": "D17",
+      "title": "独立诊断失败退出码",
+      "target": "传输探测失败可返回退出码 1。",
+      "lane": "installer-diagnostics",
+      "status": "source_restored_isolated_pass",
+      "evidence": [
+        "output/tmp/legacy-restoration/install/implementation-notes.md",
+        "output/tmp/legacy-restoration/install/python-tests.txt"
+      ],
+      "native_status": "not_run_final_candidate"
+    }
+  ],
+  "status_definitions": {
+    "source_restored_isolated_pass": "旧业务路径已恢复，并有源码及隔离测试证据；不代表管理员安装或真实登录已验收",
+    "retained": "用户明确保留 SourceLocal 不自动更新",
+    "covered_by_source_local_update_exception": "远程可信更新分支保留；当前源码交付走本地构建安装",
+    "pending_final_review": "实现与隔离测试完成，等待最终窄审"
+  },
+  "scope_boundaries": [
+    "当前安装仍为r17；旧版核心统一候选已构建和冻结，尚未安装。",
+    "最终原生CLI实际完成14项检查：12通过、1提示、1时区失败；未执行系统修复。",
+    "真实窗口/IPC等待Mac解锁；安装后root守护与CLI入口仍需验证。",
+    "实际Claude启动、登录、A→B→A未执行；不作为已通过。",
+    "广告扩展后置；无障碍专项按用户指令跳过。"
+  ],
+  "last_updated_utc": "2026-10-24T06:23:58.070088+00:00"
+}

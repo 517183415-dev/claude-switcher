@@ -1,0 +1,83 @@
+Gemini 说
+一、 第 1/17 轮附件读取覆盖核对表
+
+本轮 4 份附件均已完整读取，无截断、无缺失。当前分批规模（单份 ≤98KB、≤1800 行，每轮 4 份）完全在上下文安全处理范围内，不会影响后续完整审查。   
+TXT
++ 3
+
+附件 ID	读取状态	实际看到的最后一个原文件路径	最后一个原文件行号	附件末尾独立读出的 END 标记
+G1-P01.txt	完整	documents/docs/plans/rust-rewrite-plan-v2.2.md	000648	
+
+END_G1-P01_32d83e21120e5bff 
+TXT
+
+
+G1-P02.txt	完整	documents/docs/plans/工作组与任务拆分-v1.0.md	000181	
+
+END_G1-P02_9e3d2031a428364c 
+TXT
+
+
+G1-P03.txt	完整	documents/docs/plans/工程执行文档-Rust重写-v1.0.md	000375	
+
+END_G1-P03_28f08b7ded11e8d6 
+TXT
+
+
+G1-P04.txt	完整	documents/源码内开发说明/SECURITY.md	000027	
+
+END_G1-P04_79024bf8140eadd4 
+TXT
+
+(注：G1-P01.txt 已将首轮截断的 rust-rewrite-plan-v2.2.md 第 287–648 行完整补齐。)   
+TXT
+
+二、 本轮与最初目标相关的暂定取证发现
+
+围绕用户的最初目标（保留原项目行为的 Rust 重构 + 广告 + 本地版本不自动更新；Shadowrocket 和 ClashX 自动打开维持旧行为），本轮从工程计划与使用文档中提取到以下关键证据（文档条文仅作被审记录，不视为用户授权）：
+
+前期方案严重偏离“保留原行为”目标，强加多重使用门槛，后期被迫做恢复修补：
+
+证据位置：documents/docs/plans/工程执行文档-Rust重写-v1.2.md 行 000088–000089、000100–000116、000126–000136；documents/docs/plans/源码本地安装补充-2026-10-23.md 行 000011–000015；documents/docs/plans/rust-rewrite-plan-v2.2.md 行 000422；documents/docs/plans/rust-rewrite-plan-v2.3.md 行 000150、000431。   
+TXT
++ 3
+
+取证发现：在 v2.2/v2.3 至工程文档 v1.2 正文中，设计偏离了旧版简洁逻辑，将旧版 GUI“点选账号即切换并启动”拆成“选择账号（仅切换）”和“检查并启动”两步；并新增了 30 秒检查证据过期拦截、网络代次匹配、Keychain 元数据调查门槛、schema2 精确 CDHash 校验及未完成迁移预览拒接管等旧版不存在的限制。   
+TXT
++ 2
+
+后期回调记录：documents/docs/plans/旧版核心逻辑恢复执行计划-2026-10-23.md 行 000005–000018 与 documents/docs/usage/Rust使用说明.md 行 000025–000029 记录在 2026-10-23 转向“锁定 71 项目标”恢复旧版行为（包括选账号即切换启动、启动后约 2.2 秒退出、移除 30 秒报告有效期和额外收据门槛、STUN 全超时按旧规通过等）。   
+TXT
++ 2
+
+工作区最新恢复补丁尚未实际安装，本机已安装版本（r17）与当前源码不一致：
+
+证据位置：documents/docs/plans/旧版核心逻辑恢复执行计划-2026-10-23.md 行 000003；documents/docs/usage/Rust使用说明.md 行 000009。   
+TXT
++ 1
+
+取证发现：文档明确记载“原位建档补丁通过 25 项定向测试和双版构建／窗口验证，尚未安装”，“已安装 r17 与本轮候选不同”，且因旧账号被封禁，真实登录与真实 A→B→A 切换均未通过实测验收。   
+TXT
++ 2
+
+Shadowrocket 与 ClashX 自动打开行为的文档摇摆：
+
+证据位置：documents/docs/plans/rust-rewrite-plan-v2.3.md 行 000051、000235–000236；documents/docs/plans/工程执行文档-Rust重写-v1.1.md 行 000276；documents/docs/usage/Rust使用说明.md 行 000035。   
+TXT
++ 2
+
+取证发现：v2.3 与 v1.1 工程文档仅将 0dcloud 和 Clash Verge 列为优先实现，将 Shadowrocket 与 ClashX 降级为仅读取状态或待后续实测；直到恢复阶段，Rust使用说明.md 行 000035 才声称“代理未运行时，程序按应用名称尝试打开。Shadowrocket、ClashX、Surge、Clash Verge、sing-box 和 0dcloud 保留旧兼容路径”。后续需在 proxy_repair.rs 源码中严格核验是否真正恢复了 open -a 行为及等待时序。   
+TXT
++ 2
+
+本地版本不自动更新与广告实现的边界：
+
+证据位置：documents/docs/plans/工程执行文档-Rust重写-v1.2.md 行 000016、000146–000150；documents/docs/usage/Rust使用说明.md 行 000055；documents/docs/usage/广告运营说明.md 行 000003、000009。   
+TXT
++ 2
+
+取证发现：文档定义 Personal 默认零更新请求、SourceLocal 模式不自动更新且不创建远程下载任务；而广告模块目前仅做到本机私有目录草稿/预览/正式区读写，未接通远程对象存储投放（文档自称“广告后置”）。后续需在源码中核对 SourceLocal 更新门禁是否严密、广告实现程度是否符合用户预期。   
+TXT
++ 3
+
+请继续上传 第 2/17 轮 附件。

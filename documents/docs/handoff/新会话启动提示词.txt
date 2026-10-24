@@ -1,0 +1,16 @@
+$project-handoff $ponytail
+
+请接手 /Users/gua/CodexWorkspaces/claude-switcher 的 Rust 重写，直接开始实现和必要验证。
+
+交接 ID：CS-RUST-20261022-R4。
+先读取 docs/handoff/项目交接记录.md，再完整执行 docs/handoff/整套项目工程执行提示词.md。
+
+现行规格只有：
+- docs/plans/PRD-Rust双版本产品-v1.2.md
+- docs/plans/工程执行文档-Rust重写-v1.2.md
+
+采用四个 Rust 包、12 项任务、37 项验收。先执行 E01，修复现有 P0 构建错误并验证真实窗口/IPC。保留 Personal 手动更新、Public 自动更新、暖白墨绿 UI、三个广告位及完整广告运营。
+
+历史 v1.1 合同和旧主方案用于追溯。已移除的双发行并行接管、专用时间服务、额外试用发行、点击统计及预建多云架构保持退出本次范围。
+
+保留现有工作区修改。先核对基线并完成 CodeGraph 预检。普通实现、修复与验证持续推进；证书、托管或第二账号缺失时，仅等待依赖该材料的任务。

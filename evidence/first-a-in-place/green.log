@@ -1,0 +1,61 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.33s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 13 tests
+test accounts::legacy::tests::legacy_process_crash_child ... ok
+test accounts::legacy::tests::changed_stage_is_preserved_instead_of_overwriting_account_data ... ok
+test accounts::legacy::tests::journal_write_error_after_rename_preserves_recoverable_stages ... ok
+test accounts::legacy::tests::pending_journal_without_in_place_field_retains_exchange_recovery ... ok
+test accounts::legacy::tests::cleanup_resumes_when_child_removed_before_stage_directory ... ok
+test accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity ... ok
+test accounts::legacy::tests::unsupported_fifo_times_out_in_native_ditto_without_touching_source ... ok
+test accounts::legacy::tests::ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes ... ok
+test accounts::legacy::tests::writable_acl_is_copied_without_becoming_a_business_gate ... ok
+test accounts::legacy::tests::pre_journal_failures_remove_stages_and_preserve_accounts ... ok
+test accounts::legacy::tests::in_place_adoption_recovers_every_durable_boundary_without_replacing_live ... ok
+test accounts::legacy::tests::destination_local_stages_resume_every_persisted_boundary_without_receipts ... ok
+test accounts::legacy::tests::sigkill_recovers_destination_local_transactions_at_every_boundary ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 283 filtered out; finished in 3.14s
+
+     Running unittests src/bin/claude-switcher.rs (target/debug/deps/claude_switcher-c506376841127026)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running unittests src/bin/keychain-metadata-probe.rs (target/debug/deps/keychain_metadata_probe-a35e18c09be72539)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/switcher-guardian.rs (target/debug/deps/switcher_guardian-81ab89098c9aab34)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/checks_cli.rs (target/debug/deps/checks_cli-b0302e329149b9c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/e11_privacy.rs (target/debug/deps/e11_privacy-685f341f192e20e1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

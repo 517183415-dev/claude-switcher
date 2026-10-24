@@ -1,0 +1,1286 @@
+审核补充附件 G1-P10，逻辑组1，共11份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/crates/switcher-core/src/storage.rs
+SHA256_ORIGINAL: 2538fb4acf0f7dd6ca2d505c4f4030407583b4d46be0bb83e8cd3aa808cfec7a
+ORIGINAL_LINES: 1-709
+000001 | //! Shared lifecycle locking and durable, private metadata writes.
+000002 | use serde::{Serialize, de::DeserializeOwned};
+000003 | use std::fs::{self, File, OpenOptions};
+000004 | use std::io::{self, Read, Write};
+000005 | use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+000006 | use std::path::{Component, Path, PathBuf};
+000007 | use std::sync::atomic::{AtomicU64, Ordering};
+000008 | 
+000009 | static NEXT_FILE: AtomicU64 = AtomicU64::new(0);
+000010 | pub const METADATA_LIMIT: u64 = 64 * 1024;
+000011 | 
+000012 | /// Held for account writes, launch and installation. Stop requests never take this lock.
+000013 | #[derive(Debug)]
+000014 | pub struct LifecycleLock {
+000015 |     _file: File,
+000016 |     directory: PathBuf,
+000017 |     directory_identity: (u64, u64),
+000018 |     name: &'static str,
+000019 | }
+000020 | 
+000021 | impl Drop for LifecycleLock {
+000022 |     fn drop(&mut self) {
+000023 |         // Explicit unlock also releases a descriptor briefly inherited by another thread's fork/exec.
+000024 |         let _ = self._file.unlock();
+000025 |     }
+000026 | }
+000027 | 
+000028 | impl LifecycleLock {
+000029 |     pub fn try_acquire(directory: &Path) -> io::Result<Self> {
+000030 |         Self::try_named(directory, "lifecycle.lock", true)
+000031 |     }
+000032 | 
+000033 |     fn try_named(directory: &Path, name: &'static str, create: bool) -> io::Result<Self> {
+000034 |         validate_no_symlinks(directory)?;
+000035 |         let directory = directory.canonicalize()?;
+000036 |         let metadata = fs::metadata(&directory)?;
+000037 |         if !metadata.is_dir()
+000038 |             || metadata.uid() != unsafe { libc::geteuid() }
+000039 |             || metadata.mode() & 0o022 != 0
+000040 |         {
+000041 |             return Err(io::Error::new(
+000042 |                 io::ErrorKind::PermissionDenied,
+000043 |                 "unsafe lifecycle directory",
+000044 |             ));
+000045 |         }
+000046 |         let directory_identity = (metadata.dev(), metadata.ino());
+000047 |         let file = OpenOptions::new()
+000048 |             .read(true)
+000049 |             .write(true)
+000050 |             .create(create)
+000051 |             .mode(0o600)
+000052 |             .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+000053 |             .open(directory.join(name))?;
+000054 |         let metadata = file.metadata()?;
+000055 |         if !metadata.is_file()
+000056 |             || metadata.nlink() != 1
+000057 |             || metadata.uid() != unsafe { libc::geteuid() }
+000058 |             || metadata.mode() & 0o077 != 0
+000059 |         {
+000060 |             return Err(io::Error::new(
+000061 |                 io::ErrorKind::PermissionDenied,
+000062 |                 "unsafe lifecycle lock",
+000063 |             ));
+000064 |         }
+000065 |         if name != "lifecycle.lock" {
+000066 |             crate::accounts::access_control(&directory)?;
+000067 |             crate::accounts::access_control(&directory.join(name))?;
+000068 |         }
+000069 |         file.try_lock().map_err(|error| match error {
+000070 |             std::fs::TryLockError::WouldBlock => {
+000071 |                 io::Error::new(io::ErrorKind::WouldBlock, "lifecycle busy")
+000072 |             }
+000073 |             std::fs::TryLockError::Error(error) => error,
+000074 |         })?;
+000075 |         let lock = Self {
+000076 |             _file: file,
+000077 |             directory,
+000078 |             directory_identity,
+000079 |             name,
+000080 |         };
+000081 |         if !lock.protects(&lock.directory) {
+000082 |             return Err(io::Error::new(
+000083 |                 io::ErrorKind::PermissionDenied,
+000084 |                 "lifecycle directory or lock was replaced",
+000085 |             ));
+000086 |         }
+000087 |         Ok(lock)
+000088 |     }
+000089 | 
+000090 |     pub fn protects(&self, directory: &Path) -> bool {
+000091 |         if validate_no_symlinks(directory).is_err()
+000092 |             || !directory
+000093 |                 .canonicalize()
+000094 |                 .is_ok_and(|path| path == self.directory)
+000095 |         {
+000096 |             return false;
+000097 |         }
+000098 |         let Ok(metadata) = fs::metadata(directory) else {
+000099 |             return false;
+000100 |         };
+000101 |         let Ok(on_disk) = fs::symlink_metadata(directory.join(self.name)) else {
+000102 |             return false;
+000103 |         };
+000104 |         let Ok(held) = self._file.metadata() else {
+000105 |             return false;
+000106 |         };
+000107 |         (metadata.dev(), metadata.ino()) == self.directory_identity
+000108 |             && (on_disk.dev(), on_disk.ino()) == (held.dev(), held.ino())
+000109 |             && on_disk.is_file()
+000110 |             && !on_disk.file_type().is_symlink()
+000111 |             && on_disk.nlink() == 1
+000112 |             && on_disk.uid() == unsafe { libc::geteuid() }
+000113 |             && on_disk.mode() & 0o077 == 0
+000114 |             && (self.name == "lifecycle.lock"
+000115 |                 || crate::accounts::access_control(&directory.join(self.name)).is_ok())
+000116 |     }
+000117 | }
+000118 | 
+000119 | /// Serializes Guardian health publication without taking the lifecycle lock.
+000120 | pub(crate) struct GuardianSnapshotLock {
+000121 |     _lock: LifecycleLock,
+000122 | }
+000123 | impl GuardianSnapshotLock {
+000124 |     pub(crate) fn try_acquire(directory: &Path, create: bool) -> io::Result<Self> {
+000125 |         LifecycleLock::try_named(directory, "guardian-snapshot.lock", create)
+000126 |             .map(|lock| Self { _lock: lock })
+000127 |     }
+000128 |     #[cfg(test)]
+000129 |     fn protects(&self, directory: &Path) -> bool {
+000130 |         self._lock.protects(directory)
+000131 |     }
+000132 | }
+000133 | 
+000134 | /// Reject path traversal and symlinked ancestors before opening metadata or account roots.
+000135 | pub fn validate_no_symlinks(path: &Path) -> io::Result<()> {
+000136 |     if !path.is_absolute() {
+000137 |         return Err(io::Error::new(
+000138 |             io::ErrorKind::InvalidInput,
+000139 |             "absolute path required",
+000140 |         ));
+000141 |     }
+000142 |     let mut current = PathBuf::new();
+000143 |     for component in path.components() {
+000144 |         match component {
+000145 |             Component::RootDir | Component::Normal(_) => current.push(component),
+000146 |             _ => {
+000147 |                 return Err(io::Error::new(
+000148 |                     io::ErrorKind::InvalidInput,
+000149 |                     "non-normal path",
+000150 |                 ));
+000151 |             }
+000152 |         }
+000153 |         let metadata = fs::symlink_metadata(&current)?;
+000154 |         if metadata.file_type().is_symlink() || !metadata.is_dir() {
+000155 |             return Err(io::Error::new(
+000156 |                 io::ErrorKind::PermissionDenied,
+000157 |                 "symlink or non-directory ancestor",
+000158 |             ));
+000159 |         }
+000160 |     }
+000161 |     Ok(())
+000162 | }
+000163 | 
+000164 | /// Keep an existing legacy data root readable without changing its permissions.
+000165 | /// All v2 descendants must still use create_private_directory (0700).
+000166 | pub fn prepare_data_root(path: &Path) -> io::Result<()> {
+000167 |     match fs::symlink_metadata(path) {
+000168 |         Err(error) if error.kind() == io::ErrorKind::NotFound => {
+000169 |             return create_private_directory(path);
+000170 |         }
+000171 |         Err(error) => return Err(error),
+000172 |         Ok(_) => {}
+000173 |     }
+000174 |     validate_no_symlinks(path)?;
+000175 |     validate_data_root_metadata(&fs::symlink_metadata(path)?, unsafe { libc::geteuid() })
+000176 | }
+000177 | 
+000178 | fn validate_data_root_metadata(metadata: &fs::Metadata, owner: u32) -> io::Result<()> {
+000179 |     if !metadata.is_dir()
+000180 |         || metadata.file_type().is_symlink()
+000181 |         || metadata.uid() != owner
+000182 |         || metadata.mode() & 0o022 != 0
+000183 |     {
+000184 |         return Err(io::Error::new(
+000185 |             io::ErrorKind::PermissionDenied,
+000186 |             "unsafe existing data root",
+000187 |         ));
+000188 |     }
+000189 |     Ok(())
+000190 | }
+000191 | 
+000192 | pub fn create_private_directory(path: &Path) -> io::Result<()> {
+000193 |     let parent = path
+000194 |         .parent()
+000195 |         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?;
+000196 |     validate_no_symlinks(parent)?;
+000197 |     match fs::create_dir(path) {
+000198 |         Ok(()) => fs::set_permissions(path, fs::Permissions::from_mode(0o700))?,
+000199 |         Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
+000200 |         Err(error) => return Err(error),
+000201 |     }
+000202 |     validate_no_symlinks(path)?;
+000203 |     let metadata = fs::metadata(path)?;
+000204 |     if metadata.uid() != unsafe { libc::geteuid() } || metadata.mode() & 0o077 != 0 {
+000205 |         return Err(io::Error::new(
+000206 |             io::ErrorKind::PermissionDenied,
+000207 |             "private directory ownership or permissions",
+000208 |         ));
+000209 |     }
+000210 |     sync_directory(parent)
+000211 | }
+000212 | 
+000213 | pub fn sync_directory(path: &Path) -> io::Result<()> {
+000214 |     File::open(path)?.sync_all()
+000215 | }
+000216 | 
+000217 | /// The rename is the commit point. The file and its parent are both synchronized.
+000218 | pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
+000219 |     let parent = path
+000220 |         .parent()
+000221 |         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?;
+000222 |     validate_no_symlinks(parent)?;
+000223 |     match fs::symlink_metadata(path) {
+000224 |         Ok(metadata) => {
+000225 |             if !metadata.is_file()
+000226 |                 || metadata.file_type().is_symlink()
+000227 |                 || metadata.nlink() != 1
+000228 |                 || metadata.uid() != unsafe { libc::geteuid() }
+000229 |             {
+000230 |                 return Err(io::Error::new(
+000231 |                     io::ErrorKind::PermissionDenied,
+000232 |                     "unsafe metadata destination",
+000233 |                 ));
+000234 |             }
+000235 |         }
+000236 |         Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+000237 |         Err(error) => return Err(error),
+000238 |     }
+000239 |     let serial = NEXT_FILE.fetch_add(1, Ordering::Relaxed);
+000240 |     let temporary = parent.join(format!(".write-{}-{serial}", std::process::id()));
+000241 |     let mut file = OpenOptions::new()
+000242 |         .write(true)
+000243 |         .create_new(true)
+000244 |         .mode(0o600)
+000245 |         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+000246 |         .open(&temporary)?;
+000247 |     let result = (|| {
+000248 |         file.write_all(bytes)?;
+000249 |         file.sync_all()?;
+000250 |         fs::rename(&temporary, path)?;
+000251 |         sync_directory(parent)
+000252 |     })();
+000253 |     if result.is_err() {
+000254 |         let _ = fs::remove_file(&temporary);
+000255 |     }
+000256 |     result
+000257 | }
+000258 | 
+000259 | pub fn atomic_json<T: Serialize>(path: &Path, value: &T) -> io::Result<()> {
+000260 |     let bytes = serde_json::to_vec(value).map_err(io::Error::other)?;
+000261 |     if bytes.len() as u64 > METADATA_LIMIT {
+000262 |         return Err(io::Error::new(
+000263 |             io::ErrorKind::InvalidData,
+000264 |             "metadata too large",
+000265 |         ));
+000266 |     }
+000267 |     atomic_write(path, &bytes)
+000268 | }
+000269 | 
+000270 | pub fn read_json<T: DeserializeOwned>(path: &Path) -> io::Result<T> {
+000271 |     let bytes = read_private_bytes(path, METADATA_LIMIT as usize)?;
+000272 |     crate::signed::strict_json(&bytes, METADATA_LIMIT as usize).map_err(io::Error::other)
+000273 | }
+000274 | 
+000275 | /// Bounded private-file reader for larger signed update state. Callers choose their protocol limit.
+000276 | pub fn read_private_bytes(path: &Path, limit: usize) -> io::Result<Vec<u8>> {
+000277 |     let read_limit = u64::try_from(limit)
+000278 |         .ok()
+000279 |         .and_then(|value| value.checked_add(1))
+000280 |         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "invalid private file limit"))?;
+000281 |     validate_no_symlinks(
+000282 |         path.parent()
+000283 |             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?,
+000284 |     )?;
+000285 |     let file = OpenOptions::new()
+000286 |         .read(true)
+000287 |         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
+000288 |         .open(path)?;
+000289 |     let metadata = file.metadata()?;
+000290 |     if !metadata.is_file()
+000291 |         || metadata.nlink() != 1
+000292 |         || metadata.uid() != unsafe { libc::geteuid() }
+000293 |         || metadata.mode() & 0o077 != 0
+000294 |     {
+000295 |         return Err(io::Error::new(
+000296 |             io::ErrorKind::PermissionDenied,
+000297 |             "unsafe private file source",
+000298 |         ));
+000299 |     }
+000300 |     if metadata.len() >= read_limit {
+000301 |         return Err(io::Error::new(
+000302 |             io::ErrorKind::InvalidData,
+000303 |             "private file too large",
+000304 |         ));
+000305 |     }
+000306 |     let mut bytes = Vec::new();
+000307 |     file.take(read_limit).read_to_end(&mut bytes)?;
+000308 |     if bytes.len() > limit {
+000309 |         return Err(io::Error::new(
+000310 |             io::ErrorKind::InvalidData,
+000311 |             "private file too large",
+000312 |         ));
+000313 |     }
+000314 |     Ok(bytes)
+000315 | }
+000316 | 
+000317 | #[cfg(test)]
+000318 | mod tests {
+000319 |     use super::*;
+000320 |     #[test]
+000321 |     fn legacy_data_root_keeps_modes_and_rejects_unsafe_metadata() {
+000322 |         let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000323 |             "switcher-legacy-root-{}-{}",
+000324 |             std::process::id(),
+000325 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000326 |         ));
+000327 |         prepare_data_root(&root).unwrap();
+000328 |         assert_eq!(fs::metadata(&root).unwrap().mode() & 0o777, 0o700);
+000329 |         for mode in [0o755, 0o750, 0o700] {
+000330 |             fs::set_permissions(&root, fs::Permissions::from_mode(mode)).unwrap();
+000331 |             prepare_data_root(&root).unwrap();
+000332 |             assert_eq!(fs::metadata(&root).unwrap().mode() & 0o777, mode);
+000333 |         }
+000334 |         for mode in [0o775, 0o757, 0o777] {
+000335 |             fs::set_permissions(&root, fs::Permissions::from_mode(mode)).unwrap();
+000336 |             assert_eq!(
+000337 |                 prepare_data_root(&root).unwrap_err().kind(),
+000338 |                 io::ErrorKind::PermissionDenied
+000339 |             );
+000340 |             assert_eq!(fs::metadata(&root).unwrap().mode() & 0o777, mode);
+000341 |         }
+000342 |         fs::set_permissions(&root, fs::Permissions::from_mode(0o755)).unwrap();
+000343 |         let metadata = fs::symlink_metadata(&root).unwrap();
+000344 |         // The same real metadata must fail when its UID differs from the required owner.
+000345 |         assert_eq!(
+000346 |             validate_data_root_metadata(&metadata, metadata.uid().wrapping_add(1))
+000347 |                 .unwrap_err()
+000348 |                 .kind(),
+000349 |             io::ErrorKind::PermissionDenied
+000350 |         );
+000351 |         let link = root.with_extension("link");
+000352 |         std::os::unix::fs::symlink(&root, &link).unwrap();
+000353 |         assert_eq!(
+000354 |             prepare_data_root(&link).unwrap_err().kind(),
+000355 |             io::ErrorKind::PermissionDenied
+000356 |         );
+000357 |         fs::remove_file(link).unwrap();
+000358 |         let file = root.join("not-directory");
+000359 |         atomic_write(&file, b"unchanged").unwrap();
+000360 |         assert_eq!(
+000361 |             prepare_data_root(&file).unwrap_err().kind(),
+000362 |             io::ErrorKind::PermissionDenied
+000363 |         );
+000364 |         assert_eq!(fs::read(file).unwrap(), b"unchanged");
+000365 |         fs::remove_dir_all(root).unwrap();
+000366 |     }
+000367 |     #[test]
+000368 |     fn lifecycle_lock_excludes_another_owner_and_os_releases_it() {
+000369 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000370 |             "switcher-lock-{}-{}",
+000371 |             std::process::id(),
+000372 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000373 |         ));
+000374 |         create_private_directory(&path).unwrap();
+000375 |         let lock = LifecycleLock::try_acquire(&path).unwrap();
+000376 |         assert_eq!(
+000377 |             LifecycleLock::try_acquire(&path).unwrap_err().kind(),
+000378 |             io::ErrorKind::WouldBlock
+000379 |         );
+000380 |         assert!(lock.protects(&path));
+000381 |         drop(lock);
+000382 |         LifecycleLock::try_acquire(&path).unwrap();
+000383 |         fs::remove_dir_all(path).unwrap();
+000384 |     }
+000385 |     #[test]
+000386 |     fn guardian_snapshot_lock_read_only_and_unsafe_paths() {
+000387 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000388 |             "switcher-snapshot-lock-{}-{}",
+000389 |             std::process::id(),
+000390 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000391 |         ));
+000392 |         create_private_directory(&path).unwrap();
+000393 |         let control = path.join("guardian-snapshot.lock");
+000394 |         assert!(GuardianSnapshotLock::try_acquire(&path, false).is_err());
+000395 |         assert!(!control.exists());
+000396 |         let held = GuardianSnapshotLock::try_acquire(&path, true).unwrap();
+000397 |         assert!(held.protects(&path));
+000398 |         assert!(GuardianSnapshotLock::try_acquire(&path, false).is_err());
+000399 |         let lifecycle = LifecycleLock::try_acquire(&path).unwrap();
+000400 |         assert!(lifecycle.protects(&path));
+000401 |         fs::rename(&control, path.join("old-lock")).unwrap();
+000402 |         drop(GuardianSnapshotLock::try_acquire(&path, true).unwrap());
+000403 |         assert!(!held.protects(&path));
+000404 |         drop(held);
+000405 |         fs::set_permissions(&control, fs::Permissions::from_mode(0o644)).unwrap();
+000406 |         assert!(GuardianSnapshotLock::try_acquire(&path, false).is_err());
+000407 |         fs::remove_file(&control).unwrap();
+000408 |         std::os::unix::fs::symlink(path.join("old-lock"), &control).unwrap();
+000409 |         assert!(GuardianSnapshotLock::try_acquire(&path, false).is_err());
+000410 |         fs::remove_file(&control).unwrap();
+000411 |         fs::hard_link(path.join("old-lock"), &control).unwrap();
+000412 |         assert!(GuardianSnapshotLock::try_acquire(&path, false).is_err());
+000413 |         drop(lifecycle);
+000414 |         fs::remove_dir_all(path).unwrap();
+000415 |     }
+000416 | 
+000417 |     #[test]
+000418 |     fn atomic_metadata_replaces_privately_and_refuses_symlink_destination() {
+000419 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000420 |             "switcher-write-{}-{}",
+000421 |             std::process::id(),
+000422 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000423 |         ));
+000424 |         create_private_directory(&path).unwrap();
+000425 |         let destination = path.join("state.json");
+000426 |         atomic_json(&destination, &vec![1, 2]).unwrap();
+000427 |         atomic_json(&destination, &vec![3]).unwrap();
+000428 |         assert_eq!(read_json::<Vec<u8>>(&destination).unwrap(), vec![3]);
+000429 |         assert_eq!(fs::metadata(&destination).unwrap().mode() & 0o777, 0o600);
+000430 |         let link = path.join("link.json");
+000431 |         std::os::unix::fs::symlink(&destination, &link).unwrap();
+000432 |         assert_eq!(
+000433 |             atomic_json(&link, &vec![4]).unwrap_err().kind(),
+000434 |             io::ErrorKind::PermissionDenied
+000435 |         );
+000436 |         assert_eq!(read_json::<Vec<u8>>(&destination).unwrap(), vec![3]);
+000437 |         fs::remove_dir_all(path).unwrap();
+000438 |     }
+000439 |     #[test]
+000440 |     fn lifecycle_lock_child_fixture() {
+000441 |         let Some(directory) = std::env::var_os("SWITCHER_SYNTHETIC_LOCK_CHILD") else {
+000442 |             return;
+000443 |         };
+000444 |         let directory = PathBuf::from(directory);
+000445 |         let _lock = LifecycleLock::try_acquire(&directory).unwrap();
+000446 |         atomic_write(&directory.join("ready"), b"ready").unwrap();
+000447 |         loop {
+000448 |             std::thread::park_timeout(std::time::Duration::from_secs(1));
+000449 |         }
+000450 |     }
+000451 | 
+000452 |     #[test]
+000453 |     fn lifecycle_lock_is_released_when_the_holding_process_is_killed() {
+000454 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000455 |             "switcher-lock-death-{}-{}",
+000456 |             std::process::id(),
+000457 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000458 |         ));
+000459 |         create_private_directory(&path).unwrap();
+000460 |         struct ChildGuard(std::process::Child);
+000461 |         impl Drop for ChildGuard {
+000462 |             fn drop(&mut self) {
+000463 |                 let _ = self.0.kill();
+000464 |                 let _ = self.0.wait();
+000465 |             }
+000466 |         }
+000467 |         let mut child = ChildGuard(
+000468 |             std::process::Command::new(std::env::current_exe().unwrap())
+000469 |                 .args([
+000470 |                     "--exact",
+000471 |                     "storage::tests::lifecycle_lock_child_fixture",
+000472 |                     "--nocapture",
+000473 |                 ])
+000474 |                 .env("SWITCHER_SYNTHETIC_LOCK_CHILD", &path)
+000475 |                 .stdout(std::process::Stdio::null())
+000476 |                 .spawn()
+000477 |                 .unwrap(),
+000478 |         );
+000479 |         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+000480 |         while !path.join("ready").exists() && std::time::Instant::now() < deadline {
+000481 |             std::thread::sleep(std::time::Duration::from_millis(10));
+000482 |         }
+000483 |         assert!(
+000484 |             path.join("ready").exists(),
+000485 |             "synthetic child did not acquire lock"
+000486 |         );
+000487 |         assert_eq!(
+000488 |             LifecycleLock::try_acquire(&path).unwrap_err().kind(),
+000489 |             io::ErrorKind::WouldBlock
+000490 |         );
+000491 |         child.0.kill().unwrap();
+000492 |         child.0.wait().unwrap();
+000493 |         let lock = LifecycleLock::try_acquire(&path).unwrap();
+000494 |         drop(lock);
+000495 |         fs::remove_dir_all(path).unwrap();
+000496 |     }
+000497 | 
+000498 |     fn contention_wait(path: &Path) {
+000499 |         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+000500 |         while !path.exists() {
+000501 |             assert!(
+000502 |                 std::time::Instant::now() < deadline,
+000503 |                 "contention deadline: {}",
+000504 |                 path.file_name().unwrap().to_string_lossy()
+000505 |             );
+000506 |             std::thread::sleep(std::time::Duration::from_millis(10));
+000507 |         }
+000508 |     }
+000509 |     fn contention_rejected(v2: &Path, marker: &str) {
+000510 |         assert_eq!(
+000511 |             LifecycleLock::try_acquire(v2).unwrap_err().kind(),
+000512 |             io::ErrorKind::WouldBlock
+000513 |         );
+000514 |         atomic_write(&v2.join(marker), b"rejected").unwrap();
+000515 |     }
+000516 |     #[test]
+000517 |     fn lifecycle_contention_child_fixture() {
+000518 |         let Some(base) = std::env::var_os("SWITCHER_CONTENTION_HOME") else {
+000519 |             return;
+000520 |         };
+000521 |         let base = PathBuf::from(base);
+000522 |         assert_eq!(
+000523 |             std::env::var_os("HOME"),
+000524 |             Some(base.clone().into_os_string())
+000525 |         );
+000526 |         let temporary = std::env::temp_dir().canonicalize().unwrap();
+000527 |         assert_eq!(base.parent(), Some(temporary.as_path()));
+000528 |         assert!(
+000529 |             base.file_name()
+000530 |                 .unwrap()
+000531 |                 .to_str()
+000532 |                 .unwrap()
+000533 |                 .starts_with("switcher-lock-contention-")
+000534 |         );
+000535 |         validate_no_symlinks(&base).unwrap();
+000536 |         let metadata = fs::metadata(&base).unwrap();
+000537 |         assert_eq!(metadata.uid(), unsafe { libc::geteuid() });
+000538 |         assert_eq!(metadata.mode() & 0o077, 0);
+000539 |         let v2 = base.join(".claude-switcher/v2");
+000540 |         let role = std::env::var("SWITCHER_CONTENTION_ROLE").unwrap();
+000541 |         match role.as_str() {
+000542 |             "gui" => {
+000543 |                 let _lock = LifecycleLock::try_acquire(&v2).unwrap();
+000544 |                 atomic_write(&v2.join("shared-state"), b"gui").unwrap();
+000545 |                 atomic_write(&v2.join("gui-held"), b"held").unwrap();
+000546 |                 contention_wait(&v2.join("release-gui"));
+000547 |                 panic!("GUI fixture should have been killed");
+000548 |             }
+000549 |             "cli" => {
+000550 |                 contention_rejected(&v2, "cli-denied-by-gui");
+000551 |                 contention_wait(&v2.join("retry-cli"));
+000552 |                 let _lock = LifecycleLock::try_acquire(&v2).unwrap();
+000553 |                 atomic_write(&v2.join("shared-state"), b"cli").unwrap();
+000554 |                 atomic_write(&v2.join("cli-held"), b"held").unwrap();
+000555 |                 contention_wait(&v2.join("release-cli"));
+000556 |             }
+000557 |             "update" => {
+000558 |                 contention_rejected(&v2, "update-denied-by-gui");
+000559 |                 contention_wait(&v2.join("retry-update-denied"));
+000560 |                 contention_rejected(&v2, "update-denied-by-cli");
+000561 |                 contention_wait(&v2.join("retry-update-acquire"));
+000562 |                 let _lock = LifecycleLock::try_acquire(&v2).unwrap();
+000563 |                 atomic_write(&v2.join("shared-state"), b"update").unwrap();
+000564 |                 atomic_write(&v2.join("update-acquired"), b"held").unwrap();
+000565 |             }
+000566 |             _ => panic!("unknown fixed contention role"),
+000567 |         }
+000568 |     }
+000569 | 
+000570 |     #[test]
+000571 |     fn three_process_writers_contend_and_os_releases_killed_holder() {
+000572 |         use std::os::unix::process::ExitStatusExt;
+000573 |         struct TemporaryHome(PathBuf);
+000574 |         impl Drop for TemporaryHome {
+000575 |             fn drop(&mut self) {
+000576 |                 let _ = fs::remove_dir_all(&self.0);
+000577 |             }
+000578 |         }
+000579 |         struct ChildGuard(std::process::Child);
+000580 |         impl Drop for ChildGuard {
+000581 |             fn drop(&mut self) {
+000582 |                 let _ = self.0.kill();
+000583 |                 let _ = self.0.wait();
+000584 |             }
+000585 |         }
+000586 |         fn spawn(home: &Path, role: &str) -> ChildGuard {
+000587 |             ChildGuard(
+000588 |                 std::process::Command::new(std::env::current_exe().unwrap())
+000589 |                     .args([
+000590 |                         "--exact",
+000591 |                         "storage::tests::lifecycle_contention_child_fixture",
+000592 |                         "--nocapture",
+000593 |                     ])
+000594 |                     .env("HOME", home)
+000595 |                     .env("SWITCHER_CONTENTION_HOME", home)
+000596 |                     .env("SWITCHER_CONTENTION_ROLE", role)
+000597 |                     .stdin(std::process::Stdio::null())
+000598 |                     .stdout(std::process::Stdio::null())
+000599 |                     .spawn()
+000600 |                     .unwrap(),
+000601 |             )
+000602 |         }
+000603 |         fn wait_success(child: &mut ChildGuard) {
+000604 |             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+000605 |             loop {
+000606 |                 if let Some(status) = child.0.try_wait().unwrap() {
+000607 |                     assert!(status.success());
+000608 |                     return;
+000609 |                 }
+000610 |                 assert!(std::time::Instant::now() < deadline, "child exit deadline");
+000611 |                 std::thread::sleep(std::time::Duration::from_millis(10));
+000612 |             }
+000613 |         }
+000614 |         let home = TemporaryHome(std::env::temp_dir().canonicalize().unwrap().join(format!(
+000615 |             "switcher-lock-contention-{}-{}",
+000616 |             std::process::id(),
+000617 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000618 |         )));
+000619 |         create_private_directory(&home.0).unwrap();
+000620 |         create_private_directory(&home.0.join(".claude-switcher")).unwrap();
+000621 |         let v2 = home.0.join(".claude-switcher/v2");
+000622 |         create_private_directory(&v2).unwrap();
+000623 |         let mut gui = spawn(&home.0, "gui");
+000624 |         contention_wait(&v2.join("gui-held"));
+000625 |         let mut cli = spawn(&home.0, "cli");
+000626 |         let mut update = spawn(&home.0, "update");
+000627 |         assert_ne!(gui.0.id(), cli.0.id());
+000628 |         assert_ne!(gui.0.id(), update.0.id());
+000629 |         assert_ne!(cli.0.id(), update.0.id());
+000630 |         contention_wait(&v2.join("cli-denied-by-gui"));
+000631 |         contention_wait(&v2.join("update-denied-by-gui"));
+000632 |         assert_eq!(fs::read(v2.join("shared-state")).unwrap(), b"gui");
+000633 |         assert_eq!(
+000634 |             LifecycleLock::try_acquire(&v2).unwrap_err().kind(),
+000635 |             io::ErrorKind::WouldBlock
+000636 |         );
+000637 |         println!("phase=gui-held cli=WouldBlock update=WouldBlock shared=gui");
+000638 |         gui.0.kill().unwrap();
+000639 |         assert_eq!(gui.0.wait().unwrap().signal(), Some(libc::SIGKILL));
+000640 |         atomic_write(&v2.join("retry-cli"), b"retry").unwrap();
+000641 |         contention_wait(&v2.join("cli-held"));
+000642 |         assert_eq!(fs::read(v2.join("shared-state")).unwrap(), b"cli");
+000643 |         atomic_write(&v2.join("retry-update-denied"), b"retry").unwrap();
+000644 |         contention_wait(&v2.join("update-denied-by-cli"));
+000645 |         assert_eq!(fs::read(v2.join("shared-state")).unwrap(), b"cli");
+000646 |         assert_eq!(
+000647 |             LifecycleLock::try_acquire(&v2).unwrap_err().kind(),
+000648 |             io::ErrorKind::WouldBlock
+000649 |         );
+000650 |         println!("phase=gui-SIGKILL cli=acquired update=WouldBlock shared=cli");
+000651 |         atomic_write(&v2.join("release-cli"), b"release").unwrap();
+000652 |         wait_success(&mut cli);
+000653 |         atomic_write(&v2.join("retry-update-acquire"), b"retry").unwrap();
+000654 |         contention_wait(&v2.join("update-acquired"));
+000655 |         wait_success(&mut update);
+000656 |         assert_eq!(fs::read(v2.join("shared-state")).unwrap(), b"update");
+000657 |         let lock = LifecycleLock::try_acquire(&v2).unwrap();
+000658 |         assert!(lock.protects(&v2));
+000659 |         drop(lock);
+000660 |         println!("phase=cli-released update=acquired final-lock=available shared=update");
+000661 |     }
+000662 | 
+000663 |     #[test]
+000664 |     fn lock_identity_replacement_and_duplicate_json_are_rejected() {
+000665 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000666 |             "switcher-lock-identity-{}-{}",
+000667 |             std::process::id(),
+000668 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000669 |         ));
+000670 |         create_private_directory(&path).unwrap();
+000671 |         let lock = LifecycleLock::try_acquire(&path).unwrap();
+000672 |         fs::rename(path.join("lifecycle.lock"), path.join("old-lock")).unwrap();
+000673 |         atomic_write(&path.join("lifecycle.lock"), b"").unwrap();
+000674 |         assert!(!lock.protects(&path));
+000675 |         atomic_write(&path.join("state.json"), br#"{"state":1,"state":2}"#).unwrap();
+000676 |         assert!(read_json::<serde_json::Value>(&path.join("state.json")).is_err());
+000677 |         drop(lock);
+000678 |         fs::remove_dir_all(path).unwrap();
+000679 |     }
+000680 |     #[test]
+000681 |     fn bounded_private_reads_reject_oversize_public_modes_and_fifo() {
+000682 |         let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+000683 |             "switcher-read-{}-{}",
+000684 |             std::process::id(),
+000685 |             NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+000686 |         ));
+000687 |         create_private_directory(&path).unwrap();
+000688 |         let data = path.join("data");
+000689 |         atomic_write(&data, b"12345").unwrap();
+000690 |         assert_eq!(read_private_bytes(&data, 5).unwrap(), b"12345");
+000691 |         assert_eq!(
+000692 |             read_private_bytes(&data, 4).unwrap_err().kind(),
+000693 |             io::ErrorKind::InvalidData
+000694 |         );
+000695 |         fs::set_permissions(&data, fs::Permissions::from_mode(0o644)).unwrap();
+000696 |         assert_eq!(
+000697 |             read_private_bytes(&data, 5).unwrap_err().kind(),
+000698 |             io::ErrorKind::PermissionDenied
+000699 |         );
+000700 |         let fifo = path.join("fifo");
+000701 |         let c_path = std::ffi::CString::new(fifo.as_os_str().as_encoded_bytes()).unwrap();
+000702 |         assert_eq!(unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) }, 0);
+000703 |         assert_eq!(
+000704 |             read_private_bytes(&fifo, 5).unwrap_err().kind(),
+000705 |             io::ErrorKind::PermissionDenied
+000706 |         );
+000707 |         fs::remove_dir_all(path).unwrap();
+000708 |     }
+000709 | }
+END_FILE_RANGE: current/crates/switcher-core/src/storage.rs 1-709
+
+FILE: current/crates/switcher-domain/Cargo.toml
+SHA256_ORIGINAL: aadbfca2ac2ff37b1b90cd4ea3ef90c013e8969fcebb59b1ed0ee819be1b0a30
+ORIGINAL_LINES: 1-15
+000001 | [package]
+000002 | name = "switcher-domain"
+000003 | version.workspace = true
+000004 | edition.workspace = true
+000005 | rust-version.workspace = true
+000006 | license.workspace = true
+000007 | publish.workspace = true
+000008 | 
+000009 | [dependencies]
+000010 | serde.workspace = true
+000011 | ts-rs.workspace = true
+000012 | 
+000013 | [[bin]]
+000014 | name = "export-types"
+000015 | path = "src/bin/export-types.rs"
+END_FILE_RANGE: current/crates/switcher-domain/Cargo.toml 1-15
+
+FILE: current/crates/switcher-domain/src/ads.rs
+SHA256_ORIGINAL: dee117cfd815c51ebd1012d1884b6c346ff82008fbbe15600d8f87af2711494e
+ORIGINAL_LINES: 1-73
+000001 | //! Advertisement data shared by the editor, preview and client.
+000002 | use crate::AdSlot;
+000003 | use serde::{Deserialize, Serialize};
+000004 | use ts_rs::TS;
+000005 | 
+000006 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000007 | #[serde(rename_all = "snake_case")]
+000008 | pub enum AdChannel {
+000009 |     Preview,
+000010 |     Production,
+000011 | }
+000012 | 
+000013 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000014 | #[serde(deny_unknown_fields)]
+000015 | pub struct ImageAsset {
+000016 |     pub sha256: String,
+000017 |     pub mime: String,
+000018 |     pub bytes: u32,
+000019 |     pub width: u32,
+000020 |     pub height: u32,
+000021 | }
+000022 | 
+000023 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000024 | #[serde(deny_unknown_fields)]
+000025 | pub struct Campaign {
+000026 |     pub campaign_id: String,
+000027 |     pub merchant_id: String,
+000028 |     pub merchant_name: String,
+000029 |     pub title: String,
+000030 |     pub description: String,
+000031 |     pub image: ImageAsset,
+000032 |     pub button_text: String,
+000033 |     pub target_url: String,
+000034 |     pub starts_at: u64,
+000035 |     pub ends_at: u64,
+000036 |     pub enabled: bool,
+000037 | }
+000038 | 
+000039 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000040 | #[serde(deny_unknown_fields)]
+000041 | pub struct SlotContent {
+000042 |     pub slot: AdSlot,
+000043 |     pub enabled: bool,
+000044 |     pub campaigns: Vec<Campaign>,
+000045 | }
+000046 | 
+000047 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000048 | #[serde(deny_unknown_fields)]
+000049 | pub struct AdManifest {
+000050 |     pub schema_version: u32,
+000051 |     pub channel: AdChannel,
+000052 |     pub content_revision: u64,
+000053 |     pub key_id: String,
+000054 |     pub issued_at: u64,
+000055 |     pub expires_at: u64,
+000056 |     pub release_id: String,
+000057 |     pub slots: Vec<SlotContent>,
+000058 | }
+000059 | 
+000060 | #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000061 | #[serde(deny_unknown_fields)]
+000062 | pub struct AdPreferences {
+000063 |     pub slots_enabled: [bool; 3],
+000064 |     pub request_purpose_acknowledged: bool,
+000065 | }
+000066 | 
+000067 | #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+000068 | #[serde(deny_unknown_fields)]
+000069 | pub struct MerchantConsent {
+000070 |     pub slot: AdSlot,
+000071 |     pub merchant_id: String,
+000072 |     pub normalized_host: String,
+000073 | }
+END_FILE_RANGE: current/crates/switcher-domain/src/ads.rs 1-73
+
+FILE: current/crates/switcher-domain/src/bin/export-types.rs
+SHA256_ORIGINAL: 3ee07fc4017e5746e724363145a715ef4f5cce33aa6b4612800bf6c97c94a25f
+ORIGINAL_LINES: 1-12
+000001 | fn main() -> Result<(), Box<dyn std::error::Error>> {
+000002 |     let target = std::env::args_os()
+000003 |         .nth(1)
+000004 |         .map(std::path::PathBuf::from)
+000005 |         .unwrap_or_else(|| {
+000006 |             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+000007 |                 .join("../../apps/desktop/src/generated")
+000008 |         });
+000009 |     switcher_domain::export_types(&target)?;
+000010 |     println!("Exported domain types to {}", target.display());
+000011 |     Ok(())
+000012 | }
+END_FILE_RANGE: current/crates/switcher-domain/src/bin/export-types.rs 1-12
+
+FILE: current/crates/switcher-domain/src/checks.rs
+SHA256_ORIGINAL: df8aee32e3fd9b61dbca52e36108bd172c5b4325ed5fc79b71462ed4d28558d5
+ORIGINAL_LINES: 1-165
+000001 | use serde::{Deserialize, Serialize};
+000002 | use ts_rs::TS;
+000003 | 
+000004 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
+000005 | #[serde(rename_all = "snake_case")]
+000006 | pub enum CheckId {
+000007 |     ProxyProcess,
+000008 |     TunRoute,
+000009 |     EgressRegion,
+000010 |     IpContinuity,
+000011 |     Timezone,
+000012 |     Locale,
+000013 |     Ipv6Policy,
+000014 |     DnsRoute,
+000015 |     StunPath,
+000016 |     Guardian,
+000017 |     ServiceRoutes,
+000018 |     ClientLanguage,
+000019 |     AsnInfo,
+000020 |     ServiceTransport,
+000021 | }
+000022 | 
+000023 | impl CheckId {
+000024 |     pub const ALL: [Self; 14] = [
+000025 |         Self::ProxyProcess,
+000026 |         Self::TunRoute,
+000027 |         Self::EgressRegion,
+000028 |         Self::IpContinuity,
+000029 |         Self::Timezone,
+000030 |         Self::Locale,
+000031 |         Self::Ipv6Policy,
+000032 |         Self::DnsRoute,
+000033 |         Self::StunPath,
+000034 |         Self::Guardian,
+000035 |         Self::ServiceRoutes,
+000036 |         Self::ClientLanguage,
+000037 |         Self::AsnInfo,
+000038 |         Self::ServiceTransport,
+000039 |     ];
+000040 |     pub fn required(self) -> bool {
+000041 |         !matches!(self, Self::IpContinuity | Self::AsnInfo)
+000042 |     }
+000043 |     pub fn name(self) -> &'static str {
+000044 |         match self {
+000045 |             Self::ProxyProcess => "代理客户端",
+000046 |             Self::TunRoute => "隧道路由",
+000047 |             Self::EgressRegion => "出口地区",
+000048 |             Self::IpContinuity => "出口地址变化",
+000049 |             Self::Timezone => "时区",
+000050 |             Self::Locale => "地区格式",
+000051 |             Self::Ipv6Policy => "IPv6 策略",
+000052 |             Self::DnsRoute => "DNS 路径",
+000053 |             Self::StunPath => "STUN 路径",
+000054 |             Self::Guardian => "后台守护",
+000055 |             Self::ServiceRoutes => "服务路由",
+000056 |             Self::ClientLanguage => "客户端语言",
+000057 |             Self::AsnInfo => "网络运营商信息",
+000058 |             Self::ServiceTransport => "服务传输与访问结果",
+000059 |         }
+000060 |     }
+000061 | }
+000062 | 
+000063 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000064 | #[serde(rename_all = "snake_case")]
+000065 | pub enum CheckStatus {
+000066 |     Pass,
+000067 |     Warning,
+000068 |     Fail,
+000069 |     Unknown,
+000070 |     Timeout,
+000071 | }
+000072 | 
+000073 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000074 | #[serde(deny_unknown_fields)]
+000075 | pub struct CheckResult {
+000076 |     pub id: CheckId,
+000077 |     pub status: CheckStatus,
+000078 |     pub reason: String,
+000079 |     pub observed_at: u64,
+000080 |     pub duration_ms: u64,
+000081 |     pub valid_until: u64,
+000082 |     pub network_generation: String,
+000083 |     pub evidence: Vec<String>,
+000084 | }
+000085 | 
+000086 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000087 | #[serde(deny_unknown_fields)]
+000088 | pub struct CheckSummary {
+000089 |     pub passed: u32,
+000090 |     pub advisory: u32,
+000091 |     pub blocking: u32,
+000092 | }
+000093 | 
+000094 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000095 | #[serde(deny_unknown_fields)]
+000096 | pub struct LaunchDecision {
+000097 |     pub allowed: bool,
+000098 |     pub reasons: Vec<String>,
+000099 | }
+000100 | 
+000101 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000102 | #[serde(deny_unknown_fields)]
+000103 | pub struct CheckReport {
+000104 |     pub schema_version: u32,
+000105 |     pub observed_at: u64,
+000106 |     pub completed_at: u64,
+000107 |     pub duration_ms: u64,
+000108 |     pub network_generation: String,
+000109 |     pub checks: Vec<CheckResult>,
+000110 |     pub summary: CheckSummary,
+000111 |     pub launch: LaunchDecision,
+000112 | }
+000113 | 
+000114 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000115 | #[serde(rename_all = "snake_case")]
+000116 | pub enum TransportState {
+000117 |     Reached,
+000118 |     DnsFailure,
+000119 |     TlsFailure,
+000120 |     ConnectFailure,
+000121 |     Timeout,
+000122 |     ProxyAuthentication,
+000123 |     InvalidResponse,
+000124 | }
+000125 | 
+000126 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000127 | #[serde(rename_all = "snake_case")]
+000128 | pub enum AccessState {
+000129 |     Available,
+000130 |     AuthenticationRequired,
+000131 |     Restricted,
+000132 |     Redirected,
+000133 |     ServerError,
+000134 |     Unknown,
+000135 | }
+000136 | 
+000137 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000138 | #[serde(deny_unknown_fields)]
+000139 | pub struct TransportProbe {
+000140 |     pub endpoint: String,
+000141 |     pub transport: TransportState,
+000142 |     pub access: AccessState,
+000143 |     pub http_status: Option<u16>,
+000144 |     pub tls_verified: bool,
+000145 |     pub duration_ms: u64,
+000146 | }
+000147 | 
+000148 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000149 | #[serde(deny_unknown_fields)]
+000150 | pub struct ProxyDescription {
+000151 |     pub scheme: String,
+000152 |     pub host_scope: String,
+000153 |     pub dns: String,
+000154 | }
+000155 | 
+000156 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000157 | #[serde(deny_unknown_fields)]
+000158 | pub struct DiagnosticReport {
+000159 |     pub schema_version: u32,
+000160 |     pub proxy: ProxyDescription,
+000161 |     pub probes: Vec<TransportProbe>,
+000162 |     pub transport_reached: bool,
+000163 |     pub launch_allowed: Option<bool>,
+000164 |     pub system_modified: bool,
+000165 | }
+END_FILE_RANGE: current/crates/switcher-domain/src/checks.rs 1-165
+
+FILE: current/crates/switcher-domain/src/desktop.rs
+SHA256_ORIGINAL: bb8f4a3285bf37260775f44a1df1a67e0fc736f55c0b34417d572f78d131c20a
+ORIGINAL_LINES: 1-206
+000001 | //! Versioned UI data. Privileged operations remain in the core and helper.
+000002 | use crate::{
+000003 |     RuntimeInfo,
+000004 |     ads::{AdManifest, AdPreferences, ImageAsset},
+000005 |     checks::CheckReport,
+000006 | };
+000007 | use serde::{Deserialize, Serialize};
+000008 | use ts_rs::TS;
+000009 | 
+000010 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000011 | #[serde(rename_all = "snake_case")]
+000012 | pub enum ProfileState {
+000013 |     Uninitialized,
+000014 |     Saved,
+000015 |     Current,
+000016 |     RecoveryPending,
+000017 | }
+000018 | 
+000019 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000020 | #[serde(deny_unknown_fields)]
+000021 | pub struct AccountProfile {
+000022 |     pub id: String,
+000023 |     pub state: ProfileState,
+000024 |     pub login_evidence: String,
+000025 | }
+000026 | 
+000027 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000028 | #[serde(deny_unknown_fields)]
+000029 | pub struct AccountOverview {
+000030 |     pub current: Option<String>,
+000031 |     pub profiles: Vec<AccountProfile>,
+000032 |     pub claude_running: bool,
+000033 |     pub action_blocker: Option<String>,
+000034 | }
+000035 | 
+000036 | #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+000037 | #[serde(deny_unknown_fields)]
+000038 | pub struct Preferences {
+000039 |     pub ads: AdPreferences,
+000040 |     pub updates_paused_until: Option<u64>,
+000041 | }
+000042 | 
+000043 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000044 | #[serde(deny_unknown_fields)]
+000045 | pub struct UpdateView {
+000046 |     /// Actual schedule setting; None means the schedule could not be read safely.
+000047 |     pub paused: Option<bool>,
+000048 |     pub state: String,
+000049 |     pub message: String,
+000050 |     pub next_check_at: Option<u64>,
+000051 |     pub candidate_version: Option<String>,
+000052 |     pub can_download: bool,
+000053 |     pub can_install: bool,
+000054 | }
+000055 | 
+000056 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000057 | #[serde(deny_unknown_fields)]
+000058 | pub struct WorkspaceSnapshot {
+000059 |     pub runtime: RuntimeInfo,
+000060 |     pub accounts: AccountOverview,
+000061 |     pub preferences: Preferences,
+000062 |     pub check_report: Option<CheckReport>,
+000063 |     pub ads_manifest: Option<AdManifest>,
+000064 |     pub update: UpdateView,
+000065 |     pub pending_materials: Vec<String>,
+000066 | }
+000067 | 
+000068 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000069 | #[serde(deny_unknown_fields)]
+000070 | pub struct ActivityEntry {
+000071 |     pub observed_at: u64,
+000072 |     pub level: String,
+000073 |     pub message: String,
+000074 | }
+000075 | 
+000076 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000077 | #[serde(deny_unknown_fields)]
+000078 | pub struct OperationOutcome {
+000079 |     pub completed: bool,
+000080 |     pub message: String,
+000081 |     pub recovery: Option<String>,
+000082 | }
+000083 | 
+000084 | #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+000085 | #[serde(rename_all = "snake_case")]
+000086 | pub enum AccountAction {
+000087 |     InitializeA,
+000088 |     AssociateA,
+000089 |     SelectA,
+000090 |     SelectB,
+000091 |     Recover,
+000092 | }
+000093 | 
+000094 | #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+000095 | #[serde(rename_all = "snake_case")]
+000096 | pub enum UpdateAction {
+000097 |     Check,
+000098 |     Download,
+000099 |     Install,
+000100 |     Pause,
+000101 |     Resume,
+000102 |     Defer,
+000103 | }
+000104 | 
+000105 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000106 | #[serde(rename_all = "snake_case")]
+000107 | pub enum RegionPreset {
+000108 |     Us,
+000109 |     Jp,
+000110 |     Tw,
+000111 |     Hk,
+000112 |     Sg,
+000113 |     Gb,
+000114 |     De,
+000115 |     Fr,
+000116 |     Kr,
+000117 |     Au,
+000118 |     Ca,
+000119 | }
+000120 | 
+000121 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000122 | #[serde(deny_unknown_fields)]
+000123 | pub struct RegionView {
+000124 |     pub country: String,
+000125 |     pub timezone: String,
+000126 |     pub locale: String,
+000127 | }
+000128 | 
+000129 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000130 | #[serde(deny_unknown_fields)]
+000131 | pub struct RepairPreview {
+000132 |     pub can_execute: bool,
+000133 |     pub message: String,
+000134 |     pub original: RegionView,
+000135 |     pub target: RegionView,
+000136 |     pub network_service: String,
+000137 |     pub original_ipv6: String,
+000138 |     pub target_ipv6: String,
+000139 |     pub user_changes: Vec<RepairChange>,
+000140 |     pub recovery_required: bool,
+000141 | }
+000142 | 
+000143 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000144 | #[serde(deny_unknown_fields)]
+000145 | pub struct RepairChange {
+000146 |     pub id: String,
+000147 |     pub state: String,
+000148 |     pub original: String,
+000149 |     pub target: String,
+000150 |     pub message: String,
+000151 | }
+000152 | 
+000153 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000154 | #[serde(deny_unknown_fields)]
+000155 | pub struct ImportedImage {
+000156 |     pub asset: ImageAsset,
+000157 |     pub preview_data_url: String,
+000158 | }
+000159 | 
+000160 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000161 | #[serde(deny_unknown_fields)]
+000162 | pub struct PublisherView {
+000163 |     pub source: Option<String>,
+000164 |     pub status: String,
+000165 |     pub message: String,
+000166 |     pub history: Vec<PublishRecord>,
+000167 | }
+000168 | 
+000169 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000170 | #[serde(deny_unknown_fields)]
+000171 | pub struct PublishRecord {
+000172 |     pub release_id: String,
+000173 |     pub revision: u64,
+000174 |     pub channel: String,
+000175 |     pub published_at: u64,
+000176 |     pub payload_hash: String,
+000177 |     pub verified: bool,
+000178 | }
+000179 | 
+000180 | /// Safe readiness summary; no account paths, credentials or Keychain selectors.
+000181 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000182 | #[serde(deny_unknown_fields)]
+000183 | pub struct AccountPreparation {
+000184 |     pub ready: bool,
+000185 |     pub backup_allowed: bool,
+000186 |     pub blockers: Vec<PreparationBlocker>,
+000187 |     pub in_place_action: Option<InPlaceAction>,
+000188 |     pub in_place_ready: bool,
+000189 |     pub in_place_blockers: Vec<PreparationBlocker>,
+000190 | }
+000191 | 
+000192 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000193 | #[serde(deny_unknown_fields)]
+000194 | pub struct PreparationBlocker {
+000195 |     pub code: String,
+000196 |     pub message: String,
+000197 |     pub recovery: String,
+000198 | }
+000199 | 
+000200 | /// A fixed in-place action, never a directory exchange or client-supplied assessment.
+000201 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000202 | #[serde(rename_all = "snake_case")]
+000203 | pub enum InPlaceAction {
+000204 |     InitializeA,
+000205 |     AssociateA,
+000206 | }
+END_FILE_RANGE: current/crates/switcher-domain/src/desktop.rs 1-206
+
+FILE: current/crates/switcher-domain/src/lib.rs
+SHA256_ORIGINAL: b7634f4c7e0404f961291d9336ff54533763ff4c03f3eeb1155d78a223fc989c
+ORIGINAL_LINES: 1-66
+000001 | //! Shared, versioned data. No account, network, or platform operations.
+000002 | use serde::{Deserialize, Serialize};
+000003 | use ts_rs::TS;
+000004 | 
+000005 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000006 | #[serde(rename_all = "snake_case")]
+000007 | pub enum Edition {
+000008 |     Personal,
+000009 |     Public,
+000010 | }
+000011 | 
+000012 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+000013 | #[serde(rename_all = "snake_case")]
+000014 | pub enum AdSlot {
+000015 |     ResidentialBroadband,
+000016 |     AccountService,
+000017 |     KycService,
+000018 | }
+000019 | 
+000020 | impl AdSlot {
+000021 |     pub const ALL: [Self; 3] = [
+000022 |         Self::ResidentialBroadband,
+000023 |         Self::AccountService,
+000024 |         Self::KycService,
+000025 |     ];
+000026 | }
+000027 | 
+000028 | #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+000029 | #[serde(deny_unknown_fields)]
+000030 | pub struct RuntimeInfo {
+000031 |     pub schema_version: u32,
+000032 |     pub version: String,
+000033 |     pub edition: Edition,
+000034 |     pub slots: [AdSlot; 3],
+000035 |     pub automatic_updates: bool,
+000036 |     pub ads_enabled: bool,
+000037 | }
+000038 | 
+000039 | pub fn export_types(directory: impl Into<std::path::PathBuf>) -> Result<(), ts_rs::ExportError> {
+000040 |     let config = ts_rs::Config::new()
+000041 |         .with_out_dir(directory)
+000042 |         .with_large_int("number");
+000043 |     RuntimeInfo::export_all(&config)?;
+000044 |     checks::CheckReport::export_all(&config)?;
+000045 |     checks::DiagnosticReport::export_all(&config)?;
+000046 |     ads::AdManifest::export_all(&config)?;
+000047 |     ads::AdPreferences::export_all(&config)?;
+000048 |     ads::MerchantConsent::export_all(&config)?;
+000049 |     desktop::WorkspaceSnapshot::export_all(&config)?;
+000050 |     desktop::ActivityEntry::export_all(&config)?;
+000051 |     desktop::OperationOutcome::export_all(&config)?;
+000052 |     desktop::AccountAction::export_all(&config)?;
+000053 |     desktop::AccountPreparation::export_all(&config)?;
+000054 |     desktop::UpdateAction::export_all(&config)?;
+000055 |     desktop::ImportedImage::export_all(&config)?;
+000056 |     desktop::RegionView::export_all(&config)?;
+000057 |     desktop::RegionPreset::export_all(&config)?;
+000058 |     desktop::RepairPreview::export_all(&config)?;
+000059 |     desktop::PublisherView::export_all(&config)
+000060 | }
+000061 | 
+000062 | pub mod ads;
+000063 | pub mod checks;
+000064 | 
+000065 | pub mod desktop;
+000066 | pub mod system;
+END_FILE_RANGE: current/crates/switcher-domain/src/lib.rs 1-66
+
+END_G1-P10_ab558b2997aca7f4

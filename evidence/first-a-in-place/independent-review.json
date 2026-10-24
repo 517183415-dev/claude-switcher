@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-10-24T06:23:58.070088+00:00",
+  "source": "restore_integration_review final report in this session",
+  "scope": "Only crates/switcher-core/src/accounts/legacy.rs first/current-account in-place initialization patch",
+  "verdict": "scoped_CLEAR",
+  "unresolved_P0_P2": [],
+  "checks": [
+    "Baseline/final source SHA256 and exact change.diff inspected",
+    "Live original identity/content binding and archive publication inspected",
+    "In-place durable commit and cleanup idempotence inspected",
+    "Old journals without in_place default to the existing exchange path",
+    "All five test/lint logs and verification manifest personally inspected"
+  ],
+  "tests_rerun_by_reviewer": false,
+  "real_user_state_touched_by_reviewer": false,
+  "limits": [
+    "Not a whole-project audit",
+    "No native first-A patch install or real authenticated A/B acceptance"
+  ]
+}

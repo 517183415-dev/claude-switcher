@@ -1,0 +1,65 @@
+{
+  "observed_at": "2026-10-24T06:12:04.425265+00:00",
+  "command": "installed shim checkdetail",
+  "exit_code": 1,
+  "rows": [
+    {
+      "id": "代理内核",
+      "status": "ok"
+    },
+    {
+      "id": "TUN网卡",
+      "status": "ok"
+    },
+    {
+      "id": "出口IP",
+      "status": "ok"
+    },
+    {
+      "id": "IP一致",
+      "status": "ok"
+    },
+    {
+      "id": "时区",
+      "status": "fail"
+    },
+    {
+      "id": "地区",
+      "status": "ok"
+    },
+    {
+      "id": "IPv6",
+      "status": "ok"
+    },
+    {
+      "id": "DNS",
+      "status": "ok"
+    },
+    {
+      "id": "WebRTC",
+      "status": "ok"
+    },
+    {
+      "id": "保镖",
+      "status": "ok"
+    },
+    {
+      "id": "规则置顶",
+      "status": "ok"
+    },
+    {
+      "id": "客户端语言",
+      "status": "ok"
+    },
+    {
+      "id": "ASN属性",
+      "status": "warn"
+    },
+    {
+      "id": "生态可达性",
+      "status": "ok"
+    }
+  ],
+  "row_count": 14,
+  "raw_output_omitted": true
+}

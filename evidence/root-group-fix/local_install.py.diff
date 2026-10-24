@@ -1,0 +1,80 @@
+--- baseline/local_install.py
++++ packaging/macos/local_install.py
+@@ -850,6 +850,43 @@
+     save(JOURNAL,j)
+ 
+ 
++def root_service_ownership(files):
++    """Pin and validate all fixed service files before correcting inherited GIDs."""
++    with contextlib.ExitStack() as stack:
++        opened = []
++        for path, expected, mode in files:
++            safe_parents(path.parent)
++            parent = stack.enter_context(directory_fd(path.parent))
++            fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
++            stream = stack.enter_context(os.fdopen(fd, 'rb'))
++            metadata = os.fstat(fd)
++            if (not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or
++                    metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) != mode or
++                    metadata.st_size != len(expected) or stream.read() != expected):
++                raise ValueError('root service ownership repair refused: file differs')
++            current = os.stat(path.name, dir_fd=parent, follow_symlinks=False)
++            if (current.st_dev, current.st_ino) != (metadata.st_dev, metadata.st_ino):
++                raise ValueError('root service ownership repair refused: file replaced')
++            opened.append((fd, metadata, parent, path.name))
++        for fd, metadata, parent, name in opened:
++            gid = metadata.st_gid
++            if gid != 0:
++                os.fchown(fd, 0, 0)
++                os.fsync(fd)
++            current = os.stat(name, dir_fd=parent, follow_symlinks=False)
++            if (current.st_dev, current.st_ino) != (metadata.st_dev, metadata.st_ino):
++                raise ValueError('root service ownership repair refused: file replaced')
++
++
++def pending_service_ownership(j):
++    files = []
++    for kind in ('watchdog', 'bodyguard'):
++        if kind in j:
++            target, payload, _, _ = root_service_spec(j, kind)
++            files.extend((path, data, mode) for _, path, data, mode in payload(target))
++    root_service_ownership(files)
++
++
+ def watchdog_install(j, kind="watchdog"):
+     target, payload, service_plist, label = root_service_spec(j, kind)
+     if kind not in j:
+@@ -864,6 +901,7 @@
+         with open(staged, 'xb') as stream:
+             stream.write(data); stream.flush(); os.fchmod(stream.fileno(), mode); os.fsync(stream.fileno())
+         replace_component(staged, path, Path(j['stage']))
++        root_service_ownership([(path, data, mode)])
+     run('/bin/launchctl','bootstrap','system',service_plist)
+ 
+ 
+@@ -888,13 +926,16 @@
+         return
+     if run('/bin/launchctl','print','system/'+label,check=False).returncode == 0:
+         run('/bin/launchctl','bootout','system/'+label)
+-    for key, path, _, _ in payload(target):
++    for key, path, _, mode in payload(target):
+         safe_parents(path.parent)
+         expected = state['previous'][key]
+         backup = Path(j['stage'])/(kind+'-old-'+key)
+         if expected is not None and tree(backup) != expected:
+             raise ValueError(label + ' backup differs')
++        data = small_file(backup)[0] if expected is not None else None
+         replace_component(backup if expected is not None else None, path, Path(j['stage']))
++        if data is not None:
++            root_service_ownership([(path, data, mode)])
+     if state['registered']:
+         run('/bin/launchctl','bootstrap','system',service_plist)
+     state['changed'] = False; save(JOURNAL,j)
+@@ -1434,6 +1475,7 @@
+     previous_owner=j['plan'].get('previous_owner_uid')
+     if previous_owner is not None and 'gui/'+str(previous_owner)+'/local.claudeswitcher.guardian' in registered_services(previous_owner):
+         raise ValueError('previous owner guardian is still registered')
++    pending_service_ownership(j)
+     watchdog_verify(j)
+     watchdog_verify(j, "bodyguard")
+     cli_verify(j)

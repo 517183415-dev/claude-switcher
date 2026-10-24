@@ -1,0 +1,693 @@
+审核补充附件 G3-P17，逻辑组3，共17份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/packaging/notices/fetch_supplements.py
+SHA256_ORIGINAL: ac7d10b540698d99a23ec2ed758a4b7b6492e890e0ec8b5bdc7f3bdec3a0b827
+ORIGINAL_LINES: 1-187
+000001 | #!/usr/bin/env python3
+000002 | """Explicit network collection from locked archives and official upstream commits.
+000003 | 
+000004 | Normal generation remains offline. This optional evidence refresh uses only
+000005 | the fixed package list below and writes inside notices/supplements.
+000006 | """
+000007 | import base64
+000008 | import hashlib
+000009 | import io
+000010 | import json
+000011 | from pathlib import Path
+000012 | import tarfile
+000013 | import tomllib
+000014 | import urllib.request
+000015 | 
+000016 | ROOT = Path(__file__).resolve().parents[2]
+000017 | OUT = ROOT / "packaging/notices/supplements"
+000018 | CRATES = ["alloc-stdlib@0.3.0", "block2@0.6.2", "dispatch2@0.3.1", "objc2@0.6.5",
+000019 |           "objc2-app-kit@0.3.2", "objc2-core-foundation@0.3.2", "objc2-encode@4.1.0",
+000020 |           "objc2-exception-helper@0.1.1", "objc2-foundation@0.3.2", "objc2-osa-kit@0.3.2",
+000021 |           "objc2-quartz-core@0.3.2", "objc2-web-kit@0.3.2", "selectors@0.38.0",
+000022 |           "tauri-plugin@2.7.2", "ts-rs@12.0.1", "ts-rs-macros@12.0.1"]
+000023 | 
+000024 | 
+000025 | def sha(data):
+000026 |     return hashlib.sha256(data).hexdigest()
+000027 | 
+000028 | 
+000029 | def fetch(url):
+000030 |     request = urllib.request.Request(url, headers={"User-Agent": "claude-switcher-license-evidence"})
+000031 |     with urllib.request.urlopen(request, timeout=30) as response:
+000032 |         return response.read()
+000033 | 
+000034 | 
+000035 | def main():
+000036 |     OUT.mkdir(exist_ok=True)
+000037 |     cargo_lock = tomllib.loads((ROOT / "Cargo.lock").read_text())["package"]
+000038 |     lock = {(p["name"], p["version"]): p for p in cargo_lock}
+000039 |     npm = json.loads((ROOT / "apps/desktop/package-lock.json").read_text())["packages"]
+000040 |     records = []
+000041 |     cache = Path.home() / ".cargo/registry/cache/index.crates.io-1949cf8c6b5b557f"
+000042 |     standard_cache = {}
+000043 | 
+000044 |     def save(folder, name, content, url, role):
+000045 |         target = OUT / folder / name
+000046 |         target.parent.mkdir(exist_ok=True, parents=True)
+000047 |         target.write_bytes(content)
+000048 |         return {"file": str(target.relative_to(OUT)), "sha256": sha(content),
+000049 |                 "source_url": url, "role": role}
+000050 | 
+000051 |     def remote(folder, name, url, role):
+000052 |         return save(folder, name, fetch(url), url, role)
+000053 | 
+000054 |     def canonical(folder, license_id):
+000055 |         # The standard license contains placeholders where upstream omitted its
+000056 |         # project-specific copyright notice. Never replace them with guesses.
+000057 |         if license_id not in standard_cache:
+000058 |             url = f"https://raw.githubusercontent.com/spdx/license-list-data/v3.28.0/text/{license_id}.txt"
+000059 |             standard_cache[license_id] = (url, fetch(url))
+000060 |         url, content = standard_cache[license_id]
+000061 |         return save(folder, f"CANONICAL-{license_id}.txt", content, url,
+000062 |                     "canonical terms; preserves template placeholders; not an upstream copyright notice")
+000063 | 
+000064 |     for spec in CRATES:
+000065 |         name, version = spec.split("@")
+000066 |         archive = cache / f"{name}-{version}.crate"
+000067 |         raw = archive.read_bytes()
+000068 |         assert sha(raw) == lock[name, version]["checksum"]
+000069 |         with tarfile.open(fileobj=io.BytesIO(raw), mode="r:gz") as tar:
+000070 |             prefix = f"{name}-{version}/"
+000071 |             manifest_bytes = tar.extractfile(prefix + "Cargo.toml").read()
+000072 |             package = tomllib.loads(manifest_bytes.decode())["package"]
+000073 |             vcs_bytes = tar.extractfile(prefix + ".cargo_vcs_info.json").read()
+000074 |             vcs = json.loads(vcs_bytes)
+000075 |             assert package["name"] == name and package["version"] == version
+000076 |             repository, commit = package["repository"], vcs["git"]["sha1"]
+000077 |             assert repository.startswith("https://github.com/")
+000078 |             repo = repository.removeprefix("https://github.com/")
+000079 |             raw_base = f"https://raw.githubusercontent.com/{repo}/{commit}"
+000080 |             folder = "cargo-" + name + "-" + version
+000081 |             record = {"ecosystem": "cargo", "name": name, "version": version,
+000082 |                       "locked_checksum": lock[name, version]["checksum"], "declared_license": package["license"],
+000083 |                       "repository": repository, "commit": commit, "path_in_vcs": vcs["path_in_vcs"],
+000084 |                       "vcs_info_sha256": sha(vcs_bytes), "normalized_manifest_sha256": sha(manifest_bytes),
+000085 |                       "binding": "commit/path from .cargo_vcs_info.json inside SHA256-verified locked .crate",
+000086 |                       "files": []}
+000087 |             if repo == "madsmtm/objc2":
+000088 |                 record["files"].append(remote(folder, "UPSTREAM-LICENSE.md", raw_base + "/LICENSE.md", "exact-commit upstream licensing declaration and Apple SDK caveat"))
+000089 |                 for license_id in [x.strip() for x in package["license"].split(" OR ")]:
+000090 |                     record["files"].append(canonical(folder, license_id))
+000091 |                 record["notice_status"] = "upstream provides license declaration/links, but no project-specific copyright notice; canonical terms keep placeholders"
+000092 |                 record["review_required"] = True
+000093 |             elif name == "selectors":
+000094 |                 # Its own source header expressly incorporates this canonical MPL.
+000095 |                 source = tar.extractfile(prefix + "lib.rs").read().decode()
+000096 |                 header = source.split("*/", 1)[0] + "*/\n"
+000097 |                 assert "https://mozilla.org/MPL/2.0/" in header
+000098 |                 record["files"].append(save(folder, "UPSTREAM-SOURCE-LICENSE-NOTICE.txt", header.encode(), raw_base + "/selectors/lib.rs", "verbatim package source license header"))
+000099 |                 record["files"].append(remote(folder, "MPL-2.0.txt", "https://www.mozilla.org/MPL/2.0/index.txt", "full license expressly referenced by exact locked source header"))
+000100 |                 record["notice_status"] = "locked source notice plus officially referenced complete MPL-2.0 terms"
+000101 |                 record["review_required"] = False
+000102 |             else:
+000103 |                 names = ["LICENSE-APACHE-2.0", "LICENSE-MIT"] if name == "tauri-plugin" else ["LICENSE"]
+000104 |                 for filename in names:
+000105 |                     record["files"].append(remote(folder, filename, raw_base + "/" + filename, "exact-commit repository-wide license for published member crate"))
+000106 |                 record["notice_status"] = "exact-commit upstream full project license"
+000107 |                 record["review_required"] = False
+000108 |             # The upstream member manifest establishes path applicability; the
+000109 |             # published normalized manifest and verified vcs-info bind version.
+000110 |             record["files"].append(remote(folder, "UPSTREAM-MEMBER-Cargo.toml", raw_base + "/" + vcs["path_in_vcs"] + "/Cargo.toml", "applicability evidence; not license terms"))
+000111 |             records.append(record)
+000112 | 
+000113 |     for name, version, repo in [("is-reference", "3.0.3", "Rich-Harris/is-reference"),
+000114 |                                 ("locate-character", "3.0.0", "Rich-Harris/locate-character")]:
+000115 |         key = "node_modules/" + name
+000116 |         url = "https://registry.npmjs.org/" + name + "/" + version
+000117 |         metadata = json.loads(fetch(url))
+000118 |         assert metadata["name"] == name and metadata["version"] == version
+000119 |         assert metadata["dist"]["integrity"] == npm[key]["integrity"]
+000120 |         commit = metadata["gitHead"]
+000121 |         base = f"https://raw.githubusercontent.com/{repo}/{commit}"
+000122 |         folder = "npm-" + name + "-" + version
+000123 |         upstream_manifest = fetch(base + "/package.json")
+000124 |         manifest = json.loads(upstream_manifest)
+000125 |         assert manifest["name"] == name and manifest["version"] == version and manifest["license"] == "MIT"
+000126 |         readme = fetch(base + "/README.md").decode()
+000127 |         # These exact commits have no LICENSE file. Preserve their actual MIT
+000128 |         # declaration rather than inventing an attribution or borrowing one.
+000129 |         license_section = readme[readme.rindex("## License"):]
+000130 |         tree_url = f"https://api.github.com/repos/{repo}/git/trees/{commit}?recursive=1"
+000131 |         tree = json.loads(fetch(tree_url))
+000132 |         license_paths = [p["path"] for p in tree["tree"] if "license" in p["path"].lower() or "copying" in p["path"].lower()]
+000133 |         assert not license_paths
+000134 |         files = [save(folder, "UPSTREAM-README-LICENSE-SECTION.md", license_section.encode(), base + "/README.md", "verbatim exact-commit package license declaration"),
+000135 |                  save(folder, "UPSTREAM-package.json", upstream_manifest, base + "/package.json", "applicability evidence; not license terms"),
+000136 |                  canonical(folder, "MIT")]
+000137 |         safe_metadata = {"name": name, "version": version, "license": metadata["license"],
+000138 |                          "gitHead": commit, "repository": metadata["repository"],
+000139 |                          "dist_integrity": metadata["dist"]["integrity"], "tree_license_paths": license_paths,
+000140 |                          "tree_url": tree_url}
+000141 |         files.append(save(folder, "REGISTRY-BINDING.json", (json.dumps(safe_metadata, indent=2) + "\n").encode(), url, "registry version/gitHead binding; public fields only"))
+000142 |         records.append({"ecosystem": "npm", "name": name, "version": version,
+000143 |                         "locked_integrity": npm[key]["integrity"], "declared_license": "MIT",
+000144 |                         "commit": commit, "repository": "https://github.com/" + repo,
+000145 |                         "binding": "official registry exact-version gitHead and integrity; same-commit manifest name/version/license verified",
+000146 |                         "notice_status": "upstream exact commit has only MIT declaration, no full project license/copyright notice; canonical terms keep placeholders",
+000147 |                         "review_required": True, "files": files})
+000148 | 
+000149 |     for name, parent, version in [("@rolldown/binding-darwin-arm64", "rolldown", "1.2.15"),
+000150 |                                    ("@tauri-apps/cli-darwin-arm64", "@tauri-apps/cli", "2.12.4")]:
+000151 |         entry = npm["node_modules/" + parent]
+000152 |         tarball = fetch(entry["resolved"])
+000153 |         algorithm, expected = entry["integrity"].split("-", 1)
+000154 |         assert base64.b64encode(hashlib.new(algorithm, tarball).digest()).decode() == expected
+000155 |         folder = "npm-" + name.replace("@", "").replace("/", "-") + "-" + version
+000156 |         files = []
+000157 |         with tarfile.open(fileobj=io.BytesIO(tarball), mode="r:gz") as tar:
+000158 |             manifest_bytes = tar.extractfile("package/package.json").read()
+000159 |             manifest = json.loads(manifest_bytes)
+000160 |             assert manifest["name"] == parent and manifest["version"] == version
+000161 |             assert manifest["optionalDependencies"][name] == version
+000162 |             for member in tar.getmembers():
+000163 |                 relative = member.name.removeprefix("package/")
+000164 |                 if member.isfile() and "/" not in relative and relative.upper().startswith(("LICENSE", "THIRD-PARTY-LICENSE", "NOTICE")):
+000165 |                     files.append(save(folder, relative, tar.extractfile(member).read(), entry["resolved"], "same-version full parent-package license; parent ships exact-version platform binding"))
+000166 |         target_meta = json.loads(fetch("https://registry.npmjs.org/" + name.replace("/", "%2f") + "/" + version))
+000167 |         assert target_meta["license"] == manifest["license"]
+000168 |         assert target_meta["dist"]["integrity"] == npm["node_modules/" + name]["integrity"]
+000169 |         public_evidence = {"name": parent, "version": version, "license": manifest["license"],
+000170 |                            "repository": manifest["repository"], "platform_binding": {name: manifest["optionalDependencies"][name]},
+000171 |                            "parent_lock_integrity": entry["integrity"], "parent_tarball_sha256": sha(tarball),
+000172 |                            "platform_license": target_meta["license"], "platform_repository": target_meta["repository"],
+000173 |                            "platform_lock_integrity": target_meta["dist"]["integrity"]}
+000174 |         files.append(save(folder, "PARENT-APPLICABILITY.json", (json.dumps(public_evidence, indent=2) + "\n").encode(), entry["resolved"], "version/license/repository/optional binding evidence; parent tarball SRI verified"))
+000175 |         records.append({"ecosystem": "npm", "name": name, "version": version,
+000176 |                         "locked_integrity": npm["node_modules/" + name]["integrity"], "declared_license": manifest["license"],
+000177 |                         "binding": "same-version parent published tarball integrity verified against lock; exact optional binding plus same upstream license/repository",
+000178 |                         "notice_status": "full parent-package notices apply to same-version platform binding; additional binary-linked third parties not independently inventoried",
+000179 |                         "review_required": False, "files": files})
+000180 |     manifest = {"schema_version": 1, "purpose": "fixed-version supplemental license evidence; not legal review",
+000181 |                 "packages": sorted(records, key=lambda p: (p["ecosystem"], p["name"], p["version"]))}
+000182 |     (OUT / "sources.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+000183 |     print(f"Collected official supplementary evidence for {len(records)} locked packages")
+000184 | 
+000185 | 
+000186 | if __name__ == "__main__":
+000187 |     main()
+END_FILE_RANGE: current/packaging/notices/fetch_supplements.py 1-187
+
+FILE: current/packaging/notices/generate.py
+SHA256_ORIGINAL: bb9c940a85c3f491cc5280f8e2c635ebe25286ce3b50362979b3ac4737fbf226
+ORIGINAL_LINES: 1-241
+000001 | #!/usr/bin/env python3
+000002 | """Offline lock inventory and verbatim local license collection; Python 3.11+."""
+000003 | import argparse
+000004 | import hashlib
+000005 | import json
+000006 | from pathlib import Path
+000007 | import re
+000008 | import tarfile
+000009 | import tomllib
+000010 | 
+000011 | 
+000012 | def sha(data):
+000013 |     return hashlib.sha256(data).hexdigest()
+000014 | 
+000015 | 
+000016 | def table_value(value):
+000017 |     return str(value).replace("|", "\\|").replace("\n", " ")
+000018 | 
+000019 | 
+000020 | def index_entry(index, name, version):
+000021 |     prefix = ("1/" + name if len(name) == 1 else "2/" + name if len(name) == 2
+000022 |               else "3/" + name[0] + "/" + name if len(name) == 3
+000023 |               else name[:2] + "/" + name[2:4] + "/" + name)
+000024 |     file = index / ".cache" / prefix
+000025 |     if file.is_file():
+000026 |         for part in file.read_bytes().split(b"\0"):
+000027 |             if part.startswith(b"{"):
+000028 |                 entry = json.loads(part)
+000029 |                 if entry.get("name") == name and entry.get("vers") == version:
+000030 |                     return entry
+000031 |     return None
+000032 | 
+000033 | 
+000034 | def collect(directory, explicit=()):
+000035 |     """Only package license/notice/copyright files; never follow symlinks."""
+000036 |     if not directory.is_dir() or directory.is_symlink():
+000037 |         return []
+000038 |     candidates = set()
+000039 |     for item in directory.rglob("*"):
+000040 |         relative = item.relative_to(directory)
+000041 |         if any(p in ("node_modules", ".git", "target") for p in relative.parts):
+000042 |             continue
+000043 |         if item.is_symlink() or not item.is_file():
+000044 |             continue
+000045 |         if any((directory / Path(*relative.parts[:i])).is_symlink()
+000046 |                for i in range(1, len(relative.parts))):
+000047 |             continue
+000048 |         if re.match(r"^(licen[cs]e|notice|copyright)([._-]|$)", item.name, re.I) or any(p.lower() in ("licenses", "licences") for p in relative.parts[:-1]):
+000049 |             candidates.add(item)
+000050 |     for name in explicit:
+000051 |         candidate = directory / name
+000052 |         try:
+000053 |             relative = candidate.relative_to(directory)
+000054 |         except ValueError:
+000055 |             continue
+000056 |         if ".." not in relative.parts and candidate.is_file() and not candidate.is_symlink():
+000057 |             candidates.add(candidate)
+000058 |     return [(str(file.relative_to(directory)), file.read_bytes()) for file in sorted(candidates)]
+000059 | 
+000060 | 
+000061 | def main():
+000062 |     parser = argparse.ArgumentParser(description=__doc__)
+000063 |     parser.add_argument("--cargo-registry", type=Path, default=Path.home() / ".cargo/registry")
+000064 |     args = parser.parse_args()
+000065 |     root = Path(__file__).resolve().parents[2]
+000066 |     out = root / "packaging/notices"
+000067 |     lock_paths = [root / "Cargo.lock", root / "apps/desktop/package-lock.json"]
+000068 |     initial = {str(p.relative_to(root)): sha(p.read_bytes()) for p in lock_paths}
+000069 |     cargo = tomllib.loads(lock_paths[0].read_text())["package"]
+000070 |     npm = json.loads(lock_paths[1].read_text())["packages"]
+000071 |     registry_name = "index.crates.io-1949cf8c6b5b557f"
+000072 |     cache = args.cargo_registry / "src" / registry_name
+000073 |     index = args.cargo_registry / "index" / registry_name
+000074 |     records = []
+000075 |     bundles = {"cargo": [], "npm": []}
+000076 |     supplement_path = out / "supplements/sources.json"
+000077 |     supplement_manifest = json.loads(supplement_path.read_text()) if supplement_path.is_file() else {"packages": []}
+000078 |     supplements = {(p["ecosystem"], p["name"], p["version"]): p for p in supplement_manifest["packages"]}
+000079 | 
+000080 |     def add(record, files):
+000081 |         supplement = supplements.get((record["ecosystem"], record["name"], record["version"]))
+000082 |         record["upstream_notice_review_required"] = False
+000083 |         if supplement:
+000084 |             assert supplement["declared_license"] == record["license"]
+000085 |             assert supplement.get("locked_checksum", record.get("checksum")) == record.get("checksum")
+000086 |             assert supplement.get("locked_integrity", record.get("integrity")) == record.get("integrity")
+000087 |             supplemental_files = []
+000088 |             for evidence in supplement["files"]:
+000089 |                 relative = Path(evidence["file"])
+000090 |                 assert not relative.is_absolute() and ".." not in relative.parts
+000091 |                 data = (out / "supplements" / relative).read_bytes()
+000092 |                 assert sha(data) == evidence["sha256"], f"Supplement changed: {relative}"
+000093 |                 if "not license terms" not in evidence["role"] and "evidence;" not in evidence["role"] and "public fields only" not in evidence["role"]:
+000094 |                     supplemental_files.append(("supplements/" + str(relative), data))
+000095 |             files = [*files, *supplemental_files]
+000096 |             record["supplemental_evidence"] = supplement
+000097 |             record["upstream_notice_review_required"] = supplement["review_required"]
+000098 |             record["supplement_text_integrity"] = "vendored SHA256 verified; upstream version/commit or parent applicability recorded in supplements/sources.json"
+000099 |         record["texts"] = []
+000100 |         record["text_status"] = "canonical terms plus upstream declaration; project copyright notice absent" if record["upstream_notice_review_required"] else "collected" if files else "local package unavailable" if not record["local_source"] else "no matching license/notice file in local package"
+000101 |         for name, data in files:
+000102 |             # Preserve the original text verbatim. A hash detects any decoding loss.
+000103 |             text = data.decode("utf-8")
+000104 |             record["texts"].append({"path": name, "sha256": sha(data), "bytes": len(data)})
+000105 |             bundles[record["ecosystem"]].append(
+000106 |                 f"\n===== {record['name']}@{record['version']} :: {name} :: SHA256 {sha(data)} =====\n"
+000107 |                 + text + "\n")
+000108 |         records.append(record)
+000109 | 
+000110 |     for package in cargo:
+000111 |         if "source" not in package:
+000112 |             continue
+000113 |         if package["source"] != "registry+https://github.com/rust-lang/crates.io-index":
+000114 |             raise RuntimeError("Unsupported Cargo source; explicitly qualify its local cache first")
+000115 |         name, version = package["name"], package["version"]
+000116 |         directory = cache / f"{name}-{version}"
+000117 |         manifest = directory / "Cargo.toml"
+000118 |         metadata = tomllib.loads(manifest.read_text())["package"] if manifest.is_file() else {}
+000119 |         archive = args.cargo_registry / "cache" / registry_name / f"{name}-{version}.crate"
+000120 |         archive_files = None
+000121 |         if archive.is_file():
+000122 |             if sha(archive.read_bytes()) != package["checksum"]:
+000123 |                 raise RuntimeError(f"Cached crate archive differs from lock: {name}@{version}")
+000124 |             with tarfile.open(archive, "r:gz") as tar:
+000125 |                 prefix = f"{name}-{version}/"
+000126 |                 member = tar.getmember(prefix + "Cargo.toml")
+000127 |                 metadata = tomllib.loads(tar.extractfile(member).read().decode("utf-8"))["package"]
+000128 |                 archive_files = []
+000129 |                 for member in tar.getmembers():
+000130 |                     if not member.isfile() or not member.name.startswith(prefix):
+000131 |                         continue
+000132 |                     relative = Path(member.name[len(prefix):])
+000133 |                     if ".." in relative.parts or relative.is_absolute():
+000134 |                         raise RuntimeError(f"Invalid crate archive path: {name}@{version}")
+000135 |                     if re.match(r"^(licen[cs]e|notice|copyright)([._-]|$)", relative.name, re.I) or any(p.lower() in ("licenses", "licences") for p in relative.parts[:-1]) or str(relative) == metadata.get("license-file"):
+000136 |                         archive_files.append((str(relative), tar.extractfile(member).read()))
+000137 |                 archive_files.sort()
+000138 |         entry = index_entry(index, name, version)
+000139 |         if entry and entry.get("cksum") != package["checksum"]:
+000140 |             raise RuntimeError(f"Registry index checksum differs from lock: {name}@{version}")
+000141 |         license_id = metadata.get("license") or (entry or {}).get("license") or "UNKNOWN"
+000142 |         explicit = [metadata["license-file"]] if metadata.get("license-file") else []
+000143 |         files = archive_files if archive_files is not None else collect(directory, explicit)
+000144 |         checksum_file = directory / ".cargo-checksum.json"
+000145 |         checksums = json.loads(checksum_file.read_text()) if checksum_file.is_file() else None
+000146 |         if files and archive_files is None and checksums:
+000147 |             if checksums.get("package") != package["checksum"]:
+000148 |                 raise RuntimeError(f"Cache package checksum differs from lock: {name}@{version}")
+000149 |             for path, data in files:
+000150 |                 if checksums["files"].get(path) != sha(data):
+000151 |                     raise RuntimeError(f"Cached license checksum mismatch: {name}@{version}/{path}")
+000152 |         add({"ecosystem": "cargo", "name": name, "version": version,
+000153 |              "source": package["source"], "checksum": package["checksum"],
+000154 |              "license": license_id,
+000155 |              "license_evidence": "Cargo.toml" if metadata.get("license") else "cached registry index" if entry and entry.get("license") else "missing",
+000156 |              "scope": "overinclusive: targets/features/build/proc-macro/runtime unresolved",
+000157 |              "text_integrity": "crate archive SHA256 matches lock" if archive_files is not None else "cargo checksum metadata" if checksums else "source cache only; not authenticated against archive",
+000158 |              "local_source": bool(metadata), "license_file_declared": metadata.get("license-file")}, files)
+000159 | 
+000160 |     for path, package in sorted(npm.items()):
+000161 |         if not path:
+000162 |             continue
+000163 |         name = path.rsplit("node_modules/", 1)[-1]
+000164 |         directory = root / "apps/desktop" / path
+000165 |         manifest = directory / "package.json"
+000166 |         metadata = json.loads(manifest.read_text()) if manifest.is_file() else {}
+000167 |         if metadata and (metadata.get("name") != name or metadata.get("version") != package["version"]):
+000168 |             raise RuntimeError(f"Installed npm version/name differs from lock: {path}")
+000169 |         add({"ecosystem": "npm", "name": name, "version": package["version"],
+000170 |              "source": package.get("resolved", "UNKNOWN"), "integrity": package.get("integrity"),
+000171 |              "license": package.get("license") or metadata.get("license") or "UNKNOWN",
+000172 |              "license_evidence": "package-lock.json" if package.get("license") else "installed package.json" if metadata.get("license") else "missing",
+000173 |              "scope": "dev/build graph (npm dev flag)" if package.get("dev") else "production dependency graph; bundled subset unresolved",
+000174 |              "optional": bool(package.get("optional")), "lock_path": path,
+000175 |              "local_source": bool(metadata)}, collect(directory))
+000176 | 
+000177 |     final = {str(p.relative_to(root)): sha(p.read_bytes()) for p in lock_paths}
+000178 |     if initial != final:
+000179 |         raise RuntimeError("Lockfile changed while collecting notices; no output written")
+000180 |     summary = {}
+000181 |     for ecosystem in bundles:
+000182 |         group = [r for r in records if r["ecosystem"] == ecosystem]
+000183 |         summary[ecosystem] = {"packages": len(group), "texts_present": sum(bool(r["texts"]) for r in group),
+000184 |                               "texts_missing": sum(not r["texts"] for r in group),
+000185 |                               "upstream_notice_review_required": sum(r["upstream_notice_review_required"] for r in group),
+000186 |                               "license_unknown": sum(r["license"] == "UNKNOWN" for r in group)}
+000187 |         (out / f"{ecosystem}-license-texts.txt").write_text("".join(bundles[ecosystem]))
+000188 |     inventory = {"schema_version": 1, "mode": "offline-overinclusive-lock-inventory",
+000189 |                  "lock_sha256_before": initial, "lock_sha256_after": final,
+000190 |                  "summary": summary, "packages": records}
+000191 |     (out / "inventory.json").write_text(json.dumps(inventory, indent=2, ensure_ascii=False) + "\n")
+000192 |     missing = ["# 许可材料缺项与上游通知待核\n", "第一表逐项列出本次没有收集到许可材料的锁定包。第二表保留使用规范条款后仍未关闭的上游项目专属通知缺口。",
+000193 |                "缺项不表示包没有许可证。范围包括其他平台、可选项与构建依赖。禁止将此表当作发行许可放行。\n",
+000194 |                "| 生态 | 包 | 版本 | 许可证标识 | 缺项原因 |", "|---|---|---|---|---|"]
+000195 |     missing += [f"| {r['ecosystem']} | {r['name']} | {r['version']} | {table_value(r['license'])} | {r['text_status']} |"
+000196 |                 for r in records if not r["texts"]]
+000197 |     missing += ["\n## 已有标准条款，但上游项目专属通知仍待核\n",
+000198 |                 "标准条款包含原始版权占位符。不得凭作者姓名填写占位符，也不得把下表视为通知完整。\n",
+000199 |                 "| 生态 | 包 | 版本 | 未关闭项 |", "|---|---|---|---|"]
+000200 |     missing += [f"| {r['ecosystem']} | {r['name']} | {r['version']} | {r['supplemental_evidence']['notice_status']} |"
+000201 |                 for r in records if r["upstream_notice_review_required"]]
+000202 |     (out / "MISSING.md").write_text("\n".join(missing) + "\n")
+000203 |     lines = ["# 第三方依赖与许可声明材料\n",
+000204 |              "本材料绑定当前锁文件。它是离线生成的 **overinclusive 锁全集**，不是最终二进制 SBOM，也不是法律审查通过证明。",
+000205 |              "生成器只读取项目锁文件、项目 node_modules、本机 crates.io registry 缓存和已归档的 supplements。生成器不联网、不安装或升级依赖。补充材料曾从官方发布源与精确提交采集。\n",
+000206 |              "## 范围与打包边界\n",
+000207 |              "1. Cargo 表包含根 Cargo.lock 的全部第三方版本。排除四个第一方 workspace 包，以及 experiments 的独立锁文件。",
+000208 |              "2. Cargo.lock 不区分运行时、proc-macro、构建工具、平台与 feature。此表保留所有目标条目，不能断言它们全部进入 macOS 工件。",
+000209 |              "3. npm 表保留 package-lock.json 的全部条目。dev 标记说明构建依赖图；其他条目属于 production 依赖图。Vite/Svelte 会编译、内联和消除代码，锁文件不能证明最终保留范围。",
+000210 |              "4. 未分析最终 app/helper 的链接映射与前端 bundle。不覆盖系统 SDK、编译器、系统动态库、Claude 应用及其账号数据。",
+000211 |              "5. 发行负责人仍须确认目标、features、实际工件、许可选择及再分发义务，并补齐适用包的缺失正文。\n",
+000212 |              "## 收集方法与限制\n",
+000213 |              "Cargo license 标识优先取精确版本的缓存 Cargo.toml，再取同版本本地 sparse registry index。index checksum 必须匹配 Cargo.lock。",
+000214 |              "Cargo 正文优先取本地 .crate 原始包，完整归档 SHA256 必须等于 Cargo.lock checksum。否则取源码缓存，有 .cargo-checksum.json 时校验；无校验材料时单独标注。npm 标识优先取锁文件；本地 package.json 必须同名同版本。",
+000215 |              "npm 正文来自已安装目录，未对 npm tarball integrity 作独立复算。清单记录原始 integrity、文本文件路径和 SHA256。",
+000216 |              "递归收集名称为 LICENSE/LICENCE/NOTICE/COPYRIGHT 的文件，以及 Cargo license-file 指定文件；跳过 symlink、嵌套 node_modules、.git 与 target。",
+000217 |              "这是按文件名采集，不能保证捕获仅存在源码头注释中的声明或任意命名的许可证。双重许可表达式照录，未代替作者选择分支。\n",
+000218 |              "补充材料逐包记录精确 .crate VCS 提交或 npm 发布 gitHead，以及来源 URL、适用依据和文本摘要。同版本 CLI/rolldown 主包全文用于其精确版本平台绑定，并保留主包 tarball 对锁文件 SRI 校验依据。",
+000219 |              "objc2 系列和两个 Rich Harris 包没有上游项目专属完整版权通知。材料保留精确提交的原始许可声明，并附官方标准许可条款，保留版权占位符。**条款已归档不代表这 13 项通知缺口关闭。**",
+000220 |              "这些包在 inventory 的 upstream_notice_review_required 中单列。不得用规范模板代替真实版权署名，不得把此统计作为法律审定。详见 [补充证据说明](supplements/README.md)。\n",
+000221 |              "## 本次覆盖\n", "| 生态 | 第三方包条目 | 已归档许可材料 | 材料缺项 | 上游专属通知待核 | 标识 UNKNOWN |", "|---|---:|---:|---:|---:|---:|"]
+000222 |     for name, count in summary.items():
+000223 |         lines.append(f"| {name} | {count['packages']} | {count['texts_present']} | {count['texts_missing']} | {count['upstream_notice_review_required']} | {count['license_unknown']} |")
+000224 |     lines += ["\n正文缺项逐项见 [MISSING.md](notices/MISSING.md)。所有条目的文件归属、摘要和证据来源见 [inventory.json](notices/inventory.json)。",
+000225 |               "完整原文：[Cargo](notices/cargo-license-texts.txt)、[npm](notices/npm-license-texts.txt)。分隔行提供包名、版本和原始文件名，正文保持 UTF-8 原文。\n",
+000226 |               "## 锁文件不变性\n", "生成前后 SHA256 一致：\n", "| 文件 | SHA256 |", "|---|---|"]
+000227 |     lines += [f"| `{path}` | `{digest}` |" for path, digest in initial.items()]
+000228 |     lines += ["\n## 复现\n", "在项目根目录执行 `python3 packaging/notices/generate.py`。需要 Python 3.11+ 和相同锁文件、本地依赖缓存。",
+000229 |               "可用 `--cargo-registry /path/to/.cargo/registry` 明确指定缓存。脚本不联网。缓存覆盖变化会改变正文覆盖计数。\n"]
+000230 |     for ecosystem in bundles:
+000231 |         lines += [f"## {ecosystem} 锁定清单\n", "| 包 | 版本 | 来源 | license 标识 | 图边界 | 正文文件数 |", "|---|---|---|---|---|---:|"]
+000232 |         for record in records:
+000233 |             if record["ecosystem"] == ecosystem:
+000234 |                 lines.append("| " + " | ".join(table_value(record[key]) for key in ("name", "version", "source", "license", "scope")) + f" | {len(record['texts'])} |")
+000235 |         lines.append("")
+000236 |     (root / "packaging/THIRD-PARTY-NOTICES.md").write_text("\n".join(lines) + "\n")
+000237 |     print(json.dumps({"locks_unchanged": initial == final, "summary": summary}, ensure_ascii=False))
+000238 | 
+000239 | 
+000240 | if __name__ == "__main__":
+000241 |     main()
+END_FILE_RANGE: current/packaging/notices/generate.py 1-241
+
+FILE: current/packaging/notices/macos_subset.py
+SHA256_ORIGINAL: 67b03be0ab2525183ddc0ec467bd37fa62cf546f8b99f60ba7a1b2f818cdf408
+ORIGINAL_LINES: 1-202
+000001 | #!/usr/bin/env python3
+000002 | """Offline Cargo graph and installed npm reachability evidence; never builds."""
+000003 | import hashlib
+000004 | import json
+000005 | import os
+000006 | from pathlib import Path, PurePosixPath
+000007 | import re
+000008 | import subprocess
+000009 | 
+000010 | ROOT = Path(__file__).resolve().parents[2]
+000011 | OUT = ROOT / "packaging/notices"
+000012 | TARGET = "aarch64-apple-darwin"
+000013 | ROOTS = ["switcher-desktop", "switcher-helper", "switcher-core"]
+000014 | 
+000015 | 
+000016 | def digest(path):
+000017 |     return hashlib.sha256(path.read_bytes()).hexdigest()
+000018 | 
+000019 | 
+000020 | def run(arguments):
+000021 |     return subprocess.run(arguments, cwd=ROOT, env={**os.environ, "RUSTUP_TOOLCHAIN": "stable"},
+000022 |                           check=True, capture_output=True, text=True).stdout
+000023 | 
+000024 | 
+000025 | def main():
+000026 |     locks = [ROOT / "Cargo.lock", ROOT / "apps/desktop/package-lock.json"]
+000027 |     before = {str(p.relative_to(ROOT)): digest(p) for p in locks}
+000028 |     inventory = json.loads((OUT / "inventory.json").read_text())
+000029 |     assert before == inventory["lock_sha256_after"], "Refresh full inventory for new locks first"
+000030 |     corpus = {(p["ecosystem"], p["name"], p["version"]): p for p in inventory["packages"]}
+000031 |     result = {"target": TARGET, "cargo_roots": ROOTS, "lock_sha256_before": before,
+000032 |               "commands": [], "editions": {}}
+000033 |     for edition in ["personal", "public"]:
+000034 |         flags = ["--offline", "--locked", "--no-default-features", "--features",
+000035 |                  f"switcher-desktop/{edition},switcher-desktop/custom-protocol"]
+000036 |         metadata_cmd = ["cargo", "metadata", *flags, "--filter-platform", TARGET, "--format-version", "1"]
+000037 |         tree_cmd = ["cargo", "tree", *flags, "--target", TARGET, "--edges", "normal,build",
+000038 |                     "--prefix", "none", "--format", "{p}"]
+000039 |         for package in ROOTS:
+000040 |             tree_cmd.extend(["-p", package])
+000041 |         result["commands"].extend([metadata_cmd, tree_cmd])
+000042 |         metadata = json.loads(run(metadata_cmd))
+000043 |         tree = run(tree_cmd).replace(str(ROOT), ".")
+000044 |         (OUT / f"macos-arm64-{edition}-tree.txt").write_text(tree)
+000045 |         normal_cmd = tree_cmd.copy()
+000046 |         normal_cmd[normal_cmd.index("normal,build")] = "normal"
+000047 |         result["commands"].append(normal_cmd)
+000048 |         normal_tree = run(normal_cmd).replace(str(ROOT), ".")
+000049 |         (OUT / f"macos-arm64-{edition}-normal-tree.txt").write_text(normal_tree)
+000050 |         normal_keys = set()
+000051 |         for line in normal_tree.splitlines():
+000052 |             match = re.match(r"^(\S+) v(\S+)", line)
+000053 |             if match:
+000054 |                 normal_keys.add(match.groups())
+000055 |         # Retain graph evidence, not absolute cache paths or irrelevant package descriptions.
+000056 |         compact = {"packages": [{k: p[k] for k in ["id", "name", "version", "source", "license"]}
+000057 |                                 for p in metadata["packages"]], "resolve": metadata["resolve"]}
+000058 |         for package in compact["packages"]:
+000059 |             package["id"] = package["id"].replace(str(ROOT), ".")
+000060 |         compact = json.loads(json.dumps(compact).replace(str(ROOT), "."))
+000061 |         (OUT / f"macos-arm64-{edition}-metadata.json").write_text(json.dumps(compact, indent=2) + "\n")
+000062 |         effective = set()
+000063 |         for line in tree.splitlines():
+000064 |             match = re.match(r"^(\S+) v(\S+)", line)
+000065 |             if match:
+000066 |                 effective.add(match.groups())
+000067 |         selected = [corpus["cargo", name, version] for name, version in sorted(effective)
+000068 |                     if ("cargo", name, version) in corpus]
+000069 |         metadata_only = [{"name": p["name"], "version": p["version"]} for p in metadata["packages"]
+000070 |                          if (p["name"], p["version"]) not in effective]
+000071 |         result["editions"][edition] = {
+000072 |             "metadata_packages_count": len(metadata["packages"]),
+000073 |             "resolve_nodes_count": len(metadata["resolve"]["nodes"]),
+000074 |             "resolve_node_features": {n["id"].replace(str(ROOT), "."): n["features"] for n in metadata["resolve"]["nodes"]},
+000075 |             "tree_effective_all_count": len(effective), "third_party_count": len(selected),
+000076 |             "normal_edge_third_party_count": sum((p["name"], p["version"]) in normal_keys for p in selected),
+000077 |             "build_only_third_party": [p["name"] + "@" + p["version"] for p in selected if (p["name"], p["version"]) not in normal_keys],
+000078 |             "third_party": selected, "metadata_only_not_effective": metadata_only,
+000079 |             "missing_text": [p["name"] + "@" + p["version"] for p in selected if not p["texts"]],
+000080 |             "upstream_notice_review_required": [p["name"] + "@" + p["version"] for p in selected if p.get("upstream_notice_review_required")],
+000081 |             "unknown_license": [p["name"] + "@" + p["version"] for p in selected if p["license"] == "UNKNOWN"]}
+000082 | 
+000083 |     npm = json.loads(locks[1].read_text())["packages"]
+000084 |     unresolved = []
+000085 | 
+000086 |     def resolve(base, name):
+000087 |         parent = PurePosixPath(base)
+000088 |         while True:
+000089 |             candidate = str(parent / "node_modules" / name)
+000090 |             if candidate in npm:
+000091 |                 return candidate
+000092 |             if parent == PurePosixPath("."):
+000093 |                 return None
+000094 |             parent = parent.parent
+000095 | 
+000096 |     def reachable(sections):
+000097 |         seen, todo = set(), [("", name) for section in sections for name in npm[""].get(section, {})]
+000098 |         while todo:
+000099 |             base, name = todo.pop()
+000100 |             path = resolve(base, name)
+000101 |             if path is None:
+000102 |                 unresolved.append({"from": base or "root", "dependency": name})
+000103 |                 continue
+000104 |             if path in seen:
+000105 |                 continue
+000106 |             seen.add(path)
+000107 |             for section in ["dependencies", "optionalDependencies", "peerDependencies"]:
+000108 |                 todo.extend((path, dep) for dep in npm[path].get(section, {}))
+000109 |         rows = []
+000110 |         for path in sorted(seen):
+000111 |             name = path.rsplit("node_modules/", 1)[-1]
+000112 |             package = npm[path]
+000113 |             row = dict(corpus["npm", name, package["version"]])
+000114 |             manifest = ROOT / "apps/desktop" / path / "package.json"
+000115 |             row["installed_now"] = manifest.is_file()
+000116 |             if manifest.is_file():
+000117 |                 local = json.loads(manifest.read_text())
+000118 |                 assert local["name"] == name and local["version"] == package["version"]
+000119 |             rows.append(row)
+000120 |         return rows
+000121 | 
+000122 |     production = reachable(["dependencies"])
+000123 |     build = reachable(["dependencies", "devDependencies"])
+000124 |     result["npm"] = {"method": "lock dependency/optional/peer graph; installed manifests version checked; no bundler analysis",
+000125 |                      "production_reachable": production, "build_reachable": build,
+000126 |                      "unresolved_edges": sorted({json.dumps(x, sort_keys=True) for x in unresolved})}
+000127 |     after = {str(p.relative_to(ROOT)): digest(p) for p in locks}
+000128 |     assert before == after, "Lock changed during collection"
+000129 |     result["lock_sha256_after"] = after
+000130 |     (OUT / "macos-arm64-subsets.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+000131 |     lines = ["# macOS arm64 发行依赖许可子集\n",
+000132 |              "本报告使用离线、锁定的 Cargo 查询。没有运行编译。全平台原始报告与许可正文保持独立。",
+000133 |              "它确认发行配置的依赖图与现有正文覆盖，不确认最终二进制实际包含的代码，也不代表许可放行。\n",
+000134 |              "## 查询边界\n",
+000135 |              "1. 目标固定为 `aarch64-apple-darwin`。根包包括 desktop、helper、core（CLI/guardian）。",
+000136 |              "2. 两版均使用 `--no-default-features`，分别启用 `switcher-desktop/personal` 或 `switcher-desktop/public`，并启用 Tauri release 使用的 `custom-protocol`。",
+000137 |              "3. `metadata.packages` 是包元数据集合；`resolve.nodes` 是带 feature 的解析节点集合。两者数量相同不代表所有包进入发行依赖图。",
+000138 |              "4. 本报告用 `cargo tree --edges normal,build` 的指定根包闭包作为有效发行构建图，排除 dev 边。它保留 build/proc-macro，尚未按最终链接结果删除构建工具。",
+000139 |              "5. npm 使用锁文件的 dependency、optional 和 peer 边，再核对当前 node_modules。两个发行共用前端依赖；edition 编译消除范围没有在本次核验中测量。\n",
+000140 |              "## Cargo 计数\n", "| 发行 | metadata.packages | resolve.nodes | 有效图含第一方 | 第三方 | 归档材料缺项 | 上游专属通知待核 | 标识 UNKNOWN |",
+000141 |              "|---|---:|---:|---:|---:|---:|---:|---:|"]
+000142 |     for edition, data in result["editions"].items():
+000143 |         lines.append(f"| {edition} | {data['metadata_packages_count']} | {data['resolve_nodes_count']} | {data['tree_effective_all_count']} | {data['third_party_count']} | {len(data['missing_text'])} | {len(data['upstream_notice_review_required'])} | {len(data['unknown_license'])} |")
+000144 |     lines += ["\n另行查询 `--edges normal`，区分只经 build 边可达的包。normal 图仍可含 proc-macro，不能称作实际运行时打包清单。",
+000145 |               "Cargo metadata 的 features 是解析节点观察值；它不会完整表达 resolver v2 的 host/target 编译单元拆分。\n",
+000146 |               "| 发行 | normal 边第三方 | 仅 build 图新增第三方 |", "|---|---:|---:|"]
+000147 |     for edition, data in result["editions"].items():
+000148 |         lines.append(f"| {edition} | {data['normal_edge_third_party_count']} | {len(data['build_only_third_party'])} |")
+000149 |     personal = set(result["editions"]["personal"]["missing_text"])
+000150 |     public = set(result["editions"]["public"]["missing_text"])
+000151 |     lines += ["\n### 有效图剩余 Cargo 归档材料缺项\n", "| 包与版本 | 适用发行 | license 标识 | 缺项原因 |", "|---|---|---|---|"]
+000152 |     for key in sorted(personal | public):
+000153 |         name, version = key.rsplit("@", 1)
+000154 |         row = corpus["cargo", name, version]
+000155 |         editions = ", ".join(e for e, items in [("personal", personal), ("public", public)] if key in items)
+000156 |         lines.append(f"| {key} | {editions} | {row['license']} | {row['text_status']} |")
+000157 |     if not personal and not public:
+000158 |         lines.append("| 无 | personal, public | — | 全部已有归档条款或声明；上游专属通知缺口另列 |")
+000159 |     lines += ["\n## npm 可达与当前安装状态\n", "| 图 | 锁定可达包 | 当前已安装 | 已安装材料缺项 | 已安装上游通知待核 | 未安装可达包 |", "|---|---:|---:|---:|---:|---:|"]
+000160 |     for label, rows in [("production（含 optional/peer）", production), ("build（含 dev/optional/peer）", build)]:
+000161 |         installed = [r for r in rows if r["installed_now"]]
+000162 |         lines.append(f"| {label} | {len(rows)} | {len(installed)} | {sum(not r['texts'] for r in installed)} | {sum(bool(r.get('upstream_notice_review_required')) for r in installed)} | {len(rows)-len(installed)} |")
+000163 |     lines += ["\n当前已安装、且在 build 图中可达的 npm 正文缺项：\n", "| 包 | 版本 | 图 | license |", "|---|---|---|---|"]
+000164 |     prod_keys = {(r["name"], r["version"]) for r in production}
+000165 |     for row in build:
+000166 |         if row["installed_now"] and not row["texts"]:
+000167 |             scope = "production + build" if (row["name"], row["version"]) in prod_keys else "build"
+000168 |             lines.append(f"| {row['name']} | {row['version']} | {scope} | {row['license']} |")
+000169 |     if not any(row["installed_now"] and not row["texts"] for row in build):
+000170 |         lines.append("| 无 | — | production + build | 全部已有归档许可材料 |")
+000171 |     lines += ["\n## 20 项原缺口的补充证据与剩余边界\n",
+000172 |               "5 个 Cargo 包已取得精确 VCS 提交的项目 LICENSE，或取得锁定源码明确引用的 Mozilla MPL-2.0 全文。两个 npm 平台绑定采用同版本主包完整许可证；主包 tarball 已对锁文件 SRI 校验。",
+000173 |               "另有 11 个 objc2 系列 crate，以及 is-reference、locate-character，只能取得精确提交的许可声明和官方标准条款。上游没有在这些提交提供项目专属版权通知。",
+000174 |               "**这 13 项上游通知缺口仍未关闭。** 标准许可保留版权占位符。没有填写作者姓名、没有制造 LICENSE，也没有把标准条款当作法律放行。",
+000175 |               "objc2 原始 LICENSE.md 另保留 Apple SDK 衍生条款适用性说明。该说明没有被删去或推断为已解决。\n",
+000176 |               "| 生态 | 包与版本 | 原始许可声明/版本依据 | 剩余项 |", "|---|---|---|---|"]
+000177 |     reviewed = {(r["ecosystem"], r["name"], r["version"]): r
+000178 |                 for rows in [result["editions"]["personal"]["third_party"], result["editions"]["public"]["third_party"], build]
+000179 |                 for r in rows if r.get("upstream_notice_review_required") and (r["ecosystem"] != "npm" or r["installed_now"])}
+000180 |     for key, row in sorted(reviewed.items()):
+000181 |         evidence = row["supplemental_evidence"]
+000182 |         original = evidence["files"][0]
+000183 |         lines.append(f"| {key[0]} | {key[1]}@{key[2]} | [exact commit]({original['source_url']}) | 上游项目专属版权通知缺失；标准条款保留占位符 |")
+000184 |     lines += ["\n逐包来源 URL、精确版本/提交绑定、正文摘要与适用依据见 [supplements/sources.json](supplements/sources.json)。",
+000185 |               "补充过程与剩余边界见 [supplements/README.md](supplements/README.md)。现有 20 项均有条款/声明材料，但只有 7 项取得完整项目许可证或无占位符的明确引用许可；不要合并成‘20 项通知均已完整’。\n"]
+000186 |     lines += ["\n未安装的 optional 平台包保留在锁图中，但不计入当前 node_modules 子集。完整名单与不可解析边见 JSON。",
+000187 |               "npm 前端生产图不等于产物代码清单；peer TypeScript 等工具可能在生产图可达，不能据此认定其运行时代码被打入。\n",
+000188 |               "## 证据与复现\n",
+000189 |               "完整子集条目、license、来源、正文 SHA256、解析 feature 与 metadata-only 差集见 [macos-arm64-subsets.json](macos-arm64-subsets.json)。",
+000190 |               "每版保留 `macos-arm64-*-metadata.json` 与 `macos-arm64-*-tree.txt`。metadata 文件只裁剪非图信息，保留 package IDs、resolve nodes、依赖边和 features。",
+000191 |               "运行 `python3 packaging/notices/macos_subset.py` 可复现。命令完整记录在 JSON；只调用 offline locked metadata/tree。",
+000192 |               "正文覆盖引用现有 inventory.json，不补写、不推断任何缺失 LICENSE。全平台材料仍见 [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md)。\n",
+000193 |               "锁文件收集前后 SHA256 一致：\n", "| 文件 | SHA256 |", "|---|---|"]
+000194 |     lines.extend(f"| `{path}` | `{value}` |" for path, value in before.items())
+000195 |     (OUT / "MACOS-ARM64-SUBSETS.md").write_text("\n".join(lines) + "\n")
+000196 |     print(json.dumps({"cargo": {e: {k: v for k, v in d.items() if k.endswith("count") or k in ["missing_text", "unknown_license"]}
+000197 |                                  for e, d in result["editions"].items()},
+000198 |                       "npm": {"production": len(production), "build": len(build)}, "locks_unchanged": before == after}))
+000199 | 
+000200 | 
+000201 | if __name__ == "__main__":
+000202 |     main()
+END_FILE_RANGE: current/packaging/notices/macos_subset.py 1-202
+
+FILE: current/scripts/build-rust.sh
+SHA256_ORIGINAL: 5242817f0be063dbb4b8382605421c68a3d7d1ac661900cfb21ae428ca8703f4
+ORIGINAL_LINES: 1-19
+000001 | #!/bin/bash
+000002 | set -euo pipefail
+000003 | cd "$(dirname "$0")/.."
+000004 | [[ "$(uname -s)" == Darwin ]] || { echo 'macOS required' >&2; exit 64; }
+000005 | [[ "$EUID" != 0 ]] || { echo 'Build as the normal user, without sudo' >&2; exit 64; }
+000006 | # A pin represents precisely one native architecture.
+000007 | case "$(uname -m)" in arm64) native_target=aarch64-apple-darwin;; x86_64) native_target=x86_64-apple-darwin;; *) exit 64;; esac
+000008 | unset CARGO_BUILD_TARGET
+000009 | export APPLE_SIGNING_IDENTITY="${APPLE_SIGNING_IDENTITY:--}"
+000010 | edition="${1:-personal}"
+000011 | case "$edition" in personal|public) ;; *) echo 'usage: build-rust.sh personal|public' >&2; exit 64;; esac
+000012 | export VITE_EDITION="$edition"
+000013 | cargo build --locked --release --target "$native_target" -p switcher-core --bin claude-switcher
+000014 | cargo run --locked -p switcher-domain --bin export-types
+000015 | cd apps/desktop
+000016 | npm ci --ignore-scripts
+000017 | npm run check
+000018 | # Tauri forwards Cargo-only flags after the argument separator.
+000019 | npm run tauri -- build --target "$native_target" --features "$edition" --config "../../packaging/editions/$edition.json" -- --no-default-features
+END_FILE_RANGE: current/scripts/build-rust.sh 1-19
+
+FILE: current/scripts/gen-sums.sh
+SHA256_ORIGINAL: 0f9943dd89cfc126cb56afabfa8489af66577dc5de4e7822a0ab040786825a2b
+ORIGINAL_LINES: 1-14
+000001 | #!/bin/bash
+000002 | # 重新生成仓库根 SHA256SUMS
+000003 | # 维护纪律: core/、daemons/、installer/ 下任何文件改动后,提交前必须运行本脚本
+000004 | cd "$(dirname "$0")/.." || exit 1
+000005 | shasum -a 256 \
+000006 |     core/claude-switch.sh \
+000007 |     daemons/claude-bodyguard.sh \
+000008 |     daemons/tz-watchdog.sh \
+000009 |     daemons/local.claude-bodyguard.plist \
+000010 |     daemons/local.tz-watchdog.plist \
+000011 |     daemons/local.claude-update.plist \
+000012 |     installer/安装.command \
+000013 |     installer/卸载.command > SHA256SUMS
+000014 | echo "✓ SHA256SUMS 已更新"
+END_FILE_RANGE: current/scripts/gen-sums.sh 1-14
+
+END_G3-P17_8a58fcf60007737e

@@ -1,0 +1,60 @@
+{
+  "observed_at": "2026-10-24T06:23:58.070088+00:00",
+  "build_scope": "rust-0.2.0-legacy-restored-20261024-inplace; ordinary candidates, not installed",
+  "editions": [
+    {
+      "edition": "personal",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261024-inplace/personal/Claude 切换器 Personal.app",
+      "main_sha256": "9ba5fcca1b1ff29f8a4f239fd7fd2b3f42cdcd8220ad252c5ba914bfa81b3294",
+      "native_window": "observed via CUA",
+      "ipc": "Native UI received Rust check results",
+      "url": "tauri://localhost",
+      "automatic_check_result": {
+        "rows": 14,
+        "ok": 12,
+        "warn": 1,
+        "block": 1
+      },
+      "blocking_item": "timezone",
+      "network_summary": "passed",
+      "background_summary": "passed",
+      "launch_or_account_exchange_tested": false
+    },
+    {
+      "edition": "public",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261024-inplace/public/Claude 切换器 Public.app",
+      "main_sha256": "a63770ceb7d8662386bc375742f4ece7c25d49b3e2d0d6f6a6b0ad75f9d953f0",
+      "native_window": "observed via CUA",
+      "ipc": "Native UI received Rust check results",
+      "url": "tauri://localhost",
+      "automatic_check_result": {
+        "rows": 14,
+        "ok": 12,
+        "warn": 1,
+        "block": 1
+      },
+      "blocking_item": "timezone",
+      "network_summary": "passed",
+      "background_summary": "passed",
+      "launch_or_account_exchange_tested": false
+    }
+  ],
+  "personal_live_process": {
+    "pid": 88819,
+    "executable": "/Users/gua/CodexWorkspaces/claude-switcher/output/releases/rust-0.2.0-legacy-restored-20261024-inplace/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+  },
+  "public_process_binding_note": "CUA opened the absolute staged Public path; separate ps executable capture was not taken before exit",
+  "environment": {
+    "observed_localtime": "Asia/Shanghai",
+    "saved_target": "America/Los_Angeles",
+    "watchdog_interval_seconds": 3600,
+    "watchdog_interval_modified": false
+  },
+  "limits": [
+    "Window/readonly IPC evidence does not prove privileged helper actions from the uninstalled candidate",
+    "No authenticated login baseline or real B account",
+    "First-A in-place behavior is covered by isolated tests; not forced against real account data"
+  ],
+  "system_or_admin_install_performed": false,
+  "private_ip_or_credentials_recorded": false
+}

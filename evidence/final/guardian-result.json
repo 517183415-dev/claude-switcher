@@ -1,0 +1,45 @@
+{
+  "scope": [
+    "G01",
+    "G02",
+    "G03",
+    "G04",
+    "G05",
+    "G06"
+  ],
+  "changed_files": [
+    "crates/switcher-core/src/guardian.rs",
+    "crates/switcher-core/src/timezone_guard.rs",
+    "crates/switcher-helper/src/platform/timezone_guard.rs",
+    "crates/switcher-core/src/bin/switcher-guardian.rs"
+  ],
+  "verification": {
+    "isolated_guardian": {
+      "passed": 13,
+      "log": "guardian-p1-final-tests.log"
+    },
+    "core_timezone": {
+      "passed": 3,
+      "log": "core-timezone-tests.log"
+    },
+    "helper_timezone": {
+      "passed": 4,
+      "log": "helper-tests.log"
+    },
+    "format": "fmt-check.log",
+    "clippy": "guardian-p1-final-clippy.log",
+    "guardian_bin_check": "guardian-bin-check.log"
+  },
+  "skipped_native_tests": [
+    "read_only_native_event_registration_and_cleanup",
+    "network_epoch_native_receiver_keeps_observer_alive_and_drop_is_detectable"
+  ],
+  "runtime_acceptance": "NOT_RUN",
+  "notes": [
+    "TERM scope follows legacy Claude command path; OS signal permissions still apply to user guardian.",
+    "Root legacy timezone daemon is handled by installer agent; user systemsetup failures are reported.",
+    "C11 old root daemon registration is handled by checks agent.",
+    "SourceLocal update policy and advertisements were not changed.",
+    "P1: startup and refresh read v2 or legacy shell via load_read_only(home); invalid refresh preserves last mode; explicit auto preserved; unavailable startup mode falls back to verge-mihomo."
+  ]
+}

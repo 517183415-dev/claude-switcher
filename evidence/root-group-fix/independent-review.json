@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-10-24T06:00:40.651455+00:00",
+  "scope": "fixed root service GID materialization and pending-health finalize; wrapper selects finalize when journal exists",
+  "result": "scoped_clear_no_P0_P2",
+  "source_files": {
+    "packaging/macos/local_install.py": "0b0e0536f89af8067416748288a9b2a97eda8df1c7b1717c6ae45b48ef4424bb",
+    "packaging/macos/test_local_install.py": "028eed066dbc3a6bf0abeec98fdda6403d124f4bfd52c879e096d8033aa8bf21"
+  },
+  "tests": {
+    "red_expected_failures": 2,
+    "full_packaging_passed": 97,
+    "full_packaging_failed": 0
+  },
+  "independent_checks": [
+    "AST syntax",
+    "bash -n",
+    "git diff --check",
+    "same final-target FD ownership repair",
+    "read-only verify unchanged",
+    "pending-health path does not replace App or create backup"
+  ],
+  "not_run": [
+    "real privileged finalization",
+    "FD replacement injection",
+    "mid-fchown failure injection"
+  ],
+  "wrapper_read_only_probe": "pass; operation=finalize; administrator command not executed",
+  "compiled_source_drift": false
+}

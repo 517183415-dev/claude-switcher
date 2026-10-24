@@ -1,0 +1,27 @@
+{
+  "binaries": [
+    {
+      "path": "/Applications/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop",
+      "sha256": "afe6ce08256ec815686adf9b49447b909b87b610151b183ddc349a7ed18ac1db",
+      "frozen_match": true
+    },
+    {
+      "path": "/Library/PrivilegedHelperTools/local.claudeswitcher.helper",
+      "sha256": "143ff86758c36fcbdb3a3f87283d92ffaf79f4783dc087fb53d31b84f028fd55",
+      "frozen_match": true
+    },
+    {
+      "path": "/Library/Application Support/claude-switcher/switcher-guardian",
+      "sha256": "4a0fda2cc121315d13edc51d9a2a7e89f6709f874ff5d3b7a8ce76698b4cc81f",
+      "frozen_match": true
+    },
+    {
+      "path": "/Applications/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher",
+      "sha256": "5f4d0ef40f679dae56dc739701a3c148ef25158db6e9782ffe9e2608b9c81b7d",
+      "frozen_match": true
+    }
+  ],
+  "strict_signature_exit": 0,
+  "signature_output": "",
+  "localtime_link": "/var/db/timezone/zoneinfo/America/Los_Angeles"
+}

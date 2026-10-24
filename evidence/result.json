@@ -1,0 +1,112 @@
+{
+  "handoff_id": "CS-RUST-20261022-R4",
+  "timestamp": "2026-10-24T06:23:58.070088+00:00",
+  "scope": "restore legacy product behavior except SourceLocal auto/remote binary update; four Rust crates and editions retained",
+  "status": "legacy_restoration_source_and_native_installed_candidate_verified; in_place_followup_built_and_window_checked_not_installed",
+  "compiled_source_drift": false,
+  "protected_legacy_product_changed": false,
+  "test_results": {
+    "rust-tests-final-candidate.log": {
+      "passed": 359,
+      "failed": 0,
+      "ignored": 0
+    },
+    "desktop-personal-tests.log": {
+      "passed": 155,
+      "failed": 0,
+      "ignored": 0
+    },
+    "desktop-public-tests.log": {
+      "passed": 143,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "packaging_tests": {
+    "passed": 97,
+    "failed": 0
+  },
+  "frontend": {
+    "tests_passed": 28,
+    "vm_regression_groups_passed": 2,
+    "check_errors": 0,
+    "check_warnings": 0
+  },
+  "desktop_counts_note": "Separate edition executions include repeated module tests; do not sum as unique tests.",
+  "builds": {
+    "personal": "pass",
+    "public": "pass"
+  },
+  "scoped_independent_review": "clear; root_group_incremental_review_clear",
+  "installation": {
+    "installed_version": "legacy-restored-20261023 candidate; committed",
+    "candidate_installed": true,
+    "command": "/Users/gua/CodexWorkspaces/claude-switcher/output/tmp/install-legacy-core-final.command",
+    "read_only_check": "components_verified",
+    "needs_user_admin_password": false,
+    "committed": true,
+    "journal_preserved": false,
+    "barrier_preserved": false,
+    "diagnosis": "root-group-fix/actual-before.json",
+    "root_group_fix": "native_pass",
+    "resume_ready": "root-group-fix/resume-ready.json",
+    "backup": "/Library/Application Support/claude-switcher/source-local-e92061cec5824b04ad41d8f65c6d9fd5",
+    "native_evidence": "root-group-fix/native-committed.json",
+    "failure_resolved": true,
+    "failure_history": {
+      "message": "local.tz-watchdog installation differs",
+      "cause": "final service scripts inherited admin gid 80 instead of wheel gid 0",
+      "resolved_by": "root:wheel service copy/finalize repair; native committed and components_verified"
+    }
+  },
+  "native_cli": {
+    "observed_at": "2026-10-24T06:12:04.425265+00:00",
+    "rows": 14,
+    "ok": 12,
+    "warn": 1,
+    "fail": 1,
+    "failure": "timezone",
+    "evidence": "root-group-fix/native-cli-after-commit.json"
+  },
+  "window": "Installed Personal initially 12 ok / 2 warn / 0 block; real current-A launch opened Claude login and switcher exited. New in-place Personal/Public windows each 12 ok / 1 warn / 1 timezone block.",
+  "real_accounts": {
+    "current_a_saved": true,
+    "current_a_launch": "Claude login window observed",
+    "authenticated_login": "WAIT_NO_VALID_BASELINE",
+    "real_b": "NOT_RUN_NO_SECOND_ACCOUNT",
+    "real_A_B_A": "NOT_RUN",
+    "installed_first_A_active_inode": "replaced; followup fixes source to preserve original active directory",
+    "evidence": "root-group-fix/native-runtime.json"
+  },
+  "ads": "deferred",
+  "accessibility_test": "skipped_by_user",
+  "native_gui_checks": {
+    "rows": 14,
+    "ok": 12,
+    "warn": 2,
+    "fail": 0,
+    "warnings": [
+      "ip_change",
+      "asn"
+    ],
+    "automatic_on_open": true
+  },
+  "source_local_auto_update": "native_rejected_source_local_rebuild_required",
+  "compiled_source_binding_note": "Installed 20261023 candidate and 20261024-inplace candidates each retain their own frozen source/build evidence. The latter changes only accounts/legacy.rs relative to the former.",
+  "first_a_followup": {
+    "source": "crates/switcher-core/src/accounts/legacy.rs",
+    "source_sha256": "9b7c25f205b6bdd61efa2af478e82f9f4dfc23272e872574f556c0706bab0974",
+    "targeted_test_executions": 25,
+    "failures": 0,
+    "strict_core_clippy": "pass",
+    "fmt": "pass",
+    "git_diff_check": "pass",
+    "independent_review": "scoped_CLEAR",
+    "personal_public_builds": "pass",
+    "strict_codesign": "pass",
+    "native_windows_and_readonly_ipc": "observed",
+    "installed": false,
+    "evidence": "first-a-in-place/"
+  },
+  "latest_environment": "Timezone reverted to Asia/Shanghai; hourly legacy watchdog retained. Both new candidate windows correctly report a timezone block. Fresh drift actor not established."
+}

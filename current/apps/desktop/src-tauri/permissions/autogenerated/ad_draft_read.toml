@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ad-draft-read"
+description = "Enables the ad_draft_read command without any pre-configured scope."
+commands.allow = ["ad_draft_read"]
+
+[[permission]]
+identifier = "deny-ad-draft-read"
+description = "Denies the ad_draft_read command without any pre-configured scope."
+commands.deny = ["ad_draft_read"]

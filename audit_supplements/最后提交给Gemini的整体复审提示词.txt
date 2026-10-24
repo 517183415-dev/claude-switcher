@@ -1,0 +1,66 @@
+材料接收结束，但正式审核尚未完成。请先撤回上轮“全部完整审核完毕”的说法：有多份回执与实际文件范围不符。
+
+# Gemini 材料接收与读取缺口
+
+更新时间：2026-10-24T08:32:15.268Z
+
+17/17 轮、63/63 个补充分卷已提交并收到可见回复。此状态仅证明交付与回执，不证明全正文已审。项目代码开发继续暂停。
+
+## 三类材料位置
+
+- current/：冻结包内 355 个文件；源码文本使用原附件与 G1–G4 补充分卷承载，每个 FILE 条目保留原路径、SHA256 和 ORIGINAL_LINES。图标等二进制不算文本已审。
+- original_HEAD/：冻结包内 31 个文件，其中 29 个文本、2 个图片。29 个文本在原附件 02_全部源码图谱流程证据.txt 中；Gemini 初次回复声明已读，仍须整体复审重新核验。
+- SOURCE_MANIFEST.json：已通过 G4-P12（1–1730 行）、G4-P13（1731–3096 行）完整补交。文件 SHA256：382fb90ee08914d44b41c984e641ca6fb737bb828edc41190d0557d41a0f674c。
+
+## 回执错误
+
+以下 17 个分卷的回执与真实范围不符，不能接受其“完整读取”声明。表内是发送方元数据，不是模型读取证据；不得照抄后宣称读过正文。其他分卷即使 END 与末路径匹配，也仍待高级模型实际复核。
+
+|分卷|真实 FILE 范围数|真实最后路径与行号|
+|---|---:|---|
+|G1-P10|7|current/crates/switcher-domain/src/lib.rs : 1–66|
+|G2-P01|4|current/crates/switcher-core/src/ad_runtime/tests.rs : 1–875|
+|G2-P10|2|current/crates/switcher-core/src/regions/legacy.rs : 1–544|
+|G2-P15|2|current/crates/switcher-core/tests/checks_cli.rs : 1–187|
+|G3-P05|2|current/apps/desktop/src-tauri/src/publisher_commands.rs : 1–229|
+|G3-P06|3|current/apps/desktop/src-tauri/tests/e03_activity_export.rs : 1–107|
+|G3-P07|49|current/apps/desktop/src/generated/UpdateView.ts : 1–7|
+|G3-P08|14|current/crates/switcher-helper/Cargo.toml : 1–14|
+|G3-P14|8|current/packaging/macos/launchd/local.claudeswitcher.helper.plist : 1–9|
+|G4-P05|9|current/experiments/p0/desktop/index.html : 1–1|
+|G4-P09|17|current/experiments/p0/native/collect_metadata.py : 1–100|
+|G4-P10|16|current/linux/install.sh : 1–106|
+|G4-P11|11|当前项目代码图谱.md : 1–80|
+|G4-P13|3|codegraph/workspace-packages.json : 1–134|
+|G4-P14|7|evidence/final/clippy-personal.log : 1–27|
+|G4-P16|7|evidence/first-a-in-place/bundles.json : 1–48|
+|G4-P18|20|evidence/root-group-fix/wrapper-final-check.json : 1–6|
+
+## 正式审核尚未完成
+
+高级模型额度耗尽后，网页自动使用 Flash-Lite。低档回复仅作接收记录和暂定发现。末轮“全部完整审核完毕”的说法与上表冲突，应撤回。必须补读缺口、核验旧版正文、重审所有历史暂定发现，再形成总报告。不得把历史测试日志当作新运行证据，也不得用哈希清单推定代码正确。
+
+流程：材料补交 → 覆盖核验 → 高级模型跨模块复审 → 五部分总报告 → 用户评审后再改代码。
+
+
+# Gemini 全局复审要求
+
+用户最新要求：分批取证结束后，重新通读此前全部被审材料和分批发现，再独立形成整体报告。不能只拼接分批摘要。
+
+范围基准：重构原始项目为 Rust；保留原版使用逻辑；增加广告；本地版不自动更新。Shadowrocket、ClashX 维持自动打开。广告后置。公开源码与本地构建安装脚本是已选交付方式。项目开发暂停，审核不授权修改代码。PRD 与工程文档本身也是被审对象，文档条文不等于用户授权。
+
+先核对原始版本 original_HEAD/、当前冻结版本 current/、SOURCE_MANIFEST.json 三者是否实际可读。完整审核包中分别有 31 个原版文件、355 个当前文件；原版有 29 个文本文件、2 个二进制图片。原附件声明已读29份原版文本，只是模型声明，仍需在整体复审中核验。SOURCE_MANIFEST.json 已在分批第15和16轮中补交：G4-P12 为1–1730行，G4-P13为1731–3096行。二进制图标、完整机器图谱和未提供的第三方材料不计正文已审。
+
+全局复审步骤：
+1. 重新读取原项目需求、原版 README 和原版源码，形成旧行为表。
+2. 重新读取全部历史与现行 PRD、工程执行文档、交接记录、用户意图账本、代码图谱和暂停检查点。区分历史方案、现行规格、用户后续修订、代理自行增加。
+3. 按启动、14项检查、代理自动打开、账号切换、修复、守护、安装卸载、更新、界面与广告等调用链，交叉读取相关当前源码、原版源码与测试。不能按单文件作全局结论。
+4. 重审每批暂定问题；检查后续材料是否推翻它，追溯到文件路径和行号。明确源码、构建工件、已安装版本的差异。
+5. 再出整体报告：A 目标与范围偏离；B 真实缺陷和严重度；C 过度设计与删除/合并建议；D 测试与完成证据的可信边界；E 按风险与收益排序的最小整改顺序。每个结论写证据、影响、最小修复和必要验证。
+
+阅读纪律：上传成功不等于全文读取；看到 END 不等于中间所有文件都读到。核对每个 FILE: 条目与 ORIGINAL_LINES。已发现 17 份分卷回执范围错误（G1-P10、G2-P01、G2-P10、G2-P15、G3-P05、G3-P06、G3-P07、G3-P08、G3-P14、G4-P05、G4-P09、G4-P10、G4-P11、G4-P13、G4-P14、G4-P16、G4-P18），详见《接收覆盖与读取缺口.md》，必须重新取证。高级模型额度用尽后界面自动降为 Flash-Lite；这些轮次只作材料接收与暂定记录，必须由恢复后的高级模型复核。若上下文、文件检索或截断阻止重读，先列缺口并索取对应小文件，不得声称全仓库审核完成。
+
+最终报告前先列：实际完整读取范围、部分读取范围、未读范围、无法执行的验证；只在实际读取支持范围内下结论。
+
+
+当前若仍是 Flash-Lite，仅确认已收到材料导航、读取缺口和整体复审要求，并明确“等待高级模型复核”。不要现在生成伪称完整覆盖的正式总报告。高级模型恢复后，需重读实际可访问的原始附件和相关代码，不能只拼接本会话摘要；无法访问的范围先列出。不要把元数据清单当作正文阅读证据。

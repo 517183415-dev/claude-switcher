@@ -1,0 +1,20 @@
+{
+  "name": "@tauri-apps/cli",
+  "version": "2.12.4",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tauri-apps/tauri.git"
+  },
+  "platform_binding": {
+    "@tauri-apps/cli-darwin-arm64": "2.12.4"
+  },
+  "parent_lock_integrity": "sha512-JI9bHfudSRJikGOrjbXEm6RjzzvmKuLc+JixB1NE8hNzQkNlCCIC3pTES3uypkR9lxHrsbxzcnSwhI2IxBQphw==",
+  "parent_tarball_sha256": "08613005b02f312eb7d3563e32c95b7eae3e5481e2169f5222f080a26fbb7447",
+  "platform_license": "Apache-2.0 OR MIT",
+  "platform_repository": {
+    "url": "git+https://github.com/tauri-apps/tauri.git",
+    "type": "git"
+  },
+  "platform_lock_integrity": "sha512-OxqKSckIkoJ6vX2AjifIJpTasFC0Hbdoo7gEiCmAjauABO3U8m2MRsLWe+QTiBwDx1mIrvgA+rvI7tvDnbnHVg=="
+}

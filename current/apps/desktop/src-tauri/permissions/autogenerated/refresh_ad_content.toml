@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-refresh-ad-content"
+description = "Enables the refresh_ad_content command without any pre-configured scope."
+commands.allow = ["refresh_ad_content"]
+
+[[permission]]
+identifier = "deny-refresh-ad-content"
+description = "Denies the refresh_ad_content command without any pre-configured scope."
+commands.deny = ["refresh_ad_content"]

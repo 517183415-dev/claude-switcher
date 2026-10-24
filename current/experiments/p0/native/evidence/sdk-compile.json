@@ -1,0 +1,19 @@
+{
+  "command": [
+    "clang",
+    "-target",
+    "arm64-apple-macos13.0",
+    "-isysroot",
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+    "-fsyntax-only",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Werror=unguarded-availability",
+    "-Werror=unguarded-availability-new",
+    "experiments/p0/native/availability_probe.m"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}

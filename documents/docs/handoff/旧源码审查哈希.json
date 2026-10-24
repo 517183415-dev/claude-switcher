@@ -1,0 +1,180 @@
+{
+  "review_manifest": "docs/review-pack/文件清单.json",
+  "file_count": 29,
+  "files": [
+    {
+      "path": ".gitignore",
+      "reviewed_sha256": "3254e4eb003e191b94c0e054b35082a1d54f42398cd233fa5ce490574b9df363",
+      "current_sha256": "3254e4eb003e191b94c0e054b35082a1d54f42398cd233fa5ce490574b9df363",
+      "matches": true
+    },
+    {
+      "path": "LICENSE",
+      "reviewed_sha256": "c288d9b3c1c5bdb2038628f39c82b82375570798005c8e263b365057457b393a",
+      "current_sha256": "c288d9b3c1c5bdb2038628f39c82b82375570798005c8e263b365057457b393a",
+      "matches": true
+    },
+    {
+      "path": "README.md",
+      "reviewed_sha256": "bc91bc32fe4308f73f51c25e1287ffbc50e8de9fb42aba695fd18c2d5c1559bc",
+      "current_sha256": "bc91bc32fe4308f73f51c25e1287ffbc50e8de9fb42aba695fd18c2d5c1559bc",
+      "matches": true
+    },
+    {
+      "path": "SECURITY.md",
+      "reviewed_sha256": "d98d1a35aaba89fa83c2232a14d4b0c105f0ba897d9ed495a45bf65612a95689",
+      "current_sha256": "d98d1a35aaba89fa83c2232a14d4b0c105f0ba897d9ed495a45bf65612a95689",
+      "matches": true
+    },
+    {
+      "path": "SHA256SUMS",
+      "reviewed_sha256": "a95744918b853a66992bae2b3a5e26284491a4b94603cafadc4b7673354bc9ee",
+      "current_sha256": "a95744918b853a66992bae2b3a5e26284491a4b94603cafadc4b7673354bc9ee",
+      "matches": true
+    },
+    {
+      "path": "app/main.swift",
+      "reviewed_sha256": "99aa36cc50b03152adc323a5f59d8e110f15583968e92331c065d8866cae59c4",
+      "current_sha256": "99aa36cc50b03152adc323a5f59d8e110f15583968e92331c065d8866cae59c4",
+      "matches": true
+    },
+    {
+      "path": "assets/icon-gen.swift",
+      "reviewed_sha256": "516c9392cfa1166f274ba94797c19acba3401aab71be2e7cdb146dc402f36bd4",
+      "current_sha256": "516c9392cfa1166f274ba94797c19acba3401aab71be2e7cdb146dc402f36bd4",
+      "matches": true
+    },
+    {
+      "path": "core/claude-switch.sh",
+      "reviewed_sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+      "current_sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+      "matches": true
+    },
+    {
+      "path": "core/stun-probe.py",
+      "reviewed_sha256": "2c891f5f3cf392a6bb736dacc65a945afe89ae8e4d88e353b04fd1f9cd792ab1",
+      "current_sha256": "2c891f5f3cf392a6bb736dacc65a945afe89ae8e4d88e353b04fd1f9cd792ab1",
+      "matches": true
+    },
+    {
+      "path": "daemons/claude-bodyguard.sh",
+      "reviewed_sha256": "5ff62d74ab764f40667ce83299e62cc139bb0392deef4235084f8b5b1523f74f",
+      "current_sha256": "5ff62d74ab764f40667ce83299e62cc139bb0392deef4235084f8b5b1523f74f",
+      "matches": true
+    },
+    {
+      "path": "daemons/local.claude-bodyguard.plist",
+      "reviewed_sha256": "0105bf35a2bcbc286fd785534f7730059354cbfb2c6a30a1ba3fb44c146dab4f",
+      "current_sha256": "0105bf35a2bcbc286fd785534f7730059354cbfb2c6a30a1ba3fb44c146dab4f",
+      "matches": true
+    },
+    {
+      "path": "daemons/local.claude-update.plist",
+      "reviewed_sha256": "d467716f831d87ad167e6dac98b34bd299f4c5230eb89ffbafebebe66f6d69d9",
+      "current_sha256": "d467716f831d87ad167e6dac98b34bd299f4c5230eb89ffbafebebe66f6d69d9",
+      "matches": true
+    },
+    {
+      "path": "daemons/local.tz-watchdog.plist",
+      "reviewed_sha256": "c0b6b95e88becfb9aa51ec75e3c2a04b8e5a8a2698c5f87ec139d57621971300",
+      "current_sha256": "c0b6b95e88becfb9aa51ec75e3c2a04b8e5a8a2698c5f87ec139d57621971300",
+      "matches": true
+    },
+    {
+      "path": "daemons/tz-watchdog.sh",
+      "reviewed_sha256": "4f8d899ab0babecb9983d88d58e0f1feb13828dbad4600219cead1cc42f90916",
+      "current_sha256": "4f8d899ab0babecb9983d88d58e0f1feb13828dbad4600219cead1cc42f90916",
+      "matches": true
+    },
+    {
+      "path": "installer/卸载.command",
+      "reviewed_sha256": "2ed59432d85917f1c0b67d8276bf348e3a2cf55b5330af4f8cedd9a3672e6b0f",
+      "current_sha256": "2ed59432d85917f1c0b67d8276bf348e3a2cf55b5330af4f8cedd9a3672e6b0f",
+      "matches": true
+    },
+    {
+      "path": "installer/安装.command",
+      "reviewed_sha256": "d6d66d895a8240c2d600608d165e2a9e7bd3f6e0798380bef632450fb3a7f19c",
+      "current_sha256": "d6d66d895a8240c2d600608d165e2a9e7bd3f6e0798380bef632450fb3a7f19c",
+      "matches": true
+    },
+    {
+      "path": "linux/README.md",
+      "reviewed_sha256": "afd837974de8b313a770d19d2c70c4333d6a93b2dd38491607af499322bb0028",
+      "current_sha256": "afd837974de8b313a770d19d2c70c4333d6a93b2dd38491607af499322bb0028",
+      "matches": true
+    },
+    {
+      "path": "linux/claude-bodyguard.sh",
+      "reviewed_sha256": "e0c5582f0b7cbf70bfea8f9757f3a9bfa4bba4939ec8f02a2ce4247189d7e254",
+      "current_sha256": "e0c5582f0b7cbf70bfea8f9757f3a9bfa4bba4939ec8f02a2ce4247189d7e254",
+      "matches": true
+    },
+    {
+      "path": "linux/claude-switch.sh",
+      "reviewed_sha256": "8779c5b14097e52a503a869ec1f267293275e3a0a35513099ce6e41442c1f2dc",
+      "current_sha256": "8779c5b14097e52a503a869ec1f267293275e3a0a35513099ce6e41442c1f2dc",
+      "matches": true
+    },
+    {
+      "path": "linux/install.sh",
+      "reviewed_sha256": "d92c78f5eca333e0ab1d16475c464eaf74037713421442ef2bfbc2377948a5d9",
+      "current_sha256": "d92c78f5eca333e0ab1d16475c464eaf74037713421442ef2bfbc2377948a5d9",
+      "matches": true
+    },
+    {
+      "path": "linux/stun-probe.py",
+      "reviewed_sha256": "2c891f5f3cf392a6bb736dacc65a945afe89ae8e4d88e353b04fd1f9cd792ab1",
+      "current_sha256": "2c891f5f3cf392a6bb736dacc65a945afe89ae8e4d88e353b04fd1f9cd792ab1",
+      "matches": true
+    },
+    {
+      "path": "scripts/gen-sums.sh",
+      "reviewed_sha256": "0f9943dd89cfc126cb56afabfa8489af66577dc5de4e7822a0ab040786825a2b",
+      "current_sha256": "0f9943dd89cfc126cb56afabfa8489af66577dc5de4e7822a0ab040786825a2b",
+      "matches": true
+    },
+    {
+      "path": "tests/test_proxy_diagnose.py",
+      "reviewed_sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+      "current_sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+      "matches": true
+    },
+    {
+      "path": "windows/README.md",
+      "reviewed_sha256": "75a03d3e26efd3520ebd2a1bc1e9a8794c2f8793b71ad0ea36963c6b0c3e1c44",
+      "current_sha256": "75a03d3e26efd3520ebd2a1bc1e9a8794c2f8793b71ad0ea36963c6b0c3e1c44",
+      "matches": true
+    },
+    {
+      "path": "windows/SwitcherUI.ps1",
+      "reviewed_sha256": "6c6eb80b38ca39066e60348e6e0073519c0eebeb08192f1ca0cb0b0b5673eaaa",
+      "current_sha256": "6c6eb80b38ca39066e60348e6e0073519c0eebeb08192f1ca0cb0b0b5673eaaa",
+      "matches": true
+    },
+    {
+      "path": "windows/claude-bodyguard.ps1",
+      "reviewed_sha256": "2f93316726e1d0666f5b6678dc45b93cf5854e5c0abd1943e5fda7c4080760b9",
+      "current_sha256": "2f93316726e1d0666f5b6678dc45b93cf5854e5c0abd1943e5fda7c4080760b9",
+      "matches": true
+    },
+    {
+      "path": "windows/claude-switch.ps1",
+      "reviewed_sha256": "69faa784b8c818c6b947174e77734f5f2642923f371cbfe691b5299f91c642c1",
+      "current_sha256": "69faa784b8c818c6b947174e77734f5f2642923f371cbfe691b5299f91c642c1",
+      "matches": true
+    },
+    {
+      "path": "windows/install.ps1",
+      "reviewed_sha256": "2a5bf31de82b10aa597a9fe1d6edd4dd3d7ea0c5bacdd648b8950c78b7006218",
+      "current_sha256": "2a5bf31de82b10aa597a9fe1d6edd4dd3d7ea0c5bacdd648b8950c78b7006218",
+      "matches": true
+    },
+    {
+      "path": "tests/test_switch_safety.py",
+      "reviewed_sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+      "current_sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+      "matches": true
+    }
+  ]
+}

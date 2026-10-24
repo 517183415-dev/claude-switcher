@@ -1,0 +1,42 @@
+
+> claude-switcher-desktop@0.2.0 test
+> node --test tests/*.test.mjs && node scripts/core-preparation-regression.mjs
+
+✔ backup card renders local message and recovery in a polite status, with nearby errors (488.162667ms)
+✔ export shows the returned message and clears the password on success (618.44675ms)
+✔ restore preserves a completed=false outcome and its recovery guidance (39.82625ms)
+✔ a new export clears stale feedback while pending and reports failures locally (16.7525ms)
+✔ restore validation clears stale feedback and reports the error beside the card (214.204666ms)
+✔ restore rejection stays local and clears the file selection (15.772125ms)
+✔ fixture backup handlers make zero IPC calls even when invoked directly (13.189458ms)
+✔ restore success remains visible if the subsequent draft refresh fails (22.376666ms)
+✔ opening the backup folder clears old errors and shows its real outcome (32.24825ms)
+✔ Taipei and Los Angeles labels match date conversion and parse (37.843375ms)
+✔ a running page retains consistent old-zone display but cannot write after TZ changes (3.58825ms)
+✔ Los Angeles to Taipei changes reject old inputs before any poll (1.981667ms)
+✔ UTC editing survives a running process timezone change (3.593125ms)
+✔ Los Angeles DST offsets use the timestamp rather than the current offset (2.858167ms)
+✔ empty or invalid input cannot become epoch zero (1.219209ms)
+✔ outcome: production presentation translates codes and preserves Chinese guidance (196.17525ms)
+✔ formatting preserves the outcome contract and the ad confirmation discriminator (0.702209ms)
+✔ fixture update and account actions make zero IPC calls (543.359792ms)
+✔ preview_repair: production registers request before spawning worker (2.12725ms)
+✔ preview_region_change: production registers request before spawning worker (0.151291ms)
+✔ production worker never re-registers canceled or superseded requests (0.221791ms)
+✔ environment buttons use full shared preview and retain current region (397.958916ms)
+✔ full production preview renders unchanged system values and all user original/target values (36.271917ms)
+✔ execute requires visible valid preview, consumes its request ID once (9.390708ms)
+✔ failed repreview and cancel invalidate the old executable plan (160.213375ms)
+✔ navigation/unmount and late old success cannot restore or execute a preview (13.666042ms)
+✔ blocked or recovery-required preview cannot execute (19.640125ms)
+✔ late recovery completion after navigation cannot create a fresh executable plan (5.6465ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2618.944833
+PASS: immediate invalidation, cancel late success, failure refresh, newer check race, stale snapshot race, fixture zero IPC
+PASS: automatic opening check, fixture zero IPC, single-action first-B switch and launch

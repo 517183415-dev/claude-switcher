@@ -1,0 +1,13 @@
+{
+  "name": "is-reference",
+  "version": "3.0.3",
+  "license": "MIT",
+  "gitHead": "8bb053129bfabe2f6a7d7ed050159d67ebe82829",
+  "repository": {
+    "url": "git+https://github.com/Rich-Harris/is-reference.git",
+    "type": "git"
+  },
+  "dist_integrity": "sha512-ixkJoqQvAP88E6wLydLGGqCJsrFUnqoH6HnaczB8XmDH1oaWU+xxdptvikTgaEhtZ53Ky6YXiBuUI2WXLMCwjw==",
+  "tree_license_paths": [],
+  "tree_url": "https://api.github.com/repos/Rich-Harris/is-reference/git/trees/8bb053129bfabe2f6a7d7ed050159d67ebe82829?recursive=1"
+}

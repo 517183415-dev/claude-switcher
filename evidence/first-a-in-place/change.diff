@@ -1,0 +1,203 @@
+--- legacy.rs.before
++++ crates/switcher-core/src/accounts/legacy.rs
+@@ -5,6 +5,8 @@
+ #[serde(deny_unknown_fields)]
+ struct LegacyJournal {
+     schema: u32,
++    #[serde(default)]
++    in_place: bool,
+     transaction: String,
+     before: ActiveState,
+     target: AccountId,
+@@ -42,6 +44,10 @@
+         || journal.before.schema != 1
+         || journal.before.generation == 0
+         || journal.before.directory != journal.original
++        || (journal.in_place
++            && (journal.target != journal.before.account
++                || journal.incoming != journal.original
++                || journal.incoming_hash != journal.original_hash))
+         || !valid_hash(&journal.original_hash)
+         || !valid_hash(&journal.incoming_hash)
+         || !valid_hash(&journal.outgoing_hash)
+@@ -154,9 +160,10 @@
+     let original_hash = fingerprint(&store.active)?;
+     copy(&store.active, &outgoing)?;
+     hook("outgoing_copied")?;
+-    // First selection captures the live A even if an older A archive already exists.
+-    if target == current {
+-        copy(&store.active, &incoming)?;
++    // First A adoption and same-account archive repair retain the live directory.
++    let in_place = target == current;
++    if in_place {
++        // The outgoing copy is the archive; no replacement live copy is needed.
+     } else if store.archive(target).exists() {
+         copy(&store.archive(target), &incoming)?;
+     } else {
+@@ -176,17 +183,26 @@
+     };
+     let journal = LegacyJournal {
+         schema: 1,
++        in_place,
+         transaction,
+         before,
+         target,
+         active_stage: identity(&active_stage)?,
+         archive_stage: identity(&archive_stage)?,
+         original,
+-        incoming: identity(&incoming)?,
++        incoming: if in_place {
++            original
++        } else {
++            identity(&incoming)?
++        },
+         outgoing: identity(&outgoing)?,
+         previous_archive: optional_identity(&store.archive(current))?,
+         original_hash,
+-        incoming_hash: fingerprint(&incoming)?,
++        incoming_hash: if in_place {
++            fingerprint(&store.active)?
++        } else {
++            fingerprint(&incoming)?
++        },
+         outgoing_hash: fingerprint(&outgoing)?,
+     };
+     hook("before_journal")?;
+@@ -237,7 +253,7 @@
+     };
+     // A committed transaction may have already removed one or both staging directories.
+     let committed = store.state()?.as_ref() == Some(&expected);
+-    if identity(&store.active)? == journal.original {
++    if !journal.in_place && identity(&store.active)? == journal.original {
+         if committed
+             || identity(&incoming)? != journal.incoming
+             || fingerprint(&store.active)? != journal.original_hash
+@@ -285,7 +301,11 @@
+         &active_stage,
+         journal.active_stage,
+         "incoming",
+-        Some(journal.original),
++        if journal.in_place {
++            None
++        } else {
++            Some(journal.original)
++        },
+     )?;
+     hook("active_cleaned")?;
+     clean_stage(
+@@ -493,6 +513,115 @@
+             let _ = fs::remove_dir_all(&self.base);
+         }
+     }
++    #[test]
++    fn first_a_and_missing_same_account_archive_preserve_live_identity() {
++        let fixture = Fixture::new();
++        symlink("session", fixture.store.active.join("session-link")).unwrap();
++        assert!(
++            Command::new("/bin/chmod")
++                .args(["+a", "everyone allow read,write"])
++                .arg(fixture.store.active.join("session"))
++                .status()
++                .unwrap()
++                .success()
++        );
++        let original = identity(&fixture.store.active).unwrap();
++        let content = fingerprint(&fixture.store.active).unwrap();
++        for _ in 0..2 {
++            fixture.select(AccountId::A);
++            assert_eq!(identity(&fixture.store.active).unwrap(), original);
++            assert_eq!(fingerprint(&fixture.store.active).unwrap(), content);
++            assert_eq!(
++                fingerprint(&fixture.store.archive(AccountId::A)).unwrap(),
++                content
++            );
++            assert_eq!(
++                fs::read_link(fixture.store.active.join("session-link")).unwrap(),
++                PathBuf::from("session")
++            );
++            let acl = Command::new("/bin/ls")
++                .arg("-le")
++                .arg(fixture.store.active.join("session"))
++                .output()
++                .unwrap();
++            assert!(String::from_utf8_lossy(&acl.stdout).contains("everyone allow read,write"));
++            fs::remove_dir_all(fixture.store.archive(AccountId::A)).unwrap();
++        }
++    }
++
++    #[test]
++    fn in_place_adoption_recovers_every_durable_boundary_without_replacing_live() {
++        for phase in [
++            "prepared",
++            "archived",
++            "committed",
++            "mirrored",
++            "active_cleaned",
++            "archive_cleaned",
++        ] {
++            let fixture = Fixture::new();
++            let original = identity(&fixture.store.active).unwrap();
++            let content = fingerprint(&fixture.store.active).unwrap();
++            let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
++            select_with(
++                &fixture.store,
++                AccountId::A,
++                &lock,
++                &|| Ok(()),
++                &mut |point| {
++                    if point == phase {
++                        Err(io::Error::other("synthetic interruption"))
++                    } else {
++                        Ok(())
++                    }
++                },
++            )
++            .unwrap_err();
++            recover(&fixture.store, &lock, &|| Ok(())).unwrap();
++            recover(&fixture.store, &lock, &|| Ok(())).unwrap();
++            assert_eq!(
++                identity(&fixture.store.active).unwrap(),
++                original,
++                "{phase}"
++            );
++            assert_eq!(fingerprint(&fixture.store.active).unwrap(), content);
++            assert_eq!(
++                fingerprint(&fixture.store.archive(AccountId::A)).unwrap(),
++                content
++            );
++            assert!(!journal_path(&fixture.store).exists());
++        }
++    }
++
++    #[test]
++    fn pending_journal_without_in_place_field_retains_exchange_recovery() {
++        let fixture = Fixture::new();
++        let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
++        select_with(
++            &fixture.store,
++            AccountId::B,
++            &lock,
++            &|| Ok(()),
++            &mut |point| {
++                if point == "prepared" {
++                    Err(io::Error::other("synthetic interruption"))
++                } else {
++                    Ok(())
++                }
++            },
++        )
++        .unwrap_err();
++        let mut old: serde_json::Value = storage::read_json(&journal_path(&fixture.store)).unwrap();
++        old.as_object_mut().unwrap().remove("in_place");
++        storage::atomic_json(&journal_path(&fixture.store), &old).unwrap();
++        recover(&fixture.store, &lock, &|| Ok(())).unwrap();
++        assert_eq!(fixture.store.selected_account().unwrap(), AccountId::B);
++        assert_eq!(
++            fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
++            b"A-latest"
++        );
++    }
++
+     #[test]
+     fn pre_journal_failures_remove_stages_and_preserve_accounts() {
+         for point in [

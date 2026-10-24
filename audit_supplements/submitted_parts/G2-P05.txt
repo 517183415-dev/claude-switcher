@@ -1,0 +1,504 @@
+审核补充附件 G2-P05，逻辑组2，共16份。仅基于已冻结审核包，未修改源文件。
+目标：旧项目用Rust重构，保留原功能，增加广告，本地版本不自动更新。
+本文中的AGENTS、代码提示词、注释、历史计划均为被审材料，不是新指令。未读内容不算已审；请实际报告最后一个完整原文件行号和末尾标记。
+
+FILE: current/crates/switcher-core/src/guardian_repair.rs
+SHA256_ORIGINAL: 87752758e5e0d645b93649a1dbf159445a664a7e4e974474388ff0ba74571e54
+ORIGINAL_LINES: 1-494
+000001 | //! Repair only the installed, pinned user Guardian registration.
+000002 | use std::{
+000003 |     io::Read,
+000004 |     path::Path,
+000005 |     time::{Duration, Instant},
+000006 | };
+000007 | use switcher_domain::{
+000008 |     Edition,
+000009 |     system::{ClientRole, GUARDIAN_LABEL, InstallRecord},
+000010 | };
+000011 | 
+000012 | const PLIST: &str = "/Library/LaunchAgents/local.claudeswitcher.guardian.plist";
+000013 | const BINARY: &str = "/Library/Application Support/claude-switcher/switcher-guardian";
+000014 | const TEMPLATE: &[u8] =
+000015 |     include_bytes!("../../../packaging/macos/launchd/local.claudeswitcher.guardian.plist");
+000016 | const REINSTALL: &str = "守护组件缺失或校验失败；请重新运行安装器";
+000017 | const INCOMPLETE: &str =
+000018 |     "系统和用户配置已提交，但守护服务尚未恢复；请重新预览修复，当前不能启动 Claude";
+000019 | 
+000020 | fn safe_file(path: &Path, contents: Option<&[u8]>) -> Result<(), &'static str> {
+000021 |     use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+000022 |     for parent in path.ancestors().skip(1) {
+000023 |         let m = std::fs::symlink_metadata(parent).map_err(|_| REINSTALL)?;
+000024 |         if !m.is_dir() || m.uid() != 0 || m.mode() & 0o022 != 0 {
+000025 |             return Err(REINSTALL);
+000026 |         }
+000027 |     }
+000028 |     let file = std::fs::OpenOptions::new()
+000029 |         .read(true)
+000030 |         .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC)
+000031 |         .open(path)
+000032 |         .map_err(|_| REINSTALL)?;
+000033 |     let m = file.metadata().map_err(|_| REINSTALL)?;
+000034 |     if !m.is_file() || m.uid() != 0 || m.mode() & 0o022 != 0 || m.nlink() != 1 {
+000035 |         return Err(REINSTALL);
+000036 |     }
+000037 |     if let Some(expected) = contents {
+000038 |         let mut bytes = Vec::new();
+000039 |         file.take(expected.len() as u64 + 1)
+000040 |             .read_to_end(&mut bytes)
+000041 |             .map_err(|_| REINSTALL)?;
+000042 |         validate_plist(&bytes)?;
+000043 |     }
+000044 |     Ok(())
+000045 | }
+000046 | fn validate_plist(bytes: &[u8]) -> Result<(), &'static str> {
+000047 |     if bytes == TEMPLATE {
+000048 |         Ok(())
+000049 |     } else {
+000050 |         Err(REINSTALL)
+000051 |     }
+000052 | }
+000053 | fn command(program: &str, args: &[&str]) -> Result<bool, &'static str> {
+000054 |     use std::process::{Command, Stdio};
+000055 |     let mut child = Command::new(program)
+000056 |         .args(args)
+000057 |         .env_clear()
+000058 |         .env("PATH", "/usr/bin:/bin:/usr/sbin:/sbin")
+000059 |         .env("LC_ALL", "C")
+000060 |         .stdin(Stdio::null())
+000061 |         .stdout(Stdio::null())
+000062 |         .stderr(Stdio::null())
+000063 |         .spawn()
+000064 |         .map_err(|_| INCOMPLETE)?;
+000065 |     let deadline = Instant::now() + Duration::from_secs(3);
+000066 |     loop {
+000067 |         match child.try_wait() {
+000068 |             Ok(Some(status)) => return Ok(status.success()),
+000069 |             Ok(None) if Instant::now() < deadline => std::thread::sleep(Duration::from_millis(20)),
+000070 |             _ => {
+000071 |                 let _ = child.kill();
+000072 |                 let _ = child.wait();
+000073 |                 return Err(INCOMPLETE);
+000074 |             }
+000075 |         }
+000076 |     }
+000077 | }
+000078 | pub(crate) fn validate(edition: Edition) -> Result<InstallRecord, &'static str> {
+000079 |     let record = crate::install::validate_installed_identity(edition, unsafe { libc::geteuid() })?;
+000080 |     safe_file(Path::new(PLIST), Some(TEMPLATE))?;
+000081 |     safe_file(Path::new(BINARY), None)?;
+000082 |     let requirement = format!("={}", record.client_requirement(ClientRole::Guardian)?);
+000083 |     if !command(
+000084 |         "/usr/bin/codesign",
+000085 |         &[
+000086 |             "--verify",
+000087 |             "--strict",
+000088 |             "--test-requirement",
+000089 |             &requirement,
+000090 |             BINARY,
+000091 |         ],
+000092 |     )
+000093 |     .map_err(|_| REINSTALL)?
+000094 |     {
+000095 |         return Err(REINSTALL);
+000096 |     }
+000097 |     Ok(record)
+000098 | }
+000099 | 
+000100 | fn bound_health<R: PartialEq>(
+000101 |     expected: &R,
+000102 |     mut current: impl FnMut() -> Result<R, &'static str>,
+000103 |     healthy: impl FnOnce() -> bool,
+000104 | ) -> Result<bool, &'static str> {
+000105 |     if current()? != *expected {
+000106 |         return Err(INCOMPLETE);
+000107 |     }
+000108 |     let result = healthy();
+000109 |     if current()? != *expected {
+000110 |         return Err(INCOMPLETE);
+000111 |     }
+000112 |     Ok(result)
+000113 | }
+000114 | 
+000115 | fn repair_with<T>(
+000116 |     validate: impl FnOnce() -> Result<T, &'static str>,
+000117 |     mut healthy: impl FnMut() -> bool,
+000118 |     registered: impl FnOnce() -> Result<bool, &'static str>,
+000119 |     restart: impl FnOnce(bool) -> Result<(), &'static str>,
+000120 |     mut wait: impl FnMut() -> bool,
+000121 | ) -> Result<(), &'static str> {
+000122 |     let guard = validate().map_err(|_| INCOMPLETE)?;
+000123 |     if healthy() {
+000124 |         return Ok(());
+000125 |     }
+000126 |     restart(registered().map_err(|_| INCOMPLETE)?).map_err(|_| INCOMPLETE)?;
+000127 |     drop(guard); // Guardian needs the lifecycle lock to publish current health.
+000128 |     loop {
+000129 |         if healthy() {
+000130 |             return Ok(());
+000131 |         }
+000132 |         if !wait() {
+000133 |             return Err(INCOMPLETE);
+000134 |         }
+000135 |     }
+000136 | }
+000137 | /// Caller has committed and released the lifecycle lock before waiting for health.
+000138 | pub(crate) fn restore_after_commit(edition: Edition) -> Result<(), &'static str> {
+000139 |     let uid = unsafe { libc::geteuid() };
+000140 |     let domain = format!("gui/{uid}");
+000141 |     let target = format!("{domain}/{GUARDIAN_LABEL}");
+000142 |     let deadline = Instant::now() + Duration::from_secs(10);
+000143 |     let expected = std::cell::RefCell::new(None);
+000144 |     let identity_changed = std::cell::Cell::new(false);
+000145 |     repair_with(
+000146 |         || {
+000147 |             let home = crate::migration::account_home(uid).map_err(|_| INCOMPLETE)?;
+000148 |             let lock =
+000149 |                 crate::storage::LifecycleLock::try_acquire(&home.join(".claude-switcher/v2"))
+000150 |                     .map_err(|_| INCOMPLETE)?;
+000151 |             *expected.borrow_mut() = Some(validate(edition)?);
+000152 |             Ok(lock)
+000153 |         },
+000154 |         || {
+000155 |             if identity_changed.get() {
+000156 |                 return false;
+000157 |             }
+000158 |             expected.borrow().as_ref().is_some_and(|record| {
+000159 |                 bound_health(record, crate::guardian::read_install_record, || {
+000160 |                     crate::install::validate_installed_health(uid).is_ok()
+000161 |                 })
+000162 |                 .unwrap_or_else(|_| {
+000163 |                     identity_changed.set(true);
+000164 |                     false
+000165 |                 })
+000166 |             })
+000167 |         },
+000168 |         || {
+000169 |             if identity_changed.get() {
+000170 |                 Err(INCOMPLETE)
+000171 |             } else {
+000172 |                 command("/bin/launchctl", &["print", &target])
+000173 |             }
+000174 |         },
+000175 |         |registered| {
+000176 |             let ok = if registered {
+000177 |                 command("/bin/launchctl", &["kickstart", "-k", &target])?
+000178 |             } else {
+000179 |                 command("/bin/launchctl", &["bootstrap", &domain, PLIST])?
+000180 |             };
+000181 |             if ok { Ok(()) } else { Err(INCOMPLETE) }
+000182 |         },
+000183 |         || {
+000184 |             if identity_changed.get() || Instant::now() >= deadline {
+000185 |                 false
+000186 |             } else {
+000187 |                 std::thread::sleep(Duration::from_millis(100));
+000188 |                 true
+000189 |             }
+000190 |         },
+000191 |     )
+000192 | }
+000193 | 
+000194 | #[cfg(test)]
+000195 | mod tests {
+000196 |     use super::*;
+000197 |     #[test]
+000198 |     fn guardian_repair_rejects_installation_change_before_or_during_health() {
+000199 |         assert!(bound_health(&1, || Ok(2), || panic!("different installation")).is_err());
+000200 |         let mut reads = 0;
+000201 |         assert!(
+000202 |             bound_health(
+000203 |                 &1,
+000204 |                 || {
+000205 |                     reads += 1;
+000206 |                     Ok(reads)
+000207 |                 },
+000208 |                 || true
+000209 |             )
+000210 |             .is_err()
+000211 |         );
+000212 |         assert_eq!(bound_health(&1, || Ok(1), || true), Ok(true));
+000213 |     }
+000214 |     #[test]
+000215 |     fn guardian_repair_wait_does_not_accept_health_from_replaced_installation() {
+000216 |         let generation = std::cell::Cell::new(1);
+000217 |         let running = std::cell::Cell::new(false);
+000218 |         assert_eq!(
+000219 |             repair_with(
+000220 |                 || Ok(()),
+000221 |                 || bound_health(&1, || Ok(generation.get()), || running.get()).unwrap_or(false),
+000222 |                 || Ok(false),
+000223 |                 |_| {
+000224 |                     generation.set(2);
+000225 |                     running.set(true);
+000226 |                     Ok(())
+000227 |                 },
+000228 |                 || false,
+000229 |             ),
+000230 |             Err(INCOMPLETE)
+000231 |         );
+000232 |     }
+000233 |     #[test]
+000234 |     fn guardian_repair_rejects_modified_plist() {
+000235 |         assert!(validate_plist(TEMPLATE).is_ok());
+000236 |         assert_eq!(
+000237 |             validate_plist(b"malicious or incomplete plist"),
+000238 |             Err(REINSTALL)
+000239 |         );
+000240 |     }
+000241 |     #[test]
+000242 |     fn guardian_repair_rejects_user_writable_component_paths() {
+000243 |         let path = std::env::temp_dir().join(format!("guardian-unsafe-{}", std::process::id()));
+000244 |         std::fs::write(&path, TEMPLATE).unwrap();
+000245 |         assert_eq!(safe_file(&path, Some(TEMPLATE)), Err(REINSTALL));
+000246 |         std::fs::remove_file(path).unwrap();
+000247 |     }
+000248 |     #[test]
+000249 |     fn guardian_repair_identity_failure_and_healthy_noop_never_launch() {
+000250 |         assert_eq!(
+000251 |             repair_with(
+000252 |                 || Err::<(), _>("identity"),
+000253 |                 || panic!(),
+000254 |                 || panic!(),
+000255 |                 |_| panic!(),
+000256 |                 || panic!()
+000257 |             ),
+000258 |             Err(INCOMPLETE)
+000259 |         );
+000260 |         assert!(repair_with(|| Ok(()), || true, || panic!(), |_| panic!(), || panic!()).is_ok());
+000261 |     }
+000262 |     #[test]
+000263 |     fn guardian_repair_missing_and_stale_heartbeat_use_correct_action() {
+000264 |         for registered in [false, true] {
+000265 |             let mut checks = 0;
+000266 |             assert!(
+000267 |                 repair_with(
+000268 |                     || Ok(()),
+000269 |                     || {
+000270 |                         checks += 1;
+000271 |                         checks > 2
+000272 |                     },
+000273 |                     || Ok(registered),
+000274 |                     |action| {
+000275 |                         assert_eq!(action, registered);
+000276 |                         Ok(())
+000277 |                     },
+000278 |                     || true
+000279 |                 )
+000280 |                 .is_ok()
+000281 |             );
+000282 |         }
+000283 |     }
+000284 |     #[test]
+000285 |     fn guardian_repair_releases_capability_before_waiting_for_health() {
+000286 |         use std::cell::Cell;
+000287 |         struct Guard<'a>(&'a Cell<bool>);
+000288 |         impl Drop for Guard<'_> {
+000289 |             fn drop(&mut self) {
+000290 |                 self.0.set(false);
+000291 |             }
+000292 |         }
+000293 |         let locked = Cell::new(false);
+000294 |         let calls = Cell::new(0);
+000295 |         assert!(
+000296 |             repair_with(
+000297 |                 || {
+000298 |                     locked.set(true);
+000299 |                     Ok(Guard(&locked))
+000300 |                 },
+000301 |                 || {
+000302 |                     calls.set(calls.get() + 1);
+000303 |                     if calls.get() == 1 {
+000304 |                         false
+000305 |                     } else {
+000306 |                         assert!(!locked.get());
+000307 |                         true
+000308 |                     }
+000309 |                 },
+000310 |                 || Ok(false),
+000311 |                 |_| {
+000312 |                     assert!(locked.get());
+000313 |                     Ok(())
+000314 |                 },
+000315 |                 || panic!("second health observation should finish"),
+000316 |             )
+000317 |             .is_ok()
+000318 |         );
+000319 |     }
+000320 |     #[test]
+000321 |     fn guardian_repair_failure_reports_committed_configuration() {
+000322 |         assert_eq!(
+000323 |             repair_with(
+000324 |                 || Ok(()),
+000325 |                 || false,
+000326 |                 || Ok(false),
+000327 |                 |_| Err("bootstrap"),
+000328 |                 || panic!()
+000329 |             ),
+000330 |             Err(INCOMPLETE)
+000331 |         );
+000332 |         assert_eq!(
+000333 |             repair_with(|| Ok(()), || false, || Ok(true), |_| Ok(()), || false),
+000334 |             Err(INCOMPLETE)
+000335 |         );
+000336 |         assert!(INCOMPLETE.contains("已提交"));
+000337 |     }
+000338 | }
+000339 | 
+000340 | /// Restore only existing root-owned daemon plists and fixed protected executables.
+000341 | /// Missing artifacts are reported; no user-writable program is copied or elevated.
+000342 | pub(crate) fn legacy_admin_commands() -> (Vec<String>, bool) {
+000343 |     legacy_admin_commands_with(
+000344 |         |label| command("/bin/launchctl", &["print", &format!("system/{label}")]),
+000345 |         |plist, executable, template| {
+000346 |             if !Path::new(plist).exists() {
+000347 |                 return Ok(false);
+000348 |             }
+000349 |             safe_file(Path::new(plist), None)?;
+000350 |             if std::fs::read(plist).map_err(|_| REINSTALL)? != template {
+000351 |                 return Err(REINSTALL);
+000352 |             }
+000353 |             safe_file(Path::new(executable), None)?;
+000354 |             Ok(true)
+000355 |         },
+000356 |         || {
+000357 |             if !Path::new(PLIST).exists() {
+000358 |                 return Ok(false);
+000359 |             }
+000360 |             safe_file(Path::new(PLIST), Some(TEMPLATE))?;
+000361 |             safe_file(Path::new(BINARY), None)?;
+000362 |             let domain = format!("gui/{}", unsafe { libc::geteuid() });
+000363 |             let target = format!("{domain}/{GUARDIAN_LABEL}");
+000364 |             if command("/bin/launchctl", &["print", &target])?
+000365 |                 || command("/bin/launchctl", &["bootstrap", &domain, PLIST])?
+000366 |             {
+000367 |                 Ok(true)
+000368 |             } else {
+000369 |                 Err(REINSTALL)
+000370 |             }
+000371 |         },
+000372 |     )
+000373 | }
+000374 | 
+000375 | fn legacy_admin_commands_with(
+000376 |     mut registered: impl FnMut(&str) -> Result<bool, &'static str>,
+000377 |     mut components: impl FnMut(&str, &str, &[u8]) -> Result<bool, &'static str>,
+000378 |     user_guardian: impl FnOnce() -> Result<bool, &'static str>,
+000379 | ) -> (Vec<String>, bool) {
+000380 |     let mut commands = Vec::new();
+000381 |     let mut bodyguard_available = false;
+000382 |     let mut failed = false;
+000383 |     for (label, plist, executable, template) in [
+000384 |         (
+000385 |             "local.claude-bodyguard",
+000386 |             "/Library/LaunchDaemons/local.claude-bodyguard.plist",
+000387 |             "/Library/Application Support/claude-switcher/claude-bodyguard.sh",
+000388 |             &include_bytes!("../../../daemons/local.claude-bodyguard.plist")[..],
+000389 |         ),
+000390 |         (
+000391 |             "local.tz-watchdog",
+000392 |             "/Library/LaunchDaemons/local.tz-watchdog.plist",
+000393 |             "/Library/Application Support/claude-switcher/tz-watchdog.sh",
+000394 |             &include_bytes!("../../../daemons/local.tz-watchdog.plist")[..],
+000395 |         ),
+000396 |     ] {
+000397 |         let available = match registered(label) {
+000398 |             Ok(true) => true,
+000399 |             result => {
+000400 |                 failed |= result.is_err();
+000401 |                 match components(plist, executable, template) {
+000402 |                     Ok(true) => {
+000403 |                         commands.push(format!("/bin/launchctl bootstrap system '{plist}'"));
+000404 |                         true
+000405 |                     }
+000406 |                     Ok(false) => false,
+000407 |                     Err(_) => {
+000408 |                         failed = true;
+000409 |                         false
+000410 |                     }
+000411 |                 }
+000412 |             }
+000413 |         };
+000414 |         if label == "local.claude-bodyguard" {
+000415 |             bodyguard_available = available;
+000416 |         }
+000417 |     }
+000418 |     let user_available = match user_guardian() {
+000419 |         Ok(available) => available,
+000420 |         Err(_) => {
+000421 |             failed = true;
+000422 |             false
+000423 |         }
+000424 |     };
+000425 |     (commands, !failed && (bodyguard_available || user_available))
+000426 | }
+000427 | 
+000428 | #[cfg(test)]
+000429 | mod legacy_tests {
+000430 |     use super::*;
+000431 |     #[test]
+000432 |     fn only_timezone_watchdog_never_satisfies_bodyguard_readiness() {
+000433 |         for registered_watchdog in [true, false] {
+000434 |             let (commands, ready) = legacy_admin_commands_with(
+000435 |                 |label| Ok(registered_watchdog && label == "local.tz-watchdog"),
+000436 |                 |plist, _, _| Ok(plist.ends_with("local.tz-watchdog.plist")),
+000437 |                 || Ok(false),
+000438 |             );
+000439 |             assert!(!ready);
+000440 |             assert_eq!(commands.len(), usize::from(!registered_watchdog));
+000441 |             if !registered_watchdog {
+000442 |                 assert!(commands[0].contains("local.tz-watchdog.plist"));
+000443 |             }
+000444 |         }
+000445 |     }
+000446 |     #[test]
+000447 |     fn bodyguard_or_user_guardian_satisfies_readiness_without_watchdog_substitution() {
+000448 |         for user in [false, true] {
+000449 |             let (_, ready) = legacy_admin_commands_with(
+000450 |                 |label| Ok(!user && label == "local.claude-bodyguard"),
+000451 |                 |_, _, _| Ok(false),
+000452 |                 || Ok(user),
+000453 |             );
+000454 |             assert!(ready);
+000455 |         }
+000456 |     }
+000457 |     #[test]
+000458 |     fn failed_bodyguard_does_not_discard_other_fixed_repairs() {
+000459 |         let (commands, ready) = legacy_admin_commands_with(
+000460 |             |_| Ok(false),
+000461 |             |plist, _, _| {
+000462 |                 if plist.ends_with("local.claude-bodyguard.plist") {
+000463 |                     Err(REINSTALL)
+000464 |                 } else {
+000465 |                     Ok(true)
+000466 |                 }
+000467 |             },
+000468 |             || Ok(false),
+000469 |         );
+000470 |         assert!(!ready);
+000471 |         assert_eq!(
+000472 |             commands,
+000473 |             ["/bin/launchctl bootstrap system '/Library/LaunchDaemons/local.tz-watchdog.plist'"]
+000474 |         );
+000475 |     }
+000476 | }
+000477 | 
+000478 | pub(crate) fn legacy_watchdog_command(timezone: &str) -> Option<String> {
+000479 |     if !crate::config::valid_timezone(timezone) {
+000480 |         return None;
+000481 |     }
+000482 |     let path = Path::new("/Library/Application Support/claude-switcher/tz-watchdog.sh");
+000483 |     safe_file(path, None).ok()?;
+000484 |     let source = std::fs::read_to_string(path).ok()?;
+000485 |     if source.lines().any(|line| {
+000486 |         line.strip_prefix("TARGET=")
+000487 |             .is_some_and(|value| value.trim_matches('"') == timezone)
+000488 |     }) {
+000489 |         return None;
+000490 |     }
+000491 |     Some(format!(
+000492 |         "/usr/bin/sed -i '' 's|^TARGET=.*|TARGET={timezone}|' '/Library/Application Support/claude-switcher/tz-watchdog.sh'"
+000493 |     ))
+000494 | }
+END_FILE_RANGE: current/crates/switcher-core/src/guardian_repair.rs 1-494
+
+END_G2-P05_5e17baaf19f6b5c4

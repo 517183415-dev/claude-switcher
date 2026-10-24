@@ -1,0 +1,30 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Checking switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling sha2 v0.10.9
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling tauri-codegen v2.7.4
+   Compiling tauri-macros v2.7.4
+    Checking tauri v2.12.5
+    Checking tauri-plugin-updater v2.14.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.98s

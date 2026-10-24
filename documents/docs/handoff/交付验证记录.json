@@ -1,0 +1,138 @@
+{
+  "handoff_id": "CS-RUST-20261022-R4",
+  "verified_at_utc": "2026-10-22T04:24:44.618121+00:00",
+  "scope": "R4 方案精简、工程提示词、文档与交接包核对；产品代码和系统设置保持原状",
+  "project_root": "/Users/gua/CodexWorkspaces/claude-switcher",
+  "git_head": "2cf108596a7bb382acbc62c2d1dd9b89e17e1d71",
+  "review_method": {
+    "skills": [
+      "ponytail",
+      "stop-that-shit review"
+    ],
+    "actor": "current lead",
+    "finding_groups": 5,
+    "additional_review_agents": 0,
+    "scope": "existing Rust rewrite plans and handoff; source protection checked"
+  },
+  "protected_source_files": {
+    "count": 45,
+    "differences": [],
+    "status": "PASS"
+  },
+  "reviewed_legacy_files": {
+    "count": 29,
+    "differences": [],
+    "status": "PASS"
+  },
+  "local_markdown_links": {
+    "checked": 31,
+    "missing": [],
+    "bundle_targets_present": true,
+    "status": "PASS"
+  },
+  "engineering_tasks": {
+    "count": 12,
+    "ids": [
+      "E01",
+      "E02",
+      "E03",
+      "E04",
+      "E05",
+      "E06",
+      "E07",
+      "E08",
+      "E09",
+      "E10",
+      "E11",
+      "E12"
+    ],
+    "prompt_matches": true,
+    "status": "PASS"
+  },
+  "acceptance_ledger": {
+    "count": 37,
+    "ids": [
+      "F-01",
+      "F-02",
+      "F-03",
+      "F-04",
+      "F-05",
+      "F-06",
+      "F-07",
+      "F-08",
+      "F-09",
+      "F-10",
+      "F-11",
+      "F-12",
+      "PR-01",
+      "PR-02",
+      "PR-03",
+      "PR-04",
+      "PR-05",
+      "PR-06",
+      "PR-07",
+      "PR-08",
+      "PR-09",
+      "PR-10",
+      "PR-11",
+      "PR-12",
+      "PR-13",
+      "PR-14",
+      "AD-01",
+      "AD-02",
+      "AD-03",
+      "AD-04",
+      "AD-05",
+      "AD-06",
+      "AD-07",
+      "AD-08",
+      "AD-09",
+      "AD-10",
+      "PF-01"
+    ],
+    "status": "PASS"
+  },
+  "requirement_structure": {
+    "check_ids": [
+      "proxy_process",
+      "tun_route",
+      "egress_region",
+      "ip_continuity",
+      "timezone",
+      "locale",
+      "ipv6_policy",
+      "dns_route",
+      "stun_path",
+      "guardian",
+      "service_routes",
+      "client_language",
+      "asn_info",
+      "service_transport"
+    ],
+    "ad_slots": [
+      "residential_broadband",
+      "account_service",
+      "kyc_service"
+    ],
+    "edition_count": 2,
+    "planned_rust_packages": 4,
+    "current_specifications": 2,
+    "status": "PASS"
+  },
+  "product_validation": {
+    "tests_executed_this_turn": 0,
+    "desktop_V01": "historical FAIL",
+    "protocol_V02": "historical FAIL, 0 executed tests",
+    "new_rust_acceptance": "NOT_RUN; F-09 WAIT for second account",
+    "native_real_account_egress_observation": "follow original P0 evidence and E01-E12; no current runtime verification"
+  },
+  "archive_validation": {
+    "status": "PASS",
+    "file_count": 17,
+    "crc": "PASS",
+    "byte_equality": "PASS",
+    "manifest": "docs/handoff/文件清单.json",
+    "historical_materials": "workspace only; R3 archive preserved",
+    "product_source_or_private_account_directories_included": false
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "timestamp": "2026-10-24T06:04:10.548097+00:00",
+  "command": "installed CLI update --auto",
+  "exit_code": 2,
+  "output": "{\"completed\":false,\"message\":\"source_local_rebuild_required：请从源码重新构建并由本地安装器更新\",\"recovery\":\"运行本地构建与管理员安装流程\"}\n"
+}
