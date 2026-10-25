@@ -1,0 +1,12 @@
+✔ non-completed terminal outcome is delivered and status is refreshed (1.737083ms)
+✔ status refresh failure retains the delivered terminal outcome (0.703833ms)
+✔ ordinary backend failure does not become a terminal outcome (0.462792ms)
+✔ fixture, busy and missing draft do not invoke IPC (1.187708ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 327.789417

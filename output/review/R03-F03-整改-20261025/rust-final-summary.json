@@ -1,0 +1,43 @@
+{
+  "source_hashes": {
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+    "daemons/local.tz-watchdog.plist": "c0b6b95e88becfb9aa51ec75e3c2a04b8e5a8a2698c5f87ec139d57621971300",
+    "daemons/local.claude-bodyguard.plist": "0105bf35a2bcbc286fd785534f7730059354cbfb2c6a30a1ba3fb44c146dab4f"
+  },
+  "user_guardian_production_block_identical_to_HEAD": true,
+  "checks": [
+    {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core/src/guardian_repair.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "methods": {
+    "red": {
+      "passed": 1,
+      "failed": 3
+    },
+    "f03": 6,
+    "guardian_including_f03": 17,
+    "regions": 51
+  },
+  "subcases": {
+    "plist_mutations": 26,
+    "invalid_registration_combinations": 52,
+    "valid_registration_combinations": 4
+  }
+}

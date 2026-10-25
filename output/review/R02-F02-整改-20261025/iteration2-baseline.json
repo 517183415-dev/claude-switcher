@@ -1,0 +1,7 @@
+{
+  "started_at": "2026-10-25T09:09:14.426492+00:00",
+  "source_hashes": {
+    "packaging/macos/local_install.py": "a0bf7e4c5bf3ce43af91cc0dd1fabb8bcb9f5e3c86e40b115849d93198404aef",
+    "packaging/macos/test_local_install.py": "c25147f8ae0fc54483faadfd9e3c7037291278ccc52eaabeb62b328f60cc706b"
+  }
+}

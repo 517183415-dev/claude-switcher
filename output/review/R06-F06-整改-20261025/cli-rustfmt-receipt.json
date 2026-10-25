@@ -1,0 +1,41 @@
+[
+  {
+    "command": [
+      "rustfmt",
+      "--edition",
+      "2024",
+      "crates/switcher-core/src/bin/claude-switcher.rs",
+      "crates/switcher-core/src/repair_cli.rs"
+    ],
+    "exit_code": 0,
+    "output": "",
+    "sources_before": {
+      "crates/switcher-core/src/bin/claude-switcher.rs": "8a2c8243050d9eb3b244f123cffeda9a337d179ac38f111df8d1c7146178705f",
+      "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1"
+    },
+    "sources_after": {
+      "crates/switcher-core/src/bin/claude-switcher.rs": "8a2c8243050d9eb3b244f123cffeda9a337d179ac38f111df8d1c7146178705f",
+      "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1"
+    }
+  },
+  {
+    "command": [
+      "rustfmt",
+      "--check",
+      "--edition",
+      "2024",
+      "crates/switcher-core/src/bin/claude-switcher.rs",
+      "crates/switcher-core/src/repair_cli.rs"
+    ],
+    "exit_code": 0,
+    "output": "",
+    "sources_before": {
+      "crates/switcher-core/src/bin/claude-switcher.rs": "8a2c8243050d9eb3b244f123cffeda9a337d179ac38f111df8d1c7146178705f",
+      "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1"
+    },
+    "sources_after": {
+      "crates/switcher-core/src/bin/claude-switcher.rs": "8a2c8243050d9eb3b244f123cffeda9a337d179ac38f111df8d1c7146178705f",
+      "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1"
+    }
+  }
+]

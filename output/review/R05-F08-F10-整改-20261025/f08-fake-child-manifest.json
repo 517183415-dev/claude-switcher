@@ -1,0 +1,52 @@
+[
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "235c56c65719545ad3b50d7d7d1d0fe8ec1d2e15558a90bf0a22f281beed586f",
+    "body": "\"assert sys.argv[1:] == ['+short', '+time=3', '+tries=1', 'fixture.invalid']\\ntime.sleep(2.5)\\nprint('198.18.0.1')\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "c1e2ae9ff50cbe837a739e2b4e0f2870b6f5bbf1a4f2835bc83017d81658606a",
+    "body": "\"sys.stdout.buffer.write(b'\\\\xff')\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "8855c5025bb8be4c00ca4cd1c655617538f9d62d4014f8a7041a7578e56acce8",
+    "body": "\"time.sleep(2.5)\\nprint('198.18.0.1')\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "8b7a56637bc5b5c3340ecab431601ea56b7425bfb2abbd718b94f65d8f00dca9",
+    "body": "\"time.sleep(30)\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "9fe25835594f0969885aa120a3755ad10642c82f023b5bbc6f230c88b51aff11",
+    "body": "\"print('198.18.0.1')\\nsys.exit(7)\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "32d922dc7c51fbe7cd36952673098385344939dce9853dfbccdb993120e2dca2",
+    "body": "\"sys.stdout.write('x' * (256 * 1024 + 1))\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "b8afb03fb428e202ce7ae74e237b4998fba92b0a08dbd601b260c8e7052884d2",
+    "body": "\"print('alias.invalid')\\nprint('198.18.0.1')\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "632839e3fa3c538c9eb85e2f79510dd8ead0b838b306a917076628d327252248",
+    "body": "\"print('198.18.0.1')\\nprint('198.18.0.2')\\nsys.stderr.write('ignored')\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "3d75c8c0829a96745b2438de5523a0cf3705528c332f98a954451bc4fb38730e",
+    "body": "\"sys.stdout.write('x' * (256 * 1024))\""
+  },
+  {
+    "python": "/opt/homebrew/bin/python3",
+    "source_sha256": "50e01e34b505acd595f85859a7339485bbf99b8cecc7eb6751820d44e0f35f19",
+    "body": "\"os.close(1)\\ntime.sleep(30)\""
+  }
+]

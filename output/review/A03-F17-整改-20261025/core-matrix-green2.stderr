@@ -1,0 +1,477 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+error: visibility `pub(super)` is not followed by an item
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:236:1
+    |
+236 | pub(super) #[cfg(test)]
+    | ^^^^^^^^^^ the visibility
+    |
+    = help: you likely meant to define an item, e.g., `pub(super) fn foo() {}`
+
+error: expected item after doc comment
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:235:1
+    |
+234 | /// GC-only inspection. No recursive paths, image decode, or deletion. The
+    | -------------------------------------------------------------------------- other attributes here
+235 | /// caller supplies a registered hash from the bound batch, not a user path.
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this doc comment doesn't document anything
+
+error[E0422]: cannot find struct, variant or union type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:60:45
+   |
+60 |     assert!(retention(&publisher, &objects, CleanupOptions { retain: 1, release_resolution: false }, 1000).is_err());
+   |                                             ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:61:45
+   |
+61 |     assert!(retention(&publisher, &objects, CleanupOptions { retain: 257, release_resolution: false }, 1000).is_err());
+   |                                             ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:62:47
+   |
+62 |     let all = retention(&publisher, &objects, CleanupOptions { retain: 256, release_resolution: false }, 1000).unwrap();
+   |                                               ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `FixedCurrents` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:146:6
+    |
+146 | impl FixedCurrents for CleanupCurrents {
+    |      ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_FAULT` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:217:9
+    |
+217 |         CLEANUP_FAULT.with(|fault| fault.set(Some(point)));
+    |         ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_FAULT` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:239:9
+    |
+239 |         CLEANUP_FAULT.with(|fault| fault.set(Some(point)));
+    |         ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CHECKPOINT_FILE` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:252:43
+    |
+252 |         assert!(reopened.directory().join(CHECKPOINT_FILE).exists());
+    |                                           ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:288:51
+    |
+288 |     assert!(publisher.cleanup_commit(&mut source, CleanupOptions { retain: 0, release_resolution: false }, &preview.digest, 1000).i...
+    |                                                   ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CHECKPOINT_FILE` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:289:55
+    |
+289 |     storage::atomic_write(&publisher.directory().join(CHECKPOINT_FILE), &encode(&publisher.state, STATE_LIMIT).unwrap()).unwrap();
+    |                                                       ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_HOOK` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:308:5
+    |
+308 |     CLEANUP_HOOK.with(|slot| *slot.borrow_mut() = Some(("gc_rename_before", Box::new(move || {
+    |     ^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_HOOK` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:326:5
+    |
+326 |     CLEANUP_HOOK.with(|slot| *slot.borrow_mut() = Some(("gc_rename_after", Box::new(move || {
+    |     ^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:367:19
+    |
+367 |     let options = CleanupOptions { retain: 128, release_resolution: true };
+    |                   ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CHECKPOINT_FILE` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:373:91
+    |
+373 | ...n(&read_private(&publisher.directory().join(CHECKPOINT_FILE), STATE_LIMIT).unwrap(), STATE_LIMIT).unwrap();
+    |                                                ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_WRITE_FAULT` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:450:13
+    |
+450 |             CLEANUP_WRITE_FAULT.with(|slot| slot.set(Some((stage, code))));
+    |             ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_FAULT` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:473:5
+    |
+473 |     CLEANUP_FAULT.with(|slot| slot.set(Some("gc_rename_after")));
+    |     ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `CLEANUP_FAULT` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:477:5
+    |
+477 |     CLEANUP_FAULT.with(|slot| slot.set(Some("gc_inspect_io")));
+    |     ^^^^^^^^^^^^^ not found in this scope
+
+warning: unused import: `cleanup::*`
+ --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:2:13
+  |
+2 | use super::{cleanup::*, *};
+  |             ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:52:50
+   |
+52 |     let result = retention(&publisher, &objects, CleanupOptions::default(), 1000).unwrap();
+   |                                                  ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:71:64
+   |
+71 |     let result = retention(&publisher, &[Some(current), None], CleanupOptions::default(), publisher.state.draft.expires_at + 1).unwr...
+   |                                                                ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:82:73
+   |
+82 |     let original = retention(&publisher, &[Some(object.clone()), None], CleanupOptions::default(), 1000).unwrap();
+   |                                                                         ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:84:50
+   |
+84 |     assert!(retention(&publisher, &[None, None], CleanupOptions::default(), 1000).is_err());
+   |                                                  ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:87:76
+   |
+87 |     assert!(retention(&publisher, &[Some(cleanup_object(&changed)), None], CleanupOptions::default(), 1000).is_err());
+   |                                                                            ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:90:76
+   |
+90 |     assert!(retention(&publisher, &[Some(cleanup_object(&changed)), None], CleanupOptions::default(), 1000).is_err());
+   |                                                                            ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:93:55
+   |
+93 |     assert!(retention(&publisher, &[Some(bad), None], CleanupOptions::default(), 1000).is_err());
+   |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:94:73
+   |
+94 |     let baseline = retention(&publisher, &[Some(object.clone()), None], CleanupOptions::default(), 1000).unwrap();
+   |                                                                         ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:96:60
+   |
+96 |     let other = retention(&publisher, &[Some(etag), None], CleanupOptions::default(), 1000).unwrap();
+   |                                                            ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:99:70
+   |
+99 |     let changed_state = retention(&publisher, &[Some(object), None], CleanupOptions::default(), 1000).unwrap();
+   |                                                                      ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:112:56
+    |
+112 |     let preview = retention(&publisher, &[None, None], CleanupOptions::default(), 1000).unwrap().preview;
+    |                                                        ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:162:60
+    |
+162 |     let preview = publisher.cleanup_preview(&mut currents, CleanupOptions::default(), 1000).unwrap();
+    |                                                            ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:163:45
+    |
+163 |     publisher.cleanup_commit(&mut currents, CleanupOptions::default(), &preview.digest, 1000).unwrap();
+    |                                             ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:180:56
+    |
+180 |     let index = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                        ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:181:43
+    |
+181 |     publisher.cleanup_commit(&mut source, CleanupOptions::default(), &index.digest, 1000).unwrap();
+    |                                           ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:203:58
+    |
+203 |     let preview = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                          ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:204:43
+    |
+204 |     publisher.cleanup_commit(&mut source, CleanupOptions::default(), &preview.digest, 1000).unwrap();
+    |                                           ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:216:62
+    |
+216 |         let preview = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                              ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:218:55
+    |
+218 |         assert!(publisher.cleanup_commit(&mut source, CleanupOptions::default(), &preview.digest, 1000).is_err(), "{point}");
+    |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:225:63
+    |
+225 |             let retry = reopened.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                               ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:227:50
+    |
+227 |             reopened.cleanup_commit(&mut source, CleanupOptions::default(), &retry.digest, 1000).unwrap();
+    |                                                  ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:277:55
+    |
+277 |     let next = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:287:58
+    |
+287 |     let preview = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                          ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:290:51
+    |
+290 |     assert!(publisher.cleanup_commit(&mut source, CleanupOptions::default(), &preview.digest, 1000).is_err());
+    |                                                   ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:292:58
+    |
+292 |     let pending = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                          ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:294:60
+    |
+294 |     assert!(matches!(publisher.cleanup_commit(&mut source, CleanupOptions::default(), &pending.digest, 1000), Err(Error::PendingOpe...
+    |                                                            ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupPhase` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:299:65
+    |
+299 |     assert_eq!(publisher.state.cleanup.as_ref().unwrap().phase, CleanupPhase::Indexed);
+    |                                                                 ^^^^^^^^^^^^ use of undeclared type `CleanupPhase`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:363:57
+    |
+363 |     let normal = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                         ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:398:58
+    |
+398 |     let preview = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                          ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:399:43
+    |
+399 |     publisher.cleanup_commit(&mut source, CleanupOptions::default(), &preview.digest, 1000).unwrap();
+    |                                           ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:429:57
+    |
+429 |     let preview = publisher.cleanup_preview(&mut store, CleanupOptions::default(), 1000).unwrap();
+    |                                                         ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:430:55
+    |
+430 |     let commit = publisher.cleanup_commit(&mut store, CleanupOptions::default(), &preview.digest, 1000).unwrap();
+    |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:447:64
+    |
+447 |                 let p = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                                ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:448:55
+    |
+448 |                 publisher.cleanup_commit(&mut source, CleanupOptions::default(), &p.digest, 1000).unwrap();
+    |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:452:64
+    |
+452 |                 let p = publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000).unwrap();
+    |                                                                ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0433]: cannot find type `CleanupOptions` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:453:55
+    |
+453 |                 publisher.cleanup_commit(&mut source, CleanupOptions::default(), &p.digest, 1000).map(|_| ())
+    |                                                       ^^^^^^^^^^^^^^ use of undeclared type `CleanupOptions`
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:52:18
+   |
+52 |     let result = retention(&publisher, &objects, CleanupOptions::default(), 1000).unwrap();
+   |                  ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:60:13
+   |
+60 |     assert!(retention(&publisher, &objects, CleanupOptions { retain: 1, release_resolution: false }, 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:61:13
+   |
+61 |     assert!(retention(&publisher, &objects, CleanupOptions { retain: 257, release_resolution: false }, 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:62:15
+   |
+62 |     let all = retention(&publisher, &objects, CleanupOptions { retain: 256, release_resolution: false }, 1000).unwrap();
+   |               ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:71:18
+   |
+71 |     let result = retention(&publisher, &[Some(current), None], CleanupOptions::default(), publisher.state.draft.expires_at + 1).unwr...
+   |                  ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:82:20
+   |
+82 |     let original = retention(&publisher, &[Some(object.clone()), None], CleanupOptions::default(), 1000).unwrap();
+   |                    ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:84:13
+   |
+84 |     assert!(retention(&publisher, &[None, None], CleanupOptions::default(), 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:87:13
+   |
+87 |     assert!(retention(&publisher, &[Some(cleanup_object(&changed)), None], CleanupOptions::default(), 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:90:13
+   |
+90 |     assert!(retention(&publisher, &[Some(cleanup_object(&changed)), None], CleanupOptions::default(), 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:93:13
+   |
+93 |     assert!(retention(&publisher, &[Some(bad), None], CleanupOptions::default(), 1000).is_err());
+   |             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:94:20
+   |
+94 |     let baseline = retention(&publisher, &[Some(object.clone()), None], CleanupOptions::default(), 1000).unwrap();
+   |                    ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:96:17
+   |
+96 |     let other = retention(&publisher, &[Some(etag), None], CleanupOptions::default(), 1000).unwrap();
+   |                 ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+  --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:99:25
+   |
+99 |     let changed_state = retention(&publisher, &[Some(object), None], CleanupOptions::default(), 1000).unwrap();
+   |                         ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `retention` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:112:19
+    |
+112 |     let preview = retention(&publisher, &[None, None], CleanupOptions::default(), 1000).unwrap().preview;
+    |                   ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:125:13
+    |
+125 |     assert!(inspect_candidate(&directory, &asset).unwrap().is_none());
+    |             ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:127:20
+    |
+127 |     let identity = inspect_candidate(&directory, &asset).unwrap().unwrap();
+    |                    ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:129:13
+    |
+129 |     assert!(inspect_candidate(&directory, &asset).is_err());
+    |             ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:133:13
+    |
+133 |     assert!(inspect_candidate(&directory, &asset).is_err());
+    |             ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:136:13
+    |
+136 |     assert!(inspect_candidate(&directory, &asset).is_err());
+    |             ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:138:16
+    |
+138 |     assert_ne!(inspect_candidate(&directory, &asset).unwrap().unwrap().ino, identity.ino);
+    |                ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_candidate` in this scope
+   --> apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:141:13
+    |
+141 |     assert!(inspect_candidate(&directory, &asset).is_err());
+    |             ^^^^^^^^^^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0405, E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0405`.
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 1 warning
+error: could not compile `switcher-desktop` (bin "switcher-desktop" test) due to 75 previous errors; 1 warning emitted

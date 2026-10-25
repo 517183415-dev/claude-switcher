@@ -198,3 +198,20 @@ impl ObjectStore for LocalObjectStore {
         storage::atomic_write(&path, bytes).map_err(|_| StoreError::OutcomeUnknown)
     }
 }
+
+impl super::cleanup::FixedCurrents for LocalObjectStore {
+    fn read_currents(&mut self) -> std::result::Result<[Option<Object>; 2], StoreError> {
+        // This one object retains the publication-tree lifecycle lock for both
+        // reads and for the caller's complete maintenance operation.
+        let original = self.channel;
+        let result = (|| {
+            self.channel = AdChannel::Preview;
+            let preview = self.current()?;
+            self.channel = AdChannel::Production;
+            let production = self.current()?;
+            Ok([preview, production])
+        })();
+        self.channel = original;
+        result
+    }
+}

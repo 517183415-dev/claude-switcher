@@ -95,7 +95,7 @@ pub(crate) fn repair_legacy_tun() -> Result<bool, String> {
         crate::migration::account_home(unsafe { libc::geteuid() }).map_err(|e| e.to_string())?;
     repair_legacy_tun_at(&home, &mut crate::proxy_repair::Native).map_err(|e| e.to_string())
 }
-fn repair_legacy_tun_at(
+pub(crate) fn repair_legacy_tun_at(
     home: &Path,
     runtime: &mut impl crate::proxy_repair::Runtime,
 ) -> io::Result<bool> {
@@ -120,7 +120,7 @@ fn repair_legacy_tun_at(
     Ok(true)
 }
 
-/// Preserve legacy config-OR-route success. `true` means the caller already verified routes.
+/// `rules_ok` preserves the legacy config-OR-route gate; the result means reload is needed.
 pub(crate) fn repair_legacy_merge(rules_ok: bool) -> Result<bool, String> {
     if cfg!(test) {
         return Err("native_user_merge_disabled_in_tests".into());
@@ -143,7 +143,7 @@ fn repair_legacy_merge_at(home: &Path, rules_ok: bool) -> io::Result<bool> {
         .map(Ok)
         .unwrap_or_else(|| pinned_routes::first_select_group(&config))?;
     if String::from_utf8_lossy(&config).contains(&format!("DOMAIN-SUFFIX,claude.ai,{group}")) {
-        return Ok(false);
+        return Ok(true);
     }
     let path = home.join(Kind::PinnedRoutes.relative());
     let path = path.canonicalize().unwrap_or(path);
@@ -154,7 +154,7 @@ fn repair_legacy_merge_at(home: &Path, rules_ok: bool) -> io::Result<bool> {
     };
     let (proposed, changed) = pinned_routes::propose(before.as_deref(), &group)?;
     if !changed {
-        return Ok(false);
+        return Ok(true);
     }
     fs::create_dir_all(path.parent().ok_or_else(|| fail("配置父目录缺失"))?)?;
     if let Some(original) = before {
@@ -2116,6 +2116,126 @@ pub(crate) mod tests {
         assert_eq!(writes, ["write -g AppleLocale -string en_US"]);
     }
     #[test]
+    fn f04_current_merge_with_missing_live_rules_requires_reload_without_writing() {
+        let fixture = Fixture::new();
+        let merge = enable_routes(&fixture);
+        let current = pinned_routes::propose(None, "香港 节点").unwrap().0;
+        fs::write(&merge, &current).unwrap();
+        let entries = || {
+            let mut names = fs::read_dir(merge.parent().unwrap())
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name())
+                .collect::<Vec<_>>();
+            names.sort();
+            names
+        };
+        let before = entries();
+        assert!(!repair_legacy_merge_at(&fixture.root, true).unwrap());
+        assert_eq!(fs::read(&merge).unwrap(), current);
+        assert_eq!(entries(), before);
+        let needs_reload = repair_legacy_merge_at(&fixture.root, false).unwrap();
+        assert_eq!(fs::read(&merge).unwrap(), current);
+        assert_eq!(
+            entries(),
+            before,
+            "an unchanged Merge must not gain a backup"
+        );
+        assert!(
+            needs_reload,
+            "missing live rules require a reload even when Merge is current"
+        );
+    }
+
+    #[test]
+    fn f04_current_legacy_config_with_missing_live_rules_requires_reload_without_writing() {
+        let fixture = Fixture::new();
+        let merge = enable_routes(&fixture);
+        let current = b"# preserve user merge\nmixed-port: 7890\n";
+        fs::write(&merge, current).unwrap();
+        let config = fixture.root.join(pinned_routes::GROUP_RELATIVE);
+        let mut bytes = fs::read(&config).unwrap();
+        bytes.extend_from_slice("rules:\n  - DOMAIN-SUFFIX,claude.ai,香港 节点\n".as_bytes());
+        fs::write(&config, &bytes).unwrap();
+        let needs_reload = repair_legacy_merge_at(&fixture.root, false).unwrap();
+        assert_eq!(fs::read(&config).unwrap(), bytes);
+        assert_eq!(fs::read(&merge).unwrap(), current);
+        assert_eq!(fs::read_dir(merge.parent().unwrap()).unwrap().count(), 1);
+        assert!(
+            needs_reload,
+            "the legacy config shortcut still requires a live reload"
+        );
+    }
+
+    #[test]
+    fn f04_real_merge_decision_reloads_once_or_skips_when_live_rules_pass() {
+        #[derive(Default)]
+        struct Runtime(Vec<&'static str>);
+        impl crate::proxy_repair::Runtime for Runtime {
+            fn running(&mut self) -> Result<bool, &'static str> {
+                panic!("reload must not poll running state")
+            }
+            fn stop(&mut self) -> Result<(), &'static str> {
+                self.0.push("stop");
+                Ok(())
+            }
+            fn start(&mut self) -> Result<(), &'static str> {
+                self.0.push("start");
+                Ok(())
+            }
+            fn verify(&mut self, country: &str) -> Result<(), &'static str> {
+                assert!(country.is_empty());
+                self.0.push("verify");
+                Ok(())
+            }
+        }
+        for (case, rules_ok, existing) in [
+            ("current_stale", false, Some(true)),
+            ("current_live", true, Some(true)),
+            ("missing_stale", false, None),
+            ("outdated_stale", false, Some(false)),
+        ] {
+            let fixture = Fixture::new();
+            let merge = enable_routes(&fixture);
+            if let Some(current) = existing {
+                let bytes = if current {
+                    pinned_routes::propose(None, "香港 节点").unwrap().0
+                } else {
+                    b"# user config\nmixed-port: 7890\n".to_vec()
+                };
+                fs::write(&merge, bytes).unwrap();
+            }
+            let before = fs::read(&merge).ok();
+            let needs_reload = repair_legacy_merge_at(&fixture.root, rules_ok).unwrap();
+            let mut runtime = Runtime::default();
+            crate::proxy_repair::reload_if_needed(needs_reload, &mut runtime).unwrap();
+            assert_eq!(needs_reload, !rules_ok, "{case}");
+            assert_eq!(
+                runtime.0,
+                if rules_ok {
+                    vec![]
+                } else {
+                    vec!["stop", "start", "verify"]
+                },
+                "{case}"
+            );
+            if existing == Some(true) {
+                assert_eq!(fs::read(&merge).ok(), before, "{case}");
+                assert_eq!(fs::read_dir(merge.parent().unwrap()).unwrap().count(), 1);
+            } else {
+                assert!(
+                    fs::read_to_string(&merge)
+                        .unwrap()
+                        .contains("claude.ai,香港 节点")
+                );
+            }
+            println!(
+                "F04 case={case} needs_reload={needs_reload} calls={:?}",
+                runtime.0
+            );
+        }
+    }
+
+    #[test]
     fn legacy_merge_uses_saved_group_creates_directory_and_preserves_complex_yaml() {
         let fixture = Fixture::new();
         let home = &fixture.root;
@@ -2140,7 +2260,7 @@ pub(crate) mod tests {
             "rules:\n  - DOMAIN-SUFFIX,claude.ai,Saved $Group # old config\n",
         )
         .unwrap();
-        assert!(!repair_legacy_merge_at(home, false).unwrap());
+        assert!(repair_legacy_merge_at(home, false).unwrap());
         assert_eq!(fs::read(&merge).unwrap(), before);
     }
     #[test]

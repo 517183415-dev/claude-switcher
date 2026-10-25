@@ -4,6 +4,8 @@ use std::{process::Stdio, sync::Mutex, time::Duration};
 use tokio::{io::AsyncReadExt, process::Command};
 
 const OUTPUT_LIMIT: u64 = 256 * 1024;
+// Allow dig's single three-second attempt to finish; other observations stay at two seconds.
+const DNS_COMMAND_TIMEOUT: Duration = Duration::from_secs(4);
 #[derive(Default)]
 struct Generation {
     fingerprint: Option<String>,
@@ -108,6 +110,13 @@ pub(crate) fn ensure_network_observation() -> Result<(), &'static str> {
 pub(crate) mod command_fixture {
     pub type Outputs = std::collections::HashMap<String, Result<String, &'static str>>;
     tokio::task_local! { pub static OUTPUTS: Outputs; }
+    #[derive(Debug)]
+    pub struct TimeoutReceipt {
+        pub pid: Option<u32>,
+        pub kill_ok: bool,
+        pub wait_ok: bool,
+    }
+    tokio::task_local! { pub static TIMEOUTS: std::cell::RefCell<Vec<TimeoutReceipt>>; }
     pub fn key(program: &str, args: &[&str]) -> String {
         std::iter::once(program)
             .chain(args.iter().copied())
@@ -117,6 +126,14 @@ pub(crate) mod command_fixture {
 }
 
 pub async fn read_command(program: &str, args: &[&str]) -> Result<String, &'static str> {
+    read_command_with_timeout(program, args, Duration::from_secs(2)).await
+}
+
+async fn read_command_with_timeout(
+    program: &str,
+    args: &[&str],
+    timeout: Duration,
+) -> Result<String, &'static str> {
     #[cfg(test)]
     if let Ok(result) = command_fixture::OUTPUTS.try_with(|outputs| {
         outputs
@@ -161,11 +178,20 @@ pub async fn read_command(program: &str, args: &[&str]) -> Result<String, &'stat
         }
         String::from_utf8(data).map_err(|_| "observation_invalid")
     };
-    match tokio::time::timeout(Duration::from_secs(2), observation).await {
+    match tokio::time::timeout(timeout, observation).await {
         Ok(result) => result,
         Err(_) => {
-            let _ = child.kill().await;
-            let _ = child.wait().await;
+            let _pid = child.id();
+            let _killed = child.kill().await;
+            let _waited = child.wait().await;
+            #[cfg(test)]
+            let _ = command_fixture::TIMEOUTS.try_with(|receipts| {
+                receipts.borrow_mut().push(command_fixture::TimeoutReceipt {
+                    pid: _pid,
+                    kill_ok: _killed.is_ok(),
+                    wait_ok: _waited.is_ok(),
+                });
+            });
             Err("observation_timeout")
         }
     }
@@ -284,7 +310,19 @@ pub async fn proxy_running(mode: &str) -> Result<bool, &'static str> {
 }
 
 pub async fn dns_addresses(host: &str) -> Result<Vec<std::net::IpAddr>, &'static str> {
-    let output = read_command("/usr/bin/dig", &["+short", "+time=3", "+tries=1", host]).await?;
+    dns_addresses_with_program(host, "/usr/bin/dig").await
+}
+
+async fn dns_addresses_with_program(
+    host: &str,
+    program: &str,
+) -> Result<Vec<std::net::IpAddr>, &'static str> {
+    let output = read_command_with_timeout(
+        program,
+        &["+short", "+time=3", "+tries=1", host],
+        DNS_COMMAND_TIMEOUT,
+    )
+    .await?;
     // Keep the first DNS answer authoritative, including a non-address (CNAME).
     let values: Vec<_> = output
         .lines()
@@ -302,6 +340,169 @@ pub async fn dns_addresses(host: &str) -> Result<Vec<std::net::IpAddr>, &'static
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // No DNS resolver or network module is used by these disposable child programs.
+    #[cfg(target_os = "macos")]
+    struct F08Child {
+        directory: std::path::PathBuf,
+        script: String,
+    }
+    #[cfg(target_os = "macos")]
+    impl F08Child {
+        fn new(body: &str) -> Self {
+            use std::os::unix::fs::PermissionsExt;
+            static NEXT_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+            let python = std::process::Command::new("python3")
+                .args(["-I", "-S", "-c", "import sys; print(sys.executable)"])
+                .output()
+                .expect("F08 requires the existing Python interpreter");
+            assert!(python.status.success());
+            let python = String::from_utf8(python.stdout).unwrap();
+            let python = python.trim();
+            assert!(python.starts_with('/') && !python.contains(char::is_whitespace));
+            let directory = std::env::temp_dir().join(format!(
+                "switcher-f08-{}-{}-{}",
+                std::process::id(),
+                NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            std::fs::create_dir(&directory).unwrap();
+            let path = directory.join("fake-dig.py");
+            let source = format!(
+                "#!{python} -I\nimport os, sys, time\nfrom pathlib import Path\nPath(__file__).with_suffix('.pid').write_text(str(os.getpid()))\nassert os.environ['PATH'] == '/usr/bin:/bin:/usr/sbin:/sbin'\nassert os.environ['LC_ALL'] == 'C'\nassert sys.stdin.read() == ''\n{body}\n"
+            );
+            std::fs::write(&path, &source).unwrap();
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+            use sha2::Digest;
+            let hash: String = Sha256::digest(source.as_bytes())
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            println!("F08 child python={python} source_sha256={hash} body={body:?}");
+            Self {
+                directory,
+                script: path.to_str().unwrap().to_owned(),
+            }
+        }
+        fn pid(&self) -> u32 {
+            std::fs::read_to_string(self.directory.join("fake-dig.pid"))
+                .unwrap()
+                .parse()
+                .unwrap()
+        }
+    }
+    #[cfg(target_os = "macos")]
+    impl Drop for F08Child {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.directory);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn f08_dns_accepts_real_delayed_child() {
+        let child = F08Child::new(
+            "assert sys.argv[1:] == ['+short', '+time=3', '+tries=1', 'fixture.invalid']\ntime.sleep(2.5)\nprint('198.18.0.1')",
+        );
+        let started = std::time::Instant::now();
+        let result = dns_addresses_with_program("fixture.invalid", &child.script).await;
+        println!(
+            "F08 delayed DNS elapsed={:?} pid={} result={result:?}",
+            started.elapsed(),
+            child.pid()
+        );
+        assert_eq!(result, Ok(vec!["198.18.0.1".parse().unwrap()]));
+        assert!(started.elapsed() >= Duration::from_millis(2500));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn f08_generic_keeps_two_second_timeout_and_waits() {
+        let child = F08Child::new("time.sleep(2.5)\nprint('198.18.0.1')");
+        command_fixture::TIMEOUTS
+            .scope(Default::default(), async {
+                let started = std::time::Instant::now();
+                assert_eq!(
+                    read_command(&child.script, &[]).await,
+                    Err("observation_timeout")
+                );
+                let elapsed = started.elapsed();
+                assert!(elapsed >= Duration::from_secs(2));
+                command_fixture::TIMEOUTS.with(|receipts| {
+                    let receipts = receipts.borrow();
+                    println!("F08 generic elapsed={elapsed:?} cleanup={receipts:?}");
+                    assert_eq!(receipts.len(), 1);
+                    assert_eq!(receipts[0].pid, Some(child.pid()));
+                    assert!(receipts[0].kill_ok && receipts[0].wait_ok);
+                });
+            })
+            .await;
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn f08_dns_deadline_covers_stdout_and_wait_then_reaps() {
+        for body in ["time.sleep(30)", "os.close(1)\ntime.sleep(30)"] {
+            let child = F08Child::new(body);
+            command_fixture::TIMEOUTS.scope(Default::default(), async {
+                let started = std::time::Instant::now();
+                assert_eq!(dns_addresses_with_program("fixture.invalid", &child.script).await, Err("observation_timeout"));
+                let elapsed = started.elapsed();
+                assert!(elapsed >= DNS_COMMAND_TIMEOUT);
+                command_fixture::TIMEOUTS.with(|receipts| {
+                    let receipts = receipts.borrow();
+                    println!("F08 DNS deadline elapsed={elapsed:?} body={body:?} cleanup={receipts:?}");
+                    assert_eq!(receipts.len(), 1);
+                    assert_eq!(receipts[0].pid, Some(child.pid()));
+                    assert!(receipts[0].kill_ok && receipts[0].wait_ok);
+                });
+            }).await;
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn f08_real_children_preserve_output_and_first_answer_contract() {
+        for (body, expected) in [
+            (
+                "sys.stdout.buffer.write(b'\\xff')",
+                Err("observation_invalid"),
+            ),
+            (
+                "print('198.18.0.1')\nsys.exit(7)",
+                Err("observation_unavailable"),
+            ),
+            (
+                "sys.stdout.write('x' * (256 * 1024 + 1))",
+                Err("observation_too_large"),
+            ),
+            (
+                "print('alias.invalid')\nprint('198.18.0.1')",
+                Err("dns_observation_unavailable"),
+            ),
+            (
+                "print('198.18.0.1')\nprint('198.18.0.2')\nsys.stderr.write('ignored')",
+                Ok(vec!["198.18.0.1".parse().unwrap()]),
+            ),
+        ] {
+            let child = F08Child::new(body);
+            let result = dns_addresses_with_program("fixture.invalid", &child.script).await;
+            println!(
+                "F08 output child pid={} body={body:?} result={result:?}",
+                child.pid()
+            );
+            assert_eq!(result, expected);
+        }
+        let child = F08Child::new("sys.stdout.write('x' * (256 * 1024))");
+        assert_eq!(
+            read_command(&child.script, &[]).await.unwrap().len(),
+            OUTPUT_LIMIT as usize
+        );
+    }
+
     #[tokio::test]
     async fn legacy_proxy_and_tun_observe_vpn_and_fake_ip_not_route() {
         use command_fixture::*;

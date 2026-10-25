@@ -1,0 +1,80 @@
+{
+  "scope": "iteration 2 isolated regressions for ChatGPT PLAN P1/P2/P3",
+  "new_test_methods": [
+    "test_f02_iter2_replacement_at_physical_removal_survives",
+    "test_f02_iter2_intent_only_external_candidate_is_not_adopted",
+    "test_f02_iter2_genuine_publication_without_final_save_recovers_twice",
+    "test_f02_iter2_published_candidate_external_change_is_not_adopted",
+    "test_f02_iter2_old_restoring_journal_without_candidate_refuses_live_file",
+    "test_f02_iter2_terminal_restore_rechecks_external_file_change",
+    "test_f02_iter2_terminal_restore_rechecks_service_registration",
+    "test_f02_iter2_terminal_restore_rechecks_disabled_overrides",
+    "test_f02_iter2_terminal_restore_unchanged_finishes_twice"
+  ],
+  "red": {
+    "log": "iteration2-red.log",
+    "methods": 7,
+    "failed_subtests": 45,
+    "seconds": 11.541
+  },
+  "additional_red": {
+    "log": "iteration2-disabled-red.log",
+    "methods": 1,
+    "failed_subtests": 4
+  },
+  "cases": {
+    "physical_remove_different_or_same_byte_new_inode_CLI_helper_App": 6,
+    "intent_only_matching_external_CLI_helper_with_gid_variants": 4,
+    "genuine_publication_interrupted_all_objects_unchanged": 11,
+    "genuine_publication_interrupted_all_objects_external_inode_or_gid": 22,
+    "terminal_rollback_file_delete_inode_or_bytes_CLI_helper_watchdog": 9,
+    "terminal_rollback_service_registration": 4,
+    "terminal_rollback_service_disabled_override": 4,
+    "terminal_rollback_unchanged": 1,
+    "old_intent_journal_without_prepared_candidate_CLI_helper_with_inode_variants": 4
+  },
+  "physical_hook": "real os.unlink or rename_exclusive entry, before/after actual effect; existing eleven-object x two removal matrix retained",
+  "limits": [
+    "No installation, dependency changes, real accounts, host service or network commands",
+    "No pre-repair RED claim for earlier iteration1 second-round tests",
+    "Final source-hash-bracketed 43 F02 and 136 full-module acceptance is owned by parent"
+  ],
+  "old_journal_red": {
+    "log": "iteration2-old-journal-first.log",
+    "methods": 1,
+    "failed_subtests": 4,
+    "seconds": 0.974
+  },
+  "green_first": {
+    "log": "iteration2-green-first.log",
+    "methods": 9,
+    "cases": 65,
+    "seconds": 17.887
+  },
+  "all_f02_before_python39_fixture_adapter": {
+    "log": "iteration2-f02-first.log",
+    "methods": 43,
+    "seconds": 42.608,
+    "progress_save_cases": 74
+  },
+  "python39_fixture": {
+    "cause": "Python 3.9 pathlib caches OS accessors, bypassing later os.stat/lstat patches",
+    "fix": "Path.stat/lstat delegate to the same real metadata plus virtual UID/GID fixture functions",
+    "smoke": "iteration2-python39-smoke-green.log",
+    "preserved": [
+      "actual mode",
+      "dev",
+      "ino",
+      "bytes",
+      "nlink",
+      "stat times"
+    ],
+    "iteration2_green": {
+      "log": "iteration2-python39-green.log",
+      "methods": 9,
+      "cases": 65,
+      "seconds": 11.975
+    }
+  },
+  "holding_semantics": "Journal-recorded same-volume holding/component preserves the actual moved original object. It is a transaction backup, outside the active installation footprint. Unexpected moved objects remain retained; neither recovery nor finalize deletes them."
+}

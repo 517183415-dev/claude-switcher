@@ -1,0 +1,363 @@
+[
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "plain",
+    "original": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "second_changed": false,
+    "second_output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "spaces",
+    "original": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "second_changed": false,
+    "second_output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "tabs",
+    "original": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "second_changed": false,
+    "second_output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "comment",
+    "original": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+    "second_changed": false,
+    "second_output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "crlf-comment",
+    "original": "# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n",
+    "output": "# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n",
+    "second_changed": false,
+    "second_output": "# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "no-final-newline",
+    "original": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment",
+    "output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n",
+    "second_changed": false,
+    "second_output": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "---\n",
+    "original": "---\nprofile: &anchor\n  store-selected: true\n",
+    "output": "---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n",
+    "second_changed": false,
+    "second_output": "---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "# keep\n\n--- # document\n",
+    "original": "# keep\n\n--- # document\nprofile: &anchor\n  store-selected: true\n",
+    "output": "# keep\n\n--- # document\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n",
+    "second_changed": false,
+    "second_output": "# keep\n\n--- # document\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "# keep\r\n---\r\n",
+    "original": "# keep\r\n---\r\nprofile: &anchor\n  store-selected: true\n",
+    "output": "# keep\r\n---\r\nprepend-rules:\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n\r\nprofile: &anchor\n  store-selected: true\n",
+    "second_changed": false,
+    "second_output": "# keep\r\n---\r\nprepend-rules:\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n\r\nprofile: &anchor\n  store-selected: true\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "---",
+    "original": "---",
+    "output": "---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n",
+    "second_changed": false,
+    "second_output": "---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "nested-only",
+    "original": "# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n",
+    "output": "prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n",
+    "second_changed": false,
+    "second_output": "prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n"
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "F10 Group",
+    "name": "nested-before-target",
+    "original": "# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  - USER,RULE\n",
+    "output": "# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  - USER,RULE\n",
+    "second_changed": false,
+    "second_output": "# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  - USER,RULE\n"
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "# >>> claude-switcher pinned rules >>>\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "# <<< claude-switcher pinned rules <<<\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "# >>> claude-switcher pinned rules >>>\n# >>> claude-switcher pinned rules >>>\n# <<< claude-switcher pinned rules <<<\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "profile:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<<\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "profile:\n  note: |\n    # >>> claude-switcher pinned rules >>>\n    # <<< claude-switcher pinned rules <<<\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules:\n  # >>> claude-switcher pinned rules >>> extra\n  # <<< claude-switcher pinned rules <<<\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<< extra\n",
+    "output": null
+  },
+  {
+    "accepted": true,
+    "changed": true,
+    "expected": "accept",
+    "group": "Group",
+    "name": "legacy-migration",
+    "original": "# >>> claude-switcher pinned rules >>>\nprepend-rules:\n  - OLD\n# <<< claude-switcher pinned rules <<<\nprofile: &anchor\n  store-selected: true\nprepend-rules: # user\n  - KEEP\n",
+    "output": "profile: &anchor\n  store-selected: true\nprepend-rules: # user\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,Group\"\n  - \"DOMAIN-SUFFIX,claude.com,Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,Group\"\n  - \"DOMAIN-SUFFIX,segment.io,Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,Group\"\n  # <<< claude-switcher pinned rules <<<\n  - KEEP\n",
+    "second_changed": false,
+    "second_output": "profile: &anchor\n  store-selected: true\nprepend-rules: # user\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,Group\"\n  - \"DOMAIN-SUFFIX,claude.com,Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,Group\"\n  - \"DOMAIN-SUFFIX,segment.io,Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,Group\"\n  # <<< claude-switcher pinned rules <<<\n  - KEEP\n"
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "name": "missing-comment-separator",
+    "original": "prepend-rules:#comment\n  - RULE\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules:\nprepend-rules:\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: # first\nprepend-rules: \t# second\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "---\nprofile:\n---\nprofile:\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "profile:\n---\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "...\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "--- content\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "%YAML 1.2\n---\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "'prepend-rules':\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "\"prepend-rules\":\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules :\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "? prepend-rules\n: []\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "{prepend-rules: []}\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: []\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: [RULE]\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: {}\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: null\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: &anchor\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: *alias\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: |\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: >\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: !!seq\n",
+    "output": null
+  },
+  {
+    "accepted": false,
+    "changed": null,
+    "expected": "reject",
+    "original": "prepend-rules: RULE\n",
+    "output": null
+  }
+]

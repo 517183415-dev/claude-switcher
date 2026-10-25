@@ -1,0 +1,221 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_824e ITERATION: 0 UNIT: R05 / F08+F10 VERDICT: PROCEED — behavioral RED first WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE: crates/switcher-core/src/macos.rs crates/switcher-core/src/pinned_routes.rs PREREQUISITES: R01-R04 accepted; nine source files frozen STOP_AFTER: R05 execution evidence for independent review"
+    - paragraph: 当前源码与 baseline 对得上。R05 只需要解决两个局部合同，不需要引入新依赖或重写命令/YAML 基础设施。
+    - heading "F08 — DNS 需要自己的子进程 deadline，但通用命令仍保持 2 秒" [level=2]
+    - paragraph:
+      - text: 当前 read_command() 把所有命令固定在
+      - strong: 2 秒
+      - text: observation timeout；而 dns_addresses() 调 dig +time=3 +tries=1，因此一个 2.5 秒后才给出合法结果的 dig 会被外层 2 秒先杀掉。
+    - heading "RED-first" [level=3]
+    - paragraph: 先在 macos.rs 增加隔离行为测试，不使用真实 DNS 或 /usr/bin/dig。
+    - paragraph: 测试应通过一个测试子进程模拟命令：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: sleep ≈2.5s → stdout 输出一个合法 IP → exit 0
+    - paragraph: 要求：
+    - list:
+      - strong: 通用 read_command 路径
+      - text: 使用 2 秒 deadline 时必须超时。
+      - strong: DNS 专用路径
+      - text: 允许该约 2.5 秒结果成功返回。
+      - listitem: DNS timeout 仍然是有界的：另一个超过 DNS deadline 的测试子进程必须进入 kill + wait 回收路径。
+      - text: 保留并测试：
+      - list:
+        - listitem: 256 KiB 输出上限；
+        - listitem: 非 UTF-8 返回 observation_invalid；
+        - listitem: 非零退出仍失败；
+        - listitem: 首个 DNS answer 语义不变；
+        - listitem: CNAME/非 IP 的第一行仍导致 dns_observation_unavailable，不能跳到后续 IP。
+      - listitem: 不把 kill/wait 时间算进“绝对总墙钟上限”的承诺；只验证 observation deadline 到期后确实执行回收。
+    - paragraph: 当前 command_fixture 直接返回结果，不能证明 timeout 行为，所以新 RED 必须经过实际测试子进程的 async read/wait 路径。
+    - heading "最小实现" [level=3]
+    - paragraph: 把当前 read_command() 的核心提取成一个内部 deadline 参数化函数，例如概念上：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: read_command_with_timeout(program, args, Duration)
+    - paragraph: 然后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: read_command(...) → 固定 2 秒 dns_addresses(...) → DNS 专用 deadline，例如 4 秒
+    - paragraph: DNS deadline 只需明确大于 dig +time=3 的单次预算；4 秒足够且简单。
+    - paragraph: 不要改变：
+    - list:
+      - listitem: read_command() 对所有既有调用者的 2 秒合同；
+      - listitem: OUTPUT_LIMIT;
+      - listitem: stdout-only / stderr null；
+      - listitem: kill_on_drop;
+      - listitem: timeout 后显式 kill().await + wait().await;
+      - listitem: UTF-8、exit status 检查。
+    - paragraph: dns_addresses() 仍然使用：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: +short +time=3 +tries=1
+    - paragraph: 只改变外层 child observation deadline，不修改 DNS 查询次数或答案选择规则。
+    - separator
+    - heading "F10 — prepend-rules 识别必须是严格的顶层 YAML 文本合同" [level=2]
+    - paragraph: 当前 propose() 只精确识别：
+    - generic: YAML
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "prepend-rules:"
+    - paragraph: 因此以下合法文本可能被漏认或错误插入：
+    - generic: YAML
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "prepend-rules: # comment prepend-rules:"
+    - paragraph: 而无目标键时，目前会把新块直接放到整个文件最前面，甚至可能放到单文档 --- 之前。
+    - paragraph: 同时必须明确拒绝：
+    - list:
+      - listitem: "prepend-rules: [ ... ] / 其他 inline value；"
+      - listitem: 两个顶层 prepend-rules;
+      - listitem: 多 YAML document (--- 再出现一次);
+      - listitem: 不能可靠保持结构的歧义文本。
+    - heading "RED-first 测试矩阵" [level=3]
+    - paragraph: 在 pinned_routes.rs 先加行为 RED，至少覆盖：
+    - heading "应接受并保持原文本" [level=4]
+    - list:
+      - text: 顶层：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "prepend-rules: # keep comment"
+      - text: 顶层：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "prepend-rules:"
+      - listitem: CRLF 版本；
+      - text: 单一 document header：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "--- profile: ..."
+      - text: 无 prepend-rules 时，新块必须插在 ---
+      - strong: 之后
+      - text: 。
+      - text: nested 同名键：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "profile: prepend-rules:"
+      - text: 必须保持原样，不作为顶层目标。
+      - listitem: 用户已有规则、注释、空行和其他顶层内容逐字保留。
+      - listitem: 成功改写后再次 propose() 必须幂等。
+      - listitem: 成功结果必须只有一个顶层 prepend-rules。
+    - heading "必须拒绝且不输出“修复结果”" [level=4]
+    - list:
+      - text: inline：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "prepend-rules: []"
+      - text: 或任何非注释 value；
+      - listitem: 两个顶层 prepend-rules;
+      - text: 多文档：
+      - generic: YAML
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "--- ... --- ..."
+      - listitem: 顶层 key 语法无法明确判断的变体；
+      - listitem: 已有管理标记嵌套/不完整等现有拒绝分支继续拒绝。
+    - paragraph: 对于 rejection 测试，断言 Err；不要尝试“猜测性修复”。
+    - heading "最小实现" [level=3]
+    - paragraph: 不要引入 YAML parser。
+    - paragraph:
+      - text: 在现有 line-oriented 逻辑上增加一个小的
+      - strong: 顶层行分类器
+      - text: ：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: document header top-level prepend-rules empty value (+ optional spaces/comment) top-level prepend-rules inline/unsupported other top-level key comment/blank nested line
+    - paragraph: 顶层 prepend-rules 合法形式只允许：
+    - generic: regex
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: ^prepend-rules:[ \t]*(?:#[^\r\n]*)?[\r]?\n?$
+    - paragraph: 也就是冒号后只能是空白和可选注释，不能有 YAML value。
+    - paragraph: 同时维护：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: top_level_prepend_count document_header_count / whether non-header content already seen
+    - paragraph: 规则：
+    - list:
+      - listitem: 顶层目标 >1 → reject；
+      - listitem: "--- >1 → reject；"
+      - listitem: 单一 --- 仅允许作为文档头；
+      - text: 若没有目标键：
+      - list:
+        - listitem: 有合法 --- → 在 header 后插入；
+        - listitem: 无 header → 按现有单文档逻辑插入；
+      - listitem: 保留原 newline style，尤其 CRLF；
+      - listitem: 原有 nested key 和用户文本不重排、不 canonicalize。
+    - heading "管理块处理" [level=3]
+    - paragraph: 现有 BEGIN/END 清理逻辑继续保留，但顶层识别不要用：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: line.trim_end_matches(...) == "prepend-rules:"
+    - paragraph: 来决定插入点。
+    - paragraph: 应由同一个顶层分类结果决定，避免“检测合同”和“插入合同”再次分叉。
+    - separator
+    - heading "验收命令" [level=2]
+    - paragraph: 修复前先保存 F08/F10 behavioral RED；修复后至少运行：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "cargo test --offline --locked -p switcher-core --lib f08_ -- --nocapture cargo test --offline --locked -p switcher-core --lib f10_ -- --nocapture cargo test --offline --locked -p switcher-core --lib macos:: cargo test --offline --locked -p switcher-core --lib pinned_routes:: cargo clippy --offline --locked -p switcher-core --lib --tests -- -D warnings rustfmt --check --edition 2024 \\ crates/switcher-core/src/macos.rs \\ crates/switcher-core/src/pinned_routes.rs git diff --check"
+    - paragraph: 如果 pinned_routes 实际模块路径位于 user_repairs::pinned_routes::，以实际匹配到的非零 test count 为准，不要为了命令名硬造测试入口。
+    - heading "Evidence" [level=2]
+    - paragraph: 写入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R05-F08-F10-整改-20261025/
+    - paragraph: 记录：
+    - list:
+      - listitem: F08/F10 RED 日志及具体失败断言；
+      - listitem: synthetic 2.5s child 的实际行为；
+      - listitem: generic 2s 与 DNS-specific deadline 的测试计数；
+      - listitem: timeout child 的 kill/wait 回收证据；
+      - listitem: YAML accept/reject case matrix；
+      - listitem: CRLF、单 document header、nested/user text、幂等结果；
+      - listitem: 每条最终命令前后 11 个累计 source hashes；
+      - listitem: 已接受 R01-R04 九文件 hashes 不变。
+    - paragraph:
+      - text: 成功后预期累计 tracked diff 为
+      - strong: 11 个文件
+      - text: ：原九个 accepted 文件 + macos.rs + pinned_routes.rs。
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "BOUNDARIES: - no new dependencies - no product installation - no real DNS/network probes - no real apps/accounts/services/system settings - no push or merge - stop after R05; do not start R06"
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

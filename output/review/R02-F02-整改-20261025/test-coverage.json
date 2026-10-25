@@ -1,0 +1,187 @@
+{
+  "scope": "R02/F02 isolated Python regression tests",
+  "test_file": "packaging/macos/test_local_install.py",
+  "f02_test_count": 43,
+  "test_names": [
+    "test_f02_real_plan_install_uninstall_removes_all_files_and_services",
+    "test_f02_uninstall_preserves_account_config_repair_and_historical_bytes",
+    "test_f02_plan_refuses_wrong_owner_edition_and_generation",
+    "test_f02_ownership_uses_current_generation_instead_of_last_result",
+    "test_f02_plan_refuses_unknown_component_bytes_without_deletion",
+    "test_f02_plan_refuses_unsafe_auxiliary_owner_mode_and_link_type",
+    "test_f02_plan_refuses_unproven_loaded_program_plist_and_query_errors",
+    "test_f02_execution_rejects_same_byte_replacements_after_preview",
+    "test_f02_execution_rejects_loaded_identity_and_destination_drift",
+    "test_f02_missing_auxiliary_files_and_mixed_registration_are_recorded",
+    "test_f02_rollback_restores_exact_mixed_registration_and_disabled_overrides",
+    "test_f02_each_file_backup_interruption_leaves_installation_untouched",
+    "test_f02_cli_backup_interruption_never_removes_unbacked_files",
+    "test_f02_each_physical_removal_boundary_recovers_twice",
+    "test_f02_each_service_bootout_boundary_recovers_exact_registration",
+    "test_f02_each_journal_progress_save_boundary_recovers_twice",
+    "test_f02_corrupt_completed_backups_pause_recovery_without_overwrite",
+    "test_f02_external_replacements_after_removal_pause_recovery",
+    "test_f02_terminal_result_and_cleanup_boundaries_are_idempotent",
+    "test_f02_finalization_and_archived_verify_reject_reappearing_footprint",
+    "test_f02_terminal_cleanup_retry_rechecks_reappearing_files_and_services",
+    "test_f02_old_narrow_uninstall_receipt_cannot_hide_auxiliary_objects",
+    "test_f02_missing_install_record_never_guesses_removal_authority",
+    "test_f02_same_byte_external_replacements_after_removal_pause_recovery",
+    "test_f02_review_durable_restored_inode_replacement_stops_without_chown",
+    "test_f02_review_durable_restored_gid_change_stops_without_chown",
+    "test_f02_review_corruption_after_backup_stops_before_first_side_effect",
+    "test_f02_review_missing_unregistered_root_script_can_uninstall",
+    "test_f02_review_registered_services_with_missing_required_files_refuse_preview",
+    "test_f02_review_partial_root_restore_copy_can_resume",
+    "test_f02_review_recovery_check_to_open_replacement_is_rejected",
+    "test_f02_review_fchown_to_final_snapshot_replacement_is_rejected",
+    "test_f02_review_durable_restored_external_deletion_is_rejected",
+    "test_f02_review_two_megabyte_binaries_install_and_uninstall",
+    "test_f02_iter2_replacement_at_physical_removal_survives",
+    "test_f02_iter2_intent_only_external_candidate_is_not_adopted",
+    "test_f02_iter2_genuine_publication_without_final_save_recovers_twice",
+    "test_f02_iter2_published_candidate_external_change_is_not_adopted",
+    "test_f02_iter2_old_restoring_journal_without_candidate_refuses_live_file",
+    "test_f02_iter2_terminal_restore_rechecks_external_file_change",
+    "test_f02_iter2_terminal_restore_rechecks_service_registration",
+    "test_f02_iter2_terminal_restore_rechecks_disabled_overrides",
+    "test_f02_iter2_terminal_restore_unchanged_finishes_twice"
+  ],
+  "coverage_percent": "NOT_MEASURED",
+  "red": {
+    "command": "python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f02 -v",
+    "log": "red.log",
+    "exit_code": 1,
+    "matched_tests": 1,
+    "failed_subtests": 2,
+    "production_sha256_before_change": "0b0e0536f89af8067416748288a9b2a97eda8df1c7b1717c6ae45b48ef4424bb",
+    "observed": "Personal and Public finalized as uninstalled with CLI and both root script/plist pairs remaining"
+  },
+  "green": {
+    "log": "review-full-green.log",
+    "exit_code": 0,
+    "passed_tests": 127,
+    "f02_tests": 34,
+    "duration_seconds": 33.217,
+    "note": "Historical iteration1 run before iteration2 additions; final iteration2 acceptance is recorded by parent"
+  },
+  "compatibility_prior_to_last_two_additions": {
+    "log": "full-first.log",
+    "exit_code": 0,
+    "passed_tests": 115,
+    "duration_seconds": 27.491
+  },
+  "file_inventory": [
+    "selected App",
+    "helper",
+    "guardian",
+    "helper plist",
+    "guardian plist",
+    "installation record",
+    "owner CLI shim",
+    "timezone script",
+    "timezone plist",
+    "bodyguard script",
+    "bodyguard plist"
+  ],
+  "services": [
+    "system/local.claudeswitcher.helper",
+    "gui/<owner>/local.claudeswitcher.guardian",
+    "system/local.tz-watchdog",
+    "system/local.claude-bodyguard"
+  ],
+  "fault_matrix": [
+    {
+      "family": "main/root file backup before and after copy",
+      "cases": 20
+    },
+    {
+      "family": "CLI backup before and after helper",
+      "cases": 2
+    },
+    {
+      "family": "all 11 removals before and after physical effect",
+      "cases": 22
+    },
+    {
+      "family": "all four bootouts before and after physical effect",
+      "cases": 8
+    },
+    {
+      "family": "every transaction journal save before and after physical effect",
+      "cases": 74
+    },
+    {
+      "family": "all 11 completed backup corruption followed by two recoveries",
+      "cases": 11
+    },
+    {
+      "family": "all 11 external replacements after removal followed by two recoveries",
+      "cases": 11
+    },
+    {
+      "family": "all 11 same-byte external replacements after removal followed by two recoveries",
+      "cases": 11
+    },
+    {
+      "family": "terminal result/last-result/barrier/journal before and after physical effect",
+      "cases": 8
+    },
+    {
+      "family": "post-backup pre-side-effect corruption with all eleven live files and four services preserved",
+      "cases": 11
+    },
+    {
+      "family": "durable restored inode and gid external changes; two recoveries and no chown",
+      "cases": 2
+    },
+    {
+      "family": "unregistered root service with missing script still uninstalls",
+      "cases": 2
+    },
+    {
+      "family": "registered service missing required binary/script/plist refuses preview",
+      "cases": 8
+    },
+    {
+      "family": "private root restore copy interrupted; live missing; recover twice",
+      "cases": 4
+    },
+    {
+      "family": "helper and CLI recovery check-to-open same-byte replacement",
+      "cases": 2
+    },
+    {
+      "family": "helper and CLI fchown-to-final-snapshot same-byte replacement",
+      "cases": 2
+    },
+    {
+      "family": "helper and CLI durable restored external deletion",
+      "cases": 2
+    },
+    {
+      "family": "real install/uninstall with helper and guardian each greater than two MiB",
+      "cases": 1
+    }
+  ],
+  "isolation": "Real plan, snapshots, backups, mutation, recover, finalize, verify, legacy_snapshot and root_service_ownership; real temporary files/hash/modes/links/inodes; synthetic UID/GID/credentials/signing and stateful launchctl; unknown commands fail; no network or host services",
+  "limits": [
+    "Power-loss durability and real launchd/root metadata are not exercised",
+    "Existing compatibility CLI quoting test executes a temporary self-created shim/stub; new F02 tests do not execute scripts",
+    "Final stable-source acceptance receipts are owned by the parent"
+  ],
+  "review_red": {
+    "log": "review-red.log",
+    "matched_tests": 6,
+    "failed_subtests": 11,
+    "observed": "Backup corrupted after durable pending=services and before first side effect was not rejected; other five tests passed against concurrently repaired production. Import-error log is separate and is not behavioral RED."
+  },
+  "review_green": {
+    "log": "review-windows-first.log",
+    "passed_tests": 10,
+    "duration_seconds": 5.538,
+    "note": "Second-round window tests first ran after production repair; no pre-repair RED claim."
+  },
+  "test_sha256": "85f34958c17b0842e7015b6e0408dc2445805505d14e0a30d006fac578f62aa8",
+  "iteration2": "iteration2-test-coverage.json"
+}

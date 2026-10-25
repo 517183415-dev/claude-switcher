@@ -1,0 +1,14 @@
+{
+  "path": "crates/switcher-core/src/macos.rs",
+  "sha256": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+  "anchors": {
+    "read_command": 128,
+    "read_command_with_timeout": 132,
+    "dns_addresses": 312,
+    "dns_addresses_with_program": 316,
+    "f08_dns_accepts_real_delayed_child": 406,
+    "f08_generic_keeps_two_second_timeout_and_waits": 423,
+    "f08_dns_deadline_covers_stdout_and_wait_then_reaps": 447,
+    "f08_real_children_preserve_output_and_first_answer_contract": 468
+  }
+}

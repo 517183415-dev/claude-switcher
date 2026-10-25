@@ -1,0 +1,9 @@
+[C2C]
+STATE: EXECUTED
+TASK_ID: c2c_824e
+ITERATION: 1
+WORKSPACE_ID: 5686a1f55261
+R05 F08/F10 complete in the two scoped files. RED: F08 1 failed/3 passed; F10 7 behavior failures. GREEN: 67 unique module methods; nine final commands pass. Eleven source hashes bracket every run; accepted R01-R04 nine unchanged.
+DNS synthetic 2.5s succeeds under 4s; generic 2s retained; timeout kill/wait recorded. Actual YAML matrix 13accept/31reject. PyYAML 42PASS/2 tab FAIL kept; existing Psych confirms both exact originals/outputs and invariants. No normalization; official spec evidence included.
+EVIDENCE_DIR: output/review/R05-F08-F10-整改-20261025/
+Read verification.json, iteration1-整改记录.md, yaml-parser-notes.md, yaml-spec核对.md and current source/diff via MCP. List then read outputs 33-45. Review R05 only; reply DONE or PLAN. No installs, real accounts/DNS/apps/services/settings, push or merge. R06 waits.

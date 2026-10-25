@@ -1,0 +1,34 @@
+{
+  "fields_exact": true,
+  "field_counts": {
+    "PublisherCleanupPreview": 15,
+    "PublisherGcPreview": 10
+  },
+  "u64_existing_number_unchanged": true,
+  "previous_receipts_preserved": [
+    "dto-export.json",
+    "dto-export-gc-pending.json"
+  ],
+  "current_receipt": "dto-export-details.json",
+  "whitespace": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "crates/switcher-domain/src/desktop.rs",
+      "crates/switcher-domain/src/lib.rs",
+      "apps/desktop/src/generated/PublisherCleanupPreview.ts",
+      "apps/desktop/src/generated/PublisherGcPreview.ts"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "hashes": {
+    "crates/switcher-domain/src/desktop.rs": "8d10c7b40bd11cdd7dc2b6177f6417a4ea4d8496be715784af5a5d398e968eea",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "1ffe9c08be8eda0ff88352ac08b3250925bcb791454b25728a1313625bae5919",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "71a721e68ba106e1152118eef7e0ec382ddddf9142d80015f9de66eb9459dbea"
+  }
+}

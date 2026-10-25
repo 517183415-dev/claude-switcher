@@ -1,0 +1,55 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+warning: field `0` is never read
+  --> apps/desktop/src-tauri/src/publisher/mod.rs:36:14
+   |
+36 |     Resolved(ResolutionSummary),
+   |     -------- ^^^^^^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `Error` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+36 -     Resolved(ResolutionSummary),
+36 +     Resolved(()),
+   |
+
+warning: field `last_resolution` is never read
+   --> apps/desktop/src-tauri/src/publisher/mod.rs:173:9
+    |
+168 | pub struct Status {
+    |            ------ field in this struct
+...
+173 |     pub last_resolution: Option<ResolutionSummary>,
+    |         ^^^^^^^^^^^^^^^
+    |
+    = note: `Status` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `resolution_read` is never used
+   --> apps/desktop/src-tauri/src/publisher/mod.rs:492:12
+    |
+239 | impl Publisher {
+    | -------------- method in this implementation
+...
+492 |     pub fn resolution_read(&self) -> Option<Resolution> { self.state.last_resolution.clone() }
+    |            ^^^^^^^^^^^^^^^
+
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 3 warnings (3 duplicates)
+warning: `switcher-desktop` (bin "switcher-desktop") generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.66s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+     Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-22097a00fd91311a)
+     Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-d4494d6c70b7e19f)
+     Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-86625eac5f7f420e)
+     Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-3cb00884e3a318a5)

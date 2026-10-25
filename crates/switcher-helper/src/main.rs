@@ -32,7 +32,7 @@ fn main() {
         .and_then(|record| {
             if !switcher_helper::root_operation::source_local_pending()? {
                 let _root_operation = switcher_helper::root_operation::RootLock::acquire()?;
-                switcher_helper::platform::recover_pending_repair()?;
+                switcher_helper::platform::recover_for_startup()?;
             }
             switcher_helper::xpc::serve(record)
         });

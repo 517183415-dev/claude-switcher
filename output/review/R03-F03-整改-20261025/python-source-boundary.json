@@ -1,0 +1,18 @@
+{
+  "changed_existing_functions": [
+    "plan_uninstall",
+    "watchdog_verify"
+  ],
+  "added_functions": [
+    "watchdog_script"
+  ],
+  "exact_R02_functions": {
+    "recheck_uninstall": "c7101b7348bbb1fccfa0ba4cd7cdd3925e26353d20402d2460c56acd7954379e",
+    "check_uninstall_backups": "f98daf3b91b126b4dcb2661d7557bd910dd68514d2fe874a123e3d3d3a202c65",
+    "check_uninstall_holdings": "7cdadd35d91d804bc52d6dd6a24f61524278caae4c2b95b26ecb5cc2e082c0fd",
+    "check_uninstall_recovery": "376d684d703e8b07bc2ab914f3b970352120c5f2844497a83b84257ebec984a9",
+    "record_uninstall_prepared": "8a5ed5db78534f270a9c4021f67f815fee0178d2866242d0bf8946fe6e743aa5",
+    "restore_uninstall_file": "9e94b63161d0eab6d87056066500c13b4278a279cb3ef389980f96e890a6ee8e",
+    "verify_uninstall_restored": "9ede0cf3093fb45192129e4e71a663f76513426cdbdfc89469f8abcd363ab485"
+  }
+}

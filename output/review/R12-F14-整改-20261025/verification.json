@@ -1,0 +1,39 @@
+{
+  "unit": "R12",
+  "finding": "F14",
+  "status": "ACCEPTED_LOCAL_DOCUMENTATION",
+  "changed_files": [
+    "AGENTS.md",
+    "README.md",
+    "docs/plans/PRD-Rust双版本产品-v1.2.md",
+    "docs/plans/工程执行文档-Rust重写-v1.2.md",
+    "docs/handoff/当前整改证据-2026-10-25.md"
+  ],
+  "core_paths_match_R11": 36,
+  "cli_build": "cli-build.json",
+  "cli_help": [
+    "cli-help-personal.json",
+    "cli-help-public.json"
+  ],
+  "artifact": "cli-artifact.json",
+  "document_links": {
+    "count": 41,
+    "missing": 0,
+    "initial_attempt": "NOT_PASS: checked checkpoint before creating it; preserved in document-links.json"
+  },
+  "review": [
+    "local-review-iteration1.md",
+    "local-review.md"
+  ],
+  "checkpoint": "checkpoint.json",
+  "full_app_bundle": "NOT_BUILT",
+  "installation": "NOT_RUN",
+  "native_runtime": "NOT_RUN",
+  "real_accounts": "NOT_RUN",
+  "long_duration": "WAIT",
+  "historical_deviations_retained": [
+    "R08",
+    "R11"
+  ],
+  "diff_check_exit": 0
+}

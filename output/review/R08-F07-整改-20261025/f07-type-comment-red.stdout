@@ -1,0 +1,3 @@
+F07 selection receipt {'groups': ['First', 'Second'], 'error': None, 'locks': 1, 'stopped': 1, 'transact': 1}
+F07 type comment receipt {'scalar': 'select#suffix', 'CRLF': False, 'second_is_select': False}
+F07 type comment receipt {'scalar': 'url-test # select', 'CRLF': False, 'second_is_select': False}

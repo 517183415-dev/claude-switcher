@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/opt/homebrew/bin/node",
+    "--test",
+    "tests/repair-preview.test.mjs"
+  ],
+  "cwd": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop",
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/home",
+    "TMPDIR": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/tmp",
+    "npm_config_offline": "true",
+    "npm_config_update_notifier": "false"
+  },
+  "exit_code": 1,
+  "source_sha256": {
+    "apps/desktop/src/components/RegionSettings.svelte": "62c0b3c0dc20dfdaf77d634e08893c3084a571ea932e9601a45d4771417ee3c4",
+    "apps/desktop/src/App.svelte": "323e890f03dbf7553539bc9aebabe0561d8b43c57c25116f9d9e4d6110dd283b",
+    "apps/desktop/tests/repair-preview.test.mjs": "ec04ed218d8cf43ec9c1e22cd8d1af55e21f4da185fd59d5c23e30677622762f"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "started_at": "2026-10-25T08:32:58.682440+00:00",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "before": {
+    "packaging/macos/local_install.py": "0b0e0536f89af8067416748288a9b2a97eda8df1c7b1717c6ae45b48ef4424bb",
+    "packaging/macos/test_local_install.py": "028eed066dbc3a6bf0abeec98fdda6403d124f4bfd52c879e096d8033aa8bf21"
+  },
+  "git_status": " M crates/switcher-core/src/accounts.rs\n M crates/switcher-core/src/accounts/legacy.rs\n M crates/switcher-core/src/migration.rs\n?? .codegraph/\n?? output/\n"
+}

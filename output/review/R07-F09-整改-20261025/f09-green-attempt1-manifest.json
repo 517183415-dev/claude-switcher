@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/bin/node",
+    "--test",
+    "tests/repair-preview.test.mjs"
+  ],
+  "cwd": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop",
+  "exit_code": 0,
+  "source_sha256": {
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/tests/repair-preview.test.mjs": "ec04ed218d8cf43ec9c1e22cd8d1af55e21f4da185fd59d5c23e30677622762f"
+  }
+}

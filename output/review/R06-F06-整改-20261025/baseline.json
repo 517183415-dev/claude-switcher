@@ -1,0 +1,50 @@
+{
+  "task_id": "c2c_87c3",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "scope_pending_bounded_plan": false,
+  "accepted_R01_to_R05_source_sha256": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+    "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+  },
+  "git_status": " M crates/switcher-core/src/accounts.rs\n M crates/switcher-core/src/accounts/legacy.rs\n M crates/switcher-core/src/guardian_repair.rs\n M crates/switcher-core/src/macos.rs\n M crates/switcher-core/src/migration.rs\n M crates/switcher-core/src/pinned_routes.rs\n M crates/switcher-core/src/proxy_repair.rs\n M crates/switcher-core/src/regions/legacy.rs\n M crates/switcher-core/src/user_repairs.rs\n M packaging/macos/local_install.py\n M packaging/macos/test_local_install.py\n?? .codegraph/\n?? output/\n",
+  "preflight_iteration": 1,
+  "preflight_result": "PLAN correction required: pub(crate) account helper; no structured IP field",
+  "candidate_R06_source_sha256": {
+    "crates/switcher-core/src/bin/claude-switcher.rs": "893e130f09bafa1302ff35c215628daf24c36cc013f9d9cfb70ac80b79a541bc",
+    "crates/switcher-core/src/repair_cli.rs": "8543698452dccdd9a9cde63fb9996d0aa095e3b83571cf9534744600d6fa522f",
+    "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+    "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302"
+  },
+  "R02_protected_ast_sha256": {
+    "recheck_uninstall": "0186ed11f0a3a17bd48189bcc1212873a5cd5cbd47555cdf31df490ecb9158e4",
+    "check_uninstall_backups": "527de5810b5cb38595a7531e520a325f8c929d2d937cf1dcd702be53601b60d2",
+    "check_uninstall_holdings": "97af866d2d8fe26da551ce8a2862683a8f0bb75ea320b99642b54f911e050f7c",
+    "check_uninstall_recovery": "04df44c9f40ef25d4261ad15ee566bf5a678bc6f769dd5a65fdfa3584b5b819f",
+    "record_uninstall_prepared": "ec4b5fa15cdd5dfefad95ffb7abf38c8744e727cb5edc31f1aa03c2a50f155cd",
+    "restore_uninstall_file": "7c3c21431a2d4a11dfd3000b203d3186a25becae9016705e4acba3f0b9fee5ae",
+    "verify_uninstall_restored": "1d8829323a3d3a0268123aadd62a1b9aea8ff0f504a2c768558a0f6f2f2ed49c"
+  },
+  "R06_allowed_sources": [
+    "crates/switcher-core/src/bin/claude-switcher.rs",
+    "crates/switcher-core/src/repair_cli.rs",
+    "packaging/macos/local_install.py",
+    "packaging/macos/test_local_install.py",
+    "crates/switcher-core/src/accounts.rs"
+  ],
+  "R06_iteration": 2,
+  "frozen_accepted_exceptions": {
+    "crates/switcher-core/src/accounts.rs": "visibility/doc only; complete remainder byte-identical",
+    "packaging/macos/local_install.py": "R06 generation-bound cli contract; R02 seven AST functions frozen",
+    "packaging/macos/test_local_install.py": "R06 synthetic regression additions and explicit historical contract fixtures"
+  }
+}

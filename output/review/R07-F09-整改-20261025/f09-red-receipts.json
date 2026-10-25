@@ -1,0 +1,422 @@
+[
+  {
+    "case": "ordinary-success",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "triple-click-both-stages",
+    "counts": {
+      "preview_repair": 2,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "preview_repair",
+        {
+          "requestId": "request-2"
+        }
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "blocked",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "workspace_snapshot",
+        null
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "cancel-preview",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "workspace_snapshot",
+        null
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "destroy-execute",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 1
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "launch_checked",
+        {}
+      ],
+      [
+        "check_environment",
+        null
+      ],
+      [
+        "workspace_snapshot",
+        null
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "cancel-execute-new-owner",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "old-check-snapshot-races",
+    "counts": {
+      "preview_repair": 1,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 1
+    },
+    "calls": [
+      [
+        "workspace_snapshot",
+        null
+      ],
+      [
+        "check_environment",
+        null
+      ],
+      [
+        "cancel_check",
+        null
+      ],
+      [
+        "workspace_snapshot",
+        null
+      ],
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ]
+    ],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": null,
+    "suppressed": true,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "region-jp-explicit",
+    "counts": {
+      "preview_repair": 0,
+      "preview_region_change": 1,
+      "execute_repair": 1,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_region_change",
+        {
+          "region": "jp",
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "execute_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "region_view",
+        null
+      ]
+    ],
+    "outcomes": [
+      {
+        "completed": true,
+        "message": "synthetic result",
+        "recovery": null
+      }
+    ],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "recovery-fresh-preview",
+    "counts": {
+      "preview_repair": 2,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [
+      [
+        "preview_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "recover_repair",
+        null
+      ],
+      [
+        "region_view",
+        null
+      ],
+      [
+        "cancel_repair",
+        {
+          "requestId": "request-1"
+        }
+      ],
+      [
+        "preview_repair",
+        {
+          "requestId": "request-2"
+        }
+      ]
+    ],
+    "outcomes": [
+      {
+        "completed": true,
+        "message": "synthetic result",
+        "recovery": null
+      }
+    ],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  },
+  {
+    "case": "fixture-zero-ipc",
+    "counts": {
+      "preview_repair": 0,
+      "preview_region_change": 0,
+      "execute_repair": 0,
+      "check_environment": 0
+    },
+    "calls": [],
+    "outcomes": [],
+    "parentBusy": "",
+    "repairBusy": false,
+    "report": {
+      "id": "OLD",
+      "summary": {
+        "passed": 14,
+        "advisory": 0,
+        "blocking": 0
+      },
+      "checks": []
+    },
+    "suppressed": false,
+    "childBusy": "",
+    "error": ""
+  }
+]

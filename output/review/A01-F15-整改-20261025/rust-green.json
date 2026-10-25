@@ -1,0 +1,44 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "f15_",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "seconds": 193.79197737493087,
+  "source_before": {
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "40946ebe38223275dd4799a4f216b22b0e84d45c7b4bd5bbf4dde5d6ac8692b0",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "67ca13a152abcdb5a46a64d041fb8b94307d91c246098fa0eeab11f747f8cc2d",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "d4ff8bb7f1c2fbb3f0c0195daacda1ab5359cd795ba6545ab5134ba349834ebe",
+    "apps/desktop/src/pages/Operations.svelte": "75399b751448be483e876acc817d66c7d7fb37e529042fa1b163cf9861daf87b",
+    "apps/desktop/tests/publisher-limits.test.mjs": "f3c1c3882c7fa814fc7efe698f33f16c6d7a0f102e793cd2b7727847c167f663"
+  },
+  "source_after": {
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "40946ebe38223275dd4799a4f216b22b0e84d45c7b4bd5bbf4dde5d6ac8692b0",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "67ca13a152abcdb5a46a64d041fb8b94307d91c246098fa0eeab11f747f8cc2d",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "d4ff8bb7f1c2fbb3f0c0195daacda1ab5359cd795ba6545ab5134ba349834ebe",
+    "apps/desktop/src/pages/Operations.svelte": "75399b751448be483e876acc817d66c7d7fb37e529042fa1b163cf9861daf87b",
+    "apps/desktop/tests/publisher-limits.test.mjs": "f3c1c3882c7fa814fc7efe698f33f16c6d7a0f102e793cd2b7727847c167f663"
+  },
+  "source_frozen": true,
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a01-rust-green-wvkmdxi2",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc",
+    "TAURI_CONFIG": "{\"bundle\": {\"resources\": []}, \"build\": {\"frontendDist\": \"/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop/dist\"}}"
+  }
+}

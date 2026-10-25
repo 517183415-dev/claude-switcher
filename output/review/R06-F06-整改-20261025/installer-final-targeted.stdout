@@ -1,0 +1,1 @@
+F06 shim argv: ["--edition", "public", "--legacy-cli", "check", "--json", "", "space value", "quote'\"", "$(touch NEVER)", "semi;colon", "中文"] exit: 7

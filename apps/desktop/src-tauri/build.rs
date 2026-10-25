@@ -39,6 +39,10 @@ fn main() {
             "export_publisher_backup",
             "restore_publisher_backup",
             "open_publisher_backup_folder",
+            "preview_publisher_cleanup",
+            "commit_publisher_cleanup",
+            "preview_publisher_gc",
+            "commit_publisher_gc",
         ]
     } else {
         &[

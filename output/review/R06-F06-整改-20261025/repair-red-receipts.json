@@ -1,0 +1,130 @@
+[
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "legacy-complete",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "legacy-partial-error",
+    "code": 2,
+    "result": {
+      "Err": "synthetic_partial_failure"
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"
+  },
+  {
+    "calls": [
+      "prepare"
+    ],
+    "case": "legacy-prepare-error",
+    "code": 2,
+    "result": {
+      "Err": "synthetic_precondition"
+    },
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "calls": [
+      "prepare"
+    ],
+    "case": "legacy-preview",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-Fix { apply: true }-Modern",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-SetRegion { preset: Us, apply: true }-Modern",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-SetRegion { preset: Us, apply: true }-Legacy",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-DetectRegion { apply: true }-Modern",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-DetectRegion { apply: true }-Legacy",
+    "code": 0,
+    "result": {
+      "Ok": 0
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"
+  },
+  {
+    "calls": [
+      "prepare",
+      "apply"
+    ],
+    "case": "modern-partial-error",
+    "code": 2,
+    "result": {
+      "Err": "synthetic_partial_failure"
+    },
+    "stderr": "",
+    "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"
+  }
+]

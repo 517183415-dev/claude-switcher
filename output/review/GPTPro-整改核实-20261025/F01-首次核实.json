@@ -1,0 +1,65 @@
+{
+  "handoff_id": "CS-GPTAUDIT-20261025-A1",
+  "recorded_at": "2026-10-25T02:44:55.923085+08:00",
+  "worktree": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher",
+  "branch": "codex/gpt-audit-fixes",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "finding": "F01",
+  "actual_action": "CodeGraph 查询当前迁移与账号选择路径；直接读取未索引的 accounts/legacy.rs 第1至390行，核对空活动目录进入outgoing、旧A交换及清理分支。",
+  "evidence_kind": "static_source_trace",
+  "observations": [
+    {
+      "path": "crates/switcher-core/src/migration.rs",
+      "lines": [
+        173,
+        204
+      ],
+      "fact": "store 在活动目录缺失时创建目录，然后 select 调用 select_legacy_checked。"
+    },
+    {
+      "path": "crates/switcher-core/src/accounts.rs",
+      "lines": [
+        379,
+        402
+      ],
+      "fact": "selected_account 在 current 和 active-state 均缺失时返回 A。"
+    },
+    {
+      "path": "crates/switcher-core/src/accounts/legacy.rs",
+      "lines": [
+        132,
+        171
+      ],
+      "fact": "first 不取消 outgoing 复制；活动目录无条件复制，target == current 时保留活动目录。"
+    },
+    {
+      "path": "crates/switcher-core/src/accounts/legacy.rs",
+      "lines": [
+        274,
+        316
+      ],
+      "fact": "已有当前账号存档时 exchange 将旧存档移入 outgoing，之后 clean_stage 清理该目录。"
+    },
+    {
+      "path": "crates/switcher-core/src/accounts/legacy.rs",
+      "lines": [
+        321,
+        344
+      ],
+      "fact": "clean_stage 对身份符合的残留子目录调用 remove_dir_all。"
+    }
+  ],
+  "inference": "在无当前状态、活动目录为空或由 store 创建为空、已有A存档且其他校验通过时，静态路径可将空副本写成A存档，并在事务完成时删除旧A目录。",
+  "confidence": "high_static_only",
+  "not_proven": [
+    "未执行 Rust 事务或产品测试",
+    "未证明已安装版本行为",
+    "未接触真实账号",
+    "现有测试覆盖与旧行为对照仍在核查"
+  ],
+  "source_sha256": {
+    "crates/switcher-core/src/accounts.rs": "40461aecc6dad96b811f3962efb5f3eab1f00cbe39dde75cf6e6582734d42cbc",
+    "crates/switcher-core/src/accounts/legacy.rs": "9b7c25f205b6bdd61efa2af478e82f9f4dfc23272e872574f556c0706bab0974",
+    "crates/switcher-core/src/migration.rs": "672f91811e714b21cd03a5814dc8fd7726bc3270d2202215dd654ff7df20611c"
+  }
+}

@@ -180,7 +180,11 @@ fn main() {
         publisher_commands::create_ad_signing_key,
         publisher_commands::export_publisher_backup,
         publisher_commands::restore_publisher_backup,
-        publisher_commands::open_publisher_backup_folder
+        publisher_commands::open_publisher_backup_folder,
+        publisher_commands::preview_publisher_cleanup,
+        publisher_commands::commit_publisher_cleanup,
+        publisher_commands::preview_publisher_gc,
+        publisher_commands::commit_publisher_gc
     ]);
     let mut context = tauri::generate_context!();
     let mut builder = builder;

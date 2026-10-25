@@ -1,0 +1,8 @@
+[C2C]
+STATE: INIT
+TASK_ID: c2c_87c3
+ITERATION: 0
+WORKSPACE_ID: 5686a1f55261
+Next bounded R06/F06 from the approved minimal plan. R01-R05 accepted; baseline output/review/R06-F06-整改-20261025/baseline.json. Use MCP for current code; plan max5 source files, include repair_cli progress formatting.
+Legacy shim should select --legacy-cli; explicit JSON and direct binary keep modern behavior. Legacy status must use real optional account ownership, not display default A. Preserve F01. Define check/switch/fix stdout/stderr/exits; partial fix failure must not look successful. Use synthetic handler results and fake shim executable; avoid whole checks_cli tests (loopback diagnostics).
+Important preflight: cli_verify and plan_uninstall rebuild cli_shim bytes for archived generations. Blind flag insertion breaks R02/R03 ownership proof. Plan generation-bound old/new shim format compatibility, never broadly accept both templates. No installs/real accounts/network/apps/system/push. Return PLAN only.

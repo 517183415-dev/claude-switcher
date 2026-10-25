@@ -1,0 +1,130 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: DONE TASK_ID: c2c_1a81 ITERATION: 1 UNIT: R03 / F03 VERDICT: ACCEPTED REMAINING_R03_WORK: NONE WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 REVIEWED_OUTPUTS: 12-22 R01: PRESERVED R02: PRESERVED NEXT_UNIT: R04 / F04+F05"
+    - paragraph: R03 meets the bounded acceptance criteria. I inspected the current three-file implementation, cumulative six-file diff, RED/GREEN outputs, and the requested evidence. I found no remaining R03 blocker.
+    - heading "TARGET-only generation ownership — accepted" [level=3]
+    - paragraph: "local_install.py now separates three concepts correctly:"
+    - list:
+      - strong: "Immutable generation ownership:"
+      - text: plan_uninstall() reads the archived watchdog from the committed installation generation, validates that its archived TARGET matches the archived plan, normalizes only the single recognized TARGET line, and requires every other script byte to match.
+      - strong: "Current configuration correctness:"
+      - text: watchdog_verify() compares both parsed TARGET and normalized body. Because watchdog_script() returns (target, normalized_body), a script whose body is valid but whose TARGET differs from current config.json still fails public verification.
+      - strong: "Transaction snapshot identity:"
+      - text: after the uninstall plan exists, the accepted R02 functions continue comparing the actual snapshot/hash/dev/ino. A later valid TARGET change or same-byte inode replacement therefore remains a transaction conflict.
+    - paragraph:
+      - text: The implementation does
+      - strong: not
+      - text: use current config as proof of generation ownership, and it does not rewrite the immutable installation archive. This matches the preflight requirement.
+    - paragraph: The strict parser accepts exactly one beginning-of-line TARGET= assignment, quoted or historical unquoted, validates it against zoneinfo, and replaces only that line with the comparison placeholder. Duplicate/malformed assignments, substitutions, traversal and other script-body modifications remain rejected.
+    - heading "Published prepared-candidate boundary — accepted" [level=3]
+    - paragraph: The evidence clarification in prepared-边界复核.md matches the actual R02 contract.
+    - paragraph: "The important boundary is:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: candidate identity persisted → candidate published to active path → crash before uninstall_restored is durably saved
+    - paragraph: At that point check_uninstall_recovery() compares the live file against the full previously persisted uninstall_prepared fingerprint. A subsequent TARGET edit—even to another valid timezone—is rejected. The test test_f03_published_prepared_target_conflict_is_not_adopted verifies two repeated recovery attempts, unchanged journal bytes, retained conflicting object, and no fchown.
+    - paragraph: The separate unpublished stage/restore-* fragment is not authoritative recovery state. Recovery creates a fresh verified candidate from the trusted backup; the abandoned private fragment is neither adopted nor rewritten. That is consistent with the accepted R02 design, so treating every abandoned private fragment as an active conflict would unnecessarily widen the transaction contract.
+    - heading "Rust/Python artifact contract — accepted" [level=3]
+    - paragraph: "guardian_repair.rs now accepts only two complete reviewed plist byte encodings:"
+    - list:
+      - listitem: the existing bundled daemon template;
+      - listitem: the exact current plistlib serialization produced by Python.
+    - paragraph: It does not perform permissive XML normalization. Extra execution keys, wrong labels, paths, arguments, booleans, intervals/types, reordered arguments, or even unrelated extra bytes are rejected.
+    - paragraph: The root-component validation also now reads through the checked O_NOFOLLOW descriptor with bounded length and verifies root ownership, wheel group, exact mode, regular-file type, one link, and protected parents. Registered services no longer bypass component validation.
+    - paragraph: For unregistered valid services, the repair planner emits the appropriate fixed bootstrap command. Registered-but-corrupt components no longer count as available.
+    - paragraph: The Rust cross-language test actually invokes the current Python producer and records its Python executable, Python-source SHA256 and generated artifact SHA256 values; it is not comparing against a manually duplicated fixture.
+    - heading "RED evidence verified" [level=3]
+    - paragraph: "The failures correspond directly to the intended defects:"
+    - list:
+      - text: Output
+      - strong: "12"
+      - text: ": Rust F03 — 3 behavioral failures out of 4 tests:"
+      - list:
+        - listitem: actual Python plist rejected;
+        - listitem: registered corrupt component incorrectly considered ready;
+        - listitem: watchdog update lacked canonical quotes.
+      - text: Output
+      - strong: "13"
+      - text: ": Python F03 — historical unquoted TARGET rejected and valid post-region watchdog blocked by immutable-generation byte equality."
+      - text: Output
+      - strong: "14"
+      - text: ": frozen pre-fix Python path rejects the real Rust-generated watchdog update during verify_public()."
+    - paragraph: These are valid behavioral REDs.
+    - heading "Final acceptance receipts" [level=3]
+    - table:
+      - rowgroup:
+        - row "Check Result":
+          - columnheader "Check"
+          - columnheader "Result"
+      - rowgroup:
+        - row "Python F03 17 methods / 57 scenarios PASS":
+          - cell "Python F03"
+          - cell "17 methods / 57 scenarios PASS":
+            - strong: 17 methods / 57 scenarios PASS
+        - row "Python full module 153 methods PASS":
+          - cell "Python full module"
+          - cell "153 methods PASS":
+            - strong: 153 methods PASS
+        - row "F02 contained in module 43 methods remain PASS":
+          - cell "F02 contained in module"
+          - cell "43 methods remain PASS":
+            - strong: 43 methods remain PASS
+        - row "Rust f03_ 6 PASS":
+          - cell "Rust f03_"
+          - cell "6 PASS":
+            - strong: 6 PASS
+        - 'row "Rust guardian_repair:: 17 PASS"':
+          - cell "Rust guardian_repair::"
+          - cell "17 PASS":
+            - strong: 17 PASS
+        - 'row "Rust regions:: 51 PASS"':
+          - cell "Rust regions::"
+          - cell "51 PASS":
+            - strong: 51 PASS
+        - row "Clippy -D warnings PASS":
+          - cell "Clippy -D warnings"
+          - cell "PASS"
+        - row "exact-file rustfmt PASS":
+          - cell "exact-file rustfmt"
+          - cell "PASS"
+        - row "git diff --check PASS":
+          - cell "git diff --check"
+          - cell "PASS"
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: The targeted counts overlap the larger suites and should not be summed.
+    - paragraph: verification.json brackets all eight final commands with the same six source hashes. The three accepted F01 hashes remain unchanged. The evidence also records the accepted R02 transaction functions as byte-identical; only plan_uninstall() and watchdog_verify() were changed on the Python production side for R03.
+    - paragraph: "Current Git status contains exactly the expected cumulative six tracked modifications:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: crates/switcher-core/src/accounts.rs crates/switcher-core/src/accounts/legacy.rs crates/switcher-core/src/migration.rs crates/switcher-core/src/guardian_repair.rs packaging/macos/local_install.py packaging/macos/test_local_install.py
+    - paragraph: No staged files or conflicts were reported.
+    - paragraph:
+      - strong: R03/F03 is therefore accepted for source review and isolated local testing.
+      - text: This does not claim real installation, live launchd behavior, actual set-region/system timezone mutation, real accounts, GUI, or power-loss durability; those remain outside this unit.
+    - paragraph: R04 may proceed under a new bounded C2C PLAN.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

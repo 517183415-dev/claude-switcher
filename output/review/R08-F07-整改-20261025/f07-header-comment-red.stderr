@@ -1,0 +1,54 @@
+test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) ... 
+  test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: # 用户注释', selected=None) ... FAIL
+  test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: # 用户注释', selected='Missing') ... FAIL
+  test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: \t # comment', selected=None) ... FAIL
+  test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: \t # comment', selected='Missing') ... FAIL
+
+======================================================================
+FAIL: test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: # 用户注释', selected=None)
+----------------------------------------------------------------------
+ValueError: proxy group selection required; use --proxy-group; candidates: 
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 298, in test_f07_header_comment_preserves_candidate_validation
+    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "candidates: First, Second" does not match "proxy group selection required; use --proxy-group; candidates: "
+
+======================================================================
+FAIL: test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: # 用户注释', selected='Missing')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 301, in test_f07_header_comment_preserves_candidate_validation
+    with self.assertRaisesRegex(ValueError,'not a discovered candidate'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: \t # comment', selected=None)
+----------------------------------------------------------------------
+ValueError: proxy group selection required; use --proxy-group; candidates: 
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 298, in test_f07_header_comment_preserves_candidate_validation
+    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "candidates: First, Second" does not match "proxy group selection required; use --proxy-group; candidates: "
+
+======================================================================
+FAIL: test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) (header='proxy-groups: \t # comment', selected='Missing')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 301, in test_f07_header_comment_preserves_candidate_validation
+    with self.assertRaisesRegex(ValueError,'not a discovered candidate'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.010s
+
+FAILED (failures=4)

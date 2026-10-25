@@ -1,6 +1,6 @@
 # AGENTS.md —— Agent 交接提示词
 
-> 这份文件写给 AI Agent。用户把本项目交给你时，请按本文档执行安装与配置。
+> 这份文件写给 AI Agent。先区分 Rust 版与旧版，再按用户授权执行开发或安装。
 > 用户也可以直接把本文件内容粘贴给任意本地模型（Kimi Code / Cursor / Claude Code 等）作为指令。
 
 ---
@@ -9,7 +9,17 @@
 
 帮助用户在 macOS 上安装并配置「Claude 切换器」：一个带环境安检的 Claude 账号启动/切换工具。目标状态是：**用户双击桌面图标，14 项安全检查全部通过，可以正常启动 Claude**。
 
-## 开始之前：必须先确认的前置条件
+## 当前入口与执行范围（2026-10-25）
+
+Rust 版使用 `crates/`、`apps/desktop/` 和 `packaging/macos/`。本地构建入口为 `bash scripts/build-rust.sh personal` 或 `public`；安装计划与恢复操作见 `packaging/macos/README.md`。SourceLocal 通过重新构建和管理员本地安装升级，两版均不自动更新。
+
+下方 `installer/安装.command`、shell、SwiftUI 和相关验收适用于旧版。不要用旧安装器替代 Rust 安装流程。用户仅要求隔离开发时，不执行安装、出口探测、真实账号操作或系统设置。缺少依赖先记录，不自行安装。
+
+Rust 账号逻辑优先读取安全有效的 `current` A/B 标记。标记缺失或内容不识别时兼容 v2 状态；不安全文件拒绝；需要回退 v2 时，损坏记录拒绝。归属未知且活动目录为空或缺失时保留已有 A；首次非空活动资料沿用收编 A 合同。GUI 选择账号与 CLI `switch` 均先检查环境，通过后退出 Claude、切换资料，再检查并请求启动。普通修复一次点击完成计划与执行，成功后自动全检查；地区变更仍保留选择与确认。
+
+用户 guardian 负责网络事件、十秒兜底、健康与受信 Public 调度，不直接校时。root 时区看门狗保留启动时及每小时校正；helper 保留固定授权操作。实际服务与时序须另验。当前分层证据见 [当前整改证据](docs/handoff/当前整改证据-2026-10-25.md)。
+
+## 旧版安装前置条件
 
 逐项检查，缺哪项就先补哪项：
 
@@ -19,7 +29,7 @@
 4. **python3** 可用（`python3 --version` 能输出版本号；没有则引导用户运行 `xcode-select --install`）
 5. **当前出口 IP 所在国家不能是 CN**——先跑 `curl -s https://www.cloudflare.com/cdn-cgi/trace | grep loc=`，返回的 `loc` 不是 `CN` 才能继续。是 CN 就停下，让用户先把代理调好（安装程序会按出口 IP 自动锁定地区目标：国家/时区/地区格式三件套，裸连时装机会把它们锁错）
 
-## 安装步骤
+## 旧版安装步骤
 
 首选引导用户运行安装器（双击 `installer/安装.command`，或终端执行它）。如果安装器环境受限，按下面的手动等效步骤执行：
 
@@ -45,7 +55,7 @@
 
 隔离回归：`python3 -m unittest discover -s tests -v`。测试使用本机假 curl 和隔离 HOME，不使用真实登录资料或代理。
 
-## 验收标准（全部满足才算装完）
+## 旧版安装验收标准（全部满足才算装完）
 
 - 终端执行 `~/.local/bin/claude-switch.sh checkdetail` 输出 14 行且全部 `=ok`
 - 双击桌面 App，界面全绿，能正常启动 Claude
@@ -103,6 +113,8 @@ Linux 用户使用 `linux/` 下的 bash 版本。**开始之前必须先理解�
 
 ## 文件索引
 
+- Rust 核心与 CLI/guardian：`crates/switcher-core/`；root helper：`crates/switcher-helper/`
+- Rust 界面与命令：`apps/desktop/`；本地安装与恢复：`packaging/macos/`
 - 核心逻辑：`core/claude-switch.sh`（安检/切换/修复全在这一个文件）
 - 泄漏探针：`core/stun-probe.py`
 - 界面：`app/main.swift`（单文件 SwiftUI）

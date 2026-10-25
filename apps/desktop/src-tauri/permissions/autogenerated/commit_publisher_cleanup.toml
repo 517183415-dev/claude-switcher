@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-commit-publisher-cleanup"
+description = "Enables the commit_publisher_cleanup command without any pre-configured scope."
+commands.allow = ["commit_publisher_cleanup"]
+
+[[permission]]
+identifier = "deny-commit-publisher-cleanup"
+description = "Denies the commit_publisher_cleanup command without any pre-configured scope."
+commands.deny = ["commit_publisher_cleanup"]

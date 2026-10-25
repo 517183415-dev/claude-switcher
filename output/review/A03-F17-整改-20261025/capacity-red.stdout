@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::cleanup_tests::f17_gc_identity_capacity_is_reserved_before_checkpoint_and_ordinary_persist ... FAILED
+
+failures:
+
+failures:
+    publisher::cleanup_tests::f17_gc_identity_capacity_is_reserved_before_checkpoint_and_ordinary_persist
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 83 filtered out; finished in 7.30s
+

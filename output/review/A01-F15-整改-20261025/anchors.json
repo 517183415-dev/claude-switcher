@@ -1,0 +1,74 @@
+{
+  "apps/desktop/src-tauri/src/publisher_commands.rs": [
+    {
+      "line": 42,
+      "symbol": "pub fn import_ad_image"
+    },
+    {
+      "line": 192,
+      "symbol": "pub async fn restore_publisher_backup"
+    },
+    {
+      "line": 209,
+      "symbol": "pub(crate) fn restore_publisher_backup_body"
+    }
+  ],
+  "apps/desktop/src-tauri/src/publisher/tests.rs": [
+    {
+      "line": 820,
+      "symbol": "fn f15_restore_large_backup"
+    },
+    {
+      "line": 871,
+      "symbol": "fn f15_command_body_restores_valid_33"
+    },
+    {
+      "line": 876,
+      "symbol": "fn f15_command_body_restores_inclusive_64"
+    },
+    {
+      "line": 881,
+      "symbol": "fn f15_command_body_failures"
+    },
+    {
+      "line": 953,
+      "symbol": "fn f15_backup_plaintext"
+    }
+  ],
+  "apps/desktop/src/pages/Operations.svelte": [
+    {
+      "line": 34,
+      "symbol": "async function imageInput"
+    },
+    {
+      "line": 40,
+      "symbol": "async function restoreBackup"
+    }
+  ],
+  "apps/desktop/tests/publisher-limits.test.mjs": [
+    {
+      "line": 15,
+      "symbol": "function harness"
+    },
+    {
+      "line": 50,
+      "symbol": "test("
+    },
+    {
+      "line": 63,
+      "symbol": "test("
+    },
+    {
+      "line": 74,
+      "symbol": "test("
+    },
+    {
+      "line": 84,
+      "symbol": "test("
+    },
+    {
+      "line": 95,
+      "symbol": "test("
+    }
+  ]
+}

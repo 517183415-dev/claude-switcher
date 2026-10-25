@@ -1,0 +1,72 @@
+
+running 37 tests
+test inspected_current_account_never_offers_reinitialization ... ok
+test missing_scoped_context_never_implies_local_permission ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test recovery_failure_guidance_does_not_require_new_application_or_keychain_evidence ... ok
+test available_handling_plan_exposes_no_metadata_or_login_preservation_claim ... ok
+test current_compatibility_readiness_matches_core_without_login_claims ... FAILED
+test metadata_observed_never_implies_dependency_preservation ... FAILED
+test scoped_permission_never_removes_global_keychain_gate ... ok
+test projection_keeps_all_blockers_and_excludes_keychain_metadata ... ok
+test unsupported_backup_is_never_offered ... FAILED
+test handling_plan_preserves_every_backend_blocker_and_ready_consistency ... ok
+test compatibility_assessments_preserve_backend_blockers_and_false_readiness ... FAILED
+test only_consistent_complete_readiness_is_presented_as_ready ... ok
+test scoped_blockers_and_inconsistent_ready_fail_closed ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+
+failures:
+
+---- current_compatibility_readiness_matches_core_without_login_claims stdout ----
+
+thread 'current_compatibility_readiness_matches_core_without_login_claims' (27735500) panicked at apps/desktop/src-tauri/tests/e03_core_preparation.rs:222:5:
+assertion failed: view.ready
+
+---- metadata_observed_never_implies_dependency_preservation stdout ----
+
+thread 'metadata_observed_never_implies_dependency_preservation' (27735503) panicked at apps/desktop/src-tauri/tests/e03_core_preparation.rs:73:5:
+assertion failed: !view.backup_allowed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- unsupported_backup_is_never_offered stdout ----
+
+thread 'unsupported_backup_is_never_offered' (27735513) panicked at apps/desktop/src-tauri/tests/e03_core_preparation.rs:90:5:
+assertion failed: !view.backup_allowed
+
+---- compatibility_assessments_preserve_backend_blockers_and_false_readiness stdout ----
+
+thread 'compatibility_assessments_preserve_backend_blockers_and_false_readiness' (27735499) panicked at apps/desktop/src-tauri/tests/e03_core_preparation.rs:249:9:
+assertion failed: view.blockers.is_empty()
+
+
+failures:
+    compatibility_assessments_preserve_backend_blockers_and_false_readiness
+    current_compatibility_readiness_matches_core_without_login_claims
+    metadata_observed_never_implies_dependency_preservation
+    unsupported_backup_is_never_offered
+
+test result: FAILED. 33 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.44s
+

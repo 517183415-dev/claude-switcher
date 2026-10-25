@@ -1,0 +1,13 @@
+✔ image handler accepts the inclusive 1 MiB boundary (31.743333ms)
+✔ image handler rejects over 1 MiB before reading or invoking (7.6965ms)
+✔ restore handler accepts the inclusive 64 MiB boundary (3.059625ms)
+✔ restore handler rejects oversized files and short passwords before invoke (6.381667ms)
+✔ real handlers report backend failure and release busy state (4.840416ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 343.858792

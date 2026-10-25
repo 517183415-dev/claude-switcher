@@ -1,0 +1,11 @@
+{
+  "phase": "F05 RED with production composition seam; legacy two waits and ignored opener retained",
+  "command": "cargo test --offline --locked -p switcher-core --lib f05_ -- --nocapture",
+  "sources": {
+    "crates/switcher-core/src/proxy_repair.rs": "460e9c3ab7e743467c26bad230b2fde28c9deeeb22ba2d276d44008d9f816ed1",
+    "crates/switcher-core/src/regions/legacy.rs": "f8779269c189e4867338a1f2e7e91f5ab1b0503836e60c0a567371fe6c42a7b8",
+    "crates/switcher-core/src/regions.rs": "c07c470b805a7435171f7f06bc03745ec2349d1a7e1c34dbd72a0ed65162173f"
+  },
+  "exit_code": 101,
+  "elapsed_seconds": 4.835
+}

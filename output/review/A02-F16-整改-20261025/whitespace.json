@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "apps/desktop/src-tauri/src/publisher/mod.rs",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs",
+    "apps/desktop/src-tauri/src/publisher/tests.rs"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}

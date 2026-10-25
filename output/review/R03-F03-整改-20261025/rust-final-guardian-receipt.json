@@ -1,0 +1,17 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--lib",
+    "guardian_repair::",
+    "--",
+    "--nocapture"
+  ],
+  "exit_code": 0,
+  "source_sha256_before": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+  "source_sha256_after": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d"
+}

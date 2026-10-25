@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/usr/bin/ruby",
+    "-ryaml",
+    "output/review/R05-F08-F10-整改-20261025/yaml-parser-psych.rb",
+    "output/review/R05-F08-F10-整改-20261025/f10-fixtures.json"
+  ],
+  "exit_code": 0,
+  "stderr": ""
+}

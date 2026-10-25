@@ -1,0 +1,369 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_ad0b ITERATION: 0 UNIT: R04 / F04+F05 VERDICT: PROCEED — RED first WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE: crates/switcher-core/src/user_repairs.rs crates/switcher-core/src/regions/legacy.rs crates/switcher-core/src/proxy_repair.rs STOP_AFTER: R04 execution evidence for independent review"
+    - paragraph: R01–R03 remain frozen. Baseline hashes match the handoff, and current Git status contains only the six already accepted cumulative modifications; none of the three R04 files has a current HEAD diff.
+    - heading "Current defect model" [level=2]
+    - heading "F04 — Merge state and live runtime state are conflated" [level=3]
+    - paragraph: "repair_legacy_merge_at(home, rules_ok) currently returns false in both of these materially different situations:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: rules_ok = true → live rules already verified → no reload needed [correct false] rules_ok = false + Merge.yaml already contains the required claude.ai rule → file needs no write → live rules are still missing → reload IS needed [currently false — defect]
+    - paragraph: The same false result occurs when pinned_routes::propose() says the existing Merge file is already correct.
+    - paragraph: "regions/legacy.rs::Native::merge() uses that boolean to decide whether to:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: stop Clash Verge → start Clash Verge → verify
+    - paragraph:
+      - text: So the boolean should mean
+      - strong: needs_reload
+      - text: ", not merely “file bytes were changed.”"
+    - paragraph: "Required semantics:"
+    - region "可滚动表格":
+      - table:
+        - rowgroup:
+          - row "Live rules Merge file File write Return needs_reload":
+            - columnheader "Live rules"
+            - columnheader "Merge file"
+            - columnheader "File write"
+            - columnheader "Return needs_reload"
+        - rowgroup:
+          - row "already verified any no false":
+            - cell "already verified"
+            - cell "any"
+            - cell "no"
+            - cell "false"
+          - row "missing already correct no true":
+            - cell "missing"
+            - cell "already correct"
+            - cell "no"
+            - cell "true":
+              - strong: "true"
+          - row "missing needs repair yes true":
+            - cell "missing"
+            - cell "needs repair"
+            - cell "yes"
+            - cell "true"
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: Do not create a backup or rewrite the Merge file in the middle row.
+    - separator
+    - heading "F05 — legacy proxy composition currently owns two readiness waits" [level=3]
+    - paragraph: "Current Native::proxy() does:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "prepare_app_open → execute_app_open └─ running/open + up to 40 ready checks → if Clash Verge: repair_legacy_tun maybe Native.start() → another loop of up to 40 proxy_running + tunnel_route checks → egress country lookup"
+    - paragraph: "It also discards:"
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: let _ = proxy_repair::execute_app_open(&plan);
+    - paragraph: So an app-open failure can be hidden and the legacy composition can consume two independent 40-iteration waits.
+    - paragraph: At the same time, the modern regions.rs caller explicitly relies on the existing execute_app_open(plan) contract. That function must therefore remain compatible.
+    - paragraph:
+      - text: The R04 fix should split
+      - strong: opening
+      - text: from
+      - strong: waiting
+      - text: ", not silently change the existing public-in-crate behavior."
+    - separator
+    - heading "P1 — Add RED for F04 before implementation" [level=1]
+    - paragraph:
+      - strong: "File:"
+      - text: user_repairs.rs
+    - paragraph: Extend the existing legacy_merge_uses_saved_group... coverage into explicit F04 cases.
+    - paragraph: "Required pre-fix RED:"
+    - list:
+      - listitem: Create a valid Merge file containing the required pinned rule.
+      - text: "Call:"
+      - generic: Rust
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: repair_legacy_merge_at(home, false)
+      - text: where false means live rules are not loaded.
+      - text: "Assert:"
+      - list:
+        - listitem: return is true;
+        - listitem: Merge bytes are unchanged;
+        - listitem: no new .bak file is created.
+    - paragraph: This should fail currently because the function returns false.
+    - paragraph: "Also retain/explicitly assert:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: same correct Merge + rules_ok=true → false
+    - paragraph: "and:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: missing/bad Merge + rules_ok=false → file changed + true
+    - paragraph: Do not modify pinned_routes in R04.
+    - heading "Minimal implementation" [level=3]
+    - paragraph: "After the live-rules early gate:"
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "if rules_ok { return Ok(false); }"
+    - paragraph: all successful paths where the desired file state already exists should return true, because the live runtime is known stale.
+    - paragraph: In other words, once rules_ok == false, false must not mean “file happened to need no write.”
+    - paragraph: Preserve all existing race checks, atomic replacement, backup behavior and group-selection logic.
+    - separator
+    - heading "P2 — Separate open-only behavior from the existing 40-wait contract" [level=1]
+    - paragraph:
+      - strong: "File:"
+      - text: proxy_repair.rs
+    - paragraph:
+      - text: Do
+      - strong: not
+      - text: "change this caller-facing contract:"
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_app_open(plan)
+    - paragraph: "It must continue to:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: validate plan/time → open named app if not running → wait up to 40 readiness iterations
+    - paragraph: because regions.rs still calls it directly.
+    - paragraph: "Instead extract a smaller primitive, conceptually:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_app_open_only(...)
+    - paragraph: "that performs only:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "plan expiry/mode validation → check running → if not running: open exact named app → return"
+    - paragraph: No readiness loop or pause belongs to this primitive.
+    - paragraph: "The existing execute_app_open_with() should then compose:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: open-only → existing 40-check readiness loop
+    - paragraph: This preserves every other caller.
+    - heading "RED tests in proxy_repair.rs" [level=3]
+    - paragraph: "Before changing implementation, add tests proving the desired primitive behavior:"
+    - list:
+      - listitem: Shadowrocket, ClashX, Surge and Clash Verge resolve to exactly the existing names.
+      - listitem: already-running app performs no open;
+      - listitem: non-running app opens exactly once;
+      - listitem: opener error is returned;
+      - listitem: expired/future/malformed timing is rejected before opening;
+      - text: open-only performs
+      - strong: zero
+      - text: readiness checks and zero pauses.
+    - paragraph: Keep the existing test that execute_app_open_with() still waits 40 iterations. That is the compatibility guard for other callers.
+    - paragraph: No new public API or dependency is needed; pub(crate)/private test seams are sufficient.
+    - separator
+    - heading "P3 — Give legacy composition exactly one readiness budget" [level=1]
+    - paragraph:
+      - strong: "Files:"
+      - text: regions/legacy.rs, with the new open-only seam from proxy_repair.rs.
+    - paragraph: "Refactor only the internals of the legacy Native::proxy() path to this sequence:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "parse proxy mode → prepare app-open plan when the mode has a named app → OPEN ONLY; propagate failure → for Clash Verge, repair legacy TUN → if Clash Verge is still not running, start it → ONE shared readiness wait: max 40 iterations → country/egress verification"
+    - paragraph:
+      - text: The sole 40-iteration readiness loop should cover the state
+      - strong: after all opening/TUN/start actions
+      - text: have been attempted.
+    - paragraph: Do not run an initial 40-wait before repairing Verge TUN.
+    - heading "Important ordering" [level=3]
+    - paragraph: "For Clash Verge:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: open app if necessary → repair_legacy_tun → ensure process running → wait for process + TUN once
+    - paragraph: This preserves the existing TUN repair rather than replacing it with generic opening.
+    - paragraph: "For named non-Verge apps:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: open if necessary → same one readiness loop
+    - paragraph: For modes without a named app (auto, sing-box, 0dcloud as applicable), skip opening but still use the same single readiness gate.
+    - heading "App-open failure" [level=3]
+    - paragraph: Do not discard the result.
+    - paragraph: A failed named-app open must return a diagnostic error before preferences/system changes are allowed by this proxy gate. Keep the existing high-level failure ordering of execute_with().
+    - paragraph: Use an error that is distinct enough for a regression assertion; do not collapse it into an eventual “40 seconds not ready” timeout.
+    - separator
+    - heading "P4 — Make the real legacy composition testable without faking proxy()" [level=1]
+    - paragraph: "The existing regions/legacy.rs Fake implements:"
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "fn proxy(...) { self.calls.push(\"proxy\"); ... }"
+    - paragraph: That bypasses exactly the composition under review and is insufficient for F05 acceptance.
+    - paragraph:
+      - text: Add a
+      - strong: small internal composition helper
+      - text: "used by Native::proxy() that accepts the real operational seams required for this sequence, for example:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: app opener TUN repair Runtime/running/start observation readiness observation/pause egress lookup
+    - paragraph: Use the narrowest arrangement that fits the existing traits. Do not introduce a parallel proxy framework.
+    - paragraph: The R04 tests must invoke this same composition helper rather than a fake Operations::proxy return value.
+    - heading "Required composition REDs" [level=2]
+    - heading "A. One-budget timeout" [level=3]
+    - paragraph: "Fake conditions:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: app initially not running named app open succeeds readiness remains false for all checks
+    - paragraph: "Assert the composition performs:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: open = 1 ready checks = 40 pauses = 40
+    - paragraph: —not 80.
+    - paragraph: The current production composition should fail this RED because execute_app_open() owns one wait and Native::proxy() owns another.
+    - heading "B. Open succeeds, readiness becomes true late" [level=3]
+    - paragraph: Set readiness to become true on iteration 40.
+    - paragraph: Assert success with exactly one set of checks and no second waiting phase.
+    - heading "C. App-open failure propagates immediately" [level=3]
+    - paragraph: "For each named app mode relevant to the old flow, especially:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: Shadowrocket ClashX Clash Verge
+    - paragraph: inject an open failure.
+    - paragraph: "Assert:"
+    - list:
+      - listitem: composition returns the open error;
+      - listitem: readiness checks = 0;
+      - listitem: country lookup = 0;
+      - listitem: for Clash Verge, no later restart/verification masks the failure.
+    - paragraph: Current code should fail because it discards execute_app_open().
+    - heading "D. Clash Verge TUN behavior remains" [level=3]
+    - paragraph: "Use the real legacy composition with fakes and assert order:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: open (when needed) → TUN repair → optional start → readiness → egress
+    - paragraph: "Cover:"
+    - list:
+      - listitem: "Verge initially stopped: opens, TUN repair runs, process start occurs only if still needed."
+      - listitem: "Verge already running: no named-app open, but TUN repair still runs."
+      - listitem: "TUN repair reports a change that triggers its existing stop/edit/start behavior: no second independent 40-wait is introduced."
+    - paragraph: Do not call real apps or OS commands.
+    - heading "E. Named-app opening remains compatible" [level=3]
+    - paragraph: "Verify exact app selections remain:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: clash-verge → Clash Verge shadowrocket → Shadowrocket clashx → ClashX surge → Surge
+    - paragraph: And modes without an app do not call open.
+    - separator
+    - heading "P5 — F04 integration regression through actual merge/reload decision" [level=1]
+    - paragraph:
+      - strong: "Files:"
+      - text: user_repairs.rs and/or regions/legacy.rs.
+    - paragraph: Add a small integration-style unit test using the actual repair_legacy_merge_at() return value and a fake Runtime, not a hardcoded boolean.
+    - paragraph: "Required scenarios:"
+    - heading "Correct Merge, live rules missing" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: Merge already correct rules_ok=false → no file mutation → needs_reload=true → stop exactly once → start exactly once → verify exactly once
+    - heading "Correct Merge, live rules passing" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: rules_ok=true → needs_reload=false → zero stop/start/verify
+    - heading "Merge requires modification" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: rules_ok=false → file updated → reload exactly once
+    - paragraph: Do not broaden this into checking actual Clash configuration loading; this unit only proves the decision and restart contract.
+    - separator
+    - heading "P6 — Preserve the two legitimate proxy gates in execute_with" [level=1]
+    - paragraph: "The handoff explicitly notes that legacy execute_with() calls proxy both:"
+    - list:
+      - listitem: before system/user modifications;
+      - listitem: after config persistence.
+    - paragraph: Do not “deduplicate” these two calls as part of F05.
+    - paragraph: "The acceptance requirement is:"
+    - blockquote:
+      - paragraph:
+        - strong: each invocation of the proxy composition has at most one 40-iteration readiness budget
+    - paragraph: "not:"
+    - blockquote:
+      - paragraph: entire set-region/fix transaction may call proxy only once.
+    - paragraph: "Keep existing tests such as:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: user_only_repair → proxy, preferences, merge, proxy failed initial proxy gate → no later modifications
+    - paragraph: Update test internals only as needed to exercise the new composition helper.
+    - separator
+    - heading "P7 — Explicit compatibility gates" [level=1]
+    - paragraph: "Before finishing R04, prove these remain true:"
+    - list:
+      - listitem: proxy_repair::execute_app_open() still owns the legacy 40-iteration wait for regions.rs.
+      - listitem: regions.rs modern app-open caller requires no source change.
+      - listitem: named apps still auto-open.
+      - listitem: Clash Verge TUN repair remains wired.
+      - listitem: Merge that already has loaded rules causes no restart.
+      - listitem: no new app/service/settings/network operation is executed during tests.
+    - paragraph: No changes to regions.rs are expected or authorized in this unit.
+    - separator
+    - heading "Verification" [level=1]
+    - paragraph: Use offline/cached tooling only.
+    - paragraph: "First preserve RED logs for the new F04/F05 regressions. Then after implementation run at minimum:"
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "cargo test --offline --locked -p switcher-core --lib f04_ -- --nocapture cargo test --offline --locked -p switcher-core --lib f05_ -- --nocapture cargo test --offline --locked -p switcher-core --lib user_repairs:: cargo test --offline --locked -p switcher-core --lib proxy_repair:: cargo test --offline --locked -p switcher-core --lib regions::legacy:: cargo clippy --offline --locked -p switcher-core --lib --tests -- -D warnings rustfmt --check --edition 2024 \\ crates/switcher-core/src/user_repairs.rs \\ crates/switcher-core/src/regions/legacy.rs \\ crates/switcher-core/src/proxy_repair.rs git diff --check"
+    - paragraph: If the test naming makes the two targeted filters overlap, record the real matched counts instead of summing them.
+    - paragraph: "Write evidence under:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R04-F04-F05-整改-20261025/
+    - paragraph: "Record:"
+    - list:
+      - listitem: RED commands, exit codes and concrete failed assertions;
+      - listitem: GREEN commands and nonzero matched counts;
+      - listitem: open/check/pause/start/stop/TUN/egress counters from composition tests;
+      - listitem: source hashes before and after final runs;
+      - listitem: the accepted R01–R03 hashes;
+      - listitem: confirmation that only the three planned R04 source files changed in this unit.
+    - paragraph:
+      - text: "Expected cumulative tracked diff after successful R04: the existing six accepted files plus these three ="
+      - strong: nine tracked files
+      - text: .
+    - heading "Stop condition" [level=2]
+    - paragraph:
+      - text: Return EXECUTED for
+      - strong: R04 only
+      - text: with changed files, evidence paths and released output IDs.
+    - paragraph: Do not continue to R05. No dependency/product installation, real accounts, real app launching, host service/settings changes, network probes, push, or merge.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-24T19:48:01.829494+00:00",
+  "manifest_sha256": "6fdc25eaaabf9f5774221e566a5e88c4f003fe1d72b82ce8de6e037f1c0fa099",
+  "frozen_file_count": 413,
+  "changed": [
+    "crates/switcher-core/src/accounts.rs",
+    "crates/switcher-core/src/accounts/legacy.rs",
+    "crates/switcher-core/src/migration.rs"
+  ],
+  "missing": [],
+  "only_expected_changes": true,
+  "original_source_mismatches": []
+}

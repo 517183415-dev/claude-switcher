@@ -1,0 +1,6 @@
+
+running 1 test
+test publisher::tests::encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_restore ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 28.67s
+

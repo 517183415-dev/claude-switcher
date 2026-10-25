@@ -1,0 +1,82 @@
+    Checking switcher-domain v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-domain)
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Checking switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Checking switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+error: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:493:9
+    |
+493 | /         if let Some(stamp) = &identity.identity {
+494 | |             if stamp.sha256 != asset.sha256
+495 | |                 || stamp.bytes != u64::from(asset.bytes)
+496 | |                 || stamp.nlink != 1
+...   |
+501 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+493 ~         if let Some(stamp) = &identity.identity
+494 ~             && (stamp.sha256 != asset.sha256
+495 |                 || stamp.bytes != u64::from(asset.bytes)
+496 |                 || stamp.nlink != 1
+497 ~                 || stamp.mode & 0o7777 != 0o600)
+498 |             {
+499 |                 return Err(Error::Invalid("cleanup_identity"));
+500 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:798:21
+    |
+798 | /                     if let Some(directory) = &quarantine {
+799 | |                         if let Some(stamp) = inspect_at(directory, &slot, asset)? {
+800 | |                             quarantined = true;
+801 | |                             if original.as_ref() != Some(&stamp) {
+...   |
+806 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+798 ~                     if let Some(directory) = &quarantine
+799 ~                         && let Some(stamp) = inspect_at(directory, &slot, asset)? {
+800 |                             quarantined = true;
+...
+804 |                             return Ok(Some(stamp));
+805 ~                         }
+    |
+
+error: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:808:21
+    |
+808 | /                     if let (Some(expected), Some(actual)) = (&original, &current) {
+809 | |                         if expected != actual {
+810 | |                             return Err(Error::Invalid("cleanup_source_identity"));
+811 | |                         }
+812 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+808 ~                     if let (Some(expected), Some(actual)) = (&original, &current)
+809 ~                         && expected != actual {
+810 |                             return Err(Error::Invalid("cleanup_source_identity"));
+811 ~                         }
+    |
+
+error: could not compile `switcher-desktop` (bin "switcher-desktop") due to 3 previous errors

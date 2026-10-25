@@ -1,0 +1,84 @@
+[
+  {
+    "name": "f03",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-core",
+      "--lib",
+      "f03_",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7",
+    "source_sha256_after": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7"
+  },
+  {
+    "name": "guardian",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-core",
+      "--lib",
+      "guardian_repair::"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7",
+    "source_sha256_after": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7"
+  },
+  {
+    "name": "regions",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-core",
+      "--lib",
+      "regions::"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7",
+    "source_sha256_after": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7"
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-core",
+      "--lib",
+      "--tests",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7",
+    "source_sha256_after": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7"
+  },
+  {
+    "name": "rustfmt",
+    "command": [
+      "rustfmt",
+      "--check",
+      "--edition",
+      "2024",
+      "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core/src/guardian_repair.rs"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7",
+    "source_sha256_after": "37bb77856e81f0e6eb2b059b86283eaebff2c844cb35da06a88ca7d2ab326ff7"
+  }
+]

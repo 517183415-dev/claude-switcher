@@ -1,0 +1,29 @@
+
+running 4 tests
+test publisher::tests::f15_backup_plaintext_budget_includes_header_and_tag ... ok
+test publisher::tests::f15_command_body_failures_preserve_source_target_and_vault ... ok
+test publisher::tests::f15_command_body_restores_inclusive_64_mib_backup ... ok
+test publisher::tests::f15_command_body_restores_valid_33_mib_backup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 39 filtered out; finished in 177.29s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 30 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.00s
+

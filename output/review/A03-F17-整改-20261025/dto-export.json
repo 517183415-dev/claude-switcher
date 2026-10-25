@@ -1,0 +1,92 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "run",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-domain",
+    "--bin",
+    "export-types",
+    "--",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-domain-export-rod2c18o/types"
+  ],
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-domain-export-rod2c18o/home",
+    "TMPDIR": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-domain-export-rod2c18o/tmp",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc"
+  },
+  "exit": 0,
+  "seconds": 3.276494540972635,
+  "source_before": {
+    "crates/switcher-domain/src/desktop.rs": "88c7fb872fe6d40a1d00eef67c100ed289f2380ef5e8d2451ee47e809dedf31c",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333"
+  },
+  "source_after": {
+    "crates/switcher-domain/src/desktop.rs": "88c7fb872fe6d40a1d00eef67c100ed289f2380ef5e8d2451ee47e809dedf31c",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333"
+  },
+  "source_frozen": true,
+  "generated_in_tmp": {
+    "RegionView.ts": "ba9c326eb45a59830244c9d824d9807f3e48347b038a7d5b489904aec243d937",
+    "AccountProfile.ts": "7df8c2649e05d5ba369649ddafac479355b1d350a05eb03277ff592b32aedbb2",
+    "AccountOverview.ts": "cd9ec52cde12ea7aaacdba38be621cb772f220868da367a26200c18057e21a54",
+    "UpdateView.ts": "0726dc65934379ce61351f63d082af2561a43aad40b82a1f173979fc558e21f4",
+    "MerchantConsent.ts": "dbc48cb0e70b6915d3c02ce47cd05dd8a1c0451cb2ce7e9a32c0dabb77a35683",
+    "CheckResult.ts": "70dbe10447f198e2dd7e8c30d7a0fc1d119e006d333cacc184e537ca2ca27d75",
+    "PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "WorkspaceSnapshot.ts": "c35848d9a38296d98a57cbae20093cd4115eda26e239c6505e2376edad8fa1a7",
+    "AccountAction.ts": "0cddd2c3d1f6d2918f9aa3cdb551f40531aa9ddfe0b1e2d65b10f5942c193521",
+    "PublisherView.ts": "260a6125b145200d7a4e52ddcbb7f46b0b2728797f223b7f35e656b6be49e4df",
+    "TransportProbe.ts": "29da578a042cf502f9ee4cb916da3a26f47dd2ce3f989ecf9715e070f33cdd04",
+    "DiagnosticReport.ts": "56f51db650cab06214aa8fc4199b7304bcbf95f7dc00f5860aa0129985a93a3e",
+    "PublishRecord.ts": "fca1b06aa68d799eb617e1b450d8c44584c3d7a78c39d60ccbab50ec9b88cfe9",
+    "RegionPreset.ts": "53ee477a75e141d73413b97e86313668184c440139326fa0044f6922ffc93222",
+    "AccountPreparation.ts": "4c9bec41c2e4ff1ed97b0a1dd2b40ff971cfda5f383d17b0d339aa2bd028b2dc",
+    "RuntimeInfo.ts": "e67a246a3bd0281ad9b5d1828b306011771a9d472475658ea2e33566811718da",
+    "SlotContent.ts": "73ed0d3988e292cc90af814bb48d5c3fc2ab21fe16be140eaf7204dad4687eee",
+    "AdSlot.ts": "9e43111e078f3be9f540e41c3d7a5a58e4c1f6b3a8b6e947717e2095a946e9f1",
+    "CheckReport.ts": "f54e29da48bfef362b392e2c8d9778e3fff352e977d23d2b0f2419674b064aca",
+    "ProxyDescription.ts": "b66543ee240a2e1ea8e463e82d5924e50270da6583040ec8dc20af201bedeb9f",
+    "CheckStatus.ts": "1f2534b27bb0731a6931de3a3e4d8a78f50a5b391a93e5974ba2826d9330477e",
+    "TransportState.ts": "43cfd1bfafef4ebc8cb88f68ec8d812e82694aa90196d2b7b8c203b69d3be43c",
+    "Campaign.ts": "f5c7723b178173ef0963f5f39a6f8b6decc55eef1ed0f115f2a1f8498edcc879",
+    "AdPreferences.ts": "468438babeeff2b1fbaca4f82da830026ca7a82858fa4daf4a3b0ef9fcc21e08",
+    "Edition.ts": "e8134ef70db0276b53acde79acea19f2d9950fbe136dfc588aa42df59b847633",
+    "RepairChange.ts": "84fd23364f677271850e210959ee41ef8034a75b8b73166ca70288c159b648c9",
+    "ActivityEntry.ts": "f6b0313fdb6ae2de0fe9d53c99d94026354e98f3a799d1e7b6f1fc6ba4a903a2",
+    "ImportedImage.ts": "6ac6313968b38170bb2b7544bdfe17a63dcd6ac3072b06f1529bdbd54f07529b",
+    "RepairPreview.ts": "94fd7e57ec2312e81f1374792c6a3cc925205c072bd305a09a1c4b42a9620e82",
+    "Preferences.ts": "082c8263396a66803ee4ca897ac90ab625584c7bc2311fb199b8085608aabf3b",
+    "CheckId.ts": "b58890c20347976d0adbf71ecd51357311ef9b99c2ac654be974cbaaf5c9625b",
+    "LaunchDecision.ts": "549b17edac11d07ccf659496db7a034cf6e4fb49bc6e639a02cf26045b94d1ff",
+    "ProfileState.ts": "cfc1421dc49b5e11673474390eb3862000978f8c589aab9f4a71365d50435cb1",
+    "AccessState.ts": "4930168aa457d5ca20e873c1dd3345953e834d57d3396eada34ecc4092056ae9",
+    "PreparationBlocker.ts": "a7f86a76b0002742509bd681503313b9124809350326dc1143e649c9a3e95376",
+    "ImageAsset.ts": "f49a603014cec9485dc9e7b31b7fcd8b2de7ee12b5fbd4491f10bc6523e3bf72",
+    "InPlaceAction.ts": "cd7019263a96f6e7655786e94ad07f631634c44c0d89abe68880461bbbeabaae",
+    "AdChannel.ts": "55caa3368ce715a3931dbb0122f8983b290fe53b2dc066ba614b60bd73a79492",
+    "AdManifest.ts": "fbecaaac7f72adb19af594c0bbe69af9ff06718ff27b0dee381d8c1f55891804",
+    "PublisherGcPreview.ts": "9ee966ec1d7c1ac52115def859c528d694ee37c9e08340eba8bf19c17e942358",
+    "CheckSummary.ts": "ae5a994c0ec55d9db2539577c7b16ea26305c8ddfd04561fade520d69e71c851",
+    "OperationOutcome.ts": "32c1d9c24a99b2a420cc3f7bd0dd380d740f93ba55f4c79deae0b094795c1f05",
+    "UpdateAction.ts": "cf5ee9e86fceb08bc2badb0cba870575d5d5222b0d077f7c8aa14169be1f4d54"
+  },
+  "copied_only": [
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts",
+    "apps/desktop/src/generated/PublisherGcPreview.ts"
+  ],
+  "existing_generated_unchanged": true,
+  "final_four_hashes": {
+    "crates/switcher-domain/src/desktop.rs": "88c7fb872fe6d40a1d00eef67c100ed289f2380ef5e8d2451ee47e809dedf31c",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "9ee966ec1d7c1ac52115def859c528d694ee37c9e08340eba8bf19c17e942358"
+  }
+}

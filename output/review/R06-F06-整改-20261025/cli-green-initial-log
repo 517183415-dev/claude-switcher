@@ -1,0 +1,60 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.49s
+     Running unittests src/bin/claude-switcher.rs (target/debug/deps/claude_switcher-c506376841127026)
+
+running 7 tests
+test tests::f06_global_flag_and_command_errors_have_zero_backend_calls ... F06_CLI_RECEIPT {"args":["--legacy-cli","status"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","status","--legacy-cli"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","--legacy-cli","status"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","switch","C"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","fix","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","switch","A","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check","--json","extra"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","--unknown"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+ok
+test tests::f06_legacy_check_allowed_uses_unavailable_and_display_advisory ... F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-allowed","code":0,"stderr":"","stdout":"OK:unavailable\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-allowed","code":0,"stderr":"","stdout":"OK:unavailable|synthetic advisory 198.18.0.1 second line\n"}
+ok
+test tests::f06_legacy_check_blocking_and_runtime_errors ... F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-blocked","code":1,"stderr":"","stdout":"FAIL:synthetic gate\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-runtime-error","code":1,"stderr":"","stdout":"FAIL:synthetic_check_error\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"legacy-runtime-error","code":1,"stderr":"","stdout":"FAIL:synthetic_status_error\n"}
+ok
+test tests::f06_legacy_status_uses_recorded_owner_not_display_default ... F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-None","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-Some(A)","code":0,"stderr":"","stdout":"current=A hasA=1 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-Some(B)","code":0,"stderr":"","stdout":"current=B hasA=1 hasB=1\n"}
+ok
+test tests::f06_legacy_switch_outcome_and_exit_codes ... F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic complete","code":0,"stderr":"","stdout":"OK\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic gate","code":1,"stderr":"","stdout":"FAIL:synthetic gate\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic selection","code":1,"stderr":"","stdout":"FAIL:synthetic selection\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic launch","code":1,"stderr":"","stdout":"FAIL:synthetic launch\n"}
+ok
+test tests::f06_modern_defaults_json_override_and_set_region_stay_unchanged ... F06_CLI_RECEIPT {"args":["check"],"calls":["check"],"case":"modern-bare-check","code":0,"stderr":"","stdout":"OK\n"}
+F06_CLI_RECEIPT {"args":["status"],"calls":["status"],"case":"modern-status","code":0,"stderr":"","stdout":"{\"accounts\":{\"a_saved\":false,\"b_saved\":false,\"current\":\"A\",\"recovery_pending\":false},\"login\":\"unknown\"}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check","--json"],"calls":["check"],"case":"legacy-json-override","code":0,"stderr":"","stdout":"{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","checkdetail","--json"],"calls":["check"],"case":"legacy-json-override","code":0,"stderr":"","stdout":"{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n"}
+F06_CLI_RECEIPT {"args":["checkdetail"],"calls":["check","save_detail"],"case":"bare-checkdetail","code":0,"stderr":"","stdout":"代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","checkdetail"],"calls":["check","save_detail"],"case":"bare-checkdetail","code":0,"stderr":"","stdout":"代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n"}
+F06_CLI_RECEIPT {"args":["switch","A"],"calls":["switch:Personal:A"],"case":"modern-switch","code":2,"stderr":"","stdout":"{\"outcome\":{\"completed\":false,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n"}
+F06_CLI_RECEIPT {"args":["switch","A"],"calls":["switch:Personal:A"],"case":"modern-switch","code":0,"stderr":"","stdout":"{\"outcome\":{\"completed\":true,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","set-region","us","--preview"],"calls":["repair:SetRegion { preset: Us, apply: false }:Modern"],"case":"legacy-set-region-stays-modern","code":0,"stderr":"","stdout":"{\"synthetic_repair\":true}\n"}
+F06_CLI_RECEIPT {"args":["check"],"calls":["check"],"case":"modern-runtime-error","code":2,"stderr":"","stdout":"{\"error\":\"synthetic_check_error\",\"recovery\":\"按错误提示检查配置和命令；账号事务中断时保留资料并执行 recover\",\"schema_version\":1}\n"}
+ok
+test tests::f06_public_inspection_is_read_only_for_unknown_and_recorded_accounts ... F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"empty","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"active-unrecorded","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"recorded-A","code":0,"stderr":"","stdout":"current=A hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"recorded-B","code":0,"stderr":"","stdout":"current=B hasA=0 hasB=0\n"}
+ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.01s
+

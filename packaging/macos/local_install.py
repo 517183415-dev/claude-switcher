@@ -116,7 +116,7 @@ def console_owner():
     return owner
 
 
-def plan(edition, source, owner, operation='install'):
+def plan(edition, source, owner, operation='install', proxy_mode=None, proxy_group=None):
     if owner <= 0:
         raise ValueError('non-root owner required')
     payload = {}
@@ -138,18 +138,22 @@ def plan(edition, source, owner, operation='install'):
     else:
         version = None
     entry = cli_snapshot(owner) if operation != 'uninstall' else None
-    settings = installation_settings(owner, entry) if entry is not None else {}
+    settings = installation_settings(owner, entry, proxy_mode, proxy_group) if entry is not None else {}
     if entry is not None:
         entry['install_literals'] = settings
     result = dict(schema_version=1, operation=operation, edition=edition, owner_uid=owner,
                 version=version, payload=payload,
                 templates={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in [TEMPLATES/DAEMON.name, TEMPLATES/AGENT.name]},
                 destinations=list(map(str, [app(edition), HELPER, GUARDIAN, DAEMON, AGENT, RECORD])),
-                previous=installed_state(edition),legacy=legacy_snapshot(owner),
+                previous=installed_state(edition),
+                legacy=legacy_snapshot(owner, include_root=operation != 'uninstall'),
                 timezone_target=settings.get('TZ_TARGET'),
                 proxy_mode=settings.get('PROXY_MODE'),
                 cli_entry=entry)
-    return edition_transition(result)
+    if operation != 'uninstall':
+        result['cli_contract'] = 2
+    result = edition_transition(result)
+    return plan_uninstall(result) if operation == 'uninstall' else result
 
 
 def edition_transition(p):
@@ -188,6 +192,406 @@ def plan_state(p):
     if p.get('previous_edition'):
         state['old_app']=installed_state(p['previous_edition'])['app']
     return state
+
+
+def uninstall_files(p):
+    # The journal describes observations, never privileged destination paths.
+    return dict(app=app(p['edition']), helper=HELPER, guardian=GUARDIAN,
+                daemon=DAEMON, agent=AGENT, record=RECORD,
+                cli=cli_path(p['owner_uid']), watchdog_script=SYSTEM/'tz-watchdog.sh',
+                watchdog_plist=WATCHDOG_PLIST, bodyguard_script=SYSTEM/'claude-bodyguard.sh',
+                bodyguard_plist=BODYGUARD_PLIST)
+
+
+def uninstall_file(p, key, path=None):
+    path = uninstall_files(p)[key] if path is None else path
+    with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            return None
+        mode = stat.S_IMODE(metadata.st_mode)
+        if key == 'app':
+            if not stat.S_ISDIR(metadata.st_mode):
+                raise ValueError('unsafe uninstall App')
+            content = tree(path)
+        else:
+            data, opened = small_file(path, limit=None if key in ('helper', 'guardian') else 1024*1024)
+            if (metadata.st_dev, metadata.st_ino) != (opened.st_dev, opened.st_ino):
+                raise ValueError('uninstall file changed while reading')
+            content = hashlib.sha256(data).hexdigest()
+        if mode & 0o7022:
+            raise ValueError('unsafe uninstall permissions: '+key)
+        return dict(sha256=content, uid=metadata.st_uid, gid=metadata.st_gid, mode=mode,
+                    dev=metadata.st_dev, ino=metadata.st_ino)
+
+
+def uninstall_service_specs(p):
+    return [("system/local.claudeswitcher.helper", DAEMON, [str(HELPER)]),
+            ('gui/'+str(p['owner_uid'])+'/local.claudeswitcher.guardian', AGENT, [str(GUARDIAN)]),
+            ('system/local.tz-watchdog', WATCHDOG_PLIST, ['/bin/bash', str(SYSTEM/'tz-watchdog.sh')]),
+            ('system/local.claude-bodyguard', BODYGUARD_PLIST, ['/bin/bash', str(SYSTEM/'claude-bodyguard.sh')])]
+
+
+def uninstall_service(target, plist=None, arguments=None):
+    observed = run('/bin/launchctl', 'print', target, check=False)
+    if observed.returncode:
+        if 'Could not find service' not in getattr(observed, 'stderr', ''):
+            raise ValueError('cannot establish service absence: '+target)
+        return False
+    if plist is not None:
+        # launchctl's loaded job is independent of the current plist on disk.
+        def field(name):
+            values = re.findall(r'^\s*'+name+r' = (.+)$', observed.stdout, re.M)
+            return values[0].strip().strip('"') if len(values) == 1 else None
+        blocks = re.findall(r'^\s*arguments = \{\n(.*?)^\s*\}', observed.stdout, re.M | re.S)
+        loaded = []
+        if len(blocks) == 1:
+            for line in blocks[0].splitlines():
+                line = re.sub(r'^\d+\s*=\s*', '', line.strip())
+                if line:
+                    loaded.append(line.strip('"'))
+        if field('path') != str(plist) or field('program') != arguments[0] or loaded != arguments:
+            raise ValueError('unproven loaded service: '+target)
+    return True
+
+
+def uninstall_snapshot(p):
+    services = {}
+    for target, plist, arguments in uninstall_service_specs(p):
+        registered = uninstall_service(target, plist, arguments)
+        domain, label = target.rsplit('/', 1)
+        services[target] = dict(registered=registered, disabled=legacy_disabled(domain, label))
+    return dict(files={key:uninstall_file(p, key) for key in uninstall_files(p)}, services=services)
+
+
+def plan_uninstall(p):
+    observed = uninstall_snapshot(p)
+    if not present(RECORD):
+        if (any(value is not None for value in observed['files'].values()) or
+                any(value['registered'] for value in observed['services'].values()) or p['legacy']):
+            raise ValueError('uninstall ownership is not recorded')
+        p['uninstall_snapshot'] = observed
+        return p
+    record = private_json(RECORD, 0o644)
+    trust = record.get('trust', {})
+    generation = trust.get('generation', '')
+    if trust.get('kind') != 'source_local' or not re.fullmatch('[a-f0-9]{32}', generation):
+        raise ValueError('uninstall generation is not supported')
+    stage = SYSTEM/('source-local-'+generation)
+    safe_parents(stage)
+    archived = private_json(stage/'result.json', 0o600)
+    if (private_json(stage/'record', 0o644) != record or archived.get('stage') != str(stage) or
+            archived.get('pending') != 'committed' or
+            archived['plan']['owner_uid'] != p['owner_uid'] or archived['plan']['edition'] != p['edition']):
+        raise ValueError('uninstall generation ownership differs')
+    for key in component_keys(p):
+        current = observed['files'][key]
+        if current is not None:
+            if current['uid'] != 0 or tree(uninstall_files(p)[key]) != tree(stage/key):
+                raise ValueError('uninstall component ownership differs: '+key)
+    contract = cli_contract(archived['plan'])
+    entry = archived['plan'].get('cli_entry')
+    if observed['files']['cli'] is not None:
+        if entry is None or not archived.get('cli_changed'):
+            raise ValueError('uninstall CLI ownership is not recorded')
+        with as_owner(p['owner_uid']):
+            data, _ = small_file(cli_path(p['owner_uid']))
+        metadata = observed['files']['cli']
+        if data != cli_shim(p['edition'], entry, contract) or metadata['uid'] != p['owner_uid'] or metadata['mode'] != 0o755:
+            raise ValueError('uninstall CLI ownership differs')
+        account = pwd.getpwuid(p['owner_uid'])
+        if metadata['gid'] not in os.getgrouplist(account.pw_name, account.pw_gid):
+            raise ValueError('uninstall CLI group cannot be restored by its owner')
+    p['cli_entry'] = cli_snapshot(p['owner_uid'])
+    for kind, field in [('watchdog', 'timezone_target'), ('bodyguard', 'proxy_mode')]:
+        state = archived.get(kind)
+        target = archived['plan'].get(field)
+        for part, mode in [('script', 0o755), ('plist', 0o644)]:
+            key = kind+'_'+part
+            current = observed['files'][key]
+            if current is None:
+                continue
+            if state is None or not state.get('changed') or target is None:
+                raise ValueError('uninstall root service ownership is not recorded: '+key)
+            expected, _ = small_file(stage/(kind+'-new-'+part))
+            content_matches = current['sha256'] == hashlib.sha256(expected).hexdigest()
+            if key == 'watchdog_script':
+                archived_target, archived_body = watchdog_script(expected)
+                if archived_target != target:
+                    raise ValueError('uninstall archived watchdog target differs')
+                data, metadata = small_file(uninstall_files(p)[key])
+                observed_file = dict(sha256=hashlib.sha256(data).hexdigest(),
+                                     uid=metadata.st_uid, gid=metadata.st_gid,
+                                     mode=stat.S_IMODE(metadata.st_mode),
+                                     dev=metadata.st_dev, ino=metadata.st_ino)
+                if observed_file != current:
+                    raise ValueError('uninstall watchdog changed while reading')
+                _, current_body = watchdog_script(data)
+                content_matches = current_body == archived_body
+            if (current['uid'] != 0 or current['gid'] != 0 or current['mode'] != mode or
+                    not content_matches):
+                raise ValueError('uninstall root service ownership differs: '+key)
+        p[field] = target if state and state.get('changed') else None
+        label = 'system/local.tz-watchdog' if kind == 'watchdog' else 'system/local.claude-bodyguard'
+        if observed['services'][label]['registered'] and p[field] is None:
+            raise ValueError('uninstall loaded service ownership is not recorded: '+kind)
+    for (target, _, _), keys in zip(uninstall_service_specs(p),
+            [('helper', 'daemon'), ('guardian', 'agent'),
+             ('watchdog_script', 'watchdog_plist'), ('bodyguard_script', 'bodyguard_plist')]):
+        if observed['services'][target]['registered'] and any(observed['files'][key] is None for key in keys):
+            raise ValueError('uninstall registered service cannot be restored: '+target)
+    p['uninstall_snapshot'] = observed
+    return p
+
+
+def recheck_uninstall(p):
+    if 'uninstall_snapshot' in p and uninstall_snapshot(p) != p['uninstall_snapshot']:
+        raise ValueError('uninstall installation changed since preview')
+
+
+def uninstall_backup(j, key):
+    if key == 'cli':
+        return Path(j['stage'])/'legacy-cli.sh'
+    if key.startswith(('watchdog_', 'bodyguard_')):
+        kind, part = key.split('_', 1)
+        return Path(j['stage'])/(kind+'-old-'+part)
+    return Path(j['stage'])/('old-'+key)
+
+
+def check_uninstall_backups(j, only=None):
+    p = j['plan']
+    snapshot = p.get('uninstall_snapshot')
+    if snapshot is None:
+        return
+    for key, previous in snapshot['files'].items():
+        if only is not None and key != only:
+            continue
+        if previous is not None:
+            backup = uninstall_backup(j, key)
+            if key == 'app':
+                content = tree(backup)
+                metadata = backup.lstat()
+            else:
+                data, metadata = small_file(backup, limit=None if key in ('helper', 'guardian') else 1024*1024)
+                content = hashlib.sha256(data).hexdigest()
+            mode = 0o600 if key == 'cli' else previous['mode']
+            if (content != previous['sha256'] or metadata.st_uid != 0 or
+                    stat.S_IMODE(metadata.st_mode) != mode):
+                raise ValueError('uninstall backup differs: '+key)
+    if only is None:
+        for item in p['legacy']:
+            data, metadata = small_file(Path(j['stage'])/('legacy-'+item['label']+'.plist'))
+            if (hashlib.sha256(data).hexdigest() != item['sha256'] or
+                    metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) != 0o600):
+                raise ValueError('uninstall legacy backup differs')
+
+
+def uninstall_holding_path(j, key):
+    target = uninstall_files(j['plan'])[key]
+    generation = Path(j['stage']).name
+    if not re.fullmatch(r'source-local-[a-f0-9]{32}', generation):
+        raise ValueError('invalid uninstall holding generation')
+    return target.parent/('.claude-switch-'+generation+'-'+key)
+
+
+def check_uninstall_holdings(j, only=None):
+    p = j['plan']
+    for key, expected in j.get('uninstall_holding', {}).items():
+        if only is not None and key != only:
+            continue
+        holding = uninstall_holding_path(j, key)
+        with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+            with directory_fd(holding) as directory:
+                metadata = os.fstat(directory)
+                observed = dict(path=str(holding), dev=metadata.st_dev, ino=metadata.st_ino,
+                                uid=metadata.st_uid, gid=metadata.st_gid,
+                                mode=stat.S_IMODE(metadata.st_mode))
+                if observed != expected or metadata.st_uid != (p['owner_uid'] if key == 'cli' else 0) or observed['mode'] != 0o700:
+                    raise ValueError('uninstall holding directory changed: '+key)
+                held = uninstall_file(p, key, holding/'component')
+                if held is not None and held != p['uninstall_snapshot']['files'][key]:
+                    raise ValueError('uninstall moved component differs: '+key)
+                if held is None and uninstall_file(p, key) is None:
+                    raise ValueError('uninstall held component disappeared: '+key)
+                if (holding.lstat().st_dev, holding.lstat().st_ino) != (metadata.st_dev, metadata.st_ino):
+                    raise ValueError('uninstall holding directory changed: '+key)
+
+
+def check_uninstall_recovery(j, only=None):
+    p = j['plan']
+    snapshot = p.get('uninstall_snapshot')
+    if snapshot is None:
+        return
+    check_uninstall_backups(j, only)
+    check_uninstall_holdings(j, only)
+    for key, previous in snapshot['files'].items():
+        if only is not None and key != only:
+            continue
+        current = uninstall_file(p, key)
+        if current is None:
+            if key in j.get('uninstall_restored', {}):
+                raise ValueError('uninstall restored component disappeared: '+key)
+            if previous is not None and key not in j.get('uninstall_removing', []):
+                raise ValueError('uninstall component disappeared outside transaction: '+key)
+        elif current != j.get('uninstall_restored', {}).get(key, previous):
+            # Intent alone never proves that an externally created inode is ours.
+            prepared = j.get('uninstall_prepared', {}).get(key)
+            if key in j.get('uninstall_restored', {}) or prepared is None or current != prepared:
+                raise ValueError('uninstall recovery destination changed: '+key)
+    if only is not None:
+        return current
+    for target, plist, arguments in uninstall_service_specs(p):
+        registered = uninstall_service(target, plist, arguments)
+        domain, label = target.rsplit('/', 1)
+        previous = snapshot['services'][target]
+        if (registered and not previous['registered']) or legacy_disabled(domain, label) != previous['disabled']:
+            raise ValueError('uninstall recovery service changed: '+target)
+
+
+def remove_uninstall_file(j, key):
+    p = j['plan']
+    if uninstall_file(p, key) != p['uninstall_snapshot']['files'][key]:
+        raise ValueError('uninstall destination changed before removal: '+key)
+    if p['uninstall_snapshot']['files'][key] is None:
+        return
+    target = uninstall_files(p)[key]
+    holding = uninstall_holding_path(j, key)
+    with contextlib.ExitStack() as descriptors:
+        with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+            parent = descriptors.enter_context(directory_fd(target.parent))
+            os.mkdir(holding.name, 0o700, dir_fd=parent)
+            directory = descriptors.enter_context(directory_fd(holding))
+            metadata = os.fstat(directory)
+            os.fsync(parent)
+        j.setdefault('uninstall_holding', {})[key] = dict(
+            path=str(holding), dev=metadata.st_dev, ino=metadata.st_ino,
+            uid=metadata.st_uid, gid=metadata.st_gid, mode=stat.S_IMODE(metadata.st_mode))
+        j.setdefault('uninstall_removing', []).append(key)
+        j['pending'] = 'remove-'+key; save(JOURNAL, j)
+        with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+            if uninstall_file(p, key) != p['uninstall_snapshot']['files'][key]:
+                raise ValueError('uninstall destination changed before removal: '+key)
+            rename_exclusive(parent, target.name, directory, 'component')
+            os.fsync(parent); os.fsync(directory)
+        # Keep the moved inode as a journal-addressed backup, including conflicts.
+        check_uninstall_holdings(j, only=key)
+
+
+def record_uninstall_prepared(j, key, candidate):
+    previous = j['plan']['uninstall_snapshot']['files'][key]
+    if candidate is None or any(candidate[field] != previous[field] for field in ('sha256', 'uid', 'gid', 'mode')):
+        raise ValueError('uninstall prepared restoration differs: '+key)
+    j.setdefault('uninstall_prepared', {})[key] = candidate
+    save(JOURNAL, j)
+
+
+def restore_uninstall_file(j, key):
+    current = check_uninstall_recovery(j, only=key)
+    p = j['plan']
+    previous = p['uninstall_snapshot']['files'][key]
+    if previous is None:
+        if current is not None:
+            raise ValueError('uninstall recovery found an unexpected file: '+key)
+        return
+    if current is None:
+        if key not in j.setdefault('uninstall_restoring', []):
+            j['uninstall_restoring'].append(key)
+        save(JOURNAL, j)
+        backup = uninstall_backup(j, key)
+        if key == 'cli':
+            data = small_file(backup)[0]
+            def prepared(metadata):
+                candidate = dict(sha256=hashlib.sha256(data).hexdigest(), uid=metadata.st_uid,
+                                 gid=metadata.st_gid, mode=stat.S_IMODE(metadata.st_mode),
+                                 dev=metadata.st_dev, ino=metadata.st_ino)
+                record_uninstall_prepared(j, key, candidate)
+            known_identity = write_owner_cli(p['owner_uid'], data, previous['mode'], exclusive=True,
+                                            before_publish=prepared, gid=previous['gid'])
+        else:
+            # A failed copy stays private; it never leaves a partial live file.
+            prepared = Path(j['stage'])/('restore-'+uuid.uuid4().hex)
+            copy(backup, prepared)
+            if key == 'app':
+                content, metadata = tree(prepared), prepared.lstat()
+            else:
+                data, metadata = small_file(prepared, limit=None if key in ('helper', 'guardian') else 1024*1024)
+                content = hashlib.sha256(data).hexdigest()
+            if (content != previous['sha256'] or
+                    stat.S_IMODE(metadata.st_mode) != previous['mode'] or metadata.st_uid != 0):
+                raise ValueError('uninstall prepared restoration differs: '+key)
+            known_identity = metadata.st_dev, metadata.st_ino
+            with directory_fd(prepared.parent) as directory:
+                fd = os.open(prepared.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+                try:
+                    opened = os.fstat(fd)
+                    if (opened.st_dev, opened.st_ino) != known_identity:
+                        raise ValueError('uninstall prepared identity changed: '+key)
+                    os.fchown(fd, previous['uid'], previous['gid']); os.fsync(fd)
+                finally:
+                    os.close(fd)
+            record_uninstall_prepared(j, key, uninstall_file(p, key, prepared))
+            target = uninstall_files(p)[key]
+            with directory_fd(prepared.parent) as staged, directory_fd(target.parent) as parent:
+                if uninstall_file(p, key) is not None:
+                    raise ValueError('uninstall restoration destination appeared: '+key)
+                rename_exclusive(staged, prepared.name, parent, target.name)
+                os.fsync(parent); os.fsync(staged)
+    else:
+        known_identity = current['dev'], current['ino']
+    path = uninstall_files(p)[key]
+    with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+        with directory_fd(path.parent) as parent:
+            fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+            try:
+                metadata = os.fstat(fd)
+                if ((metadata.st_dev, metadata.st_ino) != known_identity or
+                        (key != 'app' and (not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1))):
+                    raise ValueError('uninstall restoration identity changed: '+key)
+                os.fchown(fd, previous['uid'], previous['gid']); os.fsync(fd)
+            finally:
+                os.close(fd)
+    restored = uninstall_file(p, key)
+    if (restored is None or (restored['dev'], restored['ino']) != known_identity or
+            any(restored[k] != previous[k] for k in ('sha256', 'uid', 'gid', 'mode'))):
+        raise ValueError('uninstall restored file differs: '+key)
+    j.setdefault('uninstall_restored', {})[key] = restored
+    if key in j.get('uninstall_restoring', []):
+        j['uninstall_restoring'].remove(key)
+    j.get('uninstall_prepared', {}).pop(key, None)
+    save(JOURNAL, j)
+
+
+def verify_uninstall_restored(j):
+    p = j['plan']
+    check_uninstall_recovery(j)
+    for key, previous in p['uninstall_snapshot']['files'].items():
+        if uninstall_file(p, key) != j.get('uninstall_restored', {}).get(key, previous):
+            raise ValueError('uninstall restoration is incomplete: '+key)
+    if uninstall_snapshot(p)['services'] != p['uninstall_snapshot']['services']:
+        raise ValueError('uninstall restored services differ')
+    if legacy_snapshot(p['owner_uid'], include_root=False) != p['legacy']:
+        raise ValueError('uninstall restored legacy state differs')
+
+
+def verify_uninstalled(p):
+    for key, path in uninstall_files(p).items():
+        with as_owner(p['owner_uid']) if key == 'cli' else contextlib.nullcontext():
+            if present(path):
+                raise ValueError('uninstall incomplete; component present: '+key)
+    for target, _, _ in uninstall_service_specs(p):
+        if uninstall_service(target):
+            raise ValueError('uninstall incomplete; service registered: '+target)
+    fixed = {spec['label']:spec for spec in legacy_specs(p['owner_uid'])}
+    for item in p.get('legacy', []):
+        if item['label'] != 'local.claude-update':
+            continue
+        spec = fixed[item['label']]
+        with as_owner(p['owner_uid']):
+            if present(Path(spec['path'])):
+                raise ValueError('uninstall legacy scheduler remains')
+        if uninstall_service(spec['domain']+'/'+spec['label']):
+            raise ValueError('uninstall legacy scheduler is registered')
 
 
 def component_keys(p):
@@ -231,6 +635,11 @@ def boot_uuid():
 
 def finish(j, status, evidence):
     recheck_managed(j)
+    if status == 'uninstalled':
+        check_uninstall_holdings(j)
+        verify_uninstalled(j['plan'])
+    if status == 'restored' and 'uninstall_snapshot' in j['plan']:
+        verify_uninstall_restored(j)
     # Persist terminal state before cleanup; retry after any cleanup crash is safe.
     j['pending'] = status
     j['evidence'] = evidence
@@ -253,6 +662,8 @@ def resume_terminal(owner):
         result = private_json(LAST_RESULT,0o600)
         if result['owner_uid'] != owner:
             raise ValueError('console owner differs from completed transaction')
+        if result['status'] == 'uninstalled':
+            return verify(owner)
         return result
     j = load_journal()
     if j['plan']['owner_uid'] != owner:
@@ -497,12 +908,13 @@ def directory_fd(path):
         os.close(fd)
 
 
-def small_file(path):
+def small_file(path, limit=1024*1024):
     with directory_fd(path.parent) as parent:
         fd=os.open(path.name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=parent)
         with os.fdopen(fd,'rb') as stream:
             meta=os.fstat(stream.fileno())
-            if not stat.S_ISREG(meta.st_mode) or meta.st_nlink!=1 or meta.st_size>1024*1024:
+            if (not stat.S_ISREG(meta.st_mode) or meta.st_nlink!=1 or
+                    (limit is not None and meta.st_size>limit)):
                 raise ValueError('unsafe legacy file')
             return stream.read(),meta
 
@@ -555,7 +967,16 @@ def cli_snapshot(owner):
                     literals=config_literals(data))
 
 
-def cli_shim(edition, entry):
+def cli_contract(plan):
+    # Only a missing historical field selects v1; bool is not an integer version.
+    contract = plan.get('cli_contract', 1)
+    if type(contract) is not int or contract not in (1, 2):
+        raise ValueError('unsupported CLI contract')
+    return contract
+
+
+def cli_shim(edition, entry, contract):
+    contract = cli_contract(dict(cli_contract=contract))
     lines=['#!/bin/bash', '# Configuration literals retained for the Rust configuration reader.']
     # Force quotes even for simple values because both configuration readers
     # accept quoted assignments only.
@@ -565,7 +986,8 @@ def cli_shim(edition, entry):
             value=literals[key]
             lines.append(key+"='"+value.replace("'", "'\\''")+"'")
     executable=app(edition)/'Contents/Resources/components/claude-switcher'
-    lines.append('exec '+shlex.quote(str(executable))+' --edition '+edition+' "$@"')
+    flag = ' --legacy-cli' if contract == 2 else ''
+    lines.append('exec '+shlex.quote(str(executable))+' --edition '+edition+flag+' "$@"')
     return ('\n'.join(lines)+'\n').encode()
 
 
@@ -587,59 +1009,87 @@ def cli_backup(j):
     j['cli_changed']=False; save(JOURNAL,j)
 
 
-def write_owner_cli(owner, data, mode):
-    with as_owner(owner):
-        home=Path(pwd.getpwuid(owner).pw_dir)
-        # Create only the two conventional directories, via no-follow parents.
-        parent=home
-        for name in ('.local','bin'):
-            with directory_fd(parent) as directory:
-                try: os.mkdir(name,0o755,dir_fd=directory)
-                except FileExistsError: pass
-            parent=parent/name
-        with directory_fd(parent) as directory:
+def write_owner_cli(owner, data, mode, exclusive=False, before_publish=None, gid=None):
+    published = None
+    with contextlib.ExitStack() as descriptors:
+        with as_owner(owner):
+            home=Path(pwd.getpwuid(owner).pw_dir)
+            # Create only the two conventional directories, via no-follow parents.
+            parent=home
+            for name in ('.local','bin'):
+                with directory_fd(parent) as directory:
+                    try: os.mkdir(name,0o755,dir_fd=directory)
+                    except FileExistsError: pass
+                parent=parent/name
+            directory = descriptors.enter_context(directory_fd(parent))
             name='claude-switch.sh'
             if data is None:
                 try: os.unlink(name,dir_fd=directory)
                 except FileNotFoundError: pass
-            else:
-                temporary='.claude-switch-'+uuid.uuid4().hex
+                os.fsync(directory)
+                return None
+            temporary='.claude-switch-'+uuid.uuid4().hex
+        try:
+            with as_owner(owner):
                 fd=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,mode,dir_fd=directory)
-                try:
-                    with os.fdopen(fd,'wb') as stream:
-                        stream.write(data); stream.flush(); os.fchmod(stream.fileno(),mode); os.fsync(stream.fileno())
+                with os.fdopen(fd,'wb') as stream:
+                    stream.write(data); stream.flush(); os.fchmod(stream.fileno(),mode)
+                    if gid is not None:
+                        os.fchown(stream.fileno(), owner, gid)
+                    os.fsync(stream.fileno())
+                    metadata = os.fstat(stream.fileno())
+                    published = metadata.st_dev, metadata.st_ino
+                os.fsync(directory)
+            # Root-owned transaction evidence must not be saved as the owner.
+            if before_publish is not None:
+                before_publish(metadata)
+            with as_owner(owner):
+                if exclusive:
+                    rename_exclusive(directory, temporary, directory, name)
+                else:
                     os.replace(temporary,name,src_dir_fd=directory,dst_dir_fd=directory)
-                finally:
-                    try: os.unlink(temporary,dir_fd=directory)
-                    except FileNotFoundError: pass
-            os.fsync(directory)
+                os.fsync(directory)
+        finally:
+            with as_owner(owner):
+                try: os.unlink(temporary,dir_fd=directory)
+                except FileNotFoundError: pass
+    return published
 
 
 def cli_install(j):
     entry=j['plan'].get('cli_entry')
     if entry is None:
         return
+    if 'uninstall_snapshot' in j['plan']:
+        j['cli_changed'] = True; save(JOURNAL, j)
+        remove_uninstall_file(j, 'cli')
+        return
     owner=j['plan']['owner_uid']
     if cli_snapshot(owner) != {key: entry[key] for key in ('sha256', 'mode', 'literals')}:
         raise ValueError('legacy CLI changed before replacement')
     j['cli_changed']=True; j['pending']='cli-entry'; save(JOURNAL,j)
-    write_owner_cli(owner,cli_shim(j['plan']['edition'],entry),0o755)
+    write_owner_cli(owner,cli_shim(j['plan']['edition'],entry,cli_contract(j['plan'])),0o755)
 
 
 def cli_verify(j):
+    contract = cli_contract(j['plan'])
     entry=j['plan'].get('cli_entry')
     if entry is None:
         return
     owner=j['plan']['owner_uid']
     with as_owner(owner) if os.geteuid() == 0 else contextlib.nullcontext():
         data,metadata=small_file(cli_path(owner))
-    if (data != cli_shim(j['plan']['edition'],entry) or metadata.st_uid != owner or
+    if (data != cli_shim(j['plan']['edition'],entry,contract) or metadata.st_uid != owner or
             stat.S_IMODE(metadata.st_mode) != 0o755):
         raise ValueError('Rust CLI compatibility entry differs')
 
 
 def cli_restore(j):
     if not j.get('cli_changed'):
+        return
+    if 'uninstall_snapshot' in j['plan']:
+        restore_uninstall_file(j, 'cli')
+        j['cli_changed'] = False; save(JOURNAL, j)
         return
     entry=j['plan']['cli_entry']
     data=None
@@ -651,7 +1101,7 @@ def cli_restore(j):
     with as_owner(owner):
         try: current,_=small_file(cli_path(owner))
         except FileNotFoundError: current=None
-    if current not in (None,data,cli_shim(j['plan']['edition'],entry)):
+    if current not in (None,data,cli_shim(j['plan']['edition'],entry,cli_contract(j['plan']))):
         raise ValueError('CLI entry changed after installation; preserve user changes')
     write_owner_cli(owner,data,entry['mode'] or 0o755)
     j['cli_changed']=False; save(JOURNAL,j)
@@ -687,31 +1137,47 @@ def detect_region():
     raise ValueError('无法取得与出口国家一致的完整地区数据；请检查代理后重试')
 
 
-def detect_proxy(home):
+def detect_proxy(home, proxy_mode=None, proxy_group=None):
     directory = home/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev'
-    if directory.is_dir():
-        group = 'GLOBAL'
-        config = directory/'clash-verge.yaml'
-        if config.exists():
-            data, _ = small_file(config)
-            text = data.decode('utf-8')
-            # Read the first block-style select group, without evaluating YAML.
-            section = re.search(r'(?ms)^proxy-groups:\s*\n(.*?)(?=^[^\s#-][^\n:]*:|\Z)', text)
-            if section:
-                for block in re.split(r'(?m)^\s*-\s+', section[1]):
-                    name = re.search(r'(?m)^\s*name:\s*(.*?)\s*$', block)
-                    kind = re.search(r'(?m)^\s*type:\s*[\'"]?select[\'"]?\s*$', block)
-                    if name and kind:
-                        raw = name[1]
-                        group = shlex.split(raw, comments=True)[0] if raw.startswith(('"', "'")) else raw.split(' #',1)[0]
-                        break
-        return dict(PROXY_MODE='clash-verge', PROXY_GROUP=group)
-    vpn = run('/usr/sbin/scutil', '--nc', 'list', check=False).stdout
-    return dict(PROXY_MODE='shadowrocket' if 'com.liguangming.Shadowrocket' in vpn else 'auto',
-                PROXY_GROUP='GLOBAL')
+    if proxy_mode is None:
+        modes = ['clash-verge'] if directory.is_dir() else []
+        vpn = run('/usr/sbin/scutil', '--nc', 'list', check=False).stdout
+        if 'com.liguangming.Shadowrocket' in vpn:
+            modes.append('shadowrocket')
+        if len(modes) != 1:
+            raise ValueError('proxy client selection required; use --proxy-mode; detected: '+', '.join(modes))
+        proxy_mode = modes[0]
+    validate_proxy_mode(proxy_mode)
+    if proxy_mode != 'clash-verge':
+        return dict(PROXY_MODE=proxy_mode, PROXY_GROUP=proxy_group or 'GLOBAL')
+    groups = []
+    config = directory/'clash-verge.yaml'
+    if config.exists():
+        data, _ = small_file(config)
+        text = data.decode('utf-8')
+        # Collect block-style select groups without evaluating YAML or shell text.
+        section = re.search(r'(?ms)^proxy-groups:(?:[ \t]+#[^\r\n]*)?[ \t]*\r?\n(.*?)(?=^[^\s#-][^\n:]*:|\Z)', text)
+        if section:
+            item = re.search(r'(?m)^([ \t]*)-[ \t]+', section[1])
+            blocks = re.split(r'(?m)^'+re.escape(item[1])+r'-[ \t]+', section[1]) if item else []
+            for block in blocks:
+                name = re.search(r'(?m)^\s*name:\s*(.*?)\s*$', block)
+                kind = re.search(r'''(?m)^[ \t]*type:[ \t]*(?:select|'select'|"select")(?:[ \t]+#[^\r\n]*)?[ \t]*\r?$''', block)
+                if name and kind:
+                    raw = name[1]
+                    tokens = shlex.split(raw, comments=True) if raw.startswith(('"', "'")) else [raw.split(' #',1)[0]]
+                    if tokens and tokens[0] not in groups:
+                        groups.append(tokens[0])
+    if proxy_group is None:
+        if len(groups) != 1:
+            raise ValueError('proxy group selection required; use --proxy-group; candidates: '+', '.join(groups))
+        proxy_group = groups[0]
+    elif groups and proxy_group not in groups:
+        raise ValueError('proxy group is not a discovered candidate: '+proxy_group)
+    return dict(PROXY_MODE=proxy_mode, PROXY_GROUP=proxy_group)
 
 
-def installation_settings(owner, entry):
+def installation_settings(owner, entry, proxy_mode=None, proxy_group=None):
     home = Path(pwd.getpwuid(owner).pw_dir)
     values = dict(entry['literals'])
     with as_owner(owner) if os.geteuid() == 0 else contextlib.nullcontext():
@@ -720,9 +1186,18 @@ def installation_settings(owner, entry):
             data, _ = small_file(config)
             current = json.loads(data)
             for key, field in [('COUNTRY_TARGET','country_target'), ('TZ_TARGET','timezone_target'),
-                               ('LOCALE_TARGET','locale_target'), ('PROXY_MODE','proxy_mode')]:
+                               ('LOCALE_TARGET','locale_target'), ('PROXY_MODE','proxy_mode'),
+                               ('PROXY_GROUP','proxy_group')]:
                 if current.get(field) is not None:
                     values[key] = current[field]
+        for key, selected in [('PROXY_MODE', proxy_mode), ('PROXY_GROUP', proxy_group)]:
+            if selected is not None:
+                if not isinstance(selected, str) or not selected or any(ord(c)<32 or 127<=ord(c)<160 for c in selected):
+                    raise ValueError('invalid proxy selection literal')
+                if values.get(key) and values[key] != selected:
+                    raise ValueError('proxy selection conflicts with existing configuration: '+key)
+        if proxy_mode is not None:
+            validate_proxy_mode(proxy_mode)
         if not all(values.get(key) for key in ('COUNTRY_TARGET','TZ_TARGET')):
             detected = detect_region()
             if values.get('COUNTRY_TARGET') and values['COUNTRY_TARGET'] != detected['COUNTRY_TARGET']:
@@ -731,10 +1206,16 @@ def installation_settings(owner, entry):
                 if not values.get(key):
                     values[key] = value
         values.setdefault('LOCALE_TARGET', LOCALES.get(values['COUNTRY_TARGET'], 'en_US'))
-        if not values.get('PROXY_MODE'):
-            for key, value in detect_proxy(home).items():
-                values.setdefault(key, value)
-        values.setdefault('PROXY_GROUP', 'GLOBAL')
+        mode = values.get('PROXY_MODE') or proxy_mode
+        group = values.get('PROXY_GROUP')
+        if not mode or (mode == 'clash-verge' and not group):
+            values.update(detect_proxy(home, mode, group or proxy_group))
+        else:
+            values['PROXY_MODE'] = mode
+            values['PROXY_GROUP'] = group or proxy_group or 'GLOBAL'
+        if (not isinstance(values['PROXY_GROUP'], str) or not values['PROXY_GROUP'] or
+                any(ord(c)<32 or 127<=ord(c)<160 for c in values['PROXY_GROUP'])):
+            raise ValueError('invalid proxy group literal')
     if not isinstance(values['COUNTRY_TARGET'], str) or not re.fullmatch('[A-Z]{2}', values['COUNTRY_TARGET']):
         raise ValueError('configured country target is invalid')
     if not isinstance(values['LOCALE_TARGET'], str) or not re.fullmatch('[A-Za-z0-9_@.-]{1,80}', values['LOCALE_TARGET']):
@@ -767,6 +1248,22 @@ def validate_timezone_target(target):
             any(part in ('', '.', '..') for part in target.split('/')) or
             not (ZONEINFO/target).is_file()):
         raise ValueError('configured timezone target is missing or invalid')
+
+
+def watchdog_script(data):
+    """Recognize one literal TARGET; keep every other generation byte exact."""
+    lines = data.splitlines(keepends=True)
+    assignments = [index for index, line in enumerate(lines) if line.startswith(b'TARGET=')]
+    if len(assignments) != 1:
+        raise ValueError('watchdog requires one TARGET assignment')
+    index = assignments[0]
+    match = re.fullmatch(rb'TARGET=(?:"([A-Za-z0-9/_+-]+)"|([A-Za-z0-9/_+-]+))\n', lines[index])
+    if match is None:
+        raise ValueError('watchdog TARGET assignment is invalid')
+    target = (match[1] or match[2]).decode('ascii')
+    validate_timezone_target(target)
+    lines[index] = b'TARGET=__REGION__\n'
+    return target, b''.join(lines)
 
 
 def watchdog_payload(target):
@@ -891,6 +1388,10 @@ def watchdog_install(j, kind="watchdog"):
     target, payload, service_plist, label = root_service_spec(j, kind)
     if kind not in j:
         return
+    if 'uninstall_snapshot' in j['plan']:
+        for part in ('script', 'plist'):
+            remove_uninstall_file(j, kind+'_'+part)
+        return
     j[kind]['changed'] = True
     j['pending'] = label; save(JOURNAL,j)
     if run('/bin/launchctl','print','system/'+label,check=False).returncode == 0:
@@ -912,6 +1413,9 @@ def watchdog_verify(j, kind="watchdog"):
     for _, path, expected, mode in payload(target):
         safe_parents(path.parent)
         data, metadata = small_file(path)
+        if kind == 'watchdog' and path == SYSTEM/'tz-watchdog.sh':
+            data = watchdog_script(data)
+            expected = watchdog_script(expected)
         if (data != expected or metadata.st_uid != 0 or metadata.st_gid != 0 or
                 stat.S_IMODE(metadata.st_mode) != mode):
             raise ValueError(label + ' installation differs')
@@ -927,6 +1431,9 @@ def watchdog_restore(j, kind="watchdog"):
     if run('/bin/launchctl','print','system/'+label,check=False).returncode == 0:
         run('/bin/launchctl','bootout','system/'+label)
     for key, path, _, mode in payload(target):
+        if 'uninstall_snapshot' in j['plan']:
+            restore_uninstall_file(j, kind+'_'+key)
+            continue
         safe_parents(path.parent)
         expected = state['previous'][key]
         backup = Path(j['stage'])/(kind+'-old-'+key)
@@ -949,9 +1456,11 @@ def legacy_disabled(domain,label):
     return value[0]=='true' if value else None
 
 
-def legacy_snapshot(owner):
+def legacy_snapshot(owner, include_root=True):
     result=[]
     for spec in legacy_specs(owner):
+        if not include_root and not spec['uid']:
+            continue
         path=Path(spec['path'])
         with as_owner(owner) if spec['uid'] else contextlib.nullcontext():
             try:
@@ -1000,7 +1509,7 @@ def legacy_backup(j):
 
 
 def legacy_migrate(j):
-    if legacy_snapshot(j['plan']['owner_uid'])!=j['plan']['legacy']:
+    if legacy_snapshot(j['plan']['owner_uid'], include_root='uninstall_snapshot' not in j['plan'])!=j['plan']['legacy']:
         raise ValueError('legacy services changed after preview')
     for item in j['plan']['legacy']:
         if item['label'] in ('local.tz-watchdog', 'local.claude-bodyguard'):
@@ -1020,6 +1529,9 @@ def legacy_migrate(j):
 
 def legacy_restore(j):
     for item in j['plan']['legacy']:
+        if ('uninstall_snapshot' in j['plan'] and
+                item['label'] in ('local.tz-watchdog', 'local.claude-bodyguard')):
+            continue
         j['pending']='restore-legacy-'+item['label']; save(JOURNAL,j)
         data,_=small_file(Path(j['stage'])/('legacy-'+item['label']+'.plist'))
         if hashlib.sha256(data).hexdigest()!=item['sha256']:
@@ -1060,7 +1572,7 @@ def legacy_restore(j):
             run('/bin/launchctl','bootstrap',item['domain'],path)
         elif registered and not item['registered']:
             raise ValueError('unexpected legacy service registration')
-    if legacy_snapshot(j['plan']['owner_uid'])!=j['plan']['legacy']:
+    if legacy_snapshot(j['plan']['owner_uid'], include_root='uninstall_snapshot' not in j['plan'])!=j['plan']['legacy']:
         raise ValueError('legacy restoration differs from preview')
 
 
@@ -1226,6 +1738,12 @@ def transact(p, expected):
         raise ValueError('plan digest changed; preview again')
     if present(JOURNAL) or present(BARRIER):
         raise ValueError('recovery required; an installation is pending')
+    if 'uninstall_snapshot' in p:
+        expected_paths = list(map(str, list(uninstall_files(p).values())[:6]))
+        if (p['operation'] != 'uninstall' or p['payload'] or p.get('previous_edition') or
+                p['destinations'] != expected_paths or
+                plan_uninstall(dict(p)) != p):
+            raise ValueError('uninstall plan ownership changed; preview again')
     # Repair records belong to the helper. Preserve them without making their
     # semantic state an installer prerequisite. Old journals retain rechecks.
     managed = None
@@ -1290,6 +1808,8 @@ def transact(p, expected):
     watchdog_backup(j, "bodyguard")
     if plan_state(p)!=p['previous']:
         raise ValueError('installed components changed during backup')
+    recheck_uninstall(p)
+    check_uninstall_backups(j)
     j['pending'] = 'services'; save(JOURNAL, j)
     boot = boot_uuid()
     recheck_managed(j)
@@ -1300,10 +1820,27 @@ def transact(p, expected):
         os.fsync(barrier.fileno())
     syncdir(SYSTEM)
     recheck_managed(j)
+    check_uninstall_backups(j)
     for uid in transaction_owners(p):
         stopped(uid)
+    recheck_uninstall(p)
     legacy_migrate(j)
-    transaction_service('bootout', p)
+    if 'uninstall_snapshot' in p:
+        # Persist rollback responsibility before any of the four jobs is stopped.
+        for kind in ('watchdog', 'bodyguard'):
+            if kind in j:
+                j[kind]['changed'] = True
+        save(JOURNAL, j)
+        for target, plist, arguments in uninstall_service_specs(p):
+            registered = uninstall_service(target, plist, arguments)
+            if registered != p['uninstall_snapshot']['services'][target]['registered']:
+                raise ValueError('uninstall service changed before stopping: '+target)
+            if registered:
+                run('/bin/launchctl', 'bootout', target)
+            if uninstall_service(target):
+                raise ValueError('uninstall service remains registered: '+target)
+    else:
+        transaction_service('bootout', p)
     recheck_managed(j)
     pairs=list(zip(keys,p['destinations']))
     # Retire the old edition before publishing the new one; rollback removes
@@ -1311,8 +1848,11 @@ def transact(p, expected):
     pairs.sort(key=lambda item:item[0] != 'old_app')
     for key, target in pairs:
         j['pending'] = key; save(JOURNAL, j)
-        replace_component(stage/key if p['operation'] != 'uninstall' and key != 'old_app' else None,
-                          Path(target), stage, is_app=key in ('app','old_app'))
+        if 'uninstall_snapshot' in p:
+            remove_uninstall_file(j, key)
+        else:
+            replace_component(stage/key if p['operation'] != 'uninstall' and key != 'old_app' else None,
+                              Path(target), stage, is_app=key in ('app','old_app'))
         j['completed'].append(key); save(JOURNAL, j)
     cli_install(j)
     watchdog_install(j)
@@ -1337,9 +1877,12 @@ def recover(owner):
     safe_parents(stage)
     # Backup never mutated destinations. Preserve this terminal fact across retries.
     if j['pending'] in ('backup', 'backup_aborted'):
-        if plan_state(j['plan']) != j['plan']['previous'] or legacy_snapshot(owner)!=j['plan']['legacy']:
+        if (plan_state(j['plan']) != j['plan']['previous'] or
+                legacy_snapshot(owner, include_root='uninstall_snapshot' not in j['plan'])!=j['plan']['legacy']):
             raise ValueError('untouched installation changed; manual recovery required')
+        recheck_uninstall(j['plan'])
         return finish(j,'backup_aborted',dict(installed_unchanged=True))
+    check_uninstall_recovery(j)
     if j['pending'] != 'restored_health':
         transaction_service('bootout', j['plan'])
         for key, target in zip(component_keys(j['plan']), j['plan']['destinations']):
@@ -1350,8 +1893,11 @@ def recover(owner):
                 raise ValueError('unsafe recovery target')
             safe_parents(Path(target).parent)
             j['pending'] = 'restore-'+key; save(JOURNAL,j)
-            replace_component(stage/('old-'+key) if key in j['old'] else None,
-                              Path(target), stage, is_app=key in ('app','old_app'))
+            if 'uninstall_snapshot' in j['plan']:
+                restore_uninstall_file(j, key)
+            else:
+                replace_component(stage/('old-'+key) if key in j['old'] else None,
+                                  Path(target), stage, is_app=key in ('app','old_app'))
         cli_restore(j)
         watchdog_restore(j)
         watchdog_restore(j, "bodyguard")
@@ -1370,6 +1916,10 @@ def recover(owner):
     registered = transaction_registered(j['plan'])
     if sorted(registered) != sorted(j['active']):
         raise ValueError('restored service registration differs')
+    if 'uninstall_snapshot' in j['plan']:
+        check_uninstall_recovery(j)
+        if uninstall_snapshot(j['plan'])['services'] != j['plan']['uninstall_snapshot']['services']:
+            raise ValueError('restored uninstall service registration differs')
     return finish(j,'restored',dict(components=observed, registered=registered))
 
 
@@ -1467,8 +2017,7 @@ def finalize(owner, launch=False, authenticated=False):
     if j['plan']['owner_uid'] != owner or j['pending'] != 'health':
         raise ValueError('transaction requires recovery')
     if j['plan']['operation']=='uninstall':
-        if any(Path(p).exists() or Path(p).is_symlink() for p in j['plan']['destinations']) or registered_services(owner):
-            raise ValueError('uninstall is incomplete')
+        verify_uninstalled(j['plan'])
         return finish(j,'uninstalled',dict(components_absent=True,services_absent=True))
     recheck_managed(j)
     record=verify_components(j)
@@ -1525,10 +2074,10 @@ def verify(owner):
         archived=private_json(stage/'result.json',0o600)
         if result['status']=='committed':
             verify_components(archived)
+            cli_verify(archived)
             result['processes']=verify_processes(owner)
         elif result['status']=='uninstalled':
-            if any(Path(p).exists() or Path(p).is_symlink() for p in archived['plan']['destinations']) or registered_services(owner):
-                raise ValueError('uninstalled components reappeared')
+            verify_uninstalled(archived['plan'])
         result['evidence']=str(stage/'result.json')
         return result
     j=load_journal()
@@ -1536,8 +2085,27 @@ def verify(owner):
         raise ValueError('console owner differs from journal')
     if j['pending']=='health' and j['plan']['operation']!='uninstall':
         verify_components(j)
+        cli_verify(j)
         return dict(status='pending_authenticated_health',processes=verify_processes(owner))
     return dict(status='pending_recovery',phase=j['pending'])
+
+
+def installed_cli_plan(record, owner, edition):
+    """Read the installed generation's contract; never infer it from live shim bytes."""
+    trust = record.get('trust', {})
+    generation = trust.get('generation', '')
+    if trust.get('kind') != 'source_local' or not re.fullmatch('[a-f0-9]{32}', generation):
+        raise ValueError('CLI generation is not supported')
+    stage = SYSTEM/('source-local-'+generation)
+    safe_parents(stage)
+    archived = private_json(stage/'result.json', 0o600)
+    if (private_json(stage/'record', 0o644) != record or archived.get('stage') != str(stage) or
+            archived.get('pending') != 'committed' or
+            archived['plan']['owner_uid'] != owner or archived['plan']['edition'] != edition or
+            not archived.get('cli_changed') or archived['plan'].get('cli_entry') is None):
+        raise ValueError('CLI generation ownership differs')
+    cli_contract(archived['plan'])
+    return archived['plan']
 
 
 def verify_public(owner, edition):
@@ -1554,9 +2122,41 @@ def verify_public(owner, edition):
             raise ValueError('installed component identity differs')
     watchdog_verify(dict(watchdog={}, plan=dict(timezone_target=read_timezone_target(owner))))
     watchdog_verify(dict(bodyguard={}, plan=dict(proxy_mode=read_proxy_mode(owner))), 'bodyguard')
-    cli_verify(dict(plan=dict(owner_uid=owner,edition=edition,cli_entry=cli_snapshot(owner))))
+    cli_verify(dict(plan=installed_cli_plan(record, owner, edition)))
     return dict(status='components_verified', processes=verify_processes(owner),
                 timezone_watchdog='registered', authenticated_health='not_run')
+
+
+def post_install_handoff(owner, result):
+    # Handoff evidence is response-only. A durable component commit does not
+    # prove that the ordinary GUI has run its environment checks.
+    output = dict(result, components_verified=True, environment_verified=False,
+                  environment_status='NOT_RUN', environment_finish='first_gui_check_then_existing_fix',
+                  gui_launch='failed', manual_open_required=True)
+    try:
+        record = private_json(RECORD, 0o644)
+        edition = record['edition']
+        if record['owner_uid'] != owner or edition not in ('personal', 'public'):
+            raise ValueError('GUI handoff owner or edition differs')
+        installed_cli_plan(record, owner, edition)
+        expected_stage = str(SYSTEM/('source-local-'+record['trust']['generation']))
+        if result.get('backup', result.get('stage')) != expected_stage:
+            raise ValueError('GUI handoff generation differs from committed result')
+        account = pwd.getpwuid(owner)
+        bundle = app(edition)
+        meta = plistlib.loads((bundle/'Contents/Info.plist').read_bytes())
+        name = meta['CFBundleExecutable']
+        if not isinstance(name, str) or '/' in name or name in ('', '.', '..'):
+            raise ValueError('invalid GUI executable')
+        command = ['/bin/launchctl', 'asuser', str(owner), '/usr/bin/sudo', '-n', '-u', '#'+str(owner),
+                   '-g', '#'+str(account.pw_gid), '--', '/usr/bin/env', '-i', 'HOME='+account.pw_dir,
+                   'PATH=/usr/bin:/bin:/usr/sbin:/sbin', str(bundle/'Contents/MacOS'/name)]
+        subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, env={'PATH':'/usr/bin:/bin:/usr/sbin:/sbin'})
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        return output
+    output.update(gui_launch='requested', manual_open_required=False)
+    return output
 
 
 def main():
@@ -1566,10 +2166,13 @@ def main():
     parser.add_argument('--app', type=Path)
     parser.add_argument('--digest')
     parser.add_argument('--uninstall-plan', action='store_true')
+    parser.add_argument('--proxy-mode', choices=['clash-verge','shadowrocket','sing-box','clashx','surge','auto'])
+    parser.add_argument('--proxy-group')
     args = parser.parse_args()
     owner = console_owner()
     if args.operation == 'plan':
-        p = plan(args.edition, args.app, owner, 'uninstall' if args.uninstall_plan else 'install')
+        p = plan(args.edition, args.app, owner, 'uninstall' if args.uninstall_plan else 'install',
+                 proxy_mode=args.proxy_mode, proxy_group=args.proxy_group)
         print(json.dumps(dict(plan=p, digest=digest(p),
             notes=['Legacy rollback restores scheduling; RunAtLoad may immediately start its original task.'],
             legacy_running_observations={item['label']:bool(re.search(r'^\s*pid = \d+',
@@ -1582,7 +2185,8 @@ def main():
     p = None
     if args.operation in ('install','replace','uninstall'):
         # First-run discovery must fail before creating locks or stopping apps.
-        p = plan(args.edition, args.app, owner, 'uninstall' if args.operation == 'uninstall' else 'install')
+        p = plan(args.edition, args.app, owner, 'uninstall' if args.operation == 'uninstall' else 'install',
+                 proxy_mode=args.proxy_mode, proxy_group=args.proxy_group)
         if args.digest is not None and args.digest != digest(p):
             raise ValueError('plan digest changed')
     previous_owner = p.get('previous_owner_uid') if p else None
@@ -1607,7 +2211,9 @@ def main():
             else:
                 result = transact(p, args.digest or digest(p))
             result = finalize(owner,launch=p['operation']!='uninstall')
-        print(json.dumps(result, indent=2))
+    if args.operation in ('install', 'replace', 'finalize') and result.get('status') == 'committed':
+        result = post_install_handoff(owner, result)
+    print(json.dumps(result, indent=2))
 
 
 if __name__ == '__main__':

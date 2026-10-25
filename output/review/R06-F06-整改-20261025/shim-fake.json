@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/bin/bash",
+    "/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/tmp8284amjz/owner-home/.local/bin/claude-switch.sh",
+    "check",
+    "--json",
+    "",
+    "space value",
+    "quote'\"",
+    "$(touch NEVER)",
+    "semi;colon",
+    "中文"
+  ],
+  "env": {
+    "HOME": "/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/tmp8284amjz/owner-home",
+    "PATH": "/usr/bin:/bin"
+  },
+  "exit": 7,
+  "test_methods": 1,
+  "success": true,
+  "stdout_sha256": "2f6560fabded330d48894c4f690059e21e2ef2509935a9b4454b5bf29f4146cd",
+  "stderr_sha256": "09867ef64544e1337986481d1cd1359998999beaf1bb3c23fb91ac8abfc3dffe"
+}

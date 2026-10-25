@@ -1,0 +1,84 @@
+{
+  "unit": "R07",
+  "finding": "F09",
+  "task_id": "c2c_be95",
+  "iteration": 2,
+  "status": "accepted_source_and_isolated_tests",
+  "changed_files": [
+    "apps/desktop/src/components/RegionSettings.svelte",
+    "apps/desktop/src/App.svelte",
+    "apps/desktop/tests/repair-preview.test.mjs"
+  ],
+  "frozen_sources": {
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/tests/repair-preview.test.mjs": "cea7e7b368c0bd6d43154c823f36e86abdad3d3cd46fb1071118c70eed5a5726",
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "packaging/macos/local_install.py": "fbe4c2ecbc37d2775bb2fd5c1626d20f3c4e97cebc910bf1d189bd345114ba3e",
+    "packaging/macos/test_local_install.py": "f7bf3b561d2b3ceb3c2882f0eb52c5e0a6975f5db5282a91d31dae668bb9a3f4"
+  },
+  "accepted_R01_R06_paths_unchanged": 13,
+  "final_commands": 8,
+  "all_exit_zero": true,
+  "unique_node_test_methods": 42,
+  "targeted_methods": 21,
+  "targeted_included_in_full": true,
+  "additional_App_VM_preparation_groups": 2,
+  "scenario_receipts": 18,
+  "behavioral_RED": {
+    "tests": 18,
+    "passed": 8,
+    "failed": 10,
+    "exit": 1,
+    "source": "f09-red-manifest.json"
+  },
+  "independent_review": {
+    "result": "no_remaining_blocker_P1_P2",
+    "source": "independent-review.md"
+  },
+  "svelte_check": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "frontend_builds": {
+    "personal": "PASS",
+    "public": "PASS"
+  },
+  "evidence": [
+    "final-receipts.json",
+    "final-runtime.json",
+    "final-scenario-receipts.json",
+    "f09-red-manifest.json",
+    "f09-red.log",
+    "independent-review.md"
+  ],
+  "not_run": [
+    "real GUI/native IPC/helper authorization",
+    "real accounts",
+    "product network/DNS/proxy checks",
+    "app/service/system mutation",
+    "installation"
+  ],
+  "long_duration": "WAIT",
+  "notes": [
+    "Existing exact offline node_modules cloned to temp mirror; no install or download.",
+    "Baseline secondary mirror initially dereferenced .bin symlinks. That launcher error is NOT_RED; direct existing svelte-check then passed 0 errors and 0 warnings.",
+    "No declared frontend lint/formatter command; no fabricated pass.",
+    "42 methods counted once; 21 targeted and queue/recovery overlap the full run."
+  ],
+  "GPT_review": {
+    "state": "DONE",
+    "verdict": "ACCEPTED",
+    "path": "chatgpt-review-iteration2.txt"
+  }
+}

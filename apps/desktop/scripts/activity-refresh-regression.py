@@ -40,15 +40,17 @@ CODE = r'''async (page) => {
    }};
  },snapshot);
  await page.goto('BASE_URL/');
+ await page.getByText('检查完成：13 项通过 · 1 项提示 · 0 项阻止启动。',{exact:true}).waitFor();
  await page.getByRole('button',{name:'活动记录',exact:true}).click();
- await page.getByRole('heading',{name:'暂无活动记录',exact:true}).waitFor();
- if(!await page.getByRole('button',{name:'导出脱敏记录',exact:true}).isDisabled())throw Error('empty export enabled');
+ await page.locator('.activity-list').getByText('隔离回归：只读检查产生的新脱敏事件',{exact:true}).waitFor();
+ if(await page.locator('.activity-list li').count()!==1)throw Error('opening check did not add exactly one event');
+ if(await page.getByRole('button',{name:'导出脱敏记录',exact:true}).isDisabled())throw Error('opening check export disabled');
  await page.getByRole('button',{name:'环境检查',exact:true}).click();
  await page.locator('.page-toolbar').getByRole('button',{name:'重新检查',exact:true}).click();
  await page.getByText('检查完成：13 项通过 · 1 项提示 · 0 项阻止启动。',{exact:true}).waitFor();
  await page.getByRole('button',{name:'活动记录',exact:true}).click();
- await page.locator('.activity-list').getByText('隔离回归：只读检查产生的新脱敏事件',{exact:true}).waitFor({timeout:3000});
- if(await page.locator('.activity-list li').count()!==1)throw Error('unexpected list count');
+ await page.locator('.activity-list').getByText('隔离回归：只读检查产生的新脱敏事件',{exact:true}).first().waitFor({timeout:3000});
+ if(await page.locator('.activity-list li').count()!==2)throw Error('manual check did not add exactly one event');
  const calls=await page.evaluate(()=>window.__activityRegressionCalls);
  if(calls.filter(c=>c==='activity_log').length!==2)throw Error('activity not reread on entry');
  let nativeDownloads=0;page.on('download',()=>nativeDownloads++);
@@ -104,7 +106,7 @@ if __name__=='__main__':
             cli('run-code',CODE)
             exported=json.loads(EXPORT.read_text())
             assert len(exported)==1 and exported[0]['message']=='合成界面预览，未执行本机检查或账号操作。',exported
-            with LOG.open('a') as log:log.write('PASS: empty → check adds event → reenter rereads; native mock export returns latest matching snapshot with zero Blob/download; failure remains responsive; fixture browser download invokes zero IPC.\n')
+            with LOG.open('a') as log:log.write('PASS: opening check adds one event → manual check adds one event → reenter rereads both; native mock export returns latest matching snapshot with zero Blob/download; failure remains responsive; fixture browser download invokes zero IPC.\n')
             print('PASS: activity refresh, native export IPC contract without Blob, error feedback, fixture-only browser download')
         finally:
             try:cli('close')

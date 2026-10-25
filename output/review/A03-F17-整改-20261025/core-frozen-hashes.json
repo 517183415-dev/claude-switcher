@@ -1,0 +1,8 @@
+{
+  "apps/desktop/src-tauri/src/publisher/mod.rs": "39557bcbbb41abc50234c7f29e77df5f46af93ac5c042fe2afd2efa803f7a5d0",
+  "apps/desktop/src-tauri/src/publisher/local_store.rs": "bf0d23ec4018a27043f503756405cf433db78f6f5993376a89df28524629f1a5",
+  "apps/desktop/src-tauri/src/publisher/cleanup.rs": "3d4d31c97499fc200dabe1dd4bd88bef0583127f34e0b93306ca03b9464d930f",
+  "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "2e9e855a604fe896e1ee8c8b4ed71c8ecda32811de65a74c931abbb80e92be6e",
+  "apps/desktop/src-tauri/src/publisher/tests.rs": "98d631952fc227ead9168192c29474a8c88f6c0296ca3622cbbf63ec84de7462",
+  "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68"
+}

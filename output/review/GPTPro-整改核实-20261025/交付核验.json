@@ -1,0 +1,80 @@
+{
+  "verification_time": "2026-10-25T02:53:35.531846+08:00",
+  "scope": "audit artifacts and frozen baseline only; not product tests",
+  "project_root": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher",
+  "branch": "codex/gpt-audit-fixes",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "frozen_manifest_entries": 413,
+  "git_tracked_files": 414,
+  "manifest_total_bytes": 15924435,
+  "manifest_sha256": "6fdc25eaaabf9f5774221e566a5e88c4f003fe1d72b82ce8de6e037f1c0fa099",
+  "frozen_file_errors": [],
+  "tracked_diff": "",
+  "report_sha256": "d022077b6ab1d97159fa004b9c0efcb30999d8cecde6115ade88de21e6bf721e",
+  "source_root": "/Users/gua/CodexWorkspaces/claude-switcher",
+  "source_head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "source_tracked_diff_at_delivery": "",
+  "registry_path": "/Users/gua/CodexWorkspaces/claude-switcher/output/review/GPTPro-整改准备-20261025/交接登记.json",
+  "registry_status": "已接手",
+  "registry_evidence_exists": [
+    true
+  ],
+  "decisions": {
+    "total": 18,
+    "accepted": 13,
+    "partially_accepted": [
+      "F07",
+      "F11",
+      "F13",
+      "F17",
+      "F18"
+    ],
+    "entirely_rejected": []
+  },
+  "artifact_files": {
+    "F01-review.md": {
+      "bytes": 4709,
+      "sha256": "c0c0037ebeb48edeb5ddd761566124212d2399eb4dc64bc6bf6276b77620e109"
+    },
+    "F01-首次核实.json": {
+      "bytes": 2484,
+      "sha256": "49e9200e9083471b0b0b0384953a8ae9cbededb9d1a991330778645db0cf16ca"
+    },
+    "F14-review.md": {
+      "bytes": 2109,
+      "sha256": "7179b17364561335643a7f2188fe68e6bb5395d8abafe81c14d74fadb25f1b3b"
+    },
+    "ads-review.md": {
+      "bytes": 5489,
+      "sha256": "d0e0eaa1ed373f78a7399f4e10271680bb9188770bacf261d87a7ac6f270d713"
+    },
+    "install-review.md": {
+      "bytes": 12470,
+      "sha256": "222ef2b6efcaa5cf2ef69190ed1d711fe189a961c967bbcfdb771dfcce5c7bcf"
+    },
+    "runtime-review.md": {
+      "bytes": 14331,
+      "sha256": "017fb7cb5d47fca1e81076a16201dd155ac9e4c1d91f010ed423ddf8e58301ac"
+    },
+    "最小整改计划.md": {
+      "bytes": 17145,
+      "sha256": "3c75da980d5d4358273cdfde7c96b869a944937f6ff3028a09d236779175c7cd"
+    }
+  },
+  "not_run": [
+    "product_tests",
+    "Rust_runtime_reproduction",
+    "build",
+    "installation",
+    "native_UI",
+    "system_changes",
+    "real_accounts",
+    "merge",
+    "push"
+  ],
+  "untracked_paths": [
+    "?? .codegraph/",
+    "?? output/"
+  ],
+  "result": "verified"
+}

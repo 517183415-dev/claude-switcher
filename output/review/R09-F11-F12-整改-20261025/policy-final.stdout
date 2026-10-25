@@ -1,0 +1,26 @@
+
+running 21 tests
+test policy::source_local_tests::source_local_installer_cannot_begin_session ... ok
+test policy::tests::expired_session_records_no_start_for_its_bound_unconsumed_plan ... ok
+test policy::tests::f12_pending_allows_sessions_and_readonly_diagnostics ... ok
+test policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt ... ok
+test policy::tests::f12_pending_preserves_owner_role_session_and_replay_boundaries ... ok
+test policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization ... ok
+test policy::tests::expired_matching_plan_records_no_start_before_any_mutation ... ok
+test policy::tests::apply_without_administrator_authorization_never_mutates ... ok
+test policy::tests::f12_pending_read_error_never_bypasses_gate ... ok
+test policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects ... ok
+test policy::source_local_tests::source_local_system_gate_contains_only_fixed_gui_and_guardian_pins ... ok
+test policy::tests::f12_pending_recovery_rejects_expired_or_apply_scoped_grants ... ok
+test policy::tests::guardian_cannot_request_root_recovery_or_read_transaction_results ... ok
+test policy::tests::f12_pending_requires_fresh_recovery_grant_then_reopens_after_clear ... ok
+test policy::tests::owner_role_session_sequence_and_expiry_matrix ... ok
+test policy::tests::authorized_apply_is_single_use_and_recovery_requires_new_scoped_proof ... ok
+test policy::tests::guardian_cannot_write_and_plan_is_single_use ... ok
+test policy::tests::timezone_guard_requires_guardian_owner_live_session_and_sequence ... ok
+test policy::tests::recovery_plan_change_or_apply_scope_cannot_authorize_recovery ... ok
+test policy::tests::native_proof_binding_rejects_invalid_expired_replayed_and_changed_plans ... ok
+test policy::source_local_tests::source_local_unknown_fields_missing_pins_and_legacy_records_are_rejected ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.00s
+

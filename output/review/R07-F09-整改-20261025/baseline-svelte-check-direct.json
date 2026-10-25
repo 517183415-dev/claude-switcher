@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/bin/node",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-baseline-2vi4z8hq/workspace/apps/desktop/node_modules/svelte-check/bin/svelte-check",
+    "--tsconfig",
+    "./tsconfig.json"
+  ],
+  "cwd": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-baseline-2vi4z8hq/workspace/apps/desktop",
+  "exit": 0,
+  "elapsed": 1.2386341670062393,
+  "log": "baseline-svelte-check-direct.log",
+  "prior_launcher_failure": "NOT_RED; copytree dereferenced .bin symlink, direct copied package entry avoids launcher issue"
+}

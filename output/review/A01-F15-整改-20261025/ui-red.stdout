@@ -1,0 +1,49 @@
+✔ image handler accepts the inclusive 1 MiB boundary (263.33775ms)
+✖ image handler rejects over 1 MiB before reading or invoking (46.471542ms)
+✔ restore handler accepts the inclusive 64 MiB boundary (11.063ms)
+✖ restore handler rejects oversized files and short passwords before invoke (20.2195ms)
+✔ real handlers report backend failure and release busy state (30.503958ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 3
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1847.294
+
+✖ failing tests:
+
+test at tests/publisher-limits.test.mjs:63:1
+✖ image handler rejects over 1 MiB before reading or invoking (46.471542ms)
+  AssertionError [ERR_ASSERTION]: over-limit image must not invoke the backend
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a01-ui-zmdoohxd/app/tests/publisher-limits.test.mjs:67:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/publisher-limits.test.mjs:84:1
+✖ restore handler rejects oversized files and short passwords before invoke (20.2195ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /不超过 64 MiB/. Input:
+  
+  '备份须小于 64 MiB；请先输入至少 12 个字符的口令。'
+  
+      at TestContext.<anonymous> (file:///private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a01-ui-zmdoohxd/app/tests/publisher-limits.test.mjs:90:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '备份须小于 64 MiB；请先输入至少 12 个字符的口令。',
+    expected: /不超过 64 MiB/,
+    operator: 'match',
+    diff: 'simple'
+  }

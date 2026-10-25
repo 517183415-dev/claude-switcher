@@ -1,0 +1,14 @@
+{
+  "task_id": "c2c_1a81",
+  "unit": "R03/F03",
+  "timestamp": "2026-10-25T09:29:13.685365+00:00",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "files": {
+    "packaging/macos/local_install.py": "b3162368775afc82c4c78cec4d1dea6a7b3de355ef5d68b6b615825bd9ee3f8a",
+    "packaging/macos/test_local_install.py": "85f34958c17b0842e7015b6e0408dc2445805505d14e0a30d006fac578f62aa8",
+    "crates/switcher-core/src/guardian_repair.rs": "87752758e5e0d645b93649a1dbf159445a664a7e4e974474388ff0ba74571e54",
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  }
+}

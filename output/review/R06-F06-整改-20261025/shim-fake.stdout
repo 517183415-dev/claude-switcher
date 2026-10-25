@@ -1,0 +1,1 @@
+["--edition", "public", "--legacy-cli", "check", "--json", "", "space value", "quote'\"", "$(touch NEVER)", "semi;colon", "中文"]

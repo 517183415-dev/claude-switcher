@@ -1,0 +1,85 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: DONE TASK_ID: c2c_be95 ITERATION: 2 UNIT: R07 / F09 VERDICT: ACCEPTED REMAINING_R07_WORK: NONE WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 REVIEWED_OUTPUTS: 65-73 R01-R06: PRESERVED NEXT_UNIT: R08 — separate bounded PLAN"
+    - paragraph: R07 satisfies the approved F09 contract. I reviewed the current three-file diff, outputs 65–73, scenario receipts, verification, iteration record, and independent review. No bounded correction is required.
+    - paragraph: "The key ordinary repair path is now genuinely one-click:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: click 修复环境 → preview_repair(requestId) → same requestId execute_repair exactly once → completed=true → exactly one check_environment
+    - paragraph:
+      - text: Final receipts prove
+      - strong: 1 preview / 1 execute / 1 full check
+      - text: ", including triple-click pressure during both preview and execute."
+    - paragraph: The state protections are also correctly separated. Repair acquisition synchronously advances checkEpoch and clears old evidence; stale check/snapshot results cannot repopulate the report. executionOwner, component epoch and disposed prevent late execution results from publishing outcome, loading region state, or starting a full check. A stale component also cannot release another component's newer repair owner.
+    - paragraph: "Failure paths meet F09:"
+    - list:
+      - listitem: "blocked preview: 1/0/0"
+      - listitem: "recovery-required: 1/0/0"
+      - listitem: "preview failure: 1/0/0"
+      - listitem: "completed:false: 1/1/0"
+      - listitem: "execute exception: 1/1/0"
+      - listitem: "canceled/stale execute: no completion and no full check"
+    - paragraph: The old check report remains suppressed in those cases rather than being restored by a later workspace snapshot.
+    - paragraph: "Region changes retain the required UX and identity binding:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: selected jp → preview_region_change(region=jp, requestId) → visible preview → explicit confirmation → execute_repair(same requestId)
+    - paragraph: The final implementation also performs one full recheck after successful explicit region execution; this does not remove the required preview/confirmation boundary.
+    - paragraph:
+      - text: "Recovery remains separate: successful recover_repair loads state and produces a fresh preview, but does"
+      - strong: not
+      - text: auto-execute and does not trigger a full environment check. The receipt shows recovery preview=2 / execute=0 / check=0.
+    - paragraph: The App-level shared repair guard also closes the race with existing actions. While repair ownership is active, full checks, launch/account perform() actions, settings saves, ad refresh/open, activity export and periodic snapshot refresh are prevented from racing the repair.
+    - paragraph: "Scope is clean: only these three R07 files changed:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: apps/desktop/src/components/RegionSettings.svelte apps/desktop/src/App.svelte apps/desktop/tests/repair-preview.test.mjs
+    - paragraph: The two existing queue/recovery tests were left unchanged and still pass. All 13 previously accepted R01–R06 source hashes remain unchanged.
+    - paragraph: "Final evidence:"
+    - list:
+      - text: "targeted production-script tests:"
+      - strong: 21/21
+      - text: "full Node suite:"
+      - strong: 42 distinct methods PASS
+      - listitem: "queue regression: PASS"
+      - listitem: "recovery-copy regression: PASS"
+      - text: "Svelte check:"
+      - strong: 0 errors / 0 warnings
+      - listitem: "Personal build: PASS"
+      - listitem: "Public build: PASS"
+      - listitem: "git diff --check: PASS"
+      - text: "behavioral RED:"
+      - strong: 18 methods, 10 intended behavior failures
+      - listitem: 18 final scenario receipts
+      - listitem: "independent review: no remaining P1/P2"
+    - paragraph: "The offline dependency procedure is also bounded correctly: existing node_modules were copied into a temporary mirror; there was no install or download, and the original workspace was not used as a build-output target."
+    - paragraph:
+      - strong: R07/F09 is accepted for source, VM, Svelte static-check and isolated build scope.
+      - text: Real GUI interaction, native IPC/helper authorization and real system mutation remain correctly NOT_RUN.
+    - paragraph: R08 has not been started.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

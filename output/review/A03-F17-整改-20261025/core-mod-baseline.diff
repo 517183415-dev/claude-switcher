@@ -1,0 +1,92 @@
+--- A02 frozen mod.rs
+
++++ A03 mod.rs
+
+@@ -1,5 +1,8 @@
+
+ //! Personal-only local editor, recoverable publication and encrypted backup.
+ pub mod backup;
++pub(crate) mod cleanup;
++#[cfg(test)]
++mod cleanup_tests;
+ pub mod local_store;
+ pub mod protocol;
+ pub mod security;
+@@ -132,6 +135,8 @@
+
+     recovery_required: bool,
+     #[serde(default)]
+     last_resolution: Option<Resolution>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    cleanup: Option<cleanup::CleanupBatch>,
+ }
+ 
+ #[derive(Serialize, Deserialize)]
+@@ -313,6 +318,7 @@
+
+                     pending: None,
+                     recovery_required: false,
+                     last_resolution: None,
++                    cleanup: None,
+                 };
+                 Self::write_generation(root, &generation, &state, &[])?;
+                 storage::atomic_write(
+@@ -358,6 +364,12 @@
+
+             0
+         };
+         #[cfg(test)]
++        let fault = if fault != 0 {
++            fault
++        } else {
++            cleanup::persist_fault(self.state.cleanup.as_ref(), state.cleanup.as_ref())
++        };
++        #[cfg(test)]
+         if fault == 1 {
+             return Err(Error::Io(std::io::Error::other("synthetic before rename")));
+         }
+@@ -384,6 +396,7 @@
+
+         self.validate_state_with_key(state, self.public_key.as_ref())
+     }
+     fn validate_state_with_key(&self, state: &State, key: Option<&VerifyingKey>) -> Result<()> {
++        cleanup::validate_batch(state.cleanup.as_ref(), &self.generation)?;
+         if state.schema != 1
+             || state.history.len() > HISTORY_LIMIT
+             || state.assets.len() > ASSET_LIMIT
+@@ -1196,11 +1209,13 @@
+
+                 })
+             })
+             .collect::<Result<Vec<_>>>()?;
++        let mut portable_state = self.state.clone();
++        portable_state.cleanup = None;
+         let snapshot = Snapshot {
+             schema: 1,
+             key_id: self.key_id.clone(),
+             public_key: self.verifying_key()?.to_bytes(),
+-            state: self.state.clone(),
++            state: portable_state,
+             assets,
+             secrets,
+         };
+@@ -1213,6 +1228,9 @@
+
+         passphrase: &[u8],
+         vault: &mut dyn Vault,
+     ) -> Result<()> {
++        if self.state.cleanup.is_some() {
++            return Err(Error::Invalid("cleanup_finish_gc_before_restore"));
++        }
+         if self
+             .state
+             .pending
+@@ -1248,6 +1266,7 @@
+
+             )
+             .map_err(Error::Invalid)?;
+         }
++        snapshot.state.cleanup = None;
+         self.validate_state_with_key(&snapshot.state, Some(&restored_key))?;
+         if snapshot.assets.len() != snapshot.state.assets.len() {
+             return Err(Error::Invalid("backup_asset_index"));

@@ -37,6 +37,9 @@ pub struct Service {
 }
 
 pub trait SystemActions {
+    fn pending_repair(&self) -> Result<Option<String>, &'static str> {
+        Ok(None)
+    }
     fn installation_health_challenge(
         &self,
         record: &InstallRecord,
@@ -124,6 +127,24 @@ impl Service {
             return Err("role_identity");
         }
         self.record.client_requirement(request.role)?;
+        if let Some(pending) = system.pending_repair()? {
+            let allowed = match &request.operation {
+                HelperAction::BeginSession
+                | HelperAction::ReadSystemState
+                | HelperAction::GuardianStatus => true,
+                HelperAction::RepairStatus { plan_id }
+                | HelperAction::RecoverRepair { plan_id } => plan_id == &pending,
+                HelperAction::AuthorizeRepair {
+                    plan_id,
+                    recovery: true,
+                    ..
+                } => plan_id == &pending,
+                _ => false,
+            };
+            if !allowed {
+                return Err("repair_recovery_required");
+            }
+        }
         // Expiry removes write authority, but a still-bound unconsumed plan can record a
         // definite no-start result before its session is discarded.
         if let HelperAction::ApplyRepair { plan_id } = &request.operation {
@@ -527,6 +548,338 @@ mod tests {
     fn apply_action() -> HelperAction {
         HelperAction::ApplyRepair {
             plan_id: "synthetic-session-token".into(),
+        }
+    }
+
+    #[derive(Default)]
+    struct F12Pending {
+        authorization: AuthorizationBoundary,
+        pending: std::cell::RefCell<Option<RepairPlan>>,
+        error: std::cell::Cell<Option<&'static str>>,
+        writes: std::cell::RefCell<Vec<&'static str>>,
+    }
+    impl SystemActions for F12Pending {
+        fn pending_repair(&self) -> Result<Option<String>, &'static str> {
+            if let Some(error) = self.error.get() {
+                return Err(error);
+            }
+            Ok(self.pending.borrow().as_ref().map(|plan| plan.id.clone()))
+        }
+        fn random_token(&self) -> Result<String, &'static str> {
+            Fake.random_token()
+        }
+        fn read_state(&self, service: &str) -> Result<SystemState, &'static str> {
+            Fake.read_state(service)
+        }
+        fn validate_policy(&self, target: &RegionPolicy) -> Result<(), &'static str> {
+            Fake.validate_policy(target)
+        }
+        fn guardian_status(&self, _: u32) -> Result<(), &'static str> {
+            Ok(())
+        }
+        fn prepare_plan(&self, _: &RepairPlan) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("prepare");
+            Ok(())
+        }
+        fn plan_not_started(&self, _: &RepairPlan) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("not_started");
+            Ok(())
+        }
+        fn consume_authorization(&self, form: &[u8]) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("authorize");
+            self.authorization.consume_authorization(form)
+        }
+        fn apply_plan(&self, plan: &RepairPlan) -> Vec<RepairItemResult> {
+            self.writes.borrow_mut().push("apply");
+            Fake.apply_plan(plan)
+        }
+        fn restore_managed_system(&self) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("restore");
+            Ok(())
+        }
+        fn commit_installation(&self, _: u32) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("commit");
+            Ok(())
+        }
+        fn reconcile_managed_timezone(&self, _: &str) -> Result<HelperResponse, &'static str> {
+            self.writes.borrow_mut().push("reconcile");
+            Ok(HelperResponse::status("reconciled", true))
+        }
+        fn installation_health_challenge(
+            &self,
+            _: &InstallRecord,
+            _: u64,
+        ) -> Result<InstallHealthChallenge, &'static str> {
+            self.writes.borrow_mut().push("health");
+            Err("synthetic_health_not_allowed")
+        }
+        fn installation_health_receipt(
+            &self,
+            _: &InstallHealthReceipt,
+        ) -> Result<(), &'static str> {
+            self.writes.borrow_mut().push("receipt");
+            Ok(())
+        }
+        fn repair_status(&self, _: &str) -> Result<HelperResponse, &'static str> {
+            let mut response = HelperResponse::status("repair_recovery_required", false);
+            response.plan = self.pending.borrow().clone();
+            Ok(response)
+        }
+        fn recover_repair(&self, _: &str) -> Result<HelperResponse, &'static str> {
+            self.writes.borrow_mut().push("recover");
+            self.pending.borrow_mut().take();
+            Ok(HelperResponse::status("repair_restored", true))
+        }
+    }
+    fn f12_pending_fixture() -> (F12Pending, Service, VerifiedPeer) {
+        let system = F12Pending::default();
+        let (service, peer) = authorization_fixture(&system.authorization);
+        *system.pending.borrow_mut() = service.sessions.get(&peer.connection).unwrap().plan.clone();
+        (system, service, peer)
+    }
+    fn f12_status(id: &str) -> HelperAction {
+        HelperAction::RepairStatus { plan_id: id.into() }
+    }
+    fn f12_recover(id: &str) -> HelperAction {
+        HelperAction::RecoverRepair { plan_id: id.into() }
+    }
+    #[test]
+    fn f12_pending_blocks_every_non_recovery_write_before_side_effects() {
+        for name in [
+            "preview",
+            "apply",
+            "authorize",
+            "restore",
+            "commit",
+            "reconcile",
+            "health",
+        ] {
+            let (system, mut service, mut peer) = f12_pending_fixture();
+            let action = match name {
+                "preview" => HelperAction::PreviewRepair {
+                    target: system.pending.borrow().as_ref().unwrap().target.clone(),
+                },
+                "apply" => {
+                    let plan = service
+                        .sessions
+                        .get(&peer.connection)
+                        .unwrap()
+                        .plan
+                        .as_ref()
+                        .unwrap();
+                    let binding = plan_binding(plan).unwrap();
+                    service
+                        .sessions
+                        .get_mut(&peer.connection)
+                        .unwrap()
+                        .authorization = Some((binding, false, 30));
+                    apply_action()
+                }
+                "authorize" => authorize_action(false),
+                "restore" => HelperAction::RestoreManagedSystem,
+                "commit" => HelperAction::CommitInstallation,
+                "reconcile" => {
+                    peer.role = ClientRole::Guardian;
+                    service.sessions.get_mut(&peer.connection).unwrap().role = peer.role;
+                    HelperAction::ReconcileManagedTimezone {
+                        expected_timezone: "UTC".into(),
+                    }
+                }
+                "health" => HelperAction::InstallationHealth {
+                    generation: "a".repeat(32),
+                    nonce: "b".repeat(64),
+                    loop_sequence: 1,
+                },
+                _ => unreachable!(),
+            };
+            let response = service.handle(&peer, request(peer.role, action, 2), 3, &system);
+            assert!(!response.ok, "{name}");
+            assert_eq!(response.code, "repair_recovery_required", "{name}");
+            assert!(system.writes.borrow().is_empty(), "{name}");
+            assert!(system.pending.borrow().is_some(), "{name}");
+        }
+    }
+    #[test]
+    fn f12_pending_blocks_expired_apply_before_no_start_receipt() {
+        for now in [40, 400] {
+            let (system, mut service, peer) = f12_pending_fixture();
+            let response =
+                service.handle(&peer, request(peer.role, apply_action(), 2), now, &system);
+            assert_eq!(response.code, "repair_recovery_required", "{now}");
+            assert!(!response.ok);
+            assert!(system.writes.borrow().is_empty());
+            assert!(system.pending.borrow().is_some());
+        }
+    }
+    #[test]
+    fn f12_pending_allows_sessions_and_readonly_diagnostics() {
+        let (system, _, peer) = f12_pending_fixture();
+        let mut service = service();
+        for (sequence, action) in [
+            (0, HelperAction::BeginSession),
+            (1, HelperAction::ReadSystemState),
+            (2, HelperAction::GuardianStatus),
+        ] {
+            assert!(
+                service
+                    .handle(&peer, request(peer.role, action, sequence), 3, &system)
+                    .ok
+            );
+        }
+        let response = service.handle(
+            &peer,
+            request(peer.role, f12_status("synthetic-session-token"), 3),
+            4,
+            &system,
+        );
+        assert_eq!(response.code, "repair_recovery_required");
+        assert!(response.plan.is_some());
+        assert!(system.writes.borrow().is_empty());
+    }
+    #[test]
+    fn f12_pending_rejects_wrong_plan_ids_before_status_or_authorization() {
+        for action in [
+            f12_status("other"),
+            f12_recover("other"),
+            HelperAction::AuthorizeRepair {
+                plan_id: "other".into(),
+                recovery: true,
+                external_form: b"test-only-proof".to_vec(),
+            },
+        ] {
+            let (system, mut service, peer) = f12_pending_fixture();
+            let response = service.handle(&peer, request(peer.role, action, 2), 3, &system);
+            assert!(!response.ok);
+            assert!(response.plan.is_none());
+            assert!(system.writes.borrow().is_empty());
+        }
+    }
+    #[test]
+    fn f12_pending_preserves_owner_role_session_and_replay_boundaries() {
+        for case in [
+            "owner",
+            "role",
+            "session",
+            "replay",
+            "guardian",
+            "connection",
+            "expired",
+        ] {
+            let (system, mut service, mut peer) = f12_pending_fixture();
+            let mut req = request(peer.role, f12_status("synthetic-session-token"), 2);
+            match case {
+                "owner" => peer.uid = 502,
+                "role" => req.role = ClientRole::Guardian,
+                "session" => req.session = Some("wrong".into()),
+                "replay" => req.sequence = 1,
+                "guardian" => {
+                    peer.role = ClientRole::Guardian;
+                    req.role = peer.role;
+                    service.sessions.get_mut(&peer.connection).unwrap().role = peer.role;
+                }
+                "connection" => peer.connection = 2,
+                _ => (),
+            }
+            let now = if case == "expired" { 400 } else { 3 };
+            assert!(!service.handle(&peer, req, now, &system).ok, "{case}");
+            assert!(system.writes.borrow().is_empty(), "{case}");
+        }
+    }
+    #[test]
+    fn f12_pending_requires_fresh_recovery_grant_then_reopens_after_clear() {
+        let (system, mut service, peer) = f12_pending_fixture();
+        assert!(
+            !service
+                .handle(
+                    &peer,
+                    request(peer.role, f12_recover("synthetic-session-token"), 2),
+                    3,
+                    &system
+                )
+                .ok
+        );
+        assert!(system.writes.borrow().is_empty());
+        assert!(
+            service
+                .handle(
+                    &peer,
+                    request(peer.role, authorize_action(true), 3),
+                    4,
+                    &system
+                )
+                .ok
+        );
+        assert!(
+            service
+                .handle(
+                    &peer,
+                    request(peer.role, f12_recover("synthetic-session-token"), 4),
+                    5,
+                    &system
+                )
+                .ok
+        );
+        assert!(system.pending.borrow().is_none());
+        assert_eq!(*system.writes.borrow(), ["authorize", "recover"]);
+        let target = RegionPolicy {
+            timezone: "UTC".into(),
+            network_service: "Wi-Fi".into(),
+            ipv6: Ipv6Policy::Off,
+        };
+        assert!(
+            service
+                .handle(
+                    &peer,
+                    request(peer.role, HelperAction::PreviewRepair { target }, 5),
+                    6,
+                    &system
+                )
+                .ok
+        );
+        assert_eq!(*system.writes.borrow(), ["authorize", "recover", "prepare"]);
+    }
+    #[test]
+    fn f12_pending_recovery_rejects_expired_or_apply_scoped_grants() {
+        for (recovery, expiry) in [(false, 30), (true, 2)] {
+            let (system, mut service, peer) = f12_pending_fixture();
+            let plan = system.pending.borrow().clone().unwrap();
+            service
+                .sessions
+                .get_mut(&peer.connection)
+                .unwrap()
+                .authorization = Some((plan_binding(&plan).unwrap(), recovery, expiry));
+            assert!(
+                !service
+                    .handle(
+                        &peer,
+                        request(peer.role, f12_recover(&plan.id), 2),
+                        3,
+                        &system
+                    )
+                    .ok
+            );
+            assert!(system.writes.borrow().is_empty());
+            assert!(system.pending.borrow().is_some());
+        }
+    }
+    #[test]
+    fn f12_pending_read_error_never_bypasses_gate() {
+        for action in [
+            HelperAction::BeginSession,
+            HelperAction::ReadSystemState,
+            HelperAction::RestoreManagedSystem,
+        ] {
+            let (system, mut service, peer) = f12_pending_fixture();
+            system.error.set(Some("repair_status_permissions"));
+            let sequence = if matches!(action, HelperAction::BeginSession) {
+                0
+            } else {
+                2
+            };
+            let response = service.handle(&peer, request(peer.role, action, sequence), 3, &system);
+            assert!(!response.ok);
+            assert_eq!(response.code, "repair_status_permissions");
+            assert!(system.writes.borrow().is_empty());
         }
     }
     #[test]

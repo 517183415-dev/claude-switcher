@@ -1,0 +1,18 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--lib",
+    "f10_",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit_code": 101,
+  "elapsed_seconds": 2.718,
+  "source_sha256": "03fb6d38d472432360bd509edd76b8397000b643524c57a399c13350b2e37c31"
+}

@@ -1,0 +1,6 @@
+[C2C]
+STATE: EXECUTED
+TASK_ID: c2c_be95
+ITERATION: 1
+EXIT_STATUS: blocked
+PLAN preflight only; no source edits/tests. Your section1 contradicts approved F09: ordinary fix must be one click. Read minimal plan F09 row and R07 scope via MCP. Revise ordinary environment action to internal preview then execute once when can_execute && !recovery_required, with required OS authorization retained. Region change still selected region -> visible preview -> explicit confirm. Recovery remains separate; never auto-execute after recovery. Preserve epoch/disposed and immediate full check guards. Add shared parent busy guard so launch/check cannot race repair. Existing exact dependencies found at /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/node_modules; copy dependencies and current sources to temp mirror, execute offline, original read-only. No install. Return concise revised PLAN only; same max5 files.

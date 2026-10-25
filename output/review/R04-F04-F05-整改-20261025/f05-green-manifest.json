@@ -1,0 +1,16 @@
+{
+  "phase": "F05 GREEN: open-only then one readiness gate, open errors propagated",
+  "command": "cargo test --offline --locked -p switcher-core --lib f05_ -- --nocapture",
+  "sources_before": {
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/regions.rs": "c07c470b805a7435171f7f06bc03745ec2349d1a7e1c34dbd72a0ed65162173f"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 3.989,
+  "sources_after": {
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/regions.rs": "c07c470b805a7435171f7f06bc03745ec2349d1a7e1c34dbd72a0ed65162173f"
+  }
+}

@@ -1,0 +1,18 @@
+    Checking memchr v2.8.3
+    Checking thiserror v2.0.21
+    Checking serde v1.0.229
+    Checking ts-rs v12.0.1
+    Checking serde_json v1.0.154
+    Checking switcher-domain v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-domain)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Checking switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.75s

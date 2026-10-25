@@ -1,0 +1,60 @@
+{
+  "ruby": "ruby 2.6.10p210 (2022-04-12 revision 67958) [universal.arm64e-darwin26]",
+  "psych": "3.1.0",
+  "cases": [
+    {
+      "name": "tabs",
+      "results": {
+        "original": {
+          "status": "PASS",
+          "sha256": "ec918e6ce128cce925f5a6520082b396703a4afe0e4fedc1d04b53572c4113ec",
+          "text": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+          "documents": 1,
+          "prepend_rules_keys": 1
+        },
+        "output": {
+          "status": "PASS",
+          "sha256": "db86e8c94ddd8196468aa69ab73540267abd25b6d9d9a564b4c376f0c18c142a",
+          "text": "# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n",
+          "documents": 1,
+          "prepend_rules_keys": 1
+        }
+      },
+      "checks": {
+        "thirteen_managed_rules": true,
+        "managed_precedes_user": true,
+        "exact_user_bytes": true,
+        "user_semantics": true,
+        "changed_receipt": true,
+        "actual_second_pass": true
+      }
+    },
+    {
+      "name": "crlf-comment",
+      "results": {
+        "original": {
+          "status": "PASS",
+          "sha256": "e528522a451705d1685e9f62b1d543a020d79ef41149f315d26ededc99e9bf39",
+          "text": "# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n",
+          "documents": 1,
+          "prepend_rules_keys": 1
+        },
+        "output": {
+          "status": "PASS",
+          "sha256": "c6c686366afe61bbc325a3816e54d863d3aab8d256c294cfab56d7b29187c5b9",
+          "text": "# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n",
+          "documents": 1,
+          "prepend_rules_keys": 1
+        }
+      },
+      "checks": {
+        "thirteen_managed_rules": true,
+        "managed_precedes_user": true,
+        "exact_user_bytes": true,
+        "user_semantics": true,
+        "changed_receipt": true,
+        "actual_second_pass": true
+      }
+    }
+  ]
+}

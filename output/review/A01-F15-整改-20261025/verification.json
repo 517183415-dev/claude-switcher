@@ -1,0 +1,34 @@
+{
+  "unit": "A01",
+  "finding": "F15",
+  "status": "ACCEPTED_LOCAL_ISOLATED",
+  "changed_files": [
+    "apps/desktop/src-tauri/src/publisher_commands.rs",
+    "apps/desktop/src-tauri/src/publisher/tests.rs",
+    "apps/desktop/src/pages/Operations.svelte",
+    "apps/desktop/tests/publisher-limits.test.mjs"
+  ],
+  "source_sha256": {
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "40946ebe38223275dd4799a4f216b22b0e84d45c7b4bd5bbf4dde5d6ac8692b0",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "67ca13a152abcdb5a46a64d041fb8b94307d91c246098fa0eeab11f747f8cc2d",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "d4ff8bb7f1c2fbb3f0c0195daacda1ab5359cd795ba6545ab5134ba349834ebe",
+    "apps/desktop/src/pages/Operations.svelte": "75399b751448be483e876acc817d66c7d7fb37e529042fa1b163cf9861daf87b",
+    "apps/desktop/tests/publisher-limits.test.mjs": "f3c1c3882c7fa814fc7efe698f33f16c6d7a0f102e793cd2b7727847c167f663"
+  },
+  "accepted_sources": "accepted-sources/",
+  "methods": {
+    "new_rust": 4,
+    "UI": 5,
+    "existing_backup": 1,
+    "distinct": 10
+  },
+  "root_UI_repeat": "ui-root-verify.json",
+  "review": "local-review.md",
+  "backup_format_KDF": "unchanged",
+  "real_IPC": "NOT_RUN",
+  "WebView_large_payload": "NOT_RUN",
+  "Keychain": "NOT_RUN",
+  "installation": "NOT_RUN",
+  "historical_formatter_environment_note": "fmt-initial-no-home-override.json"
+}

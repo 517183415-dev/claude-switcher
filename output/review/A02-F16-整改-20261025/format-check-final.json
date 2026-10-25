@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--check",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "apps/desktop/src-tauri/src/publisher/mod.rs",
+    "apps/desktop/src-tauri/src/publisher/tests.rs"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}

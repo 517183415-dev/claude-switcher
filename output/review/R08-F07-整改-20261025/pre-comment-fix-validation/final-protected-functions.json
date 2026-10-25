@@ -1,0 +1,152 @@
+{
+  "recheck_uninstall": {
+    "ast_sha256": "0186ed11f0a3a17bd48189bcc1212873a5cd5cbd47555cdf31df490ecb9158e4",
+    "source_sha256": "c7101b7348bbb1fccfa0ba4cd7cdd3925e26353d20402d2460c56acd7954379e",
+    "unchanged": true
+  },
+  "check_uninstall_backups": {
+    "ast_sha256": "527de5810b5cb38595a7531e520a325f8c929d2d937cf1dcd702be53601b60d2",
+    "source_sha256": "f98daf3b91b126b4dcb2661d7557bd910dd68514d2fe874a123e3d3d3a202c65",
+    "unchanged": true
+  },
+  "check_uninstall_holdings": {
+    "ast_sha256": "97af866d2d8fe26da551ce8a2862683a8f0bb75ea320b99642b54f911e050f7c",
+    "source_sha256": "7cdadd35d91d804bc52d6dd6a24f61524278caae4c2b95b26ecb5cc2e082c0fd",
+    "unchanged": true
+  },
+  "check_uninstall_recovery": {
+    "ast_sha256": "04df44c9f40ef25d4261ad15ee566bf5a678bc6f769dd5a65fdfa3584b5b819f",
+    "source_sha256": "376d684d703e8b07bc2ab914f3b970352120c5f2844497a83b84257ebec984a9",
+    "unchanged": true
+  },
+  "record_uninstall_prepared": {
+    "ast_sha256": "ec4b5fa15cdd5dfefad95ffb7abf38c8744e727cb5edc31f1aa03c2a50f155cd",
+    "source_sha256": "8a5ed5db78534f270a9c4021f67f815fee0178d2866242d0bf8946fe6e743aa5",
+    "unchanged": true
+  },
+  "restore_uninstall_file": {
+    "ast_sha256": "7c3c21431a2d4a11dfd3000b203d3186a25becae9016705e4acba3f0b9fee5ae",
+    "source_sha256": "9e94b63161d0eab6d87056066500c13b4278a279cb3ef389980f96e890a6ee8e",
+    "unchanged": true
+  },
+  "verify_uninstall_restored": {
+    "ast_sha256": "1d8829323a3d3a0268123aadd62a1b9aea8ff0f504a2c768558a0f6f2f2ed49c",
+    "source_sha256": "9ede0cf3093fb45192129e4e71a663f76513426cdbdfc89469f8abcd363ab485",
+    "unchanged": true
+  },
+  "plan_uninstall": {
+    "ast_sha256": "13e831e2c4311d1514b48a394ba8f7089a75d3b0166ff933ecb5bf45cd1bf0a1",
+    "source_sha256": "3053af3a0669244792ba664d9ba7e2f425ffa035940dfa4c31d6c9e02f37df87",
+    "unchanged": true
+  },
+  "watchdog_script": {
+    "ast_sha256": "a2caf1059b7531ebe9809e07052b91fafddbd5b498c4e7f36d03336beaec39ae",
+    "source_sha256": "15b47db7a34060adaaae791e43c5f05569f2f2997ed069842d651af90827c54f",
+    "unchanged": true
+  },
+  "watchdog_payload": {
+    "ast_sha256": "3c694bf89c4434c9ecd7d4d2a2810225412ab71e2c4b7cafa323ec45993b6665",
+    "source_sha256": "446dad5925ce1e226a629aef301c9cf1fb8b560f0ee305bce1fe2507625738cb",
+    "unchanged": true
+  },
+  "root_service_spec": {
+    "ast_sha256": "b4181859b73043fc1f48d124db13ac71b607ae5a70bb5b8f08ceafacb9da927c",
+    "source_sha256": "d64af6cf4f247c3213dd10913462596da6cb09ff486ce78294e33497a8d69cee",
+    "unchanged": true
+  },
+  "watchdog_backup": {
+    "ast_sha256": "42a7315f8cc5ca373405059ac6b66c33255f7f81a6b6188ae621870257d31442",
+    "source_sha256": "c1f479abce640b2c9e6b00a5c548382785192f7113a835474adcc8752c665130",
+    "unchanged": true
+  },
+  "root_service_ownership": {
+    "ast_sha256": "dfcf20c96192d378f3b74c3a1f1668fff0d66bbd6c09b98ba528100e5be49c84",
+    "source_sha256": "c816c2c3b1471cc0c0e6eaef7c0e3ce46753ed79e13963d6de5251a385db4c53",
+    "unchanged": true
+  },
+  "pending_service_ownership": {
+    "ast_sha256": "537720449b2aa1c2e729817a30641e6e53f85abdf2c1d558f73fc92adc674c0e",
+    "source_sha256": "ff4761b532aed1885428fc8a4d8783183d42df4f27ed3ac973f9910881554389",
+    "unchanged": true
+  },
+  "watchdog_install": {
+    "ast_sha256": "1dad440aad4fd70e3e3c670bb5ec0deefae4c9578a2f98ddbb0a0f56f9b01918",
+    "source_sha256": "9e24d5b2d998c0bcba70ba630a43141abfb41fc42394711e81fcd183249b806f",
+    "unchanged": true
+  },
+  "watchdog_verify": {
+    "ast_sha256": "89a32026555d1f6b3020e8c1e7688273e2a817a5451bd45ac7bc987768e1fa5f",
+    "source_sha256": "0f212c433700e72ce7bfc46432a75611cffa2d958d31630ea74693200421a68c",
+    "unchanged": true
+  },
+  "watchdog_restore": {
+    "ast_sha256": "1d4cd2589776c7e3a674df3c6d3f91a4a8db93353c77d5e906567557816e7b3a",
+    "source_sha256": "a954de3b17125d15723d9e49b161843988ec9328677cda54e2fcbb778563ab7c",
+    "unchanged": true
+  },
+  "cli_contract": {
+    "ast_sha256": "d1737cc6e5881b6159b4bc0f16f80292d34cbb0c638016523c1bf7c992f87d72",
+    "source_sha256": "75c650e1660f4d1fd5f3bdab56b29b68f638eae7df1f1674010ce1863a9ec4ba",
+    "unchanged": true
+  },
+  "cli_shim": {
+    "ast_sha256": "0a939737e7879355503a8e31f999efe8ea7318fd7ddb5425cad711a47fef0af2",
+    "source_sha256": "e19089fdb5d66943dfaa4ca57b18ccdc3630632067fe7df171c9005e74d143c5",
+    "unchanged": true
+  },
+  "installed_cli_plan": {
+    "ast_sha256": "a5ff29d59902f452c52614d7ff8befdb782be23f94a742b9c8999fa55de9ad7f",
+    "source_sha256": "6fecc529804a224ef5767d22619dc6638c9f26c63e10442f61c2acf4c7fd28e8",
+    "unchanged": true
+  },
+  "cli_verify": {
+    "ast_sha256": "0d7b1334cc79d0764dd0279ded84be09a3fd45128c164f89a4b3a037828ae30d",
+    "source_sha256": "7d2c2b4daaec1fdb02d25f56727a48c8cddf8c85a3ad780b24132ce241f6f04c",
+    "unchanged": true
+  },
+  "cli_restore": {
+    "ast_sha256": "15c7ced5311be45121f8806ecb996d4e34bd440e74e92cbecf64b0c3115651cb",
+    "source_sha256": "08a9a39a903d2c3fb3bd9db358f2566f98926613688fe4a1a96711ccc946b2ee",
+    "unchanged": true
+  },
+  "cli_install": {
+    "ast_sha256": "1d29ba96226475fc192b87379eada8bacf544d38cfd6020bb495cfd95527b500",
+    "source_sha256": "9b23cb03b546d928ccebd1e20a5116d90beb731df9ad79e9d62b595243095db4",
+    "unchanged": true
+  },
+  "write_owner_cli": {
+    "ast_sha256": "0b7848e8497b337f6efef7914e6c401d4d763c8baf570912aa2b12abfa9c63da",
+    "source_sha256": "1cdeeed9c674ee40e12b172d38e0816f8008635e9934d3106902cca4cb61778a",
+    "unchanged": true
+  },
+  "finish": {
+    "ast_sha256": "6f719686e908b869f901e8f4b249618fc67040408679cbcff51bca19d90e13fb",
+    "source_sha256": "306fb95752bcc727adaa46ee32e1af42fa0a717b09023fb84c12b7b4c77fcbc5",
+    "unchanged": true
+  },
+  "resume_terminal": {
+    "ast_sha256": "3fe060867e716fa19df25dd8aba6fc73b1c8affba5ca0f99eb171da2b2949cbd",
+    "source_sha256": "eebb1c59d0e79b4b69ee25f561ed7e609c0b4938bc6518579f431a9f719716cd",
+    "unchanged": true
+  },
+  "transact": {
+    "ast_sha256": "3f3e9cdf21d27be410632774c0d154e7980a7543d36824e7f2d6f49d6816b4c7",
+    "source_sha256": "295d16ce9503e0a257a0762bc6157eab9105b12e570bbaff7eb85164ea20efa5",
+    "unchanged": true
+  },
+  "recover": {
+    "ast_sha256": "56bc61415fc9b75907fddd73645bce55c47d8b319e8b55e212f59aa00be882c0",
+    "source_sha256": "6b78432edf0ee3765a4f61a2c41ea7a47e1eb36495e4a8b004590344eb89060c",
+    "unchanged": true
+  },
+  "finalize": {
+    "ast_sha256": "827b9f34e0751bcea4cd9a3d13420d22f77b3064c652fcd363dc538dde3b8708",
+    "source_sha256": "dd1fe2e8181e86458ba622ee53a4fe04358f9ba543e7de28c1173914c4098d6f",
+    "unchanged": true
+  },
+  "launch_health": {
+    "ast_sha256": "759a317693b7b3622c7c10151b45c74e67ec80ea84e0e167f03b713d85d6ef03",
+    "source_sha256": "7ffa7ca53b22af0f62afbfca27679d2bc2dd0f501fc71a0e89d97f9da7e35ae0",
+    "unchanged": true
+  }
+}

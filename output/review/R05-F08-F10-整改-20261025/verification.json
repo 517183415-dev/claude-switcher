@@ -1,0 +1,540 @@
+{
+  "task_id": "c2c_824e",
+  "iteration": 1,
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "scope": [
+    "crates/switcher-core/src/macos.rs",
+    "crates/switcher-core/src/pinned_routes.rs"
+  ],
+  "source_sha256": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+    "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+  },
+  "accepted_R01_R02_R03_R04_unchanged": true,
+  "changed_files": [
+    "crates/switcher-core/src/accounts.rs",
+    "crates/switcher-core/src/accounts/legacy.rs",
+    "crates/switcher-core/src/guardian_repair.rs",
+    "crates/switcher-core/src/macos.rs",
+    "crates/switcher-core/src/migration.rs",
+    "crates/switcher-core/src/pinned_routes.rs",
+    "crates/switcher-core/src/proxy_repair.rs",
+    "crates/switcher-core/src/regions/legacy.rs",
+    "crates/switcher-core/src/user_repairs.rs",
+    "packaging/macos/local_install.py",
+    "packaging/macos/test_local_install.py"
+  ],
+  "red": {
+    "f08": {
+      "passed": 3,
+      "failed": 1,
+      "receipt": "f08-red-receipt.json",
+      "valid_failure": "2.5s synthetic DNS answer killed by 2s observation deadline"
+    },
+    "f10": {
+      "passed": 0,
+      "failed": 7,
+      "receipt": "f10-red-manifest.json"
+    },
+    "excluded_NOT_RED": [
+      "scaffold compile failure",
+      "fixture filename collision",
+      "F10 compile failure from concurrently edited F08 source"
+    ]
+  },
+  "green": {
+    "unique_module_methods": 67,
+    "nonoverlap_modules": {
+      "macos": 11,
+      "user_repairs": 41,
+      "regions_legacy": 15
+    },
+    "overlap_included": {
+      "f08": 4,
+      "f10": 7,
+      "pinned_routes": 9
+    },
+    "f08_real_child_cases": 10,
+    "f10_actual_cases": 44,
+    "f10_accept": 13,
+    "f10_reject_no_output": 31,
+    "checks": [
+      {
+        "name": "f08",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "f08_",
+          "--",
+          "--nocapture"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib f08_ -- --nocapture",
+        "exit_code": 0,
+        "seconds": 8.36,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-f08.log",
+        "matched_tests": 4,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "f10",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "f10_",
+          "--",
+          "--nocapture"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib f10_ -- --nocapture",
+        "exit_code": 0,
+        "seconds": 0.134,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-f10.log",
+        "matched_tests": 7,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "macos",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "macos::"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib macos::",
+        "exit_code": 0,
+        "seconds": 8.153,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-macos.log",
+        "matched_tests": 11,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "pinned-routes",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "pinned_routes::"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib pinned_routes::",
+        "exit_code": 0,
+        "seconds": 0.129,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-pinned-routes.log",
+        "matched_tests": 9,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "user-repairs",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "user_repairs::"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib user_repairs::",
+        "exit_code": 0,
+        "seconds": 4.563,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-user-repairs.log",
+        "matched_tests": 41,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "legacy-regions",
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "regions::legacy::"
+        ],
+        "command_display": "cargo test --offline --locked -p switcher-core --lib regions::legacy::",
+        "exit_code": 0,
+        "seconds": 0.227,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-legacy-regions.log",
+        "matched_tests": 15,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "--tests",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "command_display": "cargo clippy --offline --locked -p switcher-core --lib --tests -- -D warnings",
+        "exit_code": 0,
+        "seconds": 2.218,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-clippy.log",
+        "matched_tests": null,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "rustfmt",
+        "command": [
+          "rustfmt",
+          "--check",
+          "--edition",
+          "2024",
+          "crates/switcher-core/src/macos.rs",
+          "crates/switcher-core/src/pinned_routes.rs"
+        ],
+        "command_display": "rustfmt --check --edition 2024 crates/switcher-core/src/macos.rs crates/switcher-core/src/pinned_routes.rs",
+        "exit_code": 0,
+        "seconds": 0.037,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-rustfmt.log",
+        "matched_tests": null,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "command_display": "git diff --check",
+        "exit_code": 0,
+        "seconds": 0.011,
+        "log": "output/review/R05-F08-F10-整改-20261025/final-diff-check.log",
+        "matched_tests": null,
+        "source_hashes_before": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "source_hashes_after": {
+          "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+          "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+          "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+          "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+          "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+          "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+          "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+          "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+          "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+          "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+          "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87"
+        },
+        "unchanged": true,
+        "accepted_sources_unchanged": true
+      }
+    ]
+  },
+  "independent_yaml": {
+    "pyyaml": {
+      "pass": 42,
+      "fail": 2,
+      "exit_code": 1,
+      "report": "yaml-parser-report.json"
+    },
+    "psych": {
+      "tab_cases": 2,
+      "raw_and_output_parse_pass": 4,
+      "exit_code": 0,
+      "report": "yaml-parser-psych-report.json"
+    },
+    "all_13_accepted_have_independent_validation": true,
+    "actual_fixtures_sha256": "4e7691d34b4568f5562b878f224b8557f942fb80a01229a9c2ac0e1b17d84890",
+    "notes": "yaml-parser-notes.md",
+    "spec": "yaml-spec核对.md",
+    "source_url": "https://yaml.org/spec/1.2.2/"
+  },
+  "review": {
+    "independent_read_only": "no actionable blockers",
+    "ChatGPT": {
+      "state": "DONE",
+      "verdict": "ACCEPTED",
+      "remaining_R05_work": "NONE",
+      "file": "chatgpt-review-iteration1.txt",
+      "reviewed_outputs": [
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ]
+    }
+  },
+  "limitations": {
+    "product_and_dependency_installs": "NOT_RUN",
+    "real_accounts": "NOT_RUN",
+    "real_dns_network_proxy": "NOT_RUN",
+    "real_apps_services_settings": "NOT_RUN",
+    "actual_clash_yaml_load": "NOT_RUN",
+    "absolute_wall_clock_bound_including_kill_wait": "NOT_CLAIMED",
+    "long_duration": "WAIT",
+    "push_merge": "NOT_RUN"
+  }
+}

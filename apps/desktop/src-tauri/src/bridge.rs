@@ -245,25 +245,10 @@ impl DesktopState {
         ))
     }
     pub fn create_migration_backup(&self) -> OperationOutcome {
-        let coordinator =
-            match switcher_core::migration::MigrationCoordinator::for_current_user(self.edition) {
-                Ok(value) => value,
-                Err(_) => {
-                    return waiting(
-                        "无法确认本机迁移上下文",
-                        "核对系统用户目录后重新预览准备状态",
-                    );
-                }
-            };
-        match coordinator.create_verified_backup() {
-            Ok(()) => completed(
-                "本机迁移备份与隔离恢复已验证；账号操作仍需完整准备门禁和 Keychain 依赖验收",
-            ),
-            Err(error) => waiting(
-                diagnostics::redact(&error.to_string()),
-                "保留现有资料，先处理安装、Claude 进程或待恢复事务，再重新预览准备状态",
-            ),
-        }
+        waiting(
+            "旧版账号切换会自动存档，无需迁移备份或隔离恢复步骤",
+            "此接口仅保留兼容；请使用账号选择。启动前仍需通过环境检查。",
+        )
     }
     pub fn account_action(&self, action: AccountAction) -> OperationOutcome {
         let coordinator =
@@ -576,16 +561,42 @@ pub fn open_date_settings() -> OperationOutcome {
     }
 }
 
+#[cfg(test)]
+mod migration_compatibility_tests {
+    use super::*;
+
+    #[test]
+    fn unsupported_backup_returns_without_opening_workspace() {
+        for edition in [Edition::Personal, Edition::Public] {
+            let state = DesktopState {
+                root: PathBuf::from("/synthetic/unopened-workspace"),
+                edition,
+                sessions: CheckSessions::default(),
+                repair_plan: Mutex::new(RepairPlanState::default()),
+            };
+            let outcome = state.create_migration_backup();
+            assert!(!outcome.completed);
+            assert!(outcome.message.contains("无需迁移备份"));
+            let guidance = outcome.recovery.unwrap();
+            assert!(guidance.contains("仅保留兼容"));
+            assert!(guidance.contains("账号选择"));
+            assert!(guidance.contains("环境检查"));
+        }
+    }
+}
+
 /// Project only fixed readiness blockers. Never expose Keychain metadata or selectors.
 pub fn account_preparation_view(
     readiness: switcher_core::migration::MigrationReadiness,
 ) -> AccountPreparation {
     use switcher_core::migration::DependencyAssessment;
     let mut blockers = preparation_blockers(readiness.blockers);
-    if readiness.keychain.dependency_assessment != DependencyAssessment::HandlingPlanAvailable
-        && !blockers
-            .iter()
-            .any(|item| item.code == "keychain_dependencies_unresolved")
+    if !matches!(
+        readiness.keychain.dependency_assessment,
+        DependencyAssessment::HandlingPlanAvailable | DependencyAssessment::VerifiedPreserved
+    ) && !blockers
+        .iter()
+        .any(|item| item.code == "keychain_dependencies_unresolved")
     {
         blockers.push(PreparationBlocker {
             code: "keychain_dependencies_unresolved".into(),
@@ -594,19 +605,9 @@ pub fn account_preparation_view(
                 .into(),
         });
     }
-    let backup_allowed = blockers.iter().all(|item| {
-        matches!(
-            item.code.as_str(),
-            "backup_missing"
-                | "backup_stale_or_unverified"
-                | "backup_receipt_invalid"
-                | "backup_waits_installation"
-                | "keychain_dependencies_unresolved"
-        )
-    });
     AccountPreparation {
         ready: readiness.ready && blockers.is_empty(),
-        backup_allowed,
+        backup_allowed: false,
         blockers,
         in_place_action: None,
         in_place_ready: false,

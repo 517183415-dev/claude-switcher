@@ -1,0 +1,10 @@
+
+running 5 tests
+test installation_health::tests::pending_exception_excludes_every_ordinary_root_action ... ok
+test installation_health::tests::tracker_binds_full_record_nonce_expiry_and_challenge_key ... ok
+test installation_health::tests::session_role_proofs_require_both_real_roles_and_guardian_loop_before_receipt ... ok
+test installation_health::tests::safe_challenge_io_rejects_wrong_mode_links_fifo_and_unknown_fields ... ok
+test installation_health::tests::receipt_atomic_write_keeps_private_file_and_complete_challenge ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 66 filtered out; finished in 0.01s
+

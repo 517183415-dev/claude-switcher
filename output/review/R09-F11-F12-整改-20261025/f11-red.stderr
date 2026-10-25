@@ -1,0 +1,50 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.25s
+     Running unittests src/lib.rs (target/debug/deps/switcher_helper-1b8e376566b84708)
+
+thread 'platform::f11_test_io::f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes' (27672753) panicked at crates/switcher-helper/src/platform.rs:1163:17:
+assertion `left == right` failed: Journal regular
+  left: Err("repair_journal_create")
+ right: Ok(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'platform::f11_test_io::f11_component_retries_after_each_interrupted_write' (27672749) panicked at crates/switcher-helper/src/platform.rs:1126:21:
+synthetic interruption created
+
+thread 'platform::f11_test_io::f11_journal_retries_after_each_interrupted_write' (27672751) panicked at crates/switcher-helper/src/platform.rs:1126:21:
+synthetic interruption created
+
+thread 'platform::f11_test_io::f11_managed_retries_after_each_interrupted_write' (27672752) panicked at crates/switcher-helper/src/platform.rs:1126:21:
+synthetic interruption created
+
+thread 'platform::f11_test_io::f11_journal_retries_after_each_interrupted_write' (27672751) panicked at crates/switcher-helper/src/platform.rs:1135:13:
+assertion `left == right` failed: Journal created
+  left: Err("repair_journal_create")
+ right: Ok(())
+
+thread 'platform::f11_test_io::f11_component_retries_after_each_interrupted_write' (27672749) panicked at crates/switcher-helper/src/platform.rs:1135:13:
+assertion `left == right` failed: Component created
+  left: Err("installation_commit_create")
+ right: Ok(())
+
+thread 'platform::f11_test_io::f11_managed_retries_after_each_interrupted_write' (27672752) panicked at crates/switcher-helper/src/platform.rs:1135:13:
+assertion `left == right` failed: Managed created
+  left: Err("system_backup_create")
+ right: Ok(())
+
+thread 'platform::f11_test_io::f11_replaced_temp_is_neither_published_nor_removed' (27672754) panicked at crates/switcher-helper/src/platform.rs:1184:25:
+Journal false
+
+thread 'platform::f11_test_io::f11_existing_and_racing_final_journals_are_never_overwritten' (27672750) panicked at crates/switcher-helper/src/platform.rs:1207:105:
+file race
+error: test failed, to rerun pass `-p switcher-helper --lib`

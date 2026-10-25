@@ -1,0 +1,21 @@
+
+running 6 tests
+test platform::f11_test_io::f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes ... FAILED
+test platform::f11_test_io::f11_journal_retries_after_each_interrupted_write ... FAILED
+test platform::f11_test_io::f11_component_retries_after_each_interrupted_write ... FAILED
+test platform::f11_test_io::f11_managed_retries_after_each_interrupted_write ... FAILED
+test platform::f11_test_io::f11_replaced_temp_is_neither_published_nor_removed ... FAILED
+test platform::f11_test_io::f11_existing_and_racing_final_journals_are_never_overwritten ... FAILED
+
+failures:
+
+failures:
+    platform::f11_test_io::f11_component_retries_after_each_interrupted_write
+    platform::f11_test_io::f11_existing_and_racing_final_journals_are_never_overwritten
+    platform::f11_test_io::f11_journal_retries_after_each_interrupted_write
+    platform::f11_test_io::f11_managed_retries_after_each_interrupted_write
+    platform::f11_test_io::f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes
+    platform::f11_test_io::f11_replaced_temp_is_neither_published_nor_removed
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 56 filtered out; finished in 0.03s
+

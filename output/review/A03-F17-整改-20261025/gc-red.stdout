@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::cleanup_tests::f17_gc_second_confirmation_reclaims_verified_candidate ... FAILED
+
+failures:
+
+failures:
+    publisher::cleanup_tests::f17_gc_second_confirmation_reclaims_verified_candidate
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 71 filtered out; finished in 0.08s
+

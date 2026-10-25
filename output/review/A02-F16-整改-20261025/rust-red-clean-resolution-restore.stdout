@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::tests::f16_clean_publisher_restores_resolution_using_authenticated_backup_key ... FAILED
+
+failures:
+
+failures:
+    publisher::tests::f16_clean_publisher_restores_resolution_using_authenticated_backup_key
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 60 filtered out; finished in 13.88s
+

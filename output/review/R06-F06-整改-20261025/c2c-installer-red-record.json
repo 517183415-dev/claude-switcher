@@ -1,0 +1,32 @@
+{
+  "args": [
+    "node",
+    "/Users/gua/codex-with-chatgpt/bin/c2c.js",
+    "record",
+    "-w",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher",
+    "--task",
+    "c2c_87c3",
+    "--iteration",
+    "2",
+    "--changed-files",
+    "packaging/macos/test_local_install.py",
+    "--tests",
+    "R06 installer behavior RED: six methods; 54 assertion failures and four valid-v2 rejection errors; old production baseline unchanged",
+    "--exit-status",
+    "failed",
+    "--executor",
+    "codex",
+    "--command",
+    "/opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f06 -v",
+    "--output-file",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R06-F06-整改-20261025/installer-red.log",
+    "--exit-code",
+    "1",
+    "--notes",
+    "Behavior RED before production patch. Valid v2 shims rejected by historical renderer; fake executable argv lacked --legacy-cli. stdout/stderr/exit passthrough itself succeeded. Source snapshot/hashes in installer-red artifacts."
+  ],
+  "exit": 0,
+  "stdout": "✓ 已记录执行摘要与输出\n",
+  "stderr": ""
+}

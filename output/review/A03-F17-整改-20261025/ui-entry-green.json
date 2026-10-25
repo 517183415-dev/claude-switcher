@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "--test",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-ui-wjr7hi1p/app/tests/publisher-maintenance.test.mjs"
+  ],
+  "exit": 0,
+  "seconds": 0.7101388749433681,
+  "source_before": {
+    "apps/desktop/src/pages/Operations.svelte": "fc9e9e97ae1a2eeddb2404a2c110dcb353b5696740599f47c5797a4e85c28d71",
+    "apps/desktop/tests/publisher-maintenance.test.mjs": "da37c6922dd0fcf2609845f37024da3d0716766433fa69836a9c56e47f04bbba",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "f9e6ed548e36bebce6d50e1fd31e7d72d2fd5a2bae9349edafeaf2d68cf1cbb9"
+  },
+  "source_after": {
+    "apps/desktop/src/pages/Operations.svelte": "fc9e9e97ae1a2eeddb2404a2c110dcb353b5696740599f47c5797a4e85c28d71",
+    "apps/desktop/tests/publisher-maintenance.test.mjs": "da37c6922dd0fcf2609845f37024da3d0716766433fa69836a9c56e47f04bbba",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "f9e6ed548e36bebce6d50e1fd31e7d72d2fd5a2bae9349edafeaf2d68cf1cbb9"
+  },
+  "source_frozen": true,
+  "cache": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules",
+  "native_ipc": "NOT_RUN"
+}

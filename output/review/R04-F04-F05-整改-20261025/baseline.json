@@ -1,0 +1,23 @@
+{
+  "task_id": "c2c_ad0b",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "scope": [
+    "crates/switcher-core/src/user_repairs.rs",
+    "crates/switcher-core/src/regions/legacy.rs",
+    "crates/switcher-core/src/proxy_repair.rs"
+  ],
+  "source_sha256": {
+    "crates/switcher-core/src/user_repairs.rs": "8147de4080e76712d9a30badb25a4ef4693ce0ce12a379362e8cb91e74014095",
+    "crates/switcher-core/src/regions/legacy.rs": "9c21ebbb90b9ebd4e0d8860ad3fab2365719ab4acc03b4494f9c39d5c6684995",
+    "crates/switcher-core/src/proxy_repair.rs": "d31d5151fa72bc1e7dd26ecf9b0f7c63fde1c88fc297af08fceae23716689e2d"
+  },
+  "accepted_R01_R02_R03_source_sha256": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+    "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f"
+  },
+  "git_status": " M crates/switcher-core/src/accounts.rs\n M crates/switcher-core/src/accounts/legacy.rs\n M crates/switcher-core/src/guardian_repair.rs\n M crates/switcher-core/src/migration.rs\n M packaging/macos/local_install.py\n M packaging/macos/test_local_install.py\n?? .codegraph/\n?? output/\n"
+}

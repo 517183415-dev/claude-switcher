@@ -28,8 +28,14 @@ class LocalInstallTests(unittest.TestCase):
                           DAEMON=self.root/'daemon', AGENT=self.root/'agent', RECORD=self.system/'install.json',
                           JOURNAL=self.system/'journal.json', BARRIER=self.system/'barrier',
                           CHALLENGE=self.system/'challenge.json',RECEIPT=self.system/'receipt.json',
-                          LAST_RESULT=self.system/'last-result.json')
+                          LAST_RESULT=self.system/'last-result.json',
+                          WATCHDOG_PLIST=self.root/'watchdog.plist',
+                          BODYGUARD_PLIST=self.root/'bodyguard.plist')
+        from types import SimpleNamespace
+        account=m.pwd.getpwuid(os.geteuid())
         self.patches = [patch.object(m,k,v) for k,v in self.names.items()]
+        self.patches += [patch.object(m.pwd,'getpwuid',return_value=SimpleNamespace(
+            pw_dir=str(self.root/'default-owner-home'),pw_name=account.pw_name,pw_gid=account.pw_gid))]
         self.patches += [patch.object(m,'app',return_value=self.root/'Application.app'),
                          patch.object(m,'safe_parents'), patch.object(m,'legacy_snapshot',return_value=[]),
                          patch.object(m,'stopped'), patch.object(m,'service'),
@@ -37,7 +43,13 @@ class LocalInstallTests(unittest.TestCase):
                          patch.object(m,'load_journal',side_effect=lambda:json.loads(m.JOURNAL.read_text())),
                          patch.object(m,'private_json',side_effect=lambda path,mode:json.loads(path.read_text())),
                          patch.object(m,'identity',return_value='a'*40),
-                         patch.object(m,'run',return_value=type('Result',(),{'stdout':'11111111-1111-1111-1111-111111111111','returncode':1})())]
+                         patch.object(m,'run',return_value=type('Result',(),{'stdout':'11111111-1111-1111-1111-111111111111','stderr':'Could not find service fixture','returncode':113})())]
+        real_popen = m.subprocess.Popen
+        def guarded_popen(command, *args, **kwargs):
+            if command[0] == '/bin/launchctl':
+                return SimpleNamespace(pid=12345)
+            return real_popen(command, *args, **kwargs)
+        self.patches.append(patch.object(m.subprocess, 'Popen', side_effect=guarded_popen))
         for p in self.patches: p.start()
         self.source = self.root/'payload'; self.source.write_text('new')
         self.templates = self.root/'templates'; self.templates.mkdir()
@@ -62,6 +74,328 @@ class LocalInstallTests(unittest.TestCase):
         # Fixtures are deliberately owned by the test user, not root.
         with patch.object(m,'load_journal',side_effect=lambda:json.loads(m.JOURNAL.read_text())):
             return m.recover(501)
+
+    def f07_discovery(self, groups=None, shadowrocket=False):
+        from types import SimpleNamespace
+        path, source = self.fresh_plan_fixture()
+        if groups is not None:
+            directory = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev'
+            directory.mkdir(parents=True)
+            (directory/'clash-verge.yaml').write_text('proxy-groups:\n'+''.join(
+                '  - name: "'+group+'"\n    type: select\n' for group in groups))
+        def fake_run(*args, **kwargs):
+            output = '11111111-1111-1111-1111-111111111111'
+            if args[0] == '/usr/bin/curl':
+                output = 'loc=JP\n' if 'cloudflare' in args[-1] else '{"country":"JP","timezone":"Asia/Tokyo"}'
+            if args[0] == '/usr/sbin/scutil':
+                output = 'com.liguangming.Shadowrocket' if shadowrocket else 'no VPN registrations'
+            return SimpleNamespace(returncode=0, stdout=output, stderr='')
+        return path, source, fake_run
+
+    def f07_reject_selection_before_mutation(self, groups, yaml_text=None):
+        from contextlib import nullcontext, redirect_stdout
+        from io import StringIO
+        path, source, fake_run = self.f07_discovery(groups)
+        if yaml_text is not None:
+            config = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml'
+            config.write_text(yaml_text)
+        before = {str(p.relative_to(self.root)): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        failure = None
+        with patch.object(m, 'run', side_effect=fake_run), \
+             patch.object(m, 'console_owner', return_value=501), \
+             patch.object(m.os, 'geteuid', return_value=0), \
+             patch.object(m, 'locks', side_effect=lambda *a: nullcontext()) as locks, \
+             patch.object(m, 'stopped') as stopped, patch.object(m, 'transact') as transact, \
+             patch.object(m, 'finalize', return_value={'status':'committed'}), \
+             patch('sys.argv', ['local_install.py', 'install', '--app', str(source)]), \
+             redirect_stdout(StringIO()):
+            try:
+                m.main()
+            except ValueError as error:
+                failure = str(error)
+        print('F07 selection receipt', dict(groups=groups, error=failure,
+              locks=locks.call_count, stopped=stopped.call_count, transact=transact.call_count))
+        self.assertIsNotNone(failure, 'ambiguous discovery silently accepted without explicit selection')
+        self.assertIn('selection required', failure)
+        locks.assert_not_called(); stopped.assert_not_called(); transact.assert_not_called()
+        self.assertEqual(before, {str(p.relative_to(self.root)): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
+
+    def test_f07_multiple_groups_require_selection_before_mutation(self):
+        self.f07_reject_selection_before_mutation(['First', 'Second'])
+
+    def test_f07_unknown_client_requires_selection_before_mutation(self):
+        self.f07_reject_selection_before_mutation(None)
+
+    def f07_main_handoff(self, operation='install', spawn_failure=False):
+        from contextlib import contextmanager, redirect_stdout
+        from io import StringIO
+        from types import SimpleNamespace
+        path, source, fake_run = self.f07_discovery(None, shadowrocket=True)
+        events = []; committed_files = {}
+        @contextmanager
+        def locked(*args):
+            events.append('lock enter')
+            try: yield
+            finally: events.append('lock exit')
+        def spawn(*args, **kwargs):
+            events.append('normal GUI launch')
+            if spawn_failure: raise OSError('synthetic GUI spawn failure')
+            return SimpleNamespace(pid=12345)
+        real_finalize = m.finalize
+        def finalized(*args, **kwargs):
+            result = real_finalize(*args, **kwargs)
+            events.append('component committed')
+            committed_files.update({p:p.read_bytes() for p in self.system.rglob('*') if p.is_file()})
+            return result
+        (source/'Contents/Info.plist').write_bytes(m.plistlib.dumps(dict(
+            CFBundleShortVersionString='0.2.0', CFBundleExecutable='fixture-gui')))
+        output = StringIO()
+        with patch.object(m, 'run', side_effect=fake_run), \
+             patch.object(m, 'console_owner', return_value=501), \
+             patch.object(m.os, 'geteuid', return_value=0), \
+             patch.object(m.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(path.parents[2]), pw_gid=502)), \
+             patch.object(m, 'locks', side_effect=locked), \
+             patch.object(m, 'watchdog_verify'), patch.object(m, 'verify_processes', return_value=[]), \
+             patch.object(m, 'finalize', side_effect=finalized), patch.object(m, 'launch_health') as health, \
+             patch.object(m.subprocess, 'Popen', side_effect=spawn) as popen:
+            if operation in ('finalize', 'commit'):
+                # The explicit finalize CLI defaults to personal; the durable
+                # transaction belongs to public and must select that installed App.
+                planned = m.plan('public', source, 501)
+                m.transact(planned, m.digest(planned))
+                argv = ['local_install.py', operation]
+            else:
+                argv = ['local_install.py', operation, '--edition', 'public', '--app', str(source)]
+            with patch('sys.argv', argv), redirect_stdout(output):
+                m.main()
+        result = json.loads(output.getvalue())
+        print('F07 GUI receipt', dict(operation=operation, failed=spawn_failure, events=events,
+              status=result['status'], spawn_count=popen.call_count,
+              gui_launch=result.get('gui_launch'), environment=result.get('environment_status')))
+        self.assertEqual(result['status'], 'committed')
+        self.assertTrue((Path(result['backup'])/'result.json').exists())
+        self.assertEqual(committed_files, {p:p.read_bytes() for p in self.system.rglob('*') if p.is_file()})
+        health.assert_not_called()
+        if operation == 'commit':
+            popen.assert_not_called()
+            self.assertEqual(events, ['lock enter', 'component committed', 'lock exit'])
+            return
+        self.assertEqual(events, ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'])
+        self.assertEqual(popen.call_count, 1)
+        self.assertEqual(m.app.call_args.args, ('public',))
+        self.assertEqual(popen.call_args.args[0], [
+            '/bin/launchctl', 'asuser', '501', '/usr/bin/sudo', '-n', '-u', '#501', '-g', '#502', '--',
+            '/usr/bin/env', '-i', 'HOME='+str(path.parents[2]), 'PATH=/usr/bin:/bin:/usr/sbin:/sbin',
+            str(m.app('public')/'Contents/MacOS/fixture-gui')])
+        self.assertEqual(popen.call_args.kwargs, dict(stdin=m.subprocess.DEVNULL,
+            stdout=m.subprocess.DEVNULL, stderr=m.subprocess.DEVNULL,
+            env={'PATH':'/usr/bin:/bin:/usr/sbin:/sbin'}))
+        self.assertTrue(result['components_verified'])
+        self.assertFalse(result['environment_verified'])
+        self.assertEqual(result['environment_status'], 'NOT_RUN')
+        self.assertEqual(result['gui_launch'], 'failed' if spawn_failure else 'requested')
+        self.assertEqual(result['manual_open_required'], spawn_failure)
+
+    def test_f07_main_opens_normal_gui_after_component_commit_and_unlock(self):
+        self.f07_main_handoff()
+
+    def test_f07_main_replace_opens_normal_gui_once(self):
+        self.f07_main_handoff('replace')
+
+    def test_f07_main_finalize_uses_committed_public_edition(self):
+        self.f07_main_handoff('finalize')
+
+    def test_f07_main_commit_does_not_open_gui(self):
+        self.f07_main_handoff('commit')
+
+    def test_f07_main_spawn_failure_preserves_committed_archive(self):
+        self.f07_main_handoff(spawn_failure=True)
+
+    def test_f07_main_noncommitted_or_recovery_never_opens_gui(self):
+        from contextlib import nullcontext, redirect_stdout
+        from io import StringIO
+        cases = [('recover','restored'), ('recover','committed'), ('uninstall','uninstalled'),
+                 ('finalize','uninstalled'), ('finalize','restored'), ('finalize','backup_aborted')]
+        for operation, status in cases:
+            with self.subTest(operation=operation, status=status), \
+                 patch.object(m, 'console_owner', return_value=501), \
+                 patch.object(m.os, 'geteuid', return_value=0), \
+                 patch.object(m, 'locks', side_effect=lambda *a: nullcontext()), \
+                 patch.object(m, 'plan', return_value=dict(operation=operation, owner_uid=501)), \
+                 patch.object(m, 'transact'), patch.object(m, 'recover', return_value=dict(status=status)), \
+                 patch.object(m, 'finalize', return_value=dict(status=status)), \
+                 patch.object(m.subprocess, 'Popen') as popen, \
+                 patch('sys.argv', ['local_install.py', operation]), redirect_stdout(StringIO()) as output:
+                m.main()
+                self.assertEqual(json.loads(output.getvalue())['status'], status)
+                popen.assert_not_called()
+                print('F07 no GUI receipt', operation, status, file=__import__('sys').stderr)
+
+    def test_f07_invalid_cli_mode_fails_before_owner_lookup_or_mutation(self):
+        from contextlib import redirect_stderr
+        from io import StringIO
+        with patch.object(m,'console_owner') as owner, patch.object(m,'locks') as locks, \
+             patch.object(m,'stopped') as stopped, patch.object(m,'transact') as transact, \
+             patch('sys.argv',['local_install.py','install','--proxy-mode','invalid']), \
+             redirect_stderr(StringIO()), self.assertRaises(SystemExit) as failure:
+            m.main()
+        self.assertEqual(failure.exception.code,2)
+        owner.assert_not_called(); locks.assert_not_called(); stopped.assert_not_called(); transact.assert_not_called()
+
+    def test_f07_group_selection_matrix(self):
+        path, source, fake_run = self.f07_discovery([])
+        config = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml'
+        cases = [([],None,None), ([], '自选 组', '自选 组'), (['唯一 组'],None,'唯一 组'),
+                 (['First','第二 组'],None,None), (['First','第二 组'],'第二 组','第二 组'),
+                 (['First','Second'],'Missing',None), (['Only'],'Wrong',None)]
+        for groups, selected, expected in cases:
+            config.write_text('proxy-groups:\n'+''.join('  - name: "'+g+'"\n    type: select\n' for g in groups))
+            with self.subTest(groups=groups, selected=selected), patch.object(m, 'run', side_effect=fake_run):
+                if expected is None:
+                    with self.assertRaises(ValueError): m.plan('personal', source, 501, proxy_group=selected)
+                else:
+                    planned=m.plan('personal', source, 501, proxy_group=selected)
+                    self.assertEqual(planned['cli_entry']['install_literals']['PROXY_GROUP'], expected)
+            print('F07 group receipt', dict(groups=groups, selected=selected, accepted=expected is not None))
+        self.assertFalse(path.exists()); self.assertFalse(m.JOURNAL.exists())
+
+    def test_f07_type_comment_requires_choice_before_mutation(self):
+        self.f07_reject_selection_before_mutation(['First','Second'],
+            'proxy-groups:\n  - name: First\n    type: select\n'
+            '  - name: Second\n    type: select # 用户注释\n')
+
+    def test_f07_type_comment_scalar_matrix(self):
+        path, source, fake_run = self.f07_discovery([])
+        config = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml'
+        cases = [('select # 用户注释','\n',True), ("'select' # 注释",'\n',True),
+                 ('"select" # comment','\r\n',True), ('select#suffix','\n',False),
+                 ('url-test # select','\n',False)]
+        for scalar, ending, is_select in cases:
+            text='proxy-groups:\n  - name: First\n    type: select\n  - name: Second\n    type: '+scalar+'\n'
+            config.write_bytes(text.replace('\n',ending).encode())
+            with self.subTest(scalar=scalar, ending=repr(ending)), patch.object(m,'run',side_effect=fake_run):
+                if is_select:
+                    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+                        m.plan('personal',source,501)
+                    selected=m.plan('personal',source,501,proxy_group='Second')
+                    self.assertEqual(selected['cli_entry']['install_literals']['PROXY_GROUP'],'Second')
+                else:
+                    selected=m.plan('personal',source,501)
+                    self.assertEqual(selected['cli_entry']['install_literals']['PROXY_GROUP'],'First')
+                    with self.assertRaisesRegex(ValueError,'not a discovered candidate'):
+                        m.plan('personal',source,501,proxy_group='Second')
+                print('F07 type comment receipt', dict(scalar=scalar, CRLF=ending=='\r\n', second_is_select=is_select))
+
+    def test_f07_header_comment_preserves_candidate_validation(self):
+        path, source, fake_run = self.f07_discovery([])
+        config = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml'
+        for header, ending in [('proxy-groups: # 用户注释','\n'), ('proxy-groups: \t # comment','\r\n')]:
+            text=header+'\n  - name: First\n    type: select\n  - name: Second\n    type: select # comment\n'
+            config.write_bytes(text.replace('\n',ending).encode())
+            for selected in [None,'Second','Missing']:
+                with self.subTest(header=header, selected=selected), patch.object(m,'run',side_effect=fake_run):
+                    if selected is None:
+                        with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+                            m.plan('personal',source,501)
+                    elif selected == 'Missing':
+                        with self.assertRaisesRegex(ValueError,'not a discovered candidate'):
+                            m.plan('personal',source,501,proxy_group=selected)
+                    else:
+                        planned=m.plan('personal',source,501,proxy_group=selected)
+                        self.assertEqual(planned['cli_entry']['install_literals']['PROXY_GROUP'],selected)
+                    print('F07 header comment receipt', dict(header=header, CRLF=ending=='\r\n', selected=selected))
+
+    def test_f07_group_collection_keeps_nested_proxy_list_inside_group(self):
+        path, source, fake_run = self.f07_discovery([])
+        config = path.parents[2]/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml'
+        config.write_text('proxy-groups:\n  - name: First\n    proxies:\n      - Node\n    type: select\n'
+                          '  - name: Second\n    type: select\n')
+        with patch.object(m,'run',side_effect=fake_run):
+            with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+                m.plan('personal',source,501)
+            self.assertEqual(m.plan('personal',source,501,proxy_group='First')['cli_entry']['install_literals']['PROXY_GROUP'],'First')
+
+    def test_f07_unknown_client_explicit_mode_and_controls(self):
+        path, source, fake_run = self.f07_discovery(None)
+        with patch.object(m, 'run', side_effect=fake_run):
+            for mode in ['shadowrocket','auto','sing-box','clashx','surge']:
+                planned=m.plan('personal',source,501,proxy_mode=mode)
+                self.assertEqual(planned['proxy_mode'], mode)
+                self.assertEqual(planned['cli_entry']['install_literals']['PROXY_GROUP'], 'GLOBAL')
+                print('F07 unknown receipt', mode, 'accepted')
+            with self.assertRaisesRegex(ValueError,'selection required'):
+                m.plan('personal',source,501,proxy_mode='clash-verge')
+            planned=m.plan('personal',source,501,proxy_mode='clash-verge',proxy_group='手动 Group')
+            self.assertEqual(planned['cli_entry']['install_literals']['PROXY_GROUP'], '手动 Group')
+            for value in ['', 'x\ny', 'x\ty', 'x\ry', 'x\x7fy', 'x\x85y']:
+                with self.subTest(group=repr(value)), self.assertRaises(ValueError):
+                    m.plan('personal',source,501,proxy_mode='clash-verge',proxy_group=value)
+            with self.assertRaises(ValueError): m.plan('personal',source,501,proxy_mode='invalid')
+        self.assertFalse(path.exists()); self.assertFalse(m.JOURNAL.exists())
+
+    def test_f07_multiple_clients_require_explicit_mode(self):
+        path, source, fake_run = self.f07_discovery(['唯一 组'], shadowrocket=True)
+        with patch.object(m, 'run', side_effect=fake_run):
+            with self.assertRaisesRegex(ValueError,'client selection required'):
+                m.plan('personal',source,501)
+            for mode in ['clash-verge','shadowrocket']:
+                self.assertEqual(m.plan('personal',source,501,proxy_mode=mode)['proxy_mode'],mode)
+                print('F07 multiple clients receipt', mode, 'accepted explicit choice')
+
+    def test_f07_existing_configuration_never_probes_and_rejects_conflicts(self):
+        path, source, _ = self.f07_discovery(None)
+        config = path.parents[2]/'.claude-switcher/v2/config.json'
+        config.parent.mkdir(parents=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        complete = dict(COUNTRY_TARGET='JP',TZ_TARGET='Asia/Tokyo',LOCALE_TARGET='ja_JP',
+                        PROXY_MODE='clash-verge',PROXY_GROUP='既有 Group')
+        cases = [('legacy', 'clash-verge'), ('v2', 'clash-verge'), ('v2', 'auto')]
+        for origin, mode in cases:
+            values = dict(complete,PROXY_MODE=mode)
+            config.unlink(missing_ok=True); path.unlink(missing_ok=True)
+            if origin == 'legacy':
+                path.write_text('#!/bin/bash\n'+''.join(k+'='+json.dumps(v,ensure_ascii=False)+'\n' for k,v in values.items()))
+                path.chmod(0o755)
+            else:
+                config.write_text(json.dumps(dict(country_target='JP',timezone_target='Asia/Tokyo',
+                    locale_target='ja_JP',proxy_mode=mode,proxy_group=values['PROXY_GROUP'])))
+            with self.subTest(origin=origin, mode=mode), \
+                 patch.object(m,'detect_region',side_effect=AssertionError('region probe')) as region, \
+                 patch.object(m,'detect_proxy',side_effect=AssertionError('proxy discovery')) as proxy, \
+                 patch.object(m,'run',side_effect=AssertionError('external command')) as run:
+                for selected in [{},dict(proxy_mode=mode,proxy_group=values['PROXY_GROUP'])]:
+                    self.assertEqual(m.plan('personal',source,501,**selected)['cli_entry']['install_literals'],values)
+                for selected in [dict(proxy_mode='surge'),dict(proxy_group='conflict')]:
+                    with self.assertRaisesRegex(ValueError,'conflicts'):
+                        m.plan('personal',source,501,**selected)
+                region.assert_not_called(); proxy.assert_not_called(); run.assert_not_called()
+            print('F07 existing config receipt', origin, mode, 'probe calls = 0')
+
+    def test_f07_main_plan_and_install_bind_selection_digest(self):
+        from contextlib import nullcontext, redirect_stdout
+        from io import StringIO
+        path, source, fake_run = self.f07_discovery(['First', '第二 组'])
+        with patch.object(m, 'run', side_effect=fake_run), \
+             patch.object(m, 'console_owner', return_value=501), patch.object(m.os, 'geteuid', return_value=0), \
+             patch.object(m, 'locks', side_effect=lambda *a: nullcontext()) as locks, \
+             patch.object(m, 'stopped') as stopped, patch.object(m, 'transact') as transact, \
+             patch.object(m, 'finalize', return_value=dict(status='pending')):
+            selection = ['--proxy-mode','clash-verge','--proxy-group','第二 组']
+            with patch('sys.argv',['local_install.py','plan','--app',str(source)]+selection), redirect_stdout(StringIO()) as out:
+                m.main()
+            preview=json.loads(out.getvalue()); expected=preview['digest']
+            for changed in [[], ['--proxy-mode','auto'], ['--proxy-mode','clash-verge','--proxy-group','First']]:
+                with self.subTest(selection=changed), \
+                     patch('sys.argv',['local_install.py','install','--app',str(source),'--digest',expected]+changed), \
+                     redirect_stdout(StringIO()), self.assertRaises(ValueError):
+                    m.main()
+                locks.assert_not_called(); stopped.assert_not_called(); transact.assert_not_called()
+            with patch('sys.argv',['local_install.py','install','--app',str(source),'--digest',expected]+selection), redirect_stdout(StringIO()):
+                m.main()
+            self.assertEqual(transact.call_args.args[0], preview['plan'])
+            self.assertEqual(transact.call_args.args[1], expected)
+            print('F07 digest receipt', dict(digest=expected, accepted_same=True, rejected_changed=3))
+        self.assertFalse(path.exists()); self.assertFalse(m.JOURNAL.exists())
 
     def test_digest_mismatch_never_stages(self):
         with self.assertRaisesRegex(ValueError,'digest'): m.transact(self.plan,'wrong')
@@ -276,7 +610,7 @@ class LocalInstallTests(unittest.TestCase):
             if args[1]=='print-disabled': return SimpleNamespace(stdout='disabled services = {}',returncode=0)
             if args[1]=='print':
                 present=state['registered'] if args[2].endswith('/local.claude-update') else False
-                return SimpleNamespace(stdout='',returncode=0 if present else 1)
+                return SimpleNamespace(stdout='',stderr='' if present else 'Could not find service fixture',returncode=0 if present else 113)
             if args[1]=='bootout': state['registered']=False
             if args[1]=='bootstrap': state['registered']=True
             return SimpleNamespace(stdout='',returncode=0)
@@ -732,7 +1066,7 @@ class LocalInstallTests(unittest.TestCase):
         executable=self.root/'Application.app/Contents/Resources/components/claude-switcher'
         executable.parent.mkdir(parents=True)
         executable.write_text('#!/bin/bash\nprintf "%s\\n" "$@"\n'); executable.chmod(0o755)
-        path=self.root/'shim.sh'; path.write_bytes(m.cli_shim('public',entry))
+        path=self.root/'shim.sh'; path.write_bytes(m.cli_shim('public',entry,1))
         self.assertEqual(m.config_literals(path.read_bytes()),entry['literals'])
         output=subprocess.run(['/bin/bash',str(path),'checkdetail','arg with spaces'],capture_output=True,text=True,check=True)
         self.assertEqual(output.stdout.splitlines(),['--edition','public','checkdetail','arg with spaces'])
@@ -788,7 +1122,7 @@ class LocalInstallTests(unittest.TestCase):
         with patch.object(m,'run',side_effect=AssertionError('no external probe')):
             planned=m.plan('personal',source,501)
         self.assertEqual(planned['cli_entry']['install_literals']['PROXY_GROUP'],'Dollar $Group')
-        self.assertEqual(m.config_literals(m.cli_shim('personal',planned['cli_entry']))['PROXY_MODE'],'surge')
+        self.assertEqual(m.config_literals(m.cli_shim('personal',planned['cli_entry'],planned['cli_contract']))['PROXY_MODE'],'surge')
 
     def test_install_rejected_discovery_never_locks_or_stops_apps(self):
         with patch.object(m,'console_owner',return_value=501), patch.object(m.os,'geteuid',return_value=0), patch.object(m,'plan',side_effect=ValueError('首次安装需要非 CN 出口')), patch.object(m,'locks') as locks, patch.object(m,'stopped') as stopped, patch('sys.argv',['local_install.py','install','--app','/fixture.app']):
@@ -804,11 +1138,13 @@ class LocalInstallTests(unittest.TestCase):
             planned=m.plan('personal',source,501)
         self.assertEqual(planned['cli_entry']['install_literals'],dict(COUNTRY_TARGET='JP',TZ_TARGET='Asia/Tokyo',LOCALE_TARGET='ja_JP',PROXY_MODE='auto',PROXY_GROUP='GLOBAL'))
 
-    def test_proxy_detection_falls_back_to_old_auto_mode(self):
+    def test_proxy_detection_requires_explicit_auto_mode(self):
         from types import SimpleNamespace
         path,_=self.fresh_plan_fixture()
         with patch.object(m,'run',return_value=SimpleNamespace(stdout='',returncode=0)):
-            self.assertEqual(m.detect_proxy(path.parents[2]),dict(PROXY_MODE='auto',PROXY_GROUP='GLOBAL'))
+            with self.assertRaisesRegex(ValueError,'client selection required'):
+                m.detect_proxy(path.parents[2])
+            self.assertEqual(m.detect_proxy(path.parents[2],proxy_mode='auto'),dict(PROXY_MODE='auto',PROXY_GROUP='GLOBAL'))
 
     def test_indentless_proxy_groups_stop_only_at_next_top_level_mapping(self):
         path,_=self.fresh_plan_fixture()
@@ -819,7 +1155,8 @@ class LocalInstallTests(unittest.TestCase):
         config.write_text('proxy-groups:\n- name: "Proxy $Group"\n  type: select\nrules:\n- name: Wrong\n  type: select\n')
         self.assertEqual(m.detect_proxy(home)['PROXY_GROUP'],'Proxy $Group')
         config.write_text('proxy-groups:\n- name: NotSelect\n  type: url-test\nrules:\n- name: Wrong\n  type: select\n')
-        self.assertEqual(m.detect_proxy(home)['PROXY_GROUP'],'GLOBAL')
+        with self.assertRaisesRegex(ValueError,'group selection required'):
+            m.detect_proxy(home)
 
     def test_discovery_curl_inherits_only_proxy_environment(self):
         proxies={key:value for key,value in [('http_proxy','http://127.0.0.1:17891'),('HTTP_PROXY','http://127.0.0.1:17892'),('https_proxy','http://127.0.0.1:17893'),('HTTPS_PROXY','http://127.0.0.1:17894'),('all_proxy','socks5://127.0.0.1:17895'),('ALL_PROXY','socks5://127.0.0.1:17896'),('no_proxy','localhost'),('NO_PROXY','127.0.0.1')]}
@@ -865,14 +1202,15 @@ class LocalInstallTests(unittest.TestCase):
         self.assertEqual(len(seen),4)
         self.assertFalse(path.exists()); self.assertFalse(m.JOURNAL.exists()); self.assertFalse(m.RECORD.exists())
 
-    def test_clash_detection_reads_first_select_group_without_evaluating_dollar(self):
+    def test_clash_detection_preserves_selected_group_without_evaluating_dollar(self):
         path,_=self.fresh_plan_fixture()
         home=path.parents[2]
         directory=home/'Library/Application Support/io.github.clash-verge-rev.clash-verge-rev'
         directory.mkdir(parents=True)
         (directory/'clash-verge.yaml').write_text('proxy-groups:\n  - name: "Group $Dollar"\n    type: select\n  - name: Other\n    type: select\n')
         with patch.object(m,'run',side_effect=AssertionError('no external probe')):
-            self.assertEqual(m.detect_proxy(home),dict(PROXY_MODE='clash-verge',PROXY_GROUP='Group $Dollar'))
+            self.assertEqual(m.detect_proxy(home,proxy_mode='clash-verge',proxy_group='Group $Dollar'),
+                             dict(PROXY_MODE='clash-verge',PROXY_GROUP='Group $Dollar'))
 
     def bodyguard_fixture(self):
         self.plan['proxy_mode'] = 'auto'
@@ -1105,7 +1443,7 @@ class LocalInstallTests(unittest.TestCase):
         record = json.loads(m.RECORD.read_text()); record['edition'] = 'public'
         m.RECORD.write_text(json.dumps(record)); m.RECORD.chmod(0o644)
         candidate['previous'] = m.installed_state('public')
-        def make_plan(*args): return copy.deepcopy(candidate)
+        def make_plan(*args, **kwargs): return copy.deepcopy(candidate)
         output = StringIO()
         with patch.object(m, 'console_owner', return_value=501), patch.object(m,'plan',side_effect=make_plan), \
              patch.object(m, 'locks', return_value=nullcontext()), patch.object(m.os,'geteuid',return_value=0), \
@@ -1249,5 +1587,1493 @@ class OwnerCredentialsTests(unittest.TestCase):
                 m.process_groups()
         self.assertEqual(libc.getgroups.call_count, 1)
 
+
+
+
+class F02UninstallTests(unittest.TestCase):
+    """Real installer transactions against files and a fail-closed fake launchd."""
+    owner = 501
+
+    def setUp(self):
+        import contextlib
+        from types import SimpleNamespace
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        self.home = self.root/'owner-home'; self.home.mkdir()
+        self.system = self.root/'system'; self.system.mkdir()
+        self.apps = self.root/'Applications'; self.apps.mkdir()
+        self.templates = self.root/'templates'; self.templates.mkdir()
+        self.fd_paths = {}; self.metadata_overrides = {}
+        self.commands = []; self.loaded = {}; self.disabled = {}
+        self.real_stat, self.real_lstat, self.real_fstat = os.stat, os.lstat, os.fstat
+        self.real_open = os.open
+        self.SimpleNamespace = SimpleNamespace
+        names = dict(SYSTEM=self.system, HELPER=self.root/'helpers/helper',
+                     GUARDIAN=self.system/'switcher-guardian',
+                     DAEMON=self.root/'daemons/helper.plist', AGENT=self.root/'agents/guardian.plist',
+                     RECORD=self.system/'install.json', JOURNAL=self.system/'journal.json',
+                     BARRIER=self.system/'barrier', CHALLENGE=self.system/'challenge.json',
+                     RECEIPT=self.system/'receipt.json', LAST_RESULT=self.system/'last-result.json',
+                     WATCHDOG_PLIST=self.root/'daemons/watchdog.plist',
+                     BODYGUARD_PLIST=self.root/'daemons/bodyguard.plist',
+                     TEMPLATES=self.templates, ZONEINFO=self.root/'zoneinfo')
+        for directory in ['helpers','daemons','agents','zoneinfo/Asia']:
+            (self.root/directory).mkdir(parents=True, exist_ok=True)
+        (self.root/'zoneinfo/Asia/Tokyo').write_text('synthetic zone')
+        for key,value in names.items(): self.patch(m,key,value)
+        self.patch(m,'app',side_effect=lambda edition:self.apps/(edition+'.app'))
+        self.patch(m.pwd,'getpwuid',side_effect=lambda uid:SimpleNamespace(
+            pw_dir=str(self.home if uid==self.owner else self.root/('owner-'+str(uid))),
+            pw_name='fixture', pw_gid=20))
+        self.patch(m,'as_owner',side_effect=lambda uid:contextlib.nullcontext())
+        self.patch(m.os,'getgrouplist',return_value=[20])
+        self.patch(m,'safe_parents',side_effect=self.safe_parents)
+        self.patch(m,'identity',return_value='a'*40)
+        self.patch(m,'stopped',return_value=None)
+        self.patch(m,'run',side_effect=self.fake_run)
+        self.patch(m.os,'open',side_effect=self.open)
+        self.patch(m.os,'stat',side_effect=self.stat)
+        self.patch(m.os,'lstat',side_effect=self.lstat)
+        self.patch(m.os,'fstat',side_effect=self.fstat)
+        # Python 3.9 pathlib caches OS accessors before the os patches above.
+        self.patch(Path,'stat',lambda path,*args,**kwargs:self.stat(path,*args,**kwargs))
+        self.patch(Path,'lstat',lambda path,*args,**kwargs:self.lstat(path,*args,**kwargs))
+        self.patch(m.os,'chown',side_effect=self.chown)
+        self.patch(m.os,'fchown',side_effect=self.fchown)
+        self.patch(m,'legacy_specs',side_effect=self.legacy_specs)
+        for label,path,program in [('local.claudeswitcher.helper',m.DAEMON,m.HELPER),
+                                   ('local.claudeswitcher.guardian',m.AGENT,m.GUARDIAN)]:
+            (self.templates/path.name).write_bytes(m.plistlib.dumps(dict(
+                Label=label, ProgramArguments=[str(program)], RunAtLoad=True)))
+        self.source = self.root/'Fresh.app'
+        components=self.source/'Contents/Resources/components'; components.mkdir(parents=True)
+        for name in ['switcher-helper','switcher-guardian','claude-switcher']:
+            path=components/name; path.write_text('synthetic '+name); path.chmod(0o755)
+        (self.source/'Contents/Info.plist').write_bytes(m.plistlib.dumps(
+            dict(CFBundleShortVersionString='0.2.0')))
+        config=self.home/'.claude-switcher/v2/config.json'; config.parent.mkdir(parents=True)
+        config.write_text(json.dumps(dict(country_target='JP',timezone_target='Asia/Tokyo',
+                                         locale_target='ja_JP',proxy_mode='auto')))
+
+    def patch(self, target, name, *values, **kwargs):
+        patcher=patch.object(target,name,*values,**kwargs)
+        value=patcher.start(); self.addCleanup(patcher.stop); return value
+
+    def resolve(self,path,dir_fd=None):
+        if isinstance(path,int):
+            if path not in self.fd_paths: raise AssertionError('untracked synthetic descriptor')
+            return self.fd_paths[path]
+        path=Path(path)
+        if not path.is_absolute():
+            path=(self.fd_paths[dir_fd] if dir_fd is not None else Path.cwd())/path
+        return path.absolute()
+
+    def meta(self, value, path):
+        fields={name:getattr(value,name) for name in dir(value) if name.startswith('st_')}
+        uid=self.owner if path==self.home or self.home in path.parents else 0
+        fields.update(st_uid=uid,st_gid=20 if uid else 0)
+        fields.update(self.metadata_overrides.get((value.st_dev,value.st_ino),{}))
+        return self.SimpleNamespace(**fields)
+
+    def open(self,path,*args,**kwargs):
+        fd=self.real_open(path,*args,**kwargs)
+        self.fd_paths[fd]=self.resolve(path,kwargs.get('dir_fd'))
+        return fd
+
+    def stat(self,path,*args,**kwargs):
+        return self.meta(self.real_stat(path,*args,**kwargs),self.resolve(path,kwargs.get('dir_fd')))
+
+    def lstat(self,path,*args,**kwargs):
+        return self.meta(self.real_lstat(path,*args,**kwargs),self.resolve(path,kwargs.get('dir_fd')))
+
+    def fstat(self,fd):
+        return self.meta(self.real_fstat(fd),self.resolve(fd))
+
+    def chown(self,path,uid,gid,**kwargs):
+        path=self.resolve(path,kwargs.get('dir_fd'))
+        self.assertIn(self.root,path.parents)
+        metadata=self.real_lstat(path)
+        self.metadata_overrides[(metadata.st_dev,metadata.st_ino)]=dict(st_uid=uid,st_gid=gid)
+
+    def fchown(self,fd,uid,gid):
+        self.chown(self.resolve(fd),uid,gid)
+
+    def safe_parents(self,path):
+        path=Path(path)
+        self.assertTrue(path==self.root or self.root in path.parents, str(path))
+        while path!=self.root:
+            metadata=path.lstat()
+            if not m.stat.S_ISDIR(metadata.st_mode) or metadata.st_uid or metadata.st_mode & 0o022:
+                raise ValueError('unsafe synthetic root directory')
+            path=path.parent
+
+    def legacy_specs(self,owner):
+        return [dict(label=label,domain=domain,path=str(path),uid=uid,interval=interval,
+                     run=run,arguments=arguments) for label,domain,path,uid,interval,run,arguments in [
+            ('local.claude-bodyguard','system',m.BODYGUARD_PLIST,0,10,True,['/bin/bash',str(self.system/'claude-bodyguard.sh')]),
+            ('local.tz-watchdog','system',m.WATCHDOG_PLIST,0,3600,True,['/bin/bash',str(self.system/'tz-watchdog.sh')]),
+            ('local.claude-update','gui/'+str(owner),self.home/'Library/LaunchAgents/local.claude-update.plist',owner,43200,False,
+             ['/bin/bash',str(m.cli_path(owner)),'update','--auto'])]]
+
+    def result(self,code=0,stdout='',stderr='',check=True):
+        if check and code: raise m.subprocess.CalledProcessError(code,self.commands[-1],stdout,stderr)
+        return self.SimpleNamespace(returncode=code,stdout=stdout,stderr=stderr)
+
+    def fake_run(self,*args,check=True,**kwargs):
+        args=tuple(map(str,args)); self.commands.append(args)
+        if args==('/usr/sbin/sysctl','-n','kern.bootsessionuuid'):
+            return self.result(stdout='11111111-1111-1111-1111-111111111111',check=check)
+        if args[:3]==('/bin/ps','-ww','-p'):
+            for target,item in self.loaded.items():
+                if str(item['pid'])==args[3]:
+                    uid=self.owner if target.startswith('gui/') else 0
+                    return self.result(stdout=str(uid)+' '+item['arguments'][0],check=check)
+        if args[0]!='/bin/launchctl': raise AssertionError('unexpected OS command: '+repr(args))
+        action=args[1]
+        if action=='print-disabled':
+            domain=args[2]
+            lines=['"'+target.rsplit('/',1)[1]+'" => '+str(value).lower()
+                   for target,value in self.disabled.items() if target.rsplit('/',1)[0]==domain]
+            return self.result(stdout='\n'.join(lines),check=check)
+        if action=='print':
+            target=args[2]
+            if target not in self.loaded:
+                return self.result(113,stderr='Could not find service '+target,check=check)
+            item=self.loaded[target]
+            return self.result(stdout='\n'.join(['path = '+item['path'],
+                'program = '+item['arguments'][0], 'arguments = {',
+                *('    '+argument for argument in item['arguments']), '}', 'pid = '+str(item['pid'])]),check=check)
+        if action=='bootstrap':
+            domain,path=args[2:4]; data=m.plistlib.loads(Path(path).read_bytes())
+            target=domain+'/'+data['Label']
+            self.loaded[target]=dict(path=path,arguments=data['ProgramArguments'],pid=100+len(self.loaded))
+            return self.result(check=check)
+        if action=='bootout':
+            target=args[2]
+            if target not in self.loaded:
+                return self.result(113,stderr='Could not find service '+target,check=check)
+            del self.loaded[target]; return self.result(check=check)
+        if action=='kickstart' and args[2] in self.loaded: return self.result(check=check)
+        raise AssertionError('unsupported launchctl command: '+repr(args))
+
+    def footprint(self,edition):
+        return [m.app(edition),m.HELPER,m.GUARDIAN,m.DAEMON,m.AGENT,m.RECORD,
+                m.cli_path(self.owner),self.system/'tz-watchdog.sh',m.WATCHDOG_PLIST,
+                self.system/'claude-bodyguard.sh',m.BODYGUARD_PLIST]
+
+    def install(self,edition):
+        planned=m.plan(edition,self.source,self.owner)
+        m.transact(planned,m.digest(planned))
+        self.assertEqual(m.finalize(self.owner)['status'],'committed')
+        self.assertEqual(len(self.loaded),4)
+        return planned
+
+    def test_f02_real_plan_install_uninstall_removes_all_files_and_services(self):
+        for edition in ['personal','public']:
+            with self.subTest(edition=edition):
+                self.install(edition)
+                planned=m.plan(edition,None,self.owner,'uninstall')
+                m.transact(planned,m.digest(planned))
+                self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+                self.assertEqual([str(path) for path in self.footprint(edition) if m.present(path)],[])
+                self.assertEqual(self.loaded,{})
+                self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+                self.assertEqual(m.verify(self.owner)['status'],'uninstalled')
+
+
+    def uninstall_plan(self,edition='personal'):
+        return m.plan(edition,None,self.owner,'uninstall')
+
+    def transact(self,planned):
+        return m.transact(planned,m.digest(planned))
+
+    def snapshot(self,paths,identities=False):
+        result={}
+        for path in paths:
+            nodes=[path]
+            if path.is_dir() and not path.is_symlink(): nodes+=sorted(path.rglob('*'))
+            for node in nodes:
+                if not m.present(node): result[str(node)]=None; continue
+                meta=node.lstat()
+                content=('link',str(node.readlink())) if node.is_symlink() else (
+                    ('directory',) if node.is_dir() else ('file',node.read_bytes()))
+                result[str(node)]=(content,m.stat.S_IMODE(meta.st_mode),meta.st_uid,meta.st_gid,
+                                   *((meta.st_dev,meta.st_ino) if identities else ()))
+        return result
+
+    def service_state(self):
+        return {key:{name:value for name,value in item.items() if name!='pid'}
+                for key,item in self.loaded.items()}
+
+    def state(self,identities=False):
+        return self.snapshot(self.footprint('personal'),identities),self.service_state(),dict(self.disabled)
+
+    def assert_no_mutations(self,commands):
+        self.assertFalse([command for command in commands if command[0]=='/bin/launchctl'
+                          and command[1] not in ['print','print-disabled']])
+
+    def rollback_twice(self,before):
+        m.recover(self.owner); m.recover(self.owner)
+        self.assertEqual(self.state(),before)
+        self.assertFalse(m.JOURNAL.exists()); self.assertFalse(m.BARRIER.exists())
+        self.assertFalse(any(command[1] in ['enable','disable'] for command in self.commands
+                             if command[0]=='/bin/launchctl'))
+
+    def stage(self):
+        return Path(m.load_journal()['stage'])
+
+    def test_f02_uninstall_preserves_account_config_repair_and_historical_bytes(self):
+        self.install('personal')
+        sentinels=[self.home/'.claude-switcher/accounts/A/session',
+                   self.home/'.claude-switcher/accounts/B/session',
+                   self.home/'Library/Application Support/Claude/session',
+                   self.home/'.claude-switcher/v2/config.json',
+                   self.home/'.claude-switcher/v2/account-journal.json',
+                   self.home/'.claude-switcher/v2/region-repair.json',
+                   self.home/'.claude-switcher/v2/user-repairs/journal.json',
+                   self.system/'system-original.json',self.system/'repair-result.json',
+                   self.system/'historical-backup/secret',self.root/'owner-502/accounts/A/session']
+        for path in sentinels:
+            path.parent.mkdir(parents=True,exist_ok=True)
+            if not path.exists(): path.write_bytes(('retain '+str(path.relative_to(self.root))).encode())
+        historical=[path for path in self.system.glob('source-local-*')]
+        before=self.snapshot(sentinels+historical,identities=True)
+        cli=m.cli_path(self.owner).read_bytes()
+        planned=self.uninstall_plan(); self.transact(planned)
+        backup=self.stage()/'legacy-cli.sh'
+        self.assertEqual(backup.read_bytes(),cli)
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+        self.assertEqual(self.snapshot(sentinels+historical,identities=True),before)
+        self.assertEqual(backup.read_bytes(),cli)
+
+    def test_f02_plan_refuses_wrong_owner_edition_and_generation(self):
+        self.install('personal')
+        before=self.state(identities=True)
+        for owner,edition in [(502,'personal'),(501,'public')]:
+            with self.subTest(owner=owner,edition=edition):
+                start=len(self.commands)
+                with self.assertRaises(ValueError): m.plan(edition,None,owner,'uninstall')
+                self.assertEqual(self.state(identities=True),before)
+                self.assert_no_mutations(self.commands[start:])
+        original=m.RECORD.read_bytes()
+        record=json.loads(original); record['trust']['generation']='f'*32
+        m.save(m.RECORD,record,mode=0o644)
+        changed=self.state(identities=True)
+        with self.assertRaises((ValueError,OSError)): self.uninstall_plan()
+        self.assertEqual(self.state(identities=True),changed)
+        m.RECORD.write_bytes(original)
+
+    def test_f02_ownership_uses_current_generation_instead_of_last_result(self):
+        self.install('personal')
+        m.save(m.LAST_RESULT,dict(owner_uid=502,status='committed',stage=str(self.root/'unrelated')))
+        planned=self.uninstall_plan()
+        self.transact(planned)
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+
+    def test_f02_plan_refuses_unknown_component_bytes_without_deletion(self):
+        self.install('personal')
+        for target in self.footprint('personal'):
+            path=next(node for node in target.rglob('*') if node.is_file()) if target.is_dir() else target
+            original=path.read_bytes()
+            with self.subTest(path=str(target.relative_to(self.root))):
+                path.write_bytes(b'unknown replacement')
+                before=self.state(identities=True); start=len(self.commands)
+                with self.assertRaises((ValueError,OSError)): self.uninstall_plan()
+                self.assertEqual(self.state(identities=True),before)
+                self.assert_no_mutations(self.commands[start:])
+                path.write_bytes(original)
+
+    def test_f02_plan_refuses_unsafe_auxiliary_owner_mode_and_link_type(self):
+        self.install('personal')
+        for path in self.footprint('personal')[6:]:
+            original=path.read_bytes(); mode=m.stat.S_IMODE(path.stat().st_mode)
+            for kind in ['owner','group','mode','symlink','hardlink','directory']:
+                if kind=='group' and path==m.cli_path(self.owner): continue
+                with self.subTest(path=path.name,kind=kind):
+                    key=(path.stat().st_dev,path.stat().st_ino)
+                    other=self.root/('retained-'+path.name)
+                    if kind in ['owner','group']:
+                        self.metadata_overrides[key]={'st_uid':777} if kind=='owner' else {'st_gid':777}
+                    elif kind=='mode': path.chmod(0o777)
+                    elif kind in ['symlink','hardlink','directory']:
+                        path.rename(other)
+                        if kind=='symlink': path.symlink_to(other)
+                        elif kind=='hardlink': os.link(other,path)
+                        else: path.mkdir()
+                    before=self.state(identities=True); start=len(self.commands)
+                    with self.assertRaises((ValueError,OSError)): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                    self.assert_no_mutations(self.commands[start:])
+                    if kind in ['owner','group']: self.metadata_overrides.pop(key)
+                    elif kind=='mode': path.chmod(mode)
+                    else:
+                        path.rmdir() if kind=='directory' else path.unlink()
+                        other.rename(path)
+                    self.assertEqual(path.read_bytes(),original)
+
+    def test_f02_plan_refuses_unproven_loaded_program_plist_and_query_errors(self):
+        self.install('personal')
+        import copy
+        for target in list(self.loaded):
+            for kind in ['program','plist','query']:
+                with self.subTest(target=target,kind=kind):
+                    old=copy.deepcopy(self.loaded[target]); start=len(self.commands)
+                    if kind=='program': self.loaded[target]['arguments']=['/bin/false']
+                    if kind=='plist': self.loaded[target]['path']=str(self.root/'unowned.plist')
+                    before=self.state(identities=True)
+                    def query(*args,**kwargs):
+                        if tuple(map(str,args))==('/bin/launchctl','print',target):
+                            self.commands.append(tuple(map(str,args)))
+                            return self.result(5,stderr='Access denied',check=kwargs.get('check',True))
+                        return self.fake_run(*args,**kwargs)
+                    with patch.object(m,'run',side_effect=query if kind=='query' else self.fake_run):
+                        with self.assertRaises(ValueError): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                    self.assert_no_mutations(self.commands[start:]); self.loaded[target]=old
+
+    def test_f02_execution_rejects_same_byte_replacements_after_preview(self):
+        self.install('personal')
+        for path in self.footprint('personal'):
+            with self.subTest(path=str(path.relative_to(self.root))):
+                planned=self.uninstall_plan()
+                parked=self.root/('parked-'+path.name)
+                path.rename(parked); m.copy(parked,path)
+                before=self.state(identities=True); start=len(self.commands)
+                with self.assertRaises(ValueError): self.transact(planned)
+                self.assertEqual(self.state(identities=True),before)
+                self.assert_no_mutations(self.commands[start:])
+                m.remove(path); parked.rename(path)
+
+    def test_f02_execution_rejects_loaded_identity_and_destination_drift(self):
+        self.install('personal')
+        import copy
+        for target in list(self.loaded):
+            planned=self.uninstall_plan(); old=copy.deepcopy(self.loaded[target])
+            self.loaded[target]['arguments']=['/bin/false']
+            before=self.state(identities=True); start=len(self.commands)
+            with self.assertRaises(ValueError): self.transact(planned)
+            self.assertEqual(self.state(identities=True),before)
+            self.assert_no_mutations(self.commands[start:]); self.loaded[target]=old
+        planned=self.uninstall_plan(); external=self.root/'unowned'; external.write_text('preserve')
+        planned['destinations'][1]=str(external)
+        before=self.state(identities=True)
+        with self.assertRaises(ValueError): self.transact(planned)
+        self.assertEqual(external.read_text(),'preserve'); self.assertEqual(self.state(identities=True),before)
+
+    def test_f02_missing_auxiliary_files_and_mixed_registration_are_recorded(self):
+        self.install('personal')
+        self.loaded.pop('system/local.tz-watchdog')
+        m.WATCHDOG_PLIST.unlink(); (self.system/'tz-watchdog.sh').unlink()
+        self.disabled={'system/local.tz-watchdog':True,
+                       'system/local.claude-bodyguard':False}
+        before=dict(self.disabled)
+        planned=self.uninstall_plan(); self.transact(planned)
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+        self.assertEqual(self.disabled,before); self.assertEqual(self.loaded,{})
+
+    def test_f02_rollback_restores_exact_mixed_registration_and_disabled_overrides(self):
+        self.install('personal')
+        self.loaded.pop('system/local.tz-watchdog')
+        self.disabled={'system/local.tz-watchdog':True,'system/local.claude-bodyguard':False}
+        before=self.state()
+        self.transact(self.uninstall_plan())
+        self.rollback_twice(before)
+
+    def test_f02_each_file_backup_interruption_leaves_installation_untouched(self):
+        self.install('personal'); before=self.state(); original=m.copy
+        for target in self.footprint('personal'):
+            if target==m.cli_path(self.owner): continue
+            for after in [False,True]:
+                with self.subTest(path=target.name,after=after):
+                    planned=self.uninstall_plan(); fired=[]
+                    def fail(source,dest):
+                        match=Path(source)==target and Path(dest).parent.parent==self.system
+                        if match and not fired:
+                            fired.append(True)
+                            if after: original(source,dest)
+                            raise RuntimeError('F02 backup interruption')
+                        return original(source,dest)
+                    with patch.object(m,'copy',side_effect=fail):
+                        with self.assertRaisesRegex(RuntimeError,'F02 backup'): self.transact(planned)
+                    self.assertTrue(fired); self.rollback_twice(before)
+
+    def test_f02_cli_backup_interruption_never_removes_unbacked_files(self):
+        self.install('personal'); before=self.state(); original=m.cli_backup
+        for after in [False,True]:
+            planned=self.uninstall_plan()
+            def fail(j):
+                if after: original(j)
+                raise RuntimeError('F02 CLI backup interruption')
+            with patch.object(m,'cli_backup',side_effect=fail):
+                with self.assertRaisesRegex(RuntimeError,'F02 CLI'): self.transact(planned)
+            self.rollback_twice(before)
+
+    def removal_fault(self,path,after):
+        from contextlib import ExitStack
+        stack=ExitStack(); fired=[]
+        original_unlink=os.unlink; original_rename=m.rename_exclusive
+        def unlink(name,*args,**kwargs):
+            resolved=self.resolve(name,kwargs.get('dir_fd'))
+            if resolved==path and not fired:
+                fired.append(True)
+                if after: original_unlink(name,*args,**kwargs)
+                raise RuntimeError('F02 removal interruption')
+            return original_unlink(name,*args,**kwargs)
+        def rename(sourcefd,source,destfd,dest):
+            if self.resolve(source,sourcefd)==path and not fired:
+                fired.append(True)
+                if after: original_rename(sourcefd,source,destfd,dest)
+                raise RuntimeError('F02 removal interruption')
+            return original_rename(sourcefd,source,destfd,dest)
+        stack.enter_context(patch.object(m.os,'unlink',side_effect=unlink))
+        stack.enter_context(patch.object(m,'rename_exclusive',side_effect=rename))
+        return stack,fired
+
+    def test_f02_each_physical_removal_boundary_recovers_twice(self):
+        self.install('personal'); before=self.state()
+        for target in self.footprint('personal'):
+            for after in [False,True]:
+                with self.subTest(path=target.name,after=after):
+                    planned=self.uninstall_plan(); stack,fired=self.removal_fault(target,after)
+                    with stack:
+                        with self.assertRaisesRegex(RuntimeError,'F02 removal'): self.transact(planned)
+                    self.assertTrue(fired); self.rollback_twice(before)
+
+    def test_f02_each_service_bootout_boundary_recovers_exact_registration(self):
+        self.install('personal'); before=self.state()
+        for target in list(self.loaded):
+            for after in [False,True]:
+                with self.subTest(target=target,after=after):
+                    planned=self.uninstall_plan(); fired=[]
+                    def fail(*args,**kwargs):
+                        if tuple(map(str,args))==('/bin/launchctl','bootout',target) and not fired:
+                            fired.append(True)
+                            if after: self.fake_run(*args,**kwargs)
+                            raise RuntimeError('F02 bootout interruption')
+                        return self.fake_run(*args,**kwargs)
+                    with patch.object(m,'run',side_effect=fail):
+                        with self.assertRaisesRegex(RuntimeError,'F02 bootout'): self.transact(planned)
+                    self.assertTrue(fired); self.rollback_twice(before)
+
+    def test_f02_each_journal_progress_save_boundary_recovers_twice(self):
+        self.install('personal'); before=self.state(); original=m.save; calls=[]
+        def count(path,value,*args,**kwargs):
+            if path==m.JOURNAL: calls.append(True)
+            return original(path,value,*args,**kwargs)
+        with patch.object(m,'save',side_effect=count): self.transact(self.uninstall_plan())
+        self.rollback_twice(before)
+        total=len(calls); self.assertGreater(total,10)
+        for index in range(total):
+            for after in [False,True]:
+                with self.subTest(index=index,after=after):
+                    planned=self.uninstall_plan(); seen=[]
+                    def fail(path,value,*args,**kwargs):
+                        if path==m.JOURNAL:
+                            current=len(seen); seen.append(True)
+                            if current==index:
+                                if after: original(path,value,*args,**kwargs)
+                                raise RuntimeError('F02 journal interruption')
+                        return original(path,value,*args,**kwargs)
+                    with patch.object(m,'save',side_effect=fail):
+                        with self.assertRaisesRegex(RuntimeError,'F02 journal'): self.transact(planned)
+                    self.rollback_twice(before)
+        print('F02 progress-save physical boundaries:',total*2)
+
+    def test_f02_corrupt_completed_backups_pause_recovery_without_overwrite(self):
+        self.install('personal'); before=self.state(); original=m.save
+        backup_names=['old-app','old-helper','old-guardian','old-daemon','old-agent','old-record',
+                      'legacy-cli.sh','watchdog-old-script','watchdog-old-plist',
+                      'bodyguard-old-script','bodyguard-old-plist']
+        for name in backup_names:
+            with self.subTest(backup=name):
+                planned=self.uninstall_plan(); corrupt=[]
+                def fail(path,value,*args,**kwargs):
+                    result=original(path,value,*args,**kwargs)
+                    if path==m.JOURNAL and value.get('pending')=='services' and not corrupt:
+                        backup=Path(value['stage'])/name
+                        target=next(node for node in backup.rglob('*') if node.is_file()) if backup.is_dir() else backup
+                        data=target.read_bytes(); target.write_bytes(b'corrupt backup'); corrupt.append((target,data))
+                        raise RuntimeError('F02 completed backup corrupted')
+                    return result
+                with patch.object(m,'save',side_effect=fail):
+                    with self.assertRaisesRegex(RuntimeError,'F02 completed'): self.transact(planned)
+                self.assertTrue(corrupt)
+                for _ in range(2):
+                    with self.assertRaises(ValueError): m.recover(self.owner)
+                    self.assertEqual(self.snapshot(self.footprint('personal')),before[0]); self.assertTrue(m.JOURNAL.exists())
+                corrupt[0][0].write_bytes(corrupt[0][1]); self.rollback_twice(before)
+
+    def test_f02_external_replacements_after_removal_pause_recovery(self):
+        self.install('personal'); before=self.state()
+        for path in self.footprint('personal'):
+            with self.subTest(path=path.name):
+                planned=self.uninstall_plan(); stack,fired=self.removal_fault(path,True)
+                with stack:
+                    with self.assertRaisesRegex(RuntimeError,'F02 removal'): self.transact(planned)
+                self.assertTrue(fired)
+                path.write_bytes(b'external replacement'); path.chmod(0o755)
+                replaced=self.snapshot([path],identities=True)
+                for _ in range(2):
+                    with self.assertRaises((ValueError,OSError)): m.recover(self.owner)
+                    self.assertEqual(self.snapshot([path],identities=True),replaced)
+                    self.assertTrue(m.JOURNAL.exists())
+                path.unlink(); self.rollback_twice(before)
+
+    def test_f02_terminal_result_and_cleanup_boundaries_are_idempotent(self):
+        original_save=m.save
+        for point in ['result','last-result','barrier','journal']:
+            for after in [False,True]:
+                with self.subTest(point=point,after=after):
+                    self.install('personal'); self.transact(self.uninstall_plan()); fired=[]
+                    def save(path,value,*args,**kwargs):
+                        match=(point=='result' and path.name=='result.json') or (point=='last-result' and path==m.LAST_RESULT)
+                        if match and not fired:
+                            fired.append(True)
+                            if after: original_save(path,value,*args,**kwargs)
+                            raise RuntimeError('F02 terminal interruption')
+                        return original_save(path,value,*args,**kwargs)
+                    target=m.BARRIER if point=='barrier' else m.JOURNAL
+                    stack,unlinked=self.removal_fault(target,after)
+                    with patch.object(m,'save',side_effect=save), stack:
+                        with self.assertRaisesRegex(RuntimeError,'F02 (terminal|removal)'): m.finalize(self.owner)
+                    self.assertTrue(fired or unlinked)
+                    self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+                    self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+                    self.assertEqual(m.verify(self.owner)['status'],'uninstalled')
+                    self.assertFalse(m.JOURNAL.exists()); self.assertFalse(m.BARRIER.exists())
+
+    def test_f02_finalization_and_archived_verify_reject_reappearing_footprint(self):
+        self.install('personal'); import copy
+        services=copy.deepcopy(self.loaded)
+        self.transact(self.uninstall_plan())
+        for path in self.footprint('personal'):
+            with self.subTest(path=path.name):
+                path.symlink_to(self.root/'missing-target')
+                with self.assertRaises(ValueError): m.finalize(self.owner)
+                self.assertTrue(path.is_symlink()); self.assertTrue(m.JOURNAL.exists()); path.unlink()
+        for target,item in services.items():
+            self.loaded[target]=item
+            with self.assertRaises(ValueError): m.finalize(self.owner)
+            self.assertTrue(m.JOURNAL.exists()); self.loaded.pop(target)
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+        for path in self.footprint('personal'):
+            path.write_text('reappeared')
+            with self.assertRaises(ValueError): m.verify(self.owner)
+            self.assertEqual(path.read_text(),'reappeared'); path.unlink()
+        for target,item in services.items():
+            self.loaded[target]=item
+            with self.assertRaises(ValueError): m.verify(self.owner)
+            self.loaded.pop(target)
+
+    def test_f02_terminal_cleanup_retry_rechecks_reappearing_files_and_services(self):
+        self.install('personal'); import copy
+        services=copy.deepcopy(self.loaded)
+        self.transact(self.uninstall_plan())
+        stack,fired=self.removal_fault(m.BARRIER,True)
+        with stack:
+            with self.assertRaisesRegex(RuntimeError,'F02 removal'): m.finalize(self.owner)
+        self.assertTrue(fired); self.assertTrue(m.JOURNAL.exists())
+        path=m.BODYGUARD_PLIST; path.symlink_to(self.root/'missing')
+        with self.assertRaises(ValueError): m.finalize(self.owner)
+        self.assertTrue(m.JOURNAL.exists()); path.unlink()
+        target='system/local.tz-watchdog'; self.loaded[target]=services[target]
+        with self.assertRaises(ValueError): m.finalize(self.owner)
+        self.assertTrue(m.JOURNAL.exists()); self.loaded.pop(target)
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+
+    def test_f02_old_narrow_uninstall_receipt_cannot_hide_auxiliary_objects(self):
+        self.install('personal'); self.transact(self.uninstall_plan())
+        result=m.finalize(self.owner)
+        archive=Path(result['backup'])/'result.json'; value=json.loads(archive.read_text())
+        old_keys={'schema_version','operation','edition','owner_uid','version','payload',
+                  'templates','destinations','previous','legacy','timezone_target','proxy_mode','cli_entry'}
+        value['plan']={key:item for key,item in value['plan'].items() if key in old_keys}
+        value['plan']['cli_entry']=None; value['plan']['timezone_target']=None; value['plan']['proxy_mode']=None
+        m.save(archive,value)
+        path=m.cli_path(self.owner); path.write_text('unowned object')
+        with self.assertRaises(ValueError): m.verify(self.owner)
+        self.assertEqual(path.read_text(),'unowned object')
+
+
+    def test_f02_missing_install_record_never_guesses_removal_authority(self):
+        self.install('personal'); m.RECORD.unlink()
+        before=self.state(identities=True); start=len(self.commands)
+        with self.assertRaises(ValueError): self.uninstall_plan()
+        self.assertEqual(self.state(identities=True),before)
+        self.assert_no_mutations(self.commands[start:])
+
+    def test_f02_same_byte_external_replacements_after_removal_pause_recovery(self):
+        self.install('personal'); before=self.state()
+        names=['old-app','old-helper','old-guardian','old-daemon','old-agent','old-record',
+               'legacy-cli.sh','watchdog-old-script','watchdog-old-plist',
+               'bodyguard-old-script','bodyguard-old-plist']
+        for path,name in zip(self.footprint('personal'),names):
+            with self.subTest(path=path.name):
+                planned=self.uninstall_plan(); mode=m.stat.S_IMODE(path.stat().st_mode)
+                stack,fired=self.removal_fault(path,True)
+                with stack:
+                    with self.assertRaisesRegex(RuntimeError,'F02 removal'): self.transact(planned)
+                self.assertTrue(fired)
+                m.copy(self.stage()/name,path); path.chmod(mode)
+                replaced=self.snapshot([path],identities=True)
+                for _ in range(2):
+                    with self.assertRaises(ValueError): m.recover(self.owner)
+                    self.assertEqual(self.snapshot([path],identities=True),replaced)
+                    self.assertTrue(m.JOURNAL.exists())
+                m.remove(path); self.rollback_twice(before)
+
+
+    def assert_restored_pin_rejects_external_change(self,kind):
+        self.install('personal'); before=self.state(); planned=self.uninstall_plan()
+        self.transact(planned); original=m.save; durable=[]
+        def fail(path,value,*args,**kwargs):
+            if path==m.JOURNAL and durable:
+                raise RuntimeError('F02 later recovery step interrupted')
+            result=original(path,value,*args,**kwargs)
+            if path==m.JOURNAL and 'helper' in value.get('uninstall_restored',{}): durable.append(True)
+            return result
+        with patch.object(m,'save',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F02 later recovery'): m.recover(self.owner)
+        self.assertTrue(durable)
+        path=m.HELPER; parked=self.root/'durable-restored-helper'
+        key=(path.stat().st_dev,path.stat().st_ino)
+        if kind=='inode':
+            path.rename(parked); m.copy(parked,path)
+        else:
+            self.metadata_overrides[key]={'st_gid':777}
+        replaced=self.snapshot([path],identities=True)
+        with patch.object(m.os,'chown',side_effect=self.chown) as chown, \
+             patch.object(m.os,'fchown',side_effect=self.fchown) as fchown:
+            for _ in range(2):
+                with self.assertRaises(ValueError): m.recover(self.owner)
+                self.assertEqual(self.snapshot([path],identities=True),replaced)
+                self.assertTrue(m.JOURNAL.exists())
+            chown.assert_not_called(); fchown.assert_not_called()
+        if kind=='inode': m.remove(path); parked.rename(path)
+        else: self.metadata_overrides.pop(key)
+        self.rollback_twice(before)
+
+    def test_f02_review_durable_restored_inode_replacement_stops_without_chown(self):
+        self.assert_restored_pin_rejects_external_change('inode')
+
+    def test_f02_review_durable_restored_gid_change_stops_without_chown(self):
+        self.assert_restored_pin_rejects_external_change('gid')
+
+    def test_f02_review_corruption_after_backup_stops_before_first_side_effect(self):
+        self.install('personal'); before=self.state(identities=True); original=m.save
+        names=['old-app','old-helper','old-guardian','old-daemon','old-agent','old-record',
+               'legacy-cli.sh','watchdog-old-script','watchdog-old-plist',
+               'bodyguard-old-script','bodyguard-old-plist']
+        for name in names:
+            with self.subTest(backup=name):
+                planned=self.uninstall_plan(); corrupted=[]; start=len(self.commands)
+                def corrupt(path,value,*args,**kwargs):
+                    result=original(path,value,*args,**kwargs)
+                    if path==m.JOURNAL and value.get('pending')=='services' and not corrupted:
+                        backup=Path(value['stage'])/name
+                        target=next(node for node in backup.rglob('*') if node.is_file()) if backup.is_dir() else backup
+                        data=target.read_bytes(); target.write_bytes(b'post-backup corruption')
+                        corrupted.append((target,data))
+                    return result
+                try:
+                    with patch.object(m,'save',side_effect=corrupt):
+                        with self.assertRaises(ValueError): self.transact(planned)
+                    self.assertTrue(corrupted)
+                    self.assertEqual(self.state(identities=True),before)
+                    self.assert_no_mutations(self.commands[start:])
+                finally:
+                    if corrupted: corrupted[0][0].write_bytes(corrupted[0][1])
+                    if m.JOURNAL.exists(): m.recover(self.owner); m.recover(self.owner)
+                before=self.state(identities=True)
+
+    def test_f02_review_missing_unregistered_root_script_can_uninstall(self):
+        for label,script in [('local.tz-watchdog','tz-watchdog.sh'),
+                             ('local.claude-bodyguard','claude-bodyguard.sh')]:
+            with self.subTest(label=label):
+                self.install('personal'); self.loaded.pop('system/'+label)
+                (self.system/script).unlink()
+                self.transact(self.uninstall_plan())
+                self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+                self.assertEqual(m.verify(self.owner)['status'],'uninstalled')
+                self.assertEqual(self.loaded,{})
+                self.assertFalse(any(m.present(path) for path in self.footprint('personal')))
+
+    def test_f02_review_registered_services_with_missing_required_files_refuse_preview(self):
+        self.install('personal')
+        for path in [m.HELPER,m.DAEMON,m.GUARDIAN,m.AGENT,self.system/'tz-watchdog.sh',
+                     m.WATCHDOG_PLIST,self.system/'claude-bodyguard.sh',m.BODYGUARD_PLIST]:
+            with self.subTest(path=path.name):
+                parked=self.root/('missing-'+path.name); path.rename(parked)
+                before=self.state(identities=True); start=len(self.commands)
+                try:
+                    with self.assertRaises(ValueError): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                    self.assert_no_mutations(self.commands[start:])
+                finally: parked.rename(path)
+
+    def test_f02_review_partial_root_restore_copy_can_resume(self):
+        self.install('personal'); before=self.state(); original=m.copy
+        for name in ['watchdog-old-script','watchdog-old-plist','bodyguard-old-script','bodyguard-old-plist']:
+            with self.subTest(backup=name):
+                self.transact(self.uninstall_plan()); stage=self.stage(); backup=stage/name; fired=[]
+                live={'watchdog-old-script':self.system/'tz-watchdog.sh',
+                      'watchdog-old-plist':m.WATCHDOG_PLIST,
+                      'bodyguard-old-script':self.system/'claude-bodyguard.sh',
+                      'bodyguard-old-plist':m.BODYGUARD_PLIST}[name]
+                def partial(source,target):
+                    if Path(source)==backup and not fired:
+                        self.assertEqual(Path(target).parent,stage)
+                        self.assertTrue(Path(target).name.startswith('restore-'))
+                        self.assertFalse(m.present(live))
+                        fired.append(True); Path(target).write_bytes(b'partial restore')
+                        Path(target).chmod(0o600)
+                        raise RuntimeError('F02 partial restore copy')
+                    return original(source,target)
+                with patch.object(m,'copy',side_effect=partial):
+                    with self.assertRaisesRegex(RuntimeError,'F02 partial restore'): m.recover(self.owner)
+                self.assertTrue(fired); self.assertTrue(m.JOURNAL.exists())
+                self.assertFalse(m.present(live))
+                self.rollback_twice(before)
+
+    def interrupted_after_durable_restore(self,key):
+        self.install('personal'); before=self.state(); self.transact(self.uninstall_plan())
+        original=m.save; durable=[]
+        def fail(path,value,*args,**kwargs):
+            if path==m.JOURNAL and durable:
+                raise RuntimeError('F02 durable restore boundary')
+            result=original(path,value,*args,**kwargs)
+            if path==m.JOURNAL and key in value.get('uninstall_restored',{}): durable.append(True)
+            return result
+        with patch.object(m,'save',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F02 durable restore'): m.recover(self.owner)
+        self.assertTrue(durable)
+        return before
+
+    def test_f02_review_recovery_check_to_open_replacement_is_rejected(self):
+        for key in ['helper','cli']:
+            with self.subTest(component=key):
+                before=self.interrupted_after_durable_restore(key)
+                path=m.HELPER if key=='helper' else m.cli_path(self.owner)
+                parked=self.root/('checked-'+key); changed=[]; chowned=[]
+                original=m.check_uninstall_recovery
+                def swap(j,only=None):
+                    result=original(j,only)
+                    if only==key and not changed:
+                        path.rename(parked); m.copy(parked,path)
+                        changed.append(self.snapshot([path],identities=True))
+                    return result
+                def chown(fd,uid,gid):
+                    if self.resolve(fd)==path: chowned.append(True)
+                    return self.fchown(fd,uid,gid)
+                try:
+                    with patch.object(m,'check_uninstall_recovery',side_effect=swap), \
+                         patch.object(m.os,'fchown',side_effect=chown):
+                        for _ in range(2):
+                            with self.assertRaises(ValueError): m.recover(self.owner)
+                            self.assertEqual(self.snapshot([path],identities=True),changed[0])
+                    self.assertFalse(chowned)
+                finally:
+                    if parked.exists(): m.remove(path); parked.rename(path)
+                    if m.JOURNAL.exists(): self.rollback_twice(before)
+
+    def test_f02_review_fchown_to_final_snapshot_replacement_is_rejected(self):
+        for key in ['helper','cli']:
+            with self.subTest(component=key):
+                before=self.interrupted_after_durable_restore(key)
+                path=m.HELPER if key=='helper' else m.cli_path(self.owner)
+                parked=self.root/('chowned-'+key); changed=[]
+                def swap(fd,uid,gid):
+                    self.fchown(fd,uid,gid)
+                    if self.resolve(fd)==path and not changed:
+                        path.rename(parked); m.copy(parked,path)
+                        changed.append(self.snapshot([path],identities=True))
+                try:
+                    with patch.object(m.os,'fchown',side_effect=swap):
+                        for _ in range(2):
+                            with self.assertRaises(ValueError): m.recover(self.owner)
+                            self.assertEqual(self.snapshot([path],identities=True),changed[0])
+                finally:
+                    if parked.exists(): m.remove(path); parked.rename(path)
+                    if m.JOURNAL.exists(): self.rollback_twice(before)
+
+    def test_f02_review_durable_restored_external_deletion_is_rejected(self):
+        for key in ['helper','cli']:
+            with self.subTest(component=key):
+                before=self.interrupted_after_durable_restore(key)
+                path=m.HELPER if key=='helper' else m.cli_path(self.owner)
+                parked=self.root/('deleted-'+key); path.rename(parked)
+                try:
+                    for _ in range(2):
+                        with self.assertRaises(ValueError): m.recover(self.owner)
+                        self.assertFalse(m.present(path)); self.assertTrue(m.JOURNAL.exists())
+                finally:
+                    if m.present(path): m.remove(path)
+                    parked.rename(path)
+                    if m.JOURNAL.exists(): self.rollback_twice(before)
+
+    def test_f02_review_two_megabyte_binaries_install_and_uninstall(self):
+        components=self.source/'Contents/Resources/components'
+        for name in ['switcher-helper','switcher-guardian']:
+            (components/name).write_bytes((name.encode()+b'\0')*(2*1024*1024//(len(name)+1)+1))
+        self.install('personal')
+        self.assertGreater(m.HELPER.stat().st_size,2*1024*1024)
+        self.assertGreater(m.GUARDIAN.stat().st_size,2*1024*1024)
+        self.transact(self.uninstall_plan())
+        self.assertEqual(m.finalize(self.owner)['status'],'uninstalled')
+        self.assertEqual(m.verify(self.owner)['status'],'uninstalled')
+        self.assertFalse(any(m.present(path) for path in self.footprint('personal')))
+        self.assertEqual(self.loaded,{})
+
+    def reset_isolated_case(self):
+        # Each injected conflict retains its journal; the next case gets a new HOME.
+        self.doCleanups(); self.setUp()
+
+    def assert_retained_identity(self,expected):
+        dev,ino,data,mode,uid,gid=expected
+        found=[]
+        for node in self.root.rglob('*'):
+            metadata=node.lstat()
+            if (metadata.st_dev,metadata.st_ino)==(dev,ino): found.append(node)
+        self.assertEqual(len(found),1,'unexpected object must survive at live or holding path')
+        node=found[0]; metadata=node.lstat()
+        self.assertEqual(m.tree(node),data)
+        self.assertEqual((m.stat.S_IMODE(metadata.st_mode),metadata.st_uid,metadata.st_gid),(mode,uid,gid))
+        return node
+
+    def identity_evidence(self,path):
+        metadata=path.lstat()
+        return (metadata.st_dev,metadata.st_ino,m.tree(path),m.stat.S_IMODE(metadata.st_mode),
+                metadata.st_uid,metadata.st_gid)
+
+    def test_f02_iter2_replacement_at_physical_removal_survives(self):
+        for key in ['cli','helper','app']:
+            for different in [False,True]:
+                with self.subTest(component=key,different_bytes=different):
+                    try:
+                        self.install('personal'); planned=self.uninstall_plan()
+                        path={'cli':m.cli_path(self.owner),'helper':m.HELPER,'app':m.app('personal')}[key]
+                        parked=self.root/'approved-original'; injected=[]
+                        unlink=m.os.unlink; rename=m.rename_exclusive
+                        def replace():
+                            path.rename(parked); m.copy(parked,path)
+                            if different:
+                                changed=next(node for node in path.rglob('*') if node.is_file()) if path.is_dir() else path
+                                changed.write_bytes(b'F02 external user content')
+                            injected.append(self.identity_evidence(path))
+                        def delete(name,*args,**kwargs):
+                            if self.resolve(name,kwargs.get('dir_fd'))==path and not injected: replace()
+                            return unlink(name,*args,**kwargs)
+                        def move(src_fd,src,dst_fd,dst):
+                            if self.resolve(src,src_fd)==path and not injected: replace()
+                            return rename(src_fd,src,dst_fd,dst)
+                        with patch.object(m.os,'unlink',side_effect=delete),patch.object(m,'rename_exclusive',side_effect=move):
+                            with self.assertRaises(ValueError): self.transact(planned)
+                        self.assertTrue(injected); location=self.assert_retained_identity(injected[0])
+                        if location!=path:
+                            self.assertEqual(location.name,'component')
+                            self.assertIn(str(location.parent),m.JOURNAL.read_text())
+                        for _ in range(2):
+                            with self.assertRaises(ValueError): m.recover(self.owner)
+                            self.assert_retained_identity(injected[0]); self.assertTrue(m.JOURNAL.exists())
+                        with self.assertRaises(ValueError): m.finalize(self.owner)
+                        self.assert_retained_identity(injected[0]); self.assertTrue(m.JOURNAL.exists())
+                    finally: self.reset_isolated_case()
+
+    def interrupt_restore_intent(self,key):
+        original=m.save; fired=[]
+        def fail(path,value,*args,**kwargs):
+            result=original(path,value,*args,**kwargs)
+            if (path==m.JOURNAL and key in value.get('uninstall_restoring',[]) and
+                    key not in value.get('uninstall_restored',{}) and not fired):
+                fired.append(True); raise RuntimeError('F02 intent before publication')
+            return result
+        with patch.object(m,'save',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F02 intent'): m.recover(self.owner)
+        self.assertTrue(fired)
+
+    def test_f02_iter2_intent_only_external_candidate_is_not_adopted(self):
+        for key in ['cli','helper']:
+            for wrong_gid in [False,True]:
+                with self.subTest(component=key,wrong_gid=wrong_gid):
+                    try:
+                        self.install('personal'); self.transact(self.uninstall_plan())
+                        path=m.cli_path(self.owner) if key=='cli' else m.HELPER
+                        backup=self.stage()/('legacy-cli.sh' if key=='cli' else 'old-helper')
+                        self.interrupt_restore_intent(key)
+                        m.copy(backup,path); path.chmod(0o755)
+                        if wrong_gid:
+                            metadata=path.lstat(); self.metadata_overrides[(metadata.st_dev,metadata.st_ino)]={'st_gid':777}
+                        external=self.identity_evidence(path); journal=m.JOURNAL.read_bytes()
+                        with patch.object(m.os,'chown',side_effect=self.chown) as chown, \
+                             patch.object(m.os,'fchown',side_effect=self.fchown) as fchown:
+                            for _ in range(2):
+                                with self.assertRaises(ValueError): m.recover(self.owner)
+                                self.assert_retained_identity(external)
+                                self.assertEqual(m.JOURNAL.read_bytes(),journal)
+                            chown.assert_not_called(); fchown.assert_not_called()
+                    finally: self.reset_isolated_case()
+
+    def interrupt_restore_publication(self,path):
+        original=m.rename_exclusive; fired=[]
+        def fail(src_fd,src,dst_fd,dst):
+            result=original(src_fd,src,dst_fd,dst)
+            if self.resolve(dst,dst_fd)==path and not fired:
+                fired.append(True); raise RuntimeError('F02 published before final identity save')
+            return result
+        with patch.object(m,'rename_exclusive',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F02 published'): m.recover(self.owner)
+        self.assertTrue(fired); self.assertTrue(m.present(path))
+
+    def test_f02_iter2_genuine_publication_without_final_save_recovers_twice(self):
+        for index in range(11):
+            with self.subTest(component=index):
+                try:
+                    self.install('personal'); before=self.state(); path=self.footprint('personal')[index]
+                    self.transact(self.uninstall_plan()); self.interrupt_restore_publication(path)
+                    self.rollback_twice(before)
+                finally: self.reset_isolated_case()
+
+    def test_f02_iter2_published_candidate_external_change_is_not_adopted(self):
+        for index in range(11):
+            for change in ['inode','gid']:
+                with self.subTest(component=index,change=change):
+                    try:
+                        self.install('personal'); path=self.footprint('personal')[index]
+                        self.transact(self.uninstall_plan()); self.interrupt_restore_publication(path)
+                        if change=='inode':
+                            parked=self.root/'published-original'; path.rename(parked); m.copy(parked,path)
+                        else:
+                            metadata=path.lstat(); self.metadata_overrides[(metadata.st_dev,metadata.st_ino)]={'st_gid':777}
+                        external=self.identity_evidence(path); journal=m.JOURNAL.read_bytes()
+                        with patch.object(m.os,'chown',side_effect=self.chown) as chown, \
+                             patch.object(m.os,'fchown',side_effect=self.fchown) as fchown:
+                            for _ in range(2):
+                                with self.assertRaises(ValueError): m.recover(self.owner)
+                                self.assert_retained_identity(external)
+                                self.assertEqual(m.JOURNAL.read_bytes(),journal)
+                            chown.assert_not_called(); fchown.assert_not_called()
+                    finally: self.reset_isolated_case()
+
+    def test_f02_iter2_old_restoring_journal_without_candidate_refuses_live_file(self):
+        for key in ['cli','helper']:
+            for replacement in [False,True]:
+                with self.subTest(component=key,replacement=replacement):
+                    try:
+                        self.install('personal'); self.transact(self.uninstall_plan())
+                        path=m.cli_path(self.owner) if key=='cli' else m.HELPER
+                        self.interrupt_restore_publication(path)
+                        journal=m.load_journal()
+                        self.assertIn(key,journal['uninstall_restoring'])
+                        self.assertNotIn(key,journal.get('uninstall_restored',{}))
+                        # Historical intent-only journal has no candidate provenance.
+                        journal.pop('uninstall_prepared',None); m.save(m.JOURNAL,journal)
+                        if replacement:
+                            parked=self.root/'old-journal-candidate'; path.rename(parked); m.copy(parked,path)
+                        external=self.identity_evidence(path); saved=m.JOURNAL.read_bytes()
+                        with patch.object(m.os,'chown',side_effect=self.chown) as chown, \
+                             patch.object(m.os,'fchown',side_effect=self.fchown) as fchown:
+                            for _ in range(2):
+                                with self.assertRaises(ValueError): m.recover(self.owner)
+                                self.assert_retained_identity(external)
+                                self.assertEqual(m.JOURNAL.read_bytes(),saved)
+                            chown.assert_not_called(); fchown.assert_not_called()
+                    finally: self.reset_isolated_case()
+
+    def interrupt_terminal_restore(self):
+        original=m.save; fired=[]
+        def fail(path,value,*args,**kwargs):
+            result=original(path,value,*args,**kwargs)
+            if path==m.JOURNAL and value.get('pending')=='restored' and not fired:
+                fired.append(True); raise RuntimeError('F02 restored terminal save before cleanup')
+            return result
+        with patch.object(m,'save',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F02 restored terminal'): m.recover(self.owner)
+        self.assertTrue(fired); self.assertTrue(m.JOURNAL.exists())
+
+    def test_f02_iter2_terminal_restore_rechecks_external_file_change(self):
+        for key in ['cli','helper','watchdog']:
+            for change in ['delete','inode','bytes']:
+                with self.subTest(component=key,change=change):
+                    try:
+                        self.install('personal'); self.transact(self.uninstall_plan()); self.interrupt_terminal_restore()
+                        path={'cli':m.cli_path(self.owner),'helper':m.HELPER,'watchdog':self.system/'tz-watchdog.sh'}[key]
+                        if change=='delete': path.unlink()
+                        elif change=='inode':
+                            parked=self.root/'terminal-original'; path.rename(parked); m.copy(parked,path)
+                        else: path.write_bytes(b'F02 external terminal content')
+                        before=self.state(identities=True); journal=m.JOURNAL.read_bytes()
+                        for _ in range(2):
+                            with self.assertRaises(ValueError): m.recover(self.owner)
+                            self.assertEqual(self.state(identities=True),before)
+                            self.assertEqual(m.JOURNAL.read_bytes(),journal)
+                    finally: self.reset_isolated_case()
+
+    def test_f02_iter2_terminal_restore_rechecks_service_registration(self):
+        for index in range(4):
+            with self.subTest(service=index):
+                try:
+                    self.install('personal'); self.transact(self.uninstall_plan()); self.interrupt_terminal_restore()
+                    self.loaded.pop(list(self.loaded)[index]); before=self.state(identities=True)
+                    journal=m.JOURNAL.read_bytes()
+                    for _ in range(2):
+                        with self.assertRaises(ValueError): m.recover(self.owner)
+                        self.assertEqual(self.state(identities=True),before)
+                        self.assertEqual(m.JOURNAL.read_bytes(),journal)
+                finally: self.reset_isolated_case()
+
+    def test_f02_iter2_terminal_restore_rechecks_disabled_overrides(self):
+        for index in range(4):
+            with self.subTest(service=index):
+                try:
+                    self.install('personal'); self.transact(self.uninstall_plan()); self.interrupt_terminal_restore()
+                    self.disabled[list(self.loaded)[index]]=True; before=self.state(identities=True)
+                    journal=m.JOURNAL.read_bytes()
+                    for _ in range(2):
+                        with self.assertRaises(ValueError): m.recover(self.owner)
+                        self.assertEqual(self.state(identities=True),before)
+                        self.assertEqual(m.JOURNAL.read_bytes(),journal)
+                finally: self.reset_isolated_case()
+
+    def test_f02_iter2_terminal_restore_unchanged_finishes_twice(self):
+        self.install('personal'); before=self.state(); self.transact(self.uninstall_plan())
+        self.interrupt_terminal_restore(); self.rollback_twice(before)
+
+    def f03_install(self):
+        for zone in ['America/New_York','America/Los_Angeles']:
+            path=m.ZONEINFO/zone; path.parent.mkdir(parents=True,exist_ok=True); path.write_text('synthetic zone')
+        self.install('personal')
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        generation=json.loads(m.RECORD.read_text())['trust']['generation']
+        return self.system/('source-local-'+generation)
+
+    def f03_config_target(self,target):
+        path=self.home/'.claude-switcher/v2/config.json'; config=json.loads(path.read_text())
+        config['timezone_target']=target; path.write_text(json.dumps(config))
+
+    def f03_target_line(self,line):
+        path=self.system/'tz-watchdog.sh'
+        path.write_bytes(path.read_bytes().replace(b'TARGET="Asia/Tokyo"',line))
+        return path
+
+    def test_f03_historical_unquoted_target_passes_public_verification(self):
+        archive=self.f03_install(); before=self.snapshot([archive],identities=True)
+        self.f03_target_line(b'TARGET=Asia/Tokyo')
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        self.assertEqual(self.snapshot([archive],identities=True),before)
+
+    def test_f03_quoted_region_change_keeps_generation_uninstall_authority(self):
+        archive=self.f03_install(); before=self.snapshot([archive],identities=True)
+        self.f03_target_line(b'TARGET="America/New_York"'); self.f03_config_target('America/New_York')
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        self.uninstall_plan()
+        self.assertEqual(self.snapshot([archive],identities=True),before)
+
+    def test_f03_current_config_mismatch_is_not_hidden_by_registration(self):
+        self.f03_install(); self.f03_config_target('America/New_York')
+        before=self.state(identities=True); start=len(self.commands)
+        with self.assertRaises(ValueError): m.verify_public(self.owner,'personal')
+        self.assertEqual(self.state(identities=True),before); self.assert_no_mutations(self.commands[start:])
+
+    def f03_rust_update(self,source,target):
+        import subprocess,shutil,sys,hashlib
+        root=Path(__file__).resolve().parents[2]
+        incoming=self.root/'rust-bridge-input.json'; outgoing=self.root/'rust-bridge-output.json'
+        incoming.write_text(json.dumps(dict(script=source,timezone=target)))
+        if outgoing.exists(): outgoing.unlink()
+        env=dict(os.environ,SWITCHER_F03_BRIDGE_INPUT=str(incoming),SWITCHER_F03_BRIDGE_OUTPUT=str(outgoing))
+        command=[shutil.which('cargo'),'test','--offline','--locked','-p','switcher-core','--lib',
+                 'guardian_repair::legacy_tests::f03_emit_watchdog_update','--','--exact','--nocapture']
+        result=subprocess.run(command,cwd=root,env=env,capture_output=True,text=True,timeout=180)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertIn('running 1 test',result.stdout)
+        self.assertTrue(outgoing.exists(),'Rust bridge must run; missing bridge cannot skip coverage')
+        rendered=json.loads(outgoing.read_text())['command']
+        evidence=dict(python=sys.executable,command=command,returncode=result.returncode,
+                      source_sha256=hashlib.sha256(source.encode()).hexdigest(),target=target,
+                      rust_source_sha256=hashlib.sha256((root/'crates/switcher-core/src/guardian_repair.rs').read_bytes()).hexdigest(),
+                      python_source_sha256=hashlib.sha256((root/'packaging/macos/local_install.py').read_bytes()).hexdigest(),
+                      rendered=rendered,stdout=result.stdout,stderr=result.stderr)
+        log=root/'output/review/R03-F03-整改-20261025/python-bridge-calls.jsonl'
+        with log.open('a') as stream: stream.write(json.dumps(evidence,ensure_ascii=False)+'\n')
+        return rendered
+
+    def f03_apply_rust_update(self,path,target):
+        import shlex,subprocess
+        rendered=self.f03_rust_update(path.read_text(),target)
+        self.assertIsInstance(rendered,str)
+        arguments=shlex.split(rendered)
+        self.assertEqual(arguments[:3],['/usr/bin/sed','-i',''])
+        self.assertEqual(len(arguments),5)
+        self.assertEqual(arguments[4],'/Library/Application Support/claude-switcher/tz-watchdog.sh')
+        self.assertEqual(arguments[3],'s|^TARGET=.*|TARGET="'+target+'"|')
+        # Execute the production-rendered fixed sed only; substitute its fixed destination.
+        arguments[4]=str(path)
+        result=subprocess.run(arguments,capture_output=True,text=True,timeout=10)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        import hashlib
+        evidence=Path(__file__).resolve().parents[2]/'output/review/R03-F03-整改-20261025/python-bridge-calls.jsonl'
+        with evidence.open('a') as stream:
+            stream.write(json.dumps(dict(record='applied_fixed_sed',script_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),target=target))+'\n')
+
+    def test_f03_rust_watchdog_update_passes_real_public_verification(self):
+        archive=self.f03_install(); original=self.snapshot([archive],identities=True)
+        path=self.system/'tz-watchdog.sh'; self.f03_apply_rust_update(path,'America/New_York')
+        self.f03_config_target('America/New_York')
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        before=self.state(); stack,fired=self.removal_fault(path,True)
+        with stack:
+            with self.assertRaisesRegex(RuntimeError,'F02 removal'): self.transact(self.uninstall_plan())
+        self.assertTrue(fired); self.rollback_twice(before)
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        self.assertEqual(self.snapshot([archive],identities=True),original)
+
+    def test_f03_rust_bridge_handles_historical_input_and_same_target_noop(self):
+        for quoted,target in [(True,'Asia/Tokyo'),(False,'Asia/Tokyo'),(False,'America/New_York')]:
+            with self.subTest(quoted=quoted,target=target):
+                try:
+                    self.f03_install(); path=self.system/'tz-watchdog.sh'
+                    if not quoted: self.f03_target_line(b'TARGET=Asia/Tokyo')
+                    before=path.read_bytes()
+                    if target=='Asia/Tokyo':
+                        self.assertIsNone(self.f03_rust_update(path.read_text(),target))
+                        self.assertEqual(path.read_bytes(),before)
+                    else:
+                        self.f03_apply_rust_update(path,target); self.f03_config_target(target)
+                    self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+                finally: self.reset_isolated_case()
+
+    def test_f03_target_grammar_accepts_only_complete_valid_literals(self):
+        for target in ['Asia/Tokyo','America/New_York']:
+            for quoted in [False,True]:
+                with self.subTest(target=target,quoted=quoted):
+                    try:
+                        self.f03_install(); line=('TARGET="'+target+'"' if quoted else 'TARGET='+target).encode()
+                        self.f03_target_line(line); self.f03_config_target(target)
+                        before=self.state(identities=True)
+                        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+                        self.uninstall_plan(); self.assertEqual(self.state(identities=True),before)
+                    finally: self.reset_isolated_case()
+
+    def test_f03_target_grammar_rejects_malformed_assignments(self):
+        lines=[b'# missing target',b'TARGET="Asia/Tokyo"\nTARGET=Asia/Tokyo',
+               b'TARGET="Asia/Tokyo',b'TARGET=Asia/Tokyo"',b"TARGET='Asia/Tokyo'",
+               b'TARGET="$(id)"',b'TARGET=`id`',b'TARGET="${TZ}"',
+               b'TARGET="Asia/Tokyo"; echo unexpected',b'TARGET=Asia/Tokyo # suffix',
+               b'TARGET=../../etc/passwd',b'TARGET=/etc/localtime',b'TARGET=Mars/Olympus',
+               b'TARGET=""',b'TARGET ="Asia/Tokyo"',b' TARGET="Asia/Tokyo"',
+               b'TARGET="Asia/Tokyo"\r',b'TARGET=Asia/Tokyo\x00']
+        for line in lines:
+            with self.subTest(line=line):
+                try:
+                    self.f03_install(); self.f03_target_line(line); before=self.state(identities=True)
+                    with self.assertRaises(ValueError): m.verify_public(self.owner,'personal')
+                    with self.assertRaises(ValueError): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                finally: self.reset_isolated_case()
+
+    def test_f03_generation_authority_is_separate_from_current_config(self):
+        for script_zone,config_zone in [('Asia/Tokyo','America/New_York'),('America/New_York','Asia/Tokyo')]:
+            with self.subTest(script=script_zone,config=config_zone):
+                try:
+                    archive=self.f03_install(); historical=self.snapshot([archive],identities=True)
+                    self.f03_target_line(('TARGET="'+script_zone+'"').encode()); self.f03_config_target(config_zone)
+                    with self.assertRaises(ValueError): m.verify_public(self.owner,'personal')
+                    self.uninstall_plan()
+                    self.assertEqual(self.snapshot([archive],identities=True),historical)
+                finally: self.reset_isolated_case()
+
+    def test_f03_generation_baseline_target_and_evidence_remain_required(self):
+        for change in ['wrong_archive_target','missing_script','missing_result','wrong_generation']:
+            with self.subTest(change=change):
+                try:
+                    archive=self.f03_install(); self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York')
+                    if change=='wrong_archive_target':
+                        path=archive/'watchdog-new-script'
+                        path.write_bytes(path.read_bytes().replace(b'Asia/Tokyo',b'America/Los_Angeles'))
+                    elif change=='missing_script': (archive/'watchdog-new-script').unlink()
+                    elif change=='missing_result': (archive/'result.json').unlink()
+                    else:
+                        record=json.loads(m.RECORD.read_text()); record['trust']['generation']='f'*32
+                        m.RECORD.write_text(json.dumps(record))
+                    before=self.state(identities=True)
+                    with self.assertRaises((ValueError,OSError)): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                finally: self.reset_isolated_case()
+
+    def test_f03_target_exception_does_not_allow_other_component_bytes(self):
+        for key in ['watchdog_body','bodyguard','watchdog_plist','bodyguard_plist','cli']:
+            with self.subTest(component=key):
+                try:
+                    self.f03_install(); self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York')
+                    paths={'watchdog_body':self.system/'tz-watchdog.sh',
+                           'bodyguard':self.system/'claude-bodyguard.sh',
+                           'watchdog_plist':m.WATCHDOG_PLIST,'bodyguard_plist':m.BODYGUARD_PLIST,
+                           'cli':m.cli_path(self.owner)}
+                    path=paths[key]; path.write_bytes(path.read_bytes()+b'\n# unexpected body change\n')
+                    before=self.state(identities=True)
+                    with self.assertRaises(ValueError): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                finally: self.reset_isolated_case()
+
+    def test_f03_target_exception_preserves_filesystem_restrictions(self):
+        for change in ['uid','gid','writable','wrong_mode','symlink','dangling','hardlink','unsafe_parent']:
+            with self.subTest(change=change):
+                try:
+                    self.f03_install(); path=self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York')
+                    metadata=path.lstat(); identity=(metadata.st_dev,metadata.st_ino)
+                    if change in ['uid','gid']: self.metadata_overrides[identity]={'st_'+change:501}
+                    elif change=='writable': path.chmod(0o777)
+                    elif change=='wrong_mode': path.chmod(0o700)
+                    elif change in ['symlink','dangling']:
+                        parked=self.root/'watchdog-parked'; path.rename(parked)
+                        path.symlink_to(parked if change=='symlink' else self.root/'missing')
+                    elif change=='hardlink': os.link(path,self.root/'watchdog-linked')
+                    else: self.system.chmod(0o777)
+                    before=self.state(identities=True)
+                    with self.assertRaises((ValueError,OSError)): m.verify_public(self.owner,'personal')
+                    with self.assertRaises((ValueError,OSError)): self.uninstall_plan()
+                    self.assertEqual(self.state(identities=True),before)
+                finally: self.reset_isolated_case()
+
+    def test_f03_preview_snapshot_remains_exact_after_region_change(self):
+        for change in ['valid_target','same_byte_inode']:
+            with self.subTest(change=change):
+                try:
+                    self.f03_install(); path=self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York'); planned=self.uninstall_plan()
+                    if change=='valid_target': path.write_bytes(path.read_bytes().replace(b'America/New_York',b'America/Los_Angeles'))
+                    else:
+                        parked=self.root/'preview-original'; path.rename(parked); m.copy(parked,path)
+                    before=self.state(identities=True); start=len(self.commands)
+                    with self.assertRaises(ValueError): self.transact(planned)
+                    self.assertEqual(self.state(identities=True),before); self.assert_no_mutations(self.commands[start:])
+                finally: self.reset_isolated_case()
+
+    def test_f03_generation_comparison_cannot_authorize_different_snapshot_bytes(self):
+        for change in ['valid_target','same_byte_inode']:
+            with self.subTest(change=change):
+                try:
+                    self.f03_install(); path=self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York'); original=m.uninstall_snapshot; fired=[]
+                    def snapshot(plan):
+                        result=original(plan)
+                        if not fired:
+                            fired.append(True)
+                            if change=='valid_target': path.write_bytes(path.read_bytes().replace(b'America/New_York',b'America/Los_Angeles'))
+                            else:
+                                parked=self.root/'observed-original'; path.rename(parked); m.copy(parked,path)
+                        return result
+                    with patch.object(m,'uninstall_snapshot',side_effect=snapshot):
+                        with self.assertRaises(ValueError): self.uninstall_plan()
+                    self.assertTrue(fired); self.assertTrue(path.exists())
+                finally: self.reset_isolated_case()
+
+    def test_f03_region_uninstall_rollback_restores_new_target_not_generation(self):
+        archive=self.f03_install(); historical=self.snapshot([archive],identities=True)
+        cli=m.cli_path(self.owner).read_bytes(); self.f03_target_line(b'TARGET="America/New_York"')
+        self.f03_config_target('America/New_York'); before=self.state()
+        stack,fired=self.removal_fault(self.system/'tz-watchdog.sh',True)
+        with stack:
+            with self.assertRaisesRegex(RuntimeError,'F02 removal'): self.transact(self.uninstall_plan())
+        self.assertTrue(fired); self.rollback_twice(before)
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        self.assertEqual(m.cli_path(self.owner).read_bytes(),cli)
+        self.assertEqual(self.snapshot([archive],identities=True),historical)
+
+    def test_f03_unpublished_candidate_is_preserved_without_being_adopted(self):
+        archive=self.f03_install(); historical=self.snapshot([archive],identities=True)
+        path=self.f03_target_line(b'TARGET="America/New_York"'); self.f03_config_target('America/New_York')
+        before=self.state(); self.transact(self.uninstall_plan()); original=m.rename_exclusive; prepared=[]
+        def fail(srcfd,src,dstfd,dst):
+            if self.resolve(dst,dstfd)==path and not prepared:
+                prepared.append(self.resolve(src,srcfd)); raise RuntimeError('F03 unpublished candidate')
+            return original(srcfd,src,dstfd,dst)
+        with patch.object(m,'rename_exclusive',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'F03 unpublished'): m.recover(self.owner)
+        self.assertTrue(prepared); candidate=prepared[0]
+        candidate.write_bytes(candidate.read_bytes().replace(b'America/New_York',b'America/Los_Angeles'))
+        retained=self.identity_evidence(candidate)
+        self.rollback_twice(before); self.assert_retained_identity(retained)
+        self.assertNotEqual(path.read_bytes(),candidate.read_bytes())
+        self.assertEqual(m.verify_public(self.owner,'personal')['status'],'components_verified')
+        self.assertEqual(self.snapshot([archive],identities=True),historical)
+
+    def test_f03_published_prepared_target_conflict_is_not_adopted(self):
+        self.f03_install(); path=self.f03_target_line(b'TARGET="America/New_York"')
+        self.f03_config_target('America/New_York'); self.transact(self.uninstall_plan())
+        self.interrupt_restore_publication(path)
+        path.write_bytes(path.read_bytes().replace(b'America/New_York',b'America/Los_Angeles'))
+        conflict=self.identity_evidence(path); journal=m.JOURNAL.read_bytes()
+        with patch.object(m.os,'fchown',side_effect=self.fchown) as fchown:
+            for _ in range(2):
+                with self.assertRaises(ValueError): m.recover(self.owner)
+                self.assert_retained_identity(conflict); self.assertEqual(m.JOURNAL.read_bytes(),journal)
+            fchown.assert_not_called()
+
+    def test_f03_transaction_objects_reject_valid_target_conflicts(self):
+        for phase in ['held','restored']:
+            with self.subTest(phase=phase):
+                try:
+                    self.f03_install(); path=self.f03_target_line(b'TARGET="America/New_York"')
+                    self.f03_config_target('America/New_York'); self.transact(self.uninstall_plan())
+                    if phase=='held':
+                        journal=m.load_journal(); target=Path(journal['uninstall_holding']['watchdog_script']['path'])/'component'
+                    else:
+                        original=m.save; fired=[]
+                        def fail(destination,value,*args,**kwargs):
+                            result=original(destination,value,*args,**kwargs)
+                            if (destination==m.JOURNAL and 'watchdog_script' in value.get('uninstall_restored',{}) and not fired):
+                                fired.append(True); raise RuntimeError('F03 restored identity durable')
+                            return result
+                        with patch.object(m,'save',side_effect=fail):
+                            with self.assertRaisesRegex(RuntimeError,'F03 restored'): m.recover(self.owner)
+                        self.assertTrue(fired); target=path
+                    target.write_bytes(target.read_bytes().replace(b'America/New_York',b'America/Los_Angeles'))
+                    conflict=self.identity_evidence(target)
+                    for _ in range(2):
+                        with self.assertRaises(ValueError): m.recover(self.owner)
+                        self.assert_retained_identity(conflict); self.assertTrue(m.JOURNAL.exists())
+                finally: self.reset_isolated_case()
+
+
+    def f06_archive(self):
+        record=json.loads(m.RECORD.read_text())
+        stage=self.system/('source-local-'+record['trust']['generation'])
+        return stage,json.loads((stage/'result.json').read_text())
+
+    def f06_expected_shim(self,plan,contract):
+        # Frozen v1 template: expected bytes do not ask the production renderer to choose a version.
+        import shlex
+        entry=plan['cli_entry']; literals=entry.get('install_literals',entry['literals'])
+        lines=['#!/bin/bash','# Configuration literals retained for the Rust configuration reader.']
+        for key in m.CONFIG_KEYS:
+            if key in literals:
+                lines.append(key+"='"+literals[key].replace("'", "'\\''")+"'")
+        executable=m.app(plan['edition'])/'Contents/Resources/components/claude-switcher'
+        flag=' --legacy-cli' if contract==2 else ''
+        lines.append('exec '+shlex.quote(str(executable))+' --edition '+plan['edition']+flag+' "$@"')
+        return ('\n'.join(lines)+'\n').encode()
+
+    def f06_contract(self,archive,contract):
+        if contract=='missing': archive['plan'].pop('cli_contract',None)
+        else: archive['plan']['cli_contract']=contract
+
+    def f06_checks(self,archive):
+        return [('cli_verify',lambda:m.cli_verify(archive)),
+                ('verify_public',lambda:m.verify_public(self.owner,'personal')),
+                ('verify_archived',lambda:m.verify(self.owner)),
+                ('uninstall_preview',self.uninstall_plan)]
+
+    def test_f06_new_plan_persists_contract_two(self):
+        planned=self.install('personal'); _,archive=self.f06_archive()
+        self.assertEqual(planned.get('cli_contract'),2)
+        self.assertEqual(archive['plan'].get('cli_contract'),2)
+        self.assertEqual(m.cli_path(self.owner).read_bytes(),self.f06_expected_shim(planned,2))
+
+    def test_f06_generation_selects_exactly_one_template(self):
+        self.install('personal'); stage,archive=self.f06_archive()
+        for contract in ['missing',1,2]:
+            self.f06_contract(archive,contract); m.save(stage/'result.json',archive)
+            expected=1 if contract=='missing' else contract
+            for live in [1,2]:
+                m.cli_path(self.owner).write_bytes(self.f06_expected_shim(archive['plan'],live))
+                before=self.state(identities=True)
+                for name,check in self.f06_checks(archive):
+                    with self.subTest(contract=contract,live=live,path=name):
+                        if live==expected: check()
+                        else:
+                            with self.assertRaises(ValueError): check()
+                        self.assertEqual(self.state(identities=True),before)
+
+    def test_f06_invalid_contract_types_and_values_reject(self):
+        self.install('personal'); stage,archive=self.f06_archive()
+        for contract in [True,False,'2',None,999,2.0,[],{}]:
+            self.f06_contract(archive,contract); m.save(stage/'result.json',archive)
+            m.cli_path(self.owner).write_bytes(self.f06_expected_shim(archive['plan'],1))
+            before=self.state(identities=True)
+            for name,check in self.f06_checks(archive):
+                with self.subTest(contract=repr(contract),path=name):
+                    with self.assertRaises(ValueError): check()
+                    self.assertEqual(self.state(identities=True),before)
+
+    def test_f06_pending_journal_uses_its_recorded_contract(self):
+        planned=m.plan('personal',self.source,self.owner)
+        m.transact(planned,m.digest(planned)); journal=m.load_journal()
+        self.assertEqual(journal['pending'],'health')
+        for contract in ['missing',1,2,True,False,'2',None,999,2.0,[],{}]:
+            self.f06_contract(journal,contract); m.save(m.JOURNAL,journal)
+            for live in [1,2]:
+                m.cli_path(self.owner).write_bytes(self.f06_expected_shim(journal['plan'],live))
+                before=self.state(identities=True); saved=m.JOURNAL.read_bytes()
+                accepted=contract=='missing' and live==1 or type(contract) is int and contract==live
+                with self.subTest(contract=repr(contract),live=live):
+                    if accepted:
+                        self.assertEqual(m.verify(self.owner)['status'],'pending_authenticated_health')
+                    else:
+                        with self.assertRaises(ValueError): m.verify(self.owner)
+                    self.assertEqual(m.JOURNAL.read_bytes(),saved)
+                    self.assertEqual(self.state(identities=True),before)
+
+    def test_f06_restore_only_accepts_transaction_contract(self):
+        import copy
+        self.install('personal'); _,original=self.f06_archive()
+        self.assertIsNone(original['plan']['cli_entry']['sha256'])
+        for contract in ['missing',1,2,True,False,'2',None,999,2.0,[],{}]:
+            for live in [1,2]:
+                archive=copy.deepcopy(original); self.f06_contract(archive,contract)
+                path=m.cli_path(self.owner); path.write_bytes(self.f06_expected_shim(archive['plan'],live))
+                path.chmod(0o755); before=path.read_bytes()
+                accepted=contract=='missing' and live==1 or type(contract) is int and contract==live
+                with self.subTest(contract=repr(contract),live=live):
+                    if accepted:
+                        m.cli_restore(archive); self.assertFalse(path.exists())
+                    else:
+                        with self.assertRaises(ValueError): m.cli_restore(archive)
+                        self.assertEqual(path.read_bytes(),before)
+
+    def test_f06_archive_proof_tampering_is_rejected(self):
+        import copy
+        self.install('personal'); stage,original=self.f06_archive()
+        for field,value in [('stage',str(self.root/'unrelated')),('pending','health'),
+                            ('owner_uid',502),('edition','public')]:
+            archive=copy.deepcopy(original)
+            if field in ['owner_uid','edition']: archive['plan'][field]=value
+            else: archive[field]=value
+            m.save(stage/'result.json',archive)
+            before=self.state(identities=True)
+            for name,check in [('verify_public',lambda:m.verify_public(self.owner,'personal')),
+                               ('uninstall_preview',self.uninstall_plan)]:
+                with self.subTest(field=field,path=name):
+                    with self.assertRaises(ValueError): check()
+                    self.assertEqual(self.state(identities=True),before)
+        m.save(stage/'result.json',original)
+        record=json.loads((stage/'record').read_text()); record['owner_uid']=502
+        m.save(stage/'record',record,mode=0o644)
+        with self.assertRaises(ValueError): m.verify_public(self.owner,'personal')
+        with self.assertRaises(ValueError): self.uninstall_plan()
+
+    def test_f06_bash_shim_preserves_argv_streams_and_exit(self):
+        import subprocess,sys
+        # Exercise a path with shell metacharacters; never execute caller-controlled arguments.
+        self.patch(m,'app',side_effect=lambda edition:self.apps/("空 格 ' $ app-"+edition+'.app'))
+        self.install('public')
+        executable=m.app('public')/'Contents/Resources/components/claude-switcher'
+        executable.write_text('#!'+sys.executable+'\nimport json,sys\n'
+                              'sys.stdout.write(json.dumps(sys.argv[1:],ensure_ascii=False)+"\\n")\n'
+                              'sys.stderr.write("synthetic stderr\\n")\nsys.exit(7)\n')
+        executable.chmod(0o755)
+        args=['check','--json','','space value',"quote'\"",'$(touch NEVER)','semi;colon','中文']
+        output=subprocess.run(['/bin/bash',str(m.cli_path(self.owner)),*args],capture_output=True,
+                              env={'HOME':str(self.home),'PATH':'/usr/bin:/bin'},timeout=10)
+        self.assertEqual(output.returncode,7)
+        self.assertEqual(output.stderr,b'synthetic stderr\n')
+        expected=['--edition','public','--legacy-cli',*args]
+        self.assertEqual(output.stdout,(json.dumps(expected,ensure_ascii=False)+'\n').encode())
+        self.assertFalse((self.root/'NEVER').exists())
+        print('F06 shim argv:',json.dumps(expected,ensure_ascii=False),'exit:',output.returncode)
 
 if __name__=='__main__': unittest.main()

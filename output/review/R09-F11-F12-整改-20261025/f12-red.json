@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-helper",
+    "--lib",
+    "policy::tests::f12_pending_",
+    "--",
+    "--nocapture"
+  ],
+  "exit": 101,
+  "seconds": 8.953092125011608,
+  "source_before": "988d06c82080749104a3078ea999c6021e78c00773b20ed6006d52ac2011778d",
+  "source_after": "988d06c82080749104a3078ea999c6021e78c00773b20ed6006d52ac2011778d",
+  "frozen": true,
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r09-f12-red-h9kxakpc",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc"
+  }
+}

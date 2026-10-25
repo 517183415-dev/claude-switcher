@@ -70,11 +70,10 @@ fn metadata_observed_never_implies_dependency_preservation() {
             .iter()
             .any(|item| item.code == "keychain_dependencies_unresolved")
     );
-    // Backup may be prepared independently, but never grants an account mutation.
-    assert!(view.backup_allowed);
+    assert!(!view.backup_allowed);
 }
 #[test]
-fn backup_affordance_rejects_installation_process_repair_and_unknown_blockers() {
+fn unsupported_backup_is_never_offered() {
     for code in [
         "installation_unverified",
         "claude_running_or_unknown",
@@ -88,7 +87,8 @@ fn backup_affordance_rejects_installation_process_repair_and_unknown_blockers() 
     }
     let view = bridge::account_preparation_view(readiness(&["backup_missing"], false));
     assert!(!view.ready);
-    assert!(view.backup_allowed);
+    assert!(!view.backup_allowed);
+    assert!(!bridge::account_preparation_view(readiness(&[], true)).backup_allowed);
 }
 #[test]
 fn only_consistent_complete_readiness_is_presented_as_ready() {
@@ -214,16 +214,62 @@ fn missing_scoped_context_never_implies_local_permission() {
 }
 
 #[test]
-fn historical_verified_preserved_never_authorizes_global_readiness() {
+fn current_compatibility_readiness_matches_core_without_login_claims() {
     let mut core = readiness(&[], false);
-    core.keychain.dependency_assessment = DependencyAssessment::VerifiedPreserved;
-    let view = bridge::account_preparation_view(core);
-    assert!(!view.ready);
-    assert!(
-        view.blockers
-            .iter()
-            .any(|item| item.code == "keychain_dependencies_unresolved")
+    core.keychain = KeychainMetadataProbe::run();
+    assert_eq!(
+        core.keychain.dependency_assessment,
+        DependencyAssessment::VerifiedPreserved
     );
+    let view = bridge::account_preparation_view(core);
+    assert!(view.ready);
+    assert!(view.blockers.is_empty());
+    assert!(!view.backup_allowed);
+    let json = serde_json::to_string(&view).unwrap();
+    for private in [
+        "queries",
+        "dependency_assessment",
+        "verified_preserved",
+        "login",
+    ] {
+        assert!(!json.contains(private), "{private}");
+    }
+}
+#[test]
+fn compatibility_assessments_preserve_backend_blockers_and_false_readiness() {
+    let codes = [
+        "installation_unverified",
+        "claude_running_or_unknown",
+        "repair_recovery_pending",
+        "backup_missing",
+        "keychain_dependencies_unresolved",
+        "unknown_future_gate",
+    ];
+    for assessment in [
+        DependencyAssessment::VerifiedPreserved,
+        DependencyAssessment::HandlingPlanAvailable,
+    ] {
+        let mut core = readiness(&codes, true);
+        core.ready = true;
+        core.keychain.dependency_assessment = assessment;
+        let view = bridge::account_preparation_view(core);
+        assert!(!view.ready);
+        assert!(!view.backup_allowed);
+        assert_eq!(
+            view.blockers
+                .iter()
+                .map(|b| b.code.as_str())
+                .collect::<Vec<_>>(),
+            codes
+        );
+        let mut core = readiness(&[], true);
+        core.ready = false;
+        core.keychain.dependency_assessment = assessment;
+        let view = bridge::account_preparation_view(core);
+        assert!(!view.ready);
+        assert!(view.blockers.is_empty());
+        assert!(!view.backup_allowed);
+    }
 }
 #[test]
 fn handling_plan_preserves_every_backend_blocker_and_ready_consistency() {

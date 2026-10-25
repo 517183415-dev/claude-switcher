@@ -31,9 +31,17 @@ bash scripts/build-rust.sh personal
 bash scripts/build-rust.sh public
 ```
 
-产物位于 `target/<本机架构>-apple-darwin/release/bundle/macOS/`。本地构建不等于系统服务已安装。安装、升级和恢复步骤见 [Rust 使用说明](docs/usage/Rust使用说明.md) 与 [本地安装说明](packaging/macos/README.md)。实际验证边界见 [Rust 实施状态](docs/handoff/Rust-R4-实施状态.md)。
+产物位于 `target/<本机架构>-apple-darwin/release/bundle/` 下。安装命令须使用实际 App 的绝对路径。本地构建不等于系统服务已安装。安装、升级和恢复步骤见 [Rust 使用说明](docs/usage/Rust使用说明.md) 与 [本地安装说明](packaging/macos/README.md)。当前隔离整改与未运行项目见 [当前整改证据](docs/handoff/当前整改证据-2026-10-25.md)；[Rust R4 实施状态](docs/handoff/Rust-R4-实施状态.md) 保留其历史快照身份。
 
-源码安装通过拉取源码、重新构建和本地安装升级。Public 保留可信签名源的自动更新实现；源码安装不自动执行远端源码。下文的 SwiftUI、shell 安装和历史运行记录描述旧版，不能代替 Rust 版验收。
+构建脚本包含 `npm ci`。安装器 `plan` 在缺少地区配置时会探测网络；两者均不是离线审核命令。本轮隔离整改不执行这些命令。
+
+源码安装通过拉取源码、重新构建和本地安装升级。SourceLocal 两版均不自动更新。Public 保留配置可信签名源后的 DeveloperId 更新能力。
+
+Rust 版选择账号后先检查环境，通过后退出 Claude、切换资料，再检查并请求启动。安全有效的 `current` A/B 标记优先。标记缺失或内容不识别时兼容 v2 状态；不安全文件拒绝；需要回退 v2 时，损坏记录拒绝。归属未知且活动目录为空或缺失时保留已有 A；首次非空活动资料沿用收编 A 合同。普通修复一次点击执行，成功后自动全检查；地区变更保留明确选择与确认。
+
+用户 guardian 保留网络事件、十秒兜底、健康和受信 Public 调度。周期校时由 root 看门狗负责，启动时及每小时运行。真实运行时序另验。当前隔离结果不能代替 GUI、系统服务、A→B→A 或 48 小时／7 天验收。
+
+下文的 SwiftUI、shell 安装、路线图和运行记录描述旧版。`installer/安装.command` 仅安装旧版；Rust 版使用上面的构建入口及 `packaging/macos/` 安装流程。
 
 ## 为什么做这个
 
@@ -47,7 +55,7 @@ AI 服务平台的风控已经从"看 IP"进化到**全维度环境画像**：�
 
 ### 1. Block-on-Fail 环境审计引擎
 
-每次启动前强制执行 14 项环境指纹审计，**任一指标不达标，应用物理上不会被拉起**：
+每次启动前执行 14 项环境指纹审计。必需项失败或未决时阻止启动；提示项单独显示：
 
 | # | 检查项 | 防什么 |
 |---|---|---|
@@ -208,7 +216,7 @@ bash core/claude-switch.sh diagnose-proxy --proxy http://127.0.0.1:18080
 
 本项目按"实战驱动"迭代——风控怎么进化，防护就怎么跟上：
 
-- [x] macOS 版：14 项环境审计 + Kill-Switch + 快照切换 + 漂移自愈（已稳定）
+- [x] 旧 macOS 版历史：14 项环境审计 + Kill-Switch + 快照切换 + 漂移自愈；该历史状态不代表 Rust 版验收
 - [x] Windows 版（Beta）：核心逻辑全移植
 - [x] Linux 版（Beta）：bash 核心 + systemd 保镖 + 终端菜单
 - [ ] Windows 版稳定化：真机测试迭代，收敛 Beta
@@ -217,13 +225,13 @@ bash core/claude-switch.sh diagnose-proxy --proxy http://127.0.0.1:18080
 - [ ] 更多指纹维度：字体地区特征、Canvas/WebGL 渲染特征
 - [x] 更多代理客户端适配：已支持 Clash Verge / Shadowrocket / sing-box / ClashX / Surge / Odcloud（含 auto 自动识别）
 - [ ] 快照切换提速：增量归档（只写差量）
-- [x] 应用内自动更新：launchd 每 12 小时自动检查更新，自检失败自动回滚，也可手动 `claude-switch.sh update` 保底
+- [x] 旧 shell 版自动更新：launchd 每 12 小时检查，自检失败回滚；Rust SourceLocal 两版不自动更新
 
 > 有想优先看到的功能，去 [Issues](https://github.com/517183415-dev/claude-switcher/issues) 投票或提需求，热度高的先做。
 
 ## 帮忙吆喝一声
 
-如果这个工具让你少被封了一个号，希望有条件的佬哥能帮我们在 [Linux.do](https://linux.do) 论坛发个帖子推荐一下——仓库地址 <https://github.com/517183415-dev/claude-switcher>，一句话定位：**"Claude 账号的 Fail-Closed 环境保护罩：14 项环境审计不过就物理上不让启动"**。让更多被风控折磨的兄弟少走弯路。
+如果这个工具帮到了你，可以在 [Linux.do](https://linux.do) 论坛介绍项目——仓库地址 <https://github.com/517183415-dev/claude-switcher>，一句话定位：**"Claude 账号环境保护工具：启动前检查，必需项失败或未决时阻止启动"**。
 
 ## License
 

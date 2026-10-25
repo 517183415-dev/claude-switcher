@@ -1,0 +1,29 @@
+{
+  "gc_fields": 9,
+  "fields_exact": true,
+  "pending_blocks_commit_rust_bool_ts_boolean": true,
+  "u64_existing_number_unchanged": true,
+  "first_export_receipt_preserved": "dto-export.json",
+  "current_receipt": "dto-export-gc-pending.json",
+  "whitespace": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "crates/switcher-domain/src/desktop.rs",
+      "crates/switcher-domain/src/lib.rs",
+      "apps/desktop/src/generated/PublisherCleanupPreview.ts",
+      "apps/desktop/src/generated/PublisherGcPreview.ts"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "hashes": {
+    "crates/switcher-domain/src/desktop.rs": "f2105ea9b9649390548859242fde551698a8bedcfc564e21c38a0f9bc7fc1496",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "f9e6ed548e36bebce6d50e1fd31e7d72d2fd5a2bae9349edafeaf2d68cf1cbb9"
+  }
+}

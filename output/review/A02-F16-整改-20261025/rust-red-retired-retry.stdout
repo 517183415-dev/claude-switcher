@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas ... FAILED
+
+failures:
+
+failures:
+    publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.15s
+

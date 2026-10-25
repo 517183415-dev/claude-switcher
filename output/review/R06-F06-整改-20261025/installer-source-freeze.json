@@ -1,0 +1,43 @@
+{
+  "sources": {
+    "packaging/macos/local_install.py": "fbe4c2ecbc37d2775bb2fd5c1626d20f3c4e97cebc910bf1d189bd345114ba3e",
+    "packaging/macos/test_local_install.py": "f7bf3b561d2b3ceb3c2882f0eb52c5e0a6975f5db5282a91d31dae668bb9a3f4"
+  },
+  "protected_ast": {
+    "recheck_uninstall": {
+      "expected": "0186ed11f0a3a17bd48189bcc1212873a5cd5cbd47555cdf31df490ecb9158e4",
+      "actual": "0186ed11f0a3a17bd48189bcc1212873a5cd5cbd47555cdf31df490ecb9158e4",
+      "unchanged": true
+    },
+    "check_uninstall_backups": {
+      "expected": "527de5810b5cb38595a7531e520a325f8c929d2d937cf1dcd702be53601b60d2",
+      "actual": "527de5810b5cb38595a7531e520a325f8c929d2d937cf1dcd702be53601b60d2",
+      "unchanged": true
+    },
+    "check_uninstall_holdings": {
+      "expected": "97af866d2d8fe26da551ce8a2862683a8f0bb75ea320b99642b54f911e050f7c",
+      "actual": "97af866d2d8fe26da551ce8a2862683a8f0bb75ea320b99642b54f911e050f7c",
+      "unchanged": true
+    },
+    "check_uninstall_recovery": {
+      "expected": "04df44c9f40ef25d4261ad15ee566bf5a678bc6f769dd5a65fdfa3584b5b819f",
+      "actual": "04df44c9f40ef25d4261ad15ee566bf5a678bc6f769dd5a65fdfa3584b5b819f",
+      "unchanged": true
+    },
+    "record_uninstall_prepared": {
+      "expected": "ec4b5fa15cdd5dfefad95ffb7abf38c8744e727cb5edc31f1aa03c2a50f155cd",
+      "actual": "ec4b5fa15cdd5dfefad95ffb7abf38c8744e727cb5edc31f1aa03c2a50f155cd",
+      "unchanged": true
+    },
+    "restore_uninstall_file": {
+      "expected": "7c3c21431a2d4a11dfd3000b203d3186a25becae9016705e4acba3f0b9fee5ae",
+      "actual": "7c3c21431a2d4a11dfd3000b203d3186a25becae9016705e4acba3f0b9fee5ae",
+      "unchanged": true
+    },
+    "verify_uninstall_restored": {
+      "expected": "1d8829323a3d3a0268123aadd62a1b9aea8ff0f504a2c768558a0f6f2f2ed49c",
+      "actual": "1d8829323a3d3a0268123aadd62a1b9aea8ff0f504a2c768558a0f6f2f2ed49c",
+      "unchanged": true
+    }
+  }
+}

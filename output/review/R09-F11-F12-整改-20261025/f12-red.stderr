@@ -1,0 +1,38 @@
+   Compiling memchr v2.8.3
+   Compiling syn v3.0.9
+   Compiling serde_json v1.0.154
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling thiserror v2.0.21
+   Compiling ts-rs v12.0.1
+   Compiling serde v1.0.229
+   Compiling switcher-domain v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-domain)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.61s
+     Running unittests src/lib.rs (target/debug/deps/switcher_helper-1b8e376566b84708)
+
+thread 'policy::tests::f12_pending_read_error_never_bypasses_gate' (27668241) panicked at crates/switcher-helper/src/policy.rs:756:13:
+assertion failed: !response.ok
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects' (27668238) panicked at crates/switcher-helper/src/policy.rs:654:13:
+preview
+
+thread 'policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt' (27668239) panicked at crates/switcher-helper/src/policy.rs:665:13:
+assertion `left == right` failed: 40
+  left: "repair_not_started"
+ right: "repair_recovery_required"
+
+thread 'policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization' (27668243) panicked at crates/switcher-helper/src/policy.rs:697:13:
+assertion failed: response.plan.is_none()
+error: test failed, to rerun pass `-p switcher-helper --lib`

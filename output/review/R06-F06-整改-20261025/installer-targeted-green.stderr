@@ -1,0 +1,11 @@
+test_f06_archive_proof_tampering_is_rejected (test_local_install.F02UninstallTests.test_f06_archive_proof_tampering_is_rejected) ... ok
+test_f06_bash_shim_preserves_argv_streams_and_exit (test_local_install.F02UninstallTests.test_f06_bash_shim_preserves_argv_streams_and_exit) ... ok
+test_f06_generation_selects_exactly_one_template (test_local_install.F02UninstallTests.test_f06_generation_selects_exactly_one_template) ... ok
+test_f06_invalid_contract_types_and_values_reject (test_local_install.F02UninstallTests.test_f06_invalid_contract_types_and_values_reject) ... ok
+test_f06_new_plan_persists_contract_two (test_local_install.F02UninstallTests.test_f06_new_plan_persists_contract_two) ... ok
+test_f06_restore_only_accepts_transaction_contract (test_local_install.F02UninstallTests.test_f06_restore_only_accepts_transaction_contract) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.290s
+
+OK

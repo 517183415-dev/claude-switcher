@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-commit-publisher-gc"
+description = "Enables the commit_publisher_gc command without any pre-configured scope."
+commands.allow = ["commit_publisher_gc"]
+
+[[permission]]
+identifier = "deny-commit-publisher-gc"
+description = "Denies the commit_publisher_gc command without any pre-configured scope."
+commands.deny = ["commit_publisher_gc"]

@@ -1,0 +1,22 @@
+
+running 17 tests
+test publisher::tests::f16_authenticated_current_failures_cannot_be_bypassed_by_public_exact_wire ... ok
+test publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history ... ok
+test publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas ... ok
+test publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas ... ok
+test publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history ... ok
+test publisher::tests::f16_corrupt_immutable_objects_are_never_overwritten_or_retired ... ok
+test publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release ... ok
+test publisher::tests::f16_old_state_without_resolution_field_remains_readable ... ok
+test publisher::tests::f16_remote_read_or_upload_errors_keep_pending_and_never_claim_resolution ... ok
+test publisher::tests::f16_resolution_tampering_fails_closed_on_reopen ... ok
+test publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas ... ok
+test publisher::tests::f16_second_terminal_preserves_both_original_evidence_and_new_pending ... ok
+test publisher::tests::f16_small_backup_restore_retains_current_resolution_from_older_snapshot ... ok
+test publisher::tests::f16_terminal_evidence_survives_restart_save_and_successful_higher_pause ... ok
+test publisher::tests::f16_terminal_write_failures_preserve_or_calibrate_exact_disk_commit ... ok
+test publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write ... ok
+test publisher::tests::f16_unsafe_or_corrupt_local_assets_never_become_missing_asset_resolutions ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 13.51s
+

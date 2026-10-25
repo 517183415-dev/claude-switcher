@@ -1,0 +1,9 @@
+
+running 4 tests
+test publisher_commands::f16_feedback_tests::only_verified_publication_is_completed ... ok
+test publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication ... ok
+test publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors ... ok
+test publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 61 filtered out; finished in 0.00s
+

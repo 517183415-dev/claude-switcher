@@ -1,5 +1,8 @@
 //! Restricted command-line entry for the installed GUI's repair identity.
-use std::path::{Path, PathBuf};
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
 #[cfg(target_os = "macos")]
 use switcher_domain::system::{ClientRole, InstallRecord, SOURCE_LOCAL_TRANSACTION};
 use switcher_domain::{Edition, desktop::RegionPreset};
@@ -69,30 +72,102 @@ fn with_apply(mut args: Vec<String>, apply: bool) -> Vec<String> {
     args
 }
 
-pub async fn run(command: RepairCommand, edition: Edition) -> Result<i32, String> {
-    let coordinator = crate::regions::RegionCoordinator::for_current_user(edition)?;
-    let prepared = match command {
-        RepairCommand::Fix { .. } => coordinator.preview(None)?,
-        RepairCommand::SetRegion { preset, .. } => coordinator.preview(Some(preset))?,
-        RepairCommand::DetectRegion { .. } => {
-            let client = crate::network::inherited_client()?;
-            let detected = crate::region_detection::detect(&client).await?;
-            coordinator.preview_detected(detected)?
-        }
-    };
-    print_json(&prepared.preview)?;
-    if matches!(
-        command,
-        RepairCommand::Fix { apply: true }
-            | RepairCommand::SetRegion { apply: true, .. }
-            | RepairCommand::DetectRegion { apply: true }
-    ) {
-        coordinator.execute(prepared)?;
-        print_json(
-            &serde_json::json!({"completed":true,"message":"系统修复已完成并保存地区目标；请重新检查环境与地区格式","recovery":null}),
-        )?;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OutputMode {
+    Modern,
+    Legacy,
+}
+
+trait RepairBackend {
+    type Prepared;
+    async fn prepare(
+        &mut self,
+        command: RepairCommand,
+        edition: Edition,
+    ) -> Result<Self::Prepared, String>;
+    fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview;
+    fn apply(&mut self, prepared: Self::Prepared) -> Result<(), String>;
+}
+
+struct NativeRepair;
+impl RepairBackend for NativeRepair {
+    type Prepared = (
+        crate::regions::RegionCoordinator,
+        crate::regions::PreparedRepair,
+    );
+    async fn prepare(
+        &mut self,
+        command: RepairCommand,
+        edition: Edition,
+    ) -> Result<Self::Prepared, String> {
+        let coordinator = crate::regions::RegionCoordinator::for_current_user(edition)?;
+        let prepared = match command {
+            RepairCommand::Fix { .. } => coordinator.preview(None)?,
+            RepairCommand::SetRegion { preset, .. } => coordinator.preview(Some(preset))?,
+            RepairCommand::DetectRegion { .. } => {
+                let client = crate::network::inherited_client()?;
+                let detected = crate::region_detection::detect(&client).await?;
+                coordinator.preview_detected(detected)?
+            }
+        };
+        Ok((coordinator, prepared))
     }
-    Ok(0)
+    fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview {
+        &prepared.1.preview
+    }
+    fn apply(&mut self, (coordinator, prepared): Self::Prepared) -> Result<(), String> {
+        coordinator.execute(prepared).map_err(str::to_owned)
+    }
+}
+
+pub async fn run(command: RepairCommand, edition: Edition) -> Result<i32, String> {
+    run_with_output(command, edition, OutputMode::Modern, &mut std::io::stdout()).await
+}
+
+pub async fn run_with_output(
+    command: RepairCommand,
+    edition: Edition,
+    mode: OutputMode,
+    output: &mut impl Write,
+) -> Result<i32, String> {
+    run_with_backend(command, edition, mode, &mut NativeRepair, output).await
+}
+
+async fn run_with_backend<B: RepairBackend>(
+    command: RepairCommand,
+    edition: Edition,
+    mode: OutputMode,
+    backend: &mut B,
+    output: &mut impl Write,
+) -> Result<i32, String> {
+    // set-region retains its modern protocol, including when reached via the legacy shim.
+    let legacy = mode == OutputMode::Legacy && matches!(command, RepairCommand::Fix { .. });
+    let result: Result<i32, String> = async {
+        if legacy { writeln!(output, "FIX:prepare").map_err(|_| "output_failed")?; }
+        let prepared = backend.prepare(command, edition).await?;
+        if legacy { writeln!(output, "FIX:preview").map_err(|_| "output_failed")?; }
+        else { write_json(output, B::preview(&prepared))?; }
+        if matches!(command, RepairCommand::Fix { apply: true } | RepairCommand::SetRegion { apply: true, .. } | RepairCommand::DetectRegion { apply: true }) {
+            if legacy { writeln!(output, "FIX:apply").map_err(|_| "output_failed")?; }
+            backend.apply(prepared)?;
+            if legacy { writeln!(output, "FIX:complete\nOK").map_err(|_| "output_failed")?; }
+            else { write_json(output, &serde_json::json!({"completed":true,"message":"系统修复已完成并保存地区目标；请重新检查环境与地区格式","recovery":null}))?; }
+        }
+        Ok(0)
+    }.await;
+    match result {
+        Err(error) if legacy => {
+            writeln!(output, "FAIL:{}", error.replace(['\r', '\n'], " "))
+                .map_err(|_| "output_failed")?;
+            Ok(1)
+        }
+        result => result,
+    }
+}
+
+fn write_json(output: &mut impl Write, value: &impl serde::Serialize) -> Result<(), &'static str> {
+    let text = serde_json::to_string(value).map_err(|_| "serialization_failed")?;
+    writeln!(output, "{text}").map_err(|_| "output_failed")
 }
 
 pub fn print_json(value: &impl serde::Serialize) -> Result<(), &'static str> {
@@ -163,6 +238,177 @@ fn verify_gui(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct F06Repair {
+        fail_prepare: bool,
+        fail_apply: bool,
+        calls: Vec<&'static str>,
+    }
+    impl RepairBackend for F06Repair {
+        type Prepared = switcher_domain::desktop::RepairPreview;
+        async fn prepare(
+            &mut self,
+            _: RepairCommand,
+            _: Edition,
+        ) -> Result<Self::Prepared, String> {
+            self.calls.push("prepare");
+            if self.fail_prepare {
+                return Err("synthetic_precondition".into());
+            }
+            Ok(switcher_domain::desktop::RepairPreview {
+                can_execute: true,
+                recovery_required: false,
+                message: "synthetic preview".into(),
+                original: crate::regions::preset(RegionPreset::Us),
+                target: crate::regions::preset(RegionPreset::Jp),
+                network_service: "synthetic".into(),
+                original_ipv6: "auto".into(),
+                target_ipv6: "off".into(),
+                user_changes: vec![],
+            })
+        }
+        fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview {
+            prepared
+        }
+        fn apply(&mut self, _: Self::Prepared) -> Result<(), String> {
+            self.calls.push("apply");
+            if self.fail_apply {
+                Err("synthetic_partial_failure".into())
+            } else {
+                Ok(())
+            }
+        }
+    }
+    async fn f06_repair_case(
+        name: &str,
+        command: RepairCommand,
+        mode: OutputMode,
+        fail_prepare: bool,
+        fail_apply: bool,
+    ) -> (Result<i32, String>, String, Vec<&'static str>) {
+        let mut backend = F06Repair {
+            fail_prepare,
+            fail_apply,
+            calls: vec![],
+        };
+        let mut output = Vec::new();
+        let result =
+            run_with_backend(command, Edition::Personal, mode, &mut backend, &mut output).await;
+        let stdout = String::from_utf8(output).unwrap();
+        println!(
+            "F06_REPAIR_RECEIPT {}",
+            serde_json::json!({"case":name,"stdout":stdout,"stderr":"","code": result.as_ref().copied().unwrap_or(2),"result":result,"calls":backend.calls,"preview_calls":backend.calls.iter().filter(|call| **call == "prepare").count(),"execute_calls":backend.calls.iter().filter(|call| **call == "apply").count()})
+        );
+        (result, stdout, backend.calls)
+    }
+    #[tokio::test]
+    async fn f06_legacy_repair_preview_only_has_no_apply_or_ok() {
+        let (result, output, calls) = f06_repair_case(
+            "legacy-preview",
+            RepairCommand::Fix { apply: false },
+            OutputMode::Legacy,
+            false,
+            false,
+        )
+        .await;
+        assert_eq!(result, Ok(0));
+        assert_eq!(output, "FIX:prepare\nFIX:preview\n");
+        assert_eq!(calls, ["prepare"]);
+    }
+    #[tokio::test]
+    async fn f06_legacy_repair_complete_has_real_events_and_ok() {
+        let (result, output, calls) = f06_repair_case(
+            "legacy-complete",
+            RepairCommand::Fix { apply: true },
+            OutputMode::Legacy,
+            false,
+            false,
+        )
+        .await;
+        assert_eq!(result, Ok(0));
+        assert_eq!(
+            output,
+            "FIX:prepare\nFIX:preview\nFIX:apply\nFIX:complete\nOK\n"
+        );
+        assert_eq!(calls, ["prepare", "apply"]);
+    }
+    #[tokio::test]
+    async fn f06_legacy_repair_prepare_failure_has_no_apply_or_ok() {
+        let (result, output, calls) = f06_repair_case(
+            "legacy-prepare-error",
+            RepairCommand::Fix { apply: true },
+            OutputMode::Legacy,
+            true,
+            false,
+        )
+        .await;
+        assert_eq!(result, Ok(1));
+        assert_eq!(output, "FIX:prepare\nFAIL:synthetic_precondition\n");
+        assert_eq!(calls, ["prepare"]);
+    }
+    #[tokio::test]
+    async fn f06_legacy_repair_partial_failure_has_no_complete_or_ok() {
+        let (result, output, calls) = f06_repair_case(
+            "legacy-partial-error",
+            RepairCommand::Fix { apply: true },
+            OutputMode::Legacy,
+            false,
+            true,
+        )
+        .await;
+        assert_eq!(result, Ok(1));
+        assert_eq!(
+            output,
+            "FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n"
+        );
+        assert_eq!(calls, ["prepare", "apply"]);
+    }
+    #[tokio::test]
+    async fn f06_modern_repair_and_set_region_keep_json_and_errors() {
+        for command in [
+            RepairCommand::Fix { apply: true },
+            RepairCommand::SetRegion {
+                preset: RegionPreset::Us,
+                apply: true,
+            },
+            RepairCommand::DetectRegion { apply: true },
+        ] {
+            for mode in [OutputMode::Modern, OutputMode::Legacy] {
+                if mode == OutputMode::Legacy && matches!(command, RepairCommand::Fix { .. }) {
+                    continue;
+                }
+                let (result, output, calls) = f06_repair_case(
+                    &format!("modern-{command:?}-{mode:?}"),
+                    command,
+                    mode,
+                    false,
+                    false,
+                )
+                .await;
+                assert_eq!(result, Ok(0));
+                assert_eq!(calls, ["prepare", "apply"]);
+                let rows: Vec<serde_json::Value> = output
+                    .lines()
+                    .map(|line| serde_json::from_str(line).unwrap())
+                    .collect();
+                assert_eq!(rows.len(), 2);
+                assert_eq!(rows[0]["message"], "synthetic preview");
+                assert_eq!(rows[1]["completed"], true);
+            }
+        }
+        let (result, output, calls) = f06_repair_case(
+            "modern-partial-error",
+            RepairCommand::Fix { apply: true },
+            OutputMode::Modern,
+            false,
+            true,
+        )
+        .await;
+        assert_eq!(result, Err("synthetic_partial_failure".into()));
+        assert_eq!(output.lines().count(), 1);
+        assert_eq!(calls, ["prepare", "apply"]);
+        assert!(!output.contains("completed"));
+    }
 
     fn parse(args: &[&str]) -> Result<RepairCommand, String> {
         RepairCommand::parse(&args.iter().map(|s| (*s).into()).collect::<Vec<_>>())

@@ -1,0 +1,35 @@
+{
+  "checks": [
+    {
+      "command": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core/src/bin/claude-switcher.rs"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "crates/switcher-core/src/bin/claude-switcher.rs"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "anchors": {
+    "async fn run_raw_cli(": 415,
+    "async fn main()": 437,
+    "async fn f06_non_utf8_arguments_keep_requested_error_mode()": 535
+  },
+  "source_sha256": {
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1"
+  }
+}

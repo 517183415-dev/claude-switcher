@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-preview-publisher-cleanup"
+description = "Enables the preview_publisher_cleanup command without any pre-configured scope."
+commands.allow = ["preview_publisher_cleanup"]
+
+[[permission]]
+identifier = "deny-preview-publisher-cleanup"
+description = "Denies the preview_publisher_cleanup command without any pre-configured scope."
+commands.deny = ["preview_publisher_cleanup"]

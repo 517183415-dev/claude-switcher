@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "apps/desktop/src-tauri/src/publisher_commands.rs",
+    "apps/desktop/src-tauri/src/publisher/tests.rs",
+    "apps/desktop/src/pages/Operations.svelte",
+    "apps/desktop/tests/publisher-limits.test.mjs"
+  ],
+  "exit": 0
+}

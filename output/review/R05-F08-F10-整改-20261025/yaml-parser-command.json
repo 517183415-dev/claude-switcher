@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/homebrew/bin/python3",
+    "output/review/R05-F08-F10-整改-20261025/yaml-parser-verify.py",
+    "output/review/R05-F08-F10-整改-20261025/f10-fixtures.json",
+    "--report",
+    "output/review/R05-F08-F10-整改-20261025/yaml-parser-report.json"
+  ],
+  "cwd": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher",
+  "exit_code": 1,
+  "stdout": "{\"PASS\": 42, \"FAIL\": 2, \"BLOCKED\": 0}\n",
+  "stderr": "",
+  "scripts_sha256": {
+    "yaml-parser-verify.py": "596f623e75bd56c51b67fa1204b019c846145b5e55934b2cbef7a1331ec773ef",
+    "yaml-parser-psych.rb": "82f228707ea29b07697eba1af560b33c6dbcdcee1ed637720c721d8b03000d10"
+  }
+}

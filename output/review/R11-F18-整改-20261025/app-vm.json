@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop/scripts/core-preparation-regression.mjs"
+  ],
+  "exit": 0,
+  "seconds": 0.9230844170087948,
+  "script_matches_current": true,
+  "App_source": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src/App.svelte",
+  "App_sha256": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+  "runtime_source": "existing R07 mirror cached dependencies, read only",
+  "actual_browser": "NOT_RUN",
+  "native_IPC": "NOT_RUN"
+}

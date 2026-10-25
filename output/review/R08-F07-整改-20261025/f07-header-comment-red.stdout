@@ -1,0 +1,2 @@
+F07 header comment receipt {'header': 'proxy-groups: # 用户注释', 'CRLF': False, 'selected': 'Second'}
+F07 header comment receipt {'header': 'proxy-groups: \t # comment', 'CRLF': True, 'selected': 'Second'}

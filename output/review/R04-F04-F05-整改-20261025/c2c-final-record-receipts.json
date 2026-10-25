@@ -1,0 +1,42 @@
+[
+  {
+    "name": "f04",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "f05",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "user-repairs",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "proxy-repair",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "legacy-regions",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "clippy",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "rustfmt",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "diff-check",
+    "exit_code": 0,
+    "output": "✓ 已记录执行摘要与输出\n"
+  }
+]

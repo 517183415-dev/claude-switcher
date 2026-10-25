@@ -1,0 +1,17 @@
+✔ production defaults are 128 and no implicit evidence release; preview only reads (1.872625ms)
+✔ cancelling a preview does not execute either phase (0.542917ms)
+✔ first confirmation commits the bound index plan once and never starts GC (0.476875ms)
+✔ changed options and known pending state invalidate index execution (2.545416ms)
+✔ second preview and a separate confirmation are required for file GC (0.597208ms)
+✔ GC pending and duplicate clicks cannot bypass the confirmation gate (0.468291ms)
+✔ backend rejection clears the consumed plan and never invents completion (0.429875ms)
+✔ fixture and busy handlers perform zero IPC (0.704542ms)
+✔ production markup connects both previews, separate confirmations and cancellation (33.853541ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 646.2125

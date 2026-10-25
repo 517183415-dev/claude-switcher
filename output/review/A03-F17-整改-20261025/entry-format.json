@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/publisher_commands.rs",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/main.rs",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/build.rs"
+  ],
+  "exit": 0,
+  "seconds": 0.14292495790868998,
+  "source_before": {
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "f556c024a6414ffb513b5ba24ae74fb725b0c53e205899151165aae3d2a03161",
+    "apps/desktop/src-tauri/src/main.rs": "5a0c4b218bd3f425231431e6805a3293efb05a03d87a2ec2f05ac172354311f0",
+    "apps/desktop/src-tauri/build.rs": "33f92d6763de81c1c7368d51b6726f9117501305a41e07cbfb39905f4036df2f"
+  },
+  "source_after": {
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "2837b5311734f3083bff772baaa52d92055bd9a7d2c83b67a103f726d98420bb",
+    "apps/desktop/src-tauri/src/main.rs": "5a0c4b218bd3f425231431e6805a3293efb05a03d87a2ec2f05ac172354311f0",
+    "apps/desktop/src-tauri/build.rs": "33f92d6763de81c1c7368d51b6726f9117501305a41e07cbfb39905f4036df2f"
+  },
+  "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-entry-fmt-b8fcfngk",
+  "skip_children": true
+}

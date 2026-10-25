@@ -1,0 +1,211 @@
+{
+  "links": [
+    {
+      "document": "AGENTS.md",
+      "target": "docs/handoff/当前整改证据-2026-10-25.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "docs/usage/Rust使用说明.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "packaging/macos/README.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "docs/handoff/当前整改证据-2026-10-25.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "docs/handoff/Rust-R4-实施状态.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "SECURITY.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "docs/screenshot.png",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "windows/",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "windows/README.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "linux/",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "linux/README.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "AGENTS.md",
+      "exists": true
+    },
+    {
+      "document": "README.md",
+      "target": "SECURITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/PRD-Rust双版本产品-v1.2.md",
+      "target": "../handoff/当前整改证据-2026-10-25.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/PRD-Rust双版本产品-v1.2.md",
+      "target": "../design/ui-concept-v1.png",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/PRD-Rust双版本产品-v1.2.md",
+      "target": "工程执行文档-Rust重写-v1.2.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/工程执行文档-Rust重写-v1.2.md",
+      "target": "PRD-Rust双版本产品-v1.2.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/工程执行文档-Rust重写-v1.2.md",
+      "target": "../handoff/当前整改证据-2026-10-25.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/工程执行文档-Rust重写-v1.2.md",
+      "target": "源码本地安装补充-2026-10-23.md",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/GPTPro-整改核实-20261025/最小整改计划.md",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/整改进度-20261025.md",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R12-F14-整改-20261025/checkpoint.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/F01-整改-20261025/复核记录.md",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R02-F02-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R03-F03-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R04-F04-F05-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R05-F08-F10-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R06-F06-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R07-F09-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R08-F07-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R09-F11-F12-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R10-F13-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R11-F18-整改-20261025/verification.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R12-F14-整改-20261025/cli-build.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R12-F14-整改-20261025/cli-help-personal.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R12-F14-整改-20261025/cli-help-public.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R12-F14-整改-20261025/cli-artifact.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R07-F09-整改-20261025/final-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R08-F07-整改-20261025/f07-boundary-violation.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../output/review/R11-F18-整改-20261025/boundary-deviation.json",
+      "exists": true
+    },
+    {
+      "document": "docs/handoff/当前整改证据-2026-10-25.md",
+      "target": "../../packaging/macos/README.md",
+      "exists": true
+    }
+  ],
+  "missing": [],
+  "initial_attempt": "NOT_PASS: checked checkpoint link before creating checkpoint; final checks run after creation"
+}

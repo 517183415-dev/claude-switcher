@@ -26,7 +26,6 @@ mod guardian_repair;
 pub mod install;
 pub mod installation_health;
 mod proxy_repair;
-mod timezone_guard;
 
 pub mod storage;
 

@@ -1,0 +1,149 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: DONE TASK_ID: c2c_87c3 ITERATION: 2 UNIT: R06 / F06 VERDICT: ACCEPTED REMAINING_R06_WORK: NONE WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 REVIEWED_OUTPUTS: 46-64 R01-R05: PRESERVED NEXT_UNIT: R07 — separate bounded PLAN"
+    - paragraph: R06 meets the revised five-file acceptance plan. I reviewed the final source, RED→GREEN evidence, verification.json, final-receipts.json, iteration-2 record, and both independent reviews. No remaining R06 blocker found.
+    - heading "F01 account semantics preserved" [level=3]
+    - paragraph: "accounts.rs R06 delta is exactly the permitted exception:"
+    - list:
+      - listitem: "inspect_with_recorded_account: pub(crate) → pub;"
+      - listitem: three documentation lines added;
+      - listitem: function body byte-identical;
+      - listitem: entire remainder of the accepted F01 file identical to the R06 baseline.
+    - paragraph:
+      - text: The account suite remains
+      - strong: 59/59 PASS
+      - text: ", migration"
+      - strong: 12/12 PASS
+      - text: .
+    - paragraph: "Legacy status now correctly distinguishes:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: unrecorded/default display A → current=none recorded A → current=A recorded B → current=B
+    - paragraph: without creating markers or inferring ownership from the display default.
+    - heading "CLI compatibility accepted" [level=3]
+    - paragraph: "Final CLI evidence covers the requested protocol separation:"
+    - list:
+      - listitem: direct binary keeps current modern defaults;
+      - listitem: shim mode uses fixed --legacy-cli;
+      - listitem: check --json / checkdetail --json override legacy mode and remain JSON;
+      - listitem: set-region remains modern;
+      - listitem: legacy parameter errors use stderr + exit 2;
+      - listitem: legacy runtime/business failures use text output and exit 1 where specified.
+    - paragraph: "The explicit unavailable policy is preserved:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK:unavailable OK:unavailable|<existing warning text>
+    - paragraph: No new IP query or reason-to-IP parsing was introduced.
+    - paragraph: Legacy switch now returns OK only for completed outcomes and FAIL:... / exit 1 for gate, selection, or launch failures.
+    - heading "Fix progress accepted" [level=3]
+    - paragraph: "repair_cli now uses the real prepare/apply call sequence:"
+    - paragraph: "Success:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FIX:prepare FIX:preview FIX:apply FIX:complete OK
+    - paragraph: "Partial failure:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FIX:prepare FIX:preview FIX:apply FAIL:...
+    - paragraph: with exit 1 and no complete/OK.
+    - paragraph: Preview-only stops after FIX:preview. Modern repair and set-region JSON behavior remains unchanged.
+    - heading "non-UTF8 P2 closed" [level=3]
+    - paragraph: "The independent review correctly caught a late edge case: UTF-8 conversion previously lost the requested legacy error mode."
+    - paragraph: "Output 50 is a valid behavioral RED. Output 64 confirms the fix:"
+    - list:
+      - listitem: modern invalid non-UTF8 → modern JSON stdout / code 2;
+      - listitem: valid-position legacy, misplaced legacy, and duplicate legacy flags with non-UTF8 data → stderr invalid_command, empty stdout, code 2;
+      - listitem: all backend call counts remain zero.
+    - paragraph: That closes the reported P2.
+    - heading "Generation-bound shim ownership accepted" [level=3]
+    - paragraph: The installer does not broadly accept old/new shim forms.
+    - paragraph: "The contract is explicitly bound to plan/archive evidence:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: missing historical cli_contract → v1 only cli_contract = 1 → v1 only cli_contract = 2 → v2 only other type/value → reject
+    - paragraph: "v2 is the new shim containing:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition <edition> --legacy-cli \"$@\""
+    - paragraph:
+      - text: installed_cli_plan() derives the contract from the authenticated source-local generation archive and explicitly does
+      - strong: not
+      - text: infer it from live shim bytes.
+    - paragraph: "The F06 installer suite verifies:"
+    - list:
+      - listitem: generation selects exactly one renderer;
+      - listitem: pending journal uses its recorded contract;
+      - listitem: restore accepts only that transaction's contract;
+      - listitem: archive proof tampering is rejected;
+      - listitem: invalid contract values/types are rejected;
+      - listitem: fresh plan records v2;
+      - listitem: real bash shim preserves argv/stdout/stderr/exit.
+    - paragraph: The fake shim receipt shows special arguments such as spaces, quotes, $(), semicolons and Chinese text were forwarded literally; the fake executable exited 7 and its streams were preserved.
+    - paragraph:
+      - text: The full installer suite is
+      - strong: 160/160 PASS
+      - text: ", including prior R02/R03 protections. The evidence records the seven protected R02 transaction-function ASTs unchanged and the R03 TARGET-only logic unchanged."
+    - heading "Final verification" [level=3]
+    - paragraph: "Final passes include:"
+    - list:
+      - text: "CLI F06:"
+      - strong: "8"
+      - text: "repair F06:"
+      - strong: "5"
+      - text: "repair module:"
+      - strong: "9"
+      - text: "installer F06:"
+      - strong: "7"
+      - text: "installer full:"
+      - strong: "160"
+      - text: "accounts:"
+      - strong: "59"
+      - text: "migration:"
+      - strong: "12"
+      - text: "lifecycle:"
+      - strong: "5"
+      - text: "two selected read-only CLI integration tests:"
+      - strong: 1 + 1
+      - text: "non-UTF8 focused test:"
+      - strong: "1"
+      - listitem: "Clippy all-targets: PASS"
+      - listitem: "rustfmt: PASS"
+      - listitem: "git diff --check: PASS"
+    - paragraph:
+      - text: Targeted runs overlap module totals; the recorded distinct total of
+      - strong: 255 methods
+      - text: is consistent with the evidence.
+    - paragraph: All 14 final commands bracket the same cumulative 13 source hashes. Eight previously accepted source files remain byte-identical; the three allowed prior-file exceptions are exactly accounts.rs visibility/docs and the two installer files required by the R06 shim contract.
+    - paragraph:
+      - strong: R06/F06 is accepted for source and isolated-test scope.
+      - text: Real installation/uninstallation, real accounts, network/DNS/proxy, native apps/services/system mutation, and full installed-shim→Rust end-to-end remain correctly marked NOT_RUN.
+    - paragraph: R07 has not been started.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "publisher::tests::",
+    "--",
+    "--skip",
+    "f15_",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "seconds": 43.04666166601237,
+  "source_before": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "eb6005fc8d7ff04b5ff39874b06089cfcad29cd784b582550c9552e67e22cfba",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "a1302532121908867d8b7a07ca3c773ca483235b6c428361a81ea316a4f1ada3",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "355140f7c9f5ce33accbfe34b1789e811848dc0ba203e75b41a9b736fd11ad36"
+  },
+  "source_after": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "eb6005fc8d7ff04b5ff39874b06089cfcad29cd784b582550c9552e67e22cfba",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "a1302532121908867d8b7a07ca3c773ca483235b6c428361a81ea316a4f1ada3",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "355140f7c9f5ce33accbfe34b1789e811848dc0ba203e75b41a9b736fd11ad36"
+  },
+  "source_frozen": true,
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a02-rust-core-regression-dxrm6dlu",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc",
+    "TAURI_CONFIG": "{\"bundle\": {\"resources\": []}, \"build\": {\"frontendDist\": \"/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop/dist\"}}"
+  }
+}

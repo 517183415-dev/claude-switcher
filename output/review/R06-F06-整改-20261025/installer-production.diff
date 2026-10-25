@@ -1,0 +1,131 @@
+--- R06 baseline
++++ R06 final
+@@ -150,6 +150,8 @@
+                 timezone_target=settings.get('TZ_TARGET'),
+                 proxy_mode=settings.get('PROXY_MODE'),
+                 cli_entry=entry)
++    if operation != 'uninstall':
++        result['cli_contract'] = 2
+     result = edition_transition(result)
+     return plan_uninstall(result) if operation == 'uninstall' else result
+ 
+@@ -288,6 +290,7 @@
+         if current is not None:
+             if current['uid'] != 0 or tree(uninstall_files(p)[key]) != tree(stage/key):
+                 raise ValueError('uninstall component ownership differs: '+key)
++    contract = cli_contract(archived['plan'])
+     entry = archived['plan'].get('cli_entry')
+     if observed['files']['cli'] is not None:
+         if entry is None or not archived.get('cli_changed'):
+@@ -295,7 +298,7 @@
+         with as_owner(p['owner_uid']):
+             data, _ = small_file(cli_path(p['owner_uid']))
+         metadata = observed['files']['cli']
+-        if data != cli_shim(p['edition'], entry) or metadata['uid'] != p['owner_uid'] or metadata['mode'] != 0o755:
++        if data != cli_shim(p['edition'], entry, contract) or metadata['uid'] != p['owner_uid'] or metadata['mode'] != 0o755:
+             raise ValueError('uninstall CLI ownership differs')
+         account = pwd.getpwuid(p['owner_uid'])
+         if metadata['gid'] not in os.getgrouplist(account.pw_name, account.pw_gid):
+@@ -964,7 +967,16 @@
+                     literals=config_literals(data))
+ 
+ 
+-def cli_shim(edition, entry):
++def cli_contract(plan):
++    # Only a missing historical field selects v1; bool is not an integer version.
++    contract = plan.get('cli_contract', 1)
++    if type(contract) is not int or contract not in (1, 2):
++        raise ValueError('unsupported CLI contract')
++    return contract
++
++
++def cli_shim(edition, entry, contract):
++    contract = cli_contract(dict(cli_contract=contract))
+     lines=['#!/bin/bash', '# Configuration literals retained for the Rust configuration reader.']
+     # Force quotes even for simple values because both configuration readers
+     # accept quoted assignments only.
+@@ -974,7 +986,8 @@
+             value=literals[key]
+             lines.append(key+"='"+value.replace("'", "'\\''")+"'")
+     executable=app(edition)/'Contents/Resources/components/claude-switcher'
+-    lines.append('exec '+shlex.quote(str(executable))+' --edition '+edition+' "$@"')
++    flag = ' --legacy-cli' if contract == 2 else ''
++    lines.append('exec '+shlex.quote(str(executable))+' --edition '+edition+flag+' "$@"')
+     return ('\n'.join(lines)+'\n').encode()
+ 
+ 
+@@ -1055,17 +1068,18 @@
+     if cli_snapshot(owner) != {key: entry[key] for key in ('sha256', 'mode', 'literals')}:
+         raise ValueError('legacy CLI changed before replacement')
+     j['cli_changed']=True; j['pending']='cli-entry'; save(JOURNAL,j)
+-    write_owner_cli(owner,cli_shim(j['plan']['edition'],entry),0o755)
++    write_owner_cli(owner,cli_shim(j['plan']['edition'],entry,cli_contract(j['plan'])),0o755)
+ 
+ 
+ def cli_verify(j):
++    contract = cli_contract(j['plan'])
+     entry=j['plan'].get('cli_entry')
+     if entry is None:
+         return
+     owner=j['plan']['owner_uid']
+     with as_owner(owner) if os.geteuid() == 0 else contextlib.nullcontext():
+         data,metadata=small_file(cli_path(owner))
+-    if (data != cli_shim(j['plan']['edition'],entry) or metadata.st_uid != owner or
++    if (data != cli_shim(j['plan']['edition'],entry,contract) or metadata.st_uid != owner or
+             stat.S_IMODE(metadata.st_mode) != 0o755):
+         raise ValueError('Rust CLI compatibility entry differs')
+ 
+@@ -1087,7 +1101,7 @@
+     with as_owner(owner):
+         try: current,_=small_file(cli_path(owner))
+         except FileNotFoundError: current=None
+-    if current not in (None,data,cli_shim(j['plan']['edition'],entry)):
++    if current not in (None,data,cli_shim(j['plan']['edition'],entry,cli_contract(j['plan']))):
+         raise ValueError('CLI entry changed after installation; preserve user changes')
+     write_owner_cli(owner,data,entry['mode'] or 0o755)
+     j['cli_changed']=False; save(JOURNAL,j)
+@@ -2029,6 +2043,7 @@
+         archived=private_json(stage/'result.json',0o600)
+         if result['status']=='committed':
+             verify_components(archived)
++            cli_verify(archived)
+             result['processes']=verify_processes(owner)
+         elif result['status']=='uninstalled':
+             verify_uninstalled(archived['plan'])
+@@ -2039,8 +2054,27 @@
+         raise ValueError('console owner differs from journal')
+     if j['pending']=='health' and j['plan']['operation']!='uninstall':
+         verify_components(j)
++        cli_verify(j)
+         return dict(status='pending_authenticated_health',processes=verify_processes(owner))
+     return dict(status='pending_recovery',phase=j['pending'])
++
++
++def installed_cli_plan(record, owner, edition):
++    """Read the installed generation's contract; never infer it from live shim bytes."""
++    trust = record.get('trust', {})
++    generation = trust.get('generation', '')
++    if trust.get('kind') != 'source_local' or not re.fullmatch('[a-f0-9]{32}', generation):
++        raise ValueError('CLI generation is not supported')
++    stage = SYSTEM/('source-local-'+generation)
++    safe_parents(stage)
++    archived = private_json(stage/'result.json', 0o600)
++    if (private_json(stage/'record', 0o644) != record or archived.get('stage') != str(stage) or
++            archived.get('pending') != 'committed' or
++            archived['plan']['owner_uid'] != owner or archived['plan']['edition'] != edition or
++            not archived.get('cli_changed') or archived['plan'].get('cli_entry') is None):
++        raise ValueError('CLI generation ownership differs')
++    cli_contract(archived['plan'])
++    return archived['plan']
+ 
+ 
+ def verify_public(owner, edition):
+@@ -2057,7 +2091,7 @@
+             raise ValueError('installed component identity differs')
+     watchdog_verify(dict(watchdog={}, plan=dict(timezone_target=read_timezone_target(owner))))
+     watchdog_verify(dict(bodyguard={}, plan=dict(proxy_mode=read_proxy_mode(owner))), 'bodyguard')
+-    cli_verify(dict(plan=dict(owner_uid=owner,edition=edition,cli_entry=cli_snapshot(owner))))
++    cli_verify(dict(plan=installed_cli_plan(record, owner, edition)))
+     return dict(status='components_verified', processes=verify_processes(owner),
+                 timezone_watchdog='registered', authenticated_health='not_run')
+ 

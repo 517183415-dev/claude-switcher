@@ -1,0 +1,8 @@
+
+> claude-switcher-desktop@0.2.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-frontend-final-meeb_qc8/workspace/apps/desktop
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings

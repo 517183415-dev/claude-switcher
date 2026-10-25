@@ -1,0 +1,33 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.81s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+
+thread 'publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history' (27801116) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1002:5:
+assertion failed: publisher.state.pending.is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas' (27801119) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:994:77:
+called `Result::unwrap()` on an `Err` value: Store(Unavailable)
+
+thread 'publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas' (27801122) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:983:90:
+called `Result::unwrap()` on an `Err` value: Store(Unavailable)
+
+thread 'publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history' (27801125) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1016:5:
+assertion failed: publisher.state.pending.is_none()
+
+thread 'publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release' (27801128) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1044:5:
+assertion failed: paused.slots.iter().all(|slot| !slot.enabled && slot.campaigns.is_empty())
+
+thread 'publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write' (27801130) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1029:5:
+assertion failed: publisher.state.pending.is_none()
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

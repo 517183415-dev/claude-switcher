@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "--test",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a01-ui-8wl8lo9b/app/tests/publisher-limits.test.mjs"
+  ],
+  "exit": 0,
+  "seconds": 1.640848167007789,
+  "source_hashes": {
+    "apps/desktop/src/pages/Operations.svelte": "75399b751448be483e876acc817d66c7d7fb37e529042fa1b163cf9861daf87b",
+    "apps/desktop/tests/publisher-limits.test.mjs": "f3c1c3882c7fa814fc7efe698f33f16c6d7a0f102e793cd2b7727847c167f663"
+  },
+  "cache": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules",
+  "real_ipc": "NOT_RUN"
+}

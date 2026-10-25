@@ -1,0 +1,528 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_87c3 ITERATION: 0 UNIT: R06 / F06 VERDICT: PROCEED — RED first WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE_MAX: 4 source files SCOPE: crates/switcher-core/src/bin/claude-switcher.rs crates/switcher-core/src/repair_cli.rs packaging/macos/local_install.py packaging/macos/test_local_install.py FROZEN: accepted R01-R05 eleven source files except the two installer files already in cumulative accepted scope STOP_AFTER: R06 execution evidence for independent review"
+    - paragraph:
+      - text: R06 可以控制在
+      - strong: 4 个源文件
+      - text: 。不需要修改 accounts.rs：F01 已经提供 AccountStore::inspect_with_recorded_account()，足够让 legacy status 区分“显示默认 A”和“真实记录归属未知”。
+    - paragraph:
+      - text: 核心方案是：
+      - strong: 安装 shim 显式注入 --legacy-cli；直接二进制和显式 --json 继续走现代协议。
+      - text: 同时为旧安装代际保留严格的 generation-bound shim 格式证明，不能把“旧/新都接受”做成无代际约束的宽松比较。
+    - heading "1. CLI 模式选择合同" [level=2]
+    - heading "新 shim" [level=3]
+    - paragraph: 新的安装 shim 调用固定为：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: claude-switcher --edition <edition> --legacy-cli "$@"
+    - paragraph: 只由安装器生成，不允许调用方通过环境变量或任意参数隐式切换协议。
+    - heading "直接 binary" [level=3]
+    - paragraph: 保持现代行为：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: claude-switcher status claude-switcher switch A claude-switcher fix
+    - paragraph: 仍输出当前 JSON / JSON-lines 协议。
+    - heading "显式 JSON 优先" [level=3]
+    - paragraph: 即使通过 legacy shim：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: claude-switch.sh check --json
+    - paragraph: 也必须走现有结构化 JSON 输出，不转换为旧文本。
+    - paragraph: 建议参数解析顺序：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition <edition> --legacy-cli <command...>"
+    - paragraph: "--legacy-cli 只能出现在这个固定全局位置一次；其他位置、重复 flag、未知全局 flag 都拒绝。"
+    - separator
+    - heading "2. 先补 CLI handler seam，RED 不运行整套 checks_cli" [level=1]
+    - paragraph:
+      - strong: 文件：
+      - text: crates/switcher-core/src/bin/claude-switcher.rs
+    - paragraph: 不要直接围绕 std::env::args() 和真实 checks/network 写测试。
+    - paragraph: 抽一个小的内部 dispatcher / formatter seam，让测试能注入：
+    - list:
+      - listitem: status inspection result；
+      - listitem: check report；
+      - listitem: switch outcome；
+      - listitem: repair result/progress events。
+    - paragraph: 生产 execute() 仍调用真实实现。
+    - paragraph: 测试只测：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: args + synthetic handler result → stdout → stderr → exit code
+    - paragraph: 不触发 loopback diagnostics、真实账号、网络或应用。
+    - separator
+    - heading "3. Legacy status：未知归属必须保持 unknown" [level=1]
+    - paragraph: 当前 modern status 使用 AccountStore::inspect()，其中 current 可能包含显示默认 A。
+    - paragraph: Legacy status 必须改用：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: AccountStore::inspect_with_recorded_account(...)
+    - paragraph: 第二个返回值才是历史语义所需的真实归属证据。
+    - paragraph: 定义：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: recorded Some(A) → current=A recorded Some(B) → current=B recorded None → current=none
+    - paragraph: 旧文本：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: current=A hasA=1 hasB=0 current=B hasA=1 hasB=1 current=none hasA=0 hasB=0
+    - paragraph: 其中 hasA / hasB 来自 status 的 saved flags，而不是根据 current 推断。
+    - paragraph: Legacy status exit 永远 0，只要 status 本身成功读取。
+    - paragraph: 读取失败仍是命令错误，不伪造 current=A。
+    - heading "RED" [level=3]
+    - paragraph: 至少覆盖：
+    - list:
+      - listitem: F01 无记录、active 目录存在但无归属 → current=none
+      - listitem: recorded A
+      - listitem: recorded B
+      - listitem: saved flags 独立组合
+      - listitem: modern direct binary 仍输出 JSON，并保持当前 accounts.current 行为
+    - paragraph: 这条是 F01 preservation gate。
+    - separator
+    - heading "4. Legacy check 协议" [level=1]
+    - paragraph: 当前 legacy_check() 只有 OK / FAIL:...，需要恢复旧输出信息。
+    - paragraph: 定义 legacy check：
+    - heading "成功" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK:<egress-ip>
+    - paragraph: 若有 advisory/warning：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK:<egress-ip>|<warning text>
+    - paragraph:
+      - text: 只使用 CheckReport 内已有结构化结果，
+      - strong: 不要新增网络查询，也不要解析中文 reason 猜 IP
+      - text: 。
+    - paragraph: 因此需要从现有 check DTO 中选择已经结构化保存的出口值；如果当前 DTO没有可用结构化 IP，则输出兼容格式必须使用已有明确字段/固定 unavailable 占位，而不是重新访问网络。实施前用当前类型确认字段来源。
+    - heading "失败" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FAIL:<blocking reason(s)>
+    - paragraph: exit 1。
+    - heading "check --json" [level=3]
+    - paragraph: 无论 legacy mode 与否，都保留当前 JSON + 当前 exit 规则。
+    - heading "checkdetail" [level=3]
+    - paragraph: 除非现有旧协议有明确证据要求改变，本单元不要顺带重写；只确保 --legacy-cli checkdetail --json 仍为 JSON。
+    - heading "RED" [level=3]
+    - paragraph: 用 synthetic CheckReport：
+    - list:
+      - listitem: success + IP → OK:<ip>, exit 0
+      - listitem: success + advisory → OK:<ip>|..., exit 0
+      - listitem: blocking → FAIL:..., exit 1
+      - listitem: explicit --json 完全保持 modern serialization
+    - paragraph: stdout 只放协议内容；正常业务失败不应额外写 stderr。
+    - separator
+    - heading "5. Legacy switch 协议" [level=1]
+    - paragraph: 现代直接 binary 保持现有 JSON。
+    - paragraph: Legacy shim 下：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: switch A|B
+    - paragraph: 应把已有 LaunchOutcome 格式化为旧文本，不重新执行任何动作。
+    - paragraph: 建议按结构化结果映射：
+    - heading "成功" [level=3]
+    - paragraph: 输出若干旧式状态行，最终必须有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK
+    - paragraph: exit 0。
+    - paragraph: 允许：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: INFO:<message> NOTE:<detail> OK
+    - paragraph: 但所有文本只来自已有固定/结构化结果，不解析任意诊断 stdout。
+    - heading "环境 gate / 切换 / 启动失败" [level=3]
+    - paragraph: 输出：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FAIL:<message>
+    - paragraph: exit 1。
+    - heading "非法目标" [level=3]
+    - paragraph: 例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: switch C
+    - paragraph: 仍作为命令参数错误，exit 2。
+    - paragraph: 不要为了 legacy switch 改 lifecycle.rs。
+    - heading "RED" [level=3]
+    - paragraph: 直接构造 synthetic LaunchOutcome：
+    - list:
+      - listitem: completed=true
+      - listitem: report blocking
+      - listitem: selection failure
+      - listitem: launch failure
+      - listitem: missing report
+      - listitem: invalid target
+    - paragraph: 验证 stdout/stderr/code。
+    - separator
+    - heading "6. Legacy fix：必须有真实进度格式，partial failure 不能成功" [level=1]
+    - paragraph: 这是本轮必须包含 repair_cli 的原因。
+    - paragraph: 当前 repair_cli::run()：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: preview → 先打印 JSON → execute → 再打印 completed JSON → 始终 Ok(0)
+    - paragraph: "这会导致 legacy fix 泄露 JSON，也没有旧 FIX: 进度语义。"
+    - heading "最小结构" [level=2]
+    - paragraph: 在 repair_cli.rs 抽出一个 mode-aware runner/formatter：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: Modern Legacy
+    - paragraph: 生产 coordinator 行为保持同一个。
+    - paragraph: Modern：
+    - list:
+      - listitem: 保留当前 preview JSON；
+      - listitem: 保留完成 JSON；
+      - listitem: 当前直接 binary 行为不变。
+    - paragraph: Legacy：
+    - list:
+      - listitem: 不打印 preview JSON；
+      - text: 输出固定进度事件：
+      - generic: 纯文本
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: FIX:<stage>
+      - text: 成功最后输出明确：
+      - generic: 纯文本
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: OK
+      - text: 失败输出：
+      - generic: 纯文本
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: FAIL:<reason>
+      - text: 并返回非零。
+    - paragraph:
+      - text: 不要模拟旧脚本“中途失败但最后 echo 导致 0”的 bug。用户明确要求 partial fix failure
+      - strong: 不能看起来成功
+      - text: 。
+    - heading "exit 定义" [level=3]
+    - paragraph: 建议明确冻结为：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: legacy fix success 0 legacy fix precondition / execution fail 1 invalid command / invalid args 2
+    - paragraph: 如果底层 modern repair 当前将业务错误作为 Err(String)，legacy wrapper 在 handler 边界把它转换成 exit 1；不要改变 modern main 的统一 error=2 行为。
+    - heading "progress" [level=3]
+    - paragraph: 只输出真实已发生的阶段。至少：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FIX:preview FIX:apply FIX:complete
+    - paragraph: 具体名字可按实际 coordinator 阶段，但必须：
+    - list:
+      - listitem: preview-only 不打印 apply/complete；
+      - listitem: execute 前失败不打印 complete；
+      - listitem: partial execute failure 最后没有 OK；
+      - listitem: stderr 不承载正常业务状态。
+    - paragraph: 不要改 regions.rs 以制造更多事件；R06 只格式化 repair_cli 当前可观察阶段。
+    - separator
+    - heading "7. set-region 不扩张为 legacy 兼容重点" [level=1]
+    - paragraph: "--legacy-cli 是旧 shim 的全局模式，但 F06 核心 acceptance 是："
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: status/check/switch/fix
+    - paragraph: set-region 可继续使用现代 repair CLI 输出，或者只在 mode router 中明确保持 modern；不要在 R06 顺带发明一套旧 set-region 文本协议。
+    - paragraph: 测试必须锁定这个决定，避免未来歧义。
+    - separator
+    - heading "8. Shim generation compatibility：必须代际绑定" [level=1]
+    - paragraph: 这是 R06 最关键的安装器边界。
+    - paragraph: 当前 R02/R03 都通过：
+    - generic: Python
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_shim(edition, archived_entry)
+    - paragraph: 重建 expected bytes。
+    - paragraph: 如果直接给 cli_shim() 加 --legacy-cli，旧已安装 generation 会立刻无法通过：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: plan_uninstall cli_verify
+    - heading "正确方案" [level=2]
+    - paragraph: 定义两个明确版本的 shim renderer：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: legacy generation format v1 current generation format v2 (--legacy-cli)
+    - paragraph:
+      - text: 但
+      - strong: 选择哪个模板必须来自 archived generation evidence
+      - text: ，不能根据“当前文件匹配哪个就接受哪个”。
+    - heading "新安装" [level=3]
+    - paragraph: 新 stage/result.json 在 plan/archive 中记录明确 shim contract，例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_contract = 2
+    - paragraph: 或其他固定版本字段。
+    - paragraph: 新安装只能生成 v2。
+    - heading "已有旧 generation" [level=3]
+    - paragraph: 旧 archived result 没有该字段时：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: missing cli_contract → exactly legacy v1
+    - paragraph: 这是 backward compatibility。
+    - heading "ownership validation" [level=3]
+    - paragraph: plan_uninstall()：
+    - list:
+      - listitem: 读取 archived generation。
+      - text: 根据 archived contract 选择唯一 renderer：
+      - list:
+        - listitem: missing/v1 → old shim
+        - listitem: v2 → new legacy-mode shim
+      - listitem: 当前 CLI 必须精确等于该 generation 对应 renderer。
+    - paragraph: 禁止：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "if current == old || current == new: accept"
+    - heading "cli_verify" [level=3]
+    - paragraph: 同理：
+    - list:
+      - listitem: pending/current install 使用 journal/archive 自己的 contract；
+      - listitem: archived completed generation 使用 archived contract；
+      - listitem: 不能根据磁盘 bytes 猜版本。
+    - heading "old result tampering" [level=3]
+    - paragraph: 如果 archived generation 明确写 v2，却放 v1 shim，必须拒绝；反之也拒绝。
+    - separator
+    - heading "9. Installer RED matrix" [level=1]
+    - paragraph:
+      - strong: 文件：
+      - text: packaging/macos/test_local_install.py
+    - paragraph: 先写 RED，再实现 renderer/version field。
+    - paragraph: 至少覆盖：
+    - heading "新 generation" [level=3]
+    - list:
+      - text: fresh install shim 包含：
+      - generic: 纯文本
+      - button "启用自动换行":
+      - button "复制代码":
+      - code: "--edition personal --legacy-cli \"$@\""
+      - listitem: forwards arbitrary positional command args safely
+      - listitem: literals quoting tests继续通过
+    - heading "旧 generation compatibility" [level=3]
+    - paragraph:
+      - text: 构造/复用一个 archived result
+      - strong: 缺少新 contract 字段
+      - text: ：
+    - list:
+      - listitem: old v1 shim accepted by verify / uninstall preview
+      - listitem: replacing it with byte-identical config but v2 command line must be rejected
+    - heading "新 generation strictness" [level=3]
+    - list:
+      - listitem: archived v2 + v2 shim accepted
+      - listitem: archived v2 + v1 shim rejected
+      - listitem: archived v1 + v2 shim rejected
+      - listitem: external same-byte/new-inode protections from R02 still apply
+      - listitem: TARGET-only R03 change remains unrelated and green
+    - heading "Tampered archive" [level=3]
+    - list:
+      - listitem: arbitrary cli_contract=999 reject
+      - listitem: field type wrong reject
+      - listitem: generation result modified without matching existing proof reject
+    - paragraph: Do not weaken any R02 holding/prepared/recovery functions.
+    - separator
+    - heading "10. CLI RED matrix" [level=1]
+    - paragraph:
+      - strong: claude-switcher.rs module tests
+      - text: ", not whole checks_cli."
+    - paragraph: "Required RED cases before implementation:"
+    - table:
+      - rowgroup:
+        - row "Mode Command Expected":
+          - columnheader "Mode"
+          - columnheader "Command"
+          - columnheader "Expected"
+      - rowgroup:
+        - row "modern status JSON":
+          - cell "modern"
+          - cell "status"
+          - cell "JSON"
+        - row "legacy status unknown current=none ...":
+          - cell "legacy"
+          - cell "status unknown"
+          - cell "current=none ..."
+        - row "legacy status A/B real recorded account":
+          - cell "legacy"
+          - cell "status A/B"
+          - cell "real recorded account"
+        - row "modern check existing modern behavior":
+          - cell "modern"
+          - cell "check"
+          - cell "existing modern behavior"
+        - row "legacy check success OK:<ip>":
+          - cell "legacy"
+          - cell "check success"
+          - cell "OK:<ip>"
+        - 'row "legacy check advisory `OK:<ip>"':
+          - cell "legacy"
+          - cell "check advisory"
+          - 'cell "`OK:<ip>"'
+        - row "legacy check block FAIL:..., code 1":
+          - cell "legacy"
+          - cell "check block"
+          - cell "FAIL:..., code 1"
+        - row "legacy + --json check JSON":
+          - cell "legacy + --json"
+          - cell "check"
+          - cell "JSON"
+        - row "modern switch A/B JSON":
+          - cell "modern"
+          - cell "switch A/B"
+          - cell "JSON"
+        - row "legacy switch success INFO/NOTE optional + final OK, code 0":
+          - cell "legacy"
+          - cell "switch success"
+          - cell "INFO/NOTE optional + final OK, code 0"
+        - row "legacy switch business failure FAIL, code 1":
+          - cell "legacy"
+          - cell "switch business failure"
+          - cell "FAIL, code 1"
+        - row "any switch invalid code 2":
+          - cell "any"
+          - cell "switch invalid"
+          - cell "code 2"
+        - row "modern fix current JSON sequence":
+          - cell "modern"
+          - cell "fix"
+          - cell "current JSON sequence"
+        - row "legacy fix success FIX progress + OK":
+          - cell "legacy"
+          - cell "fix success"
+          - cell "FIX progress + OK"
+        - row "legacy fix partial failure FIX progress + FAIL, code 1, no OK":
+          - cell "legacy"
+          - cell "fix partial failure"
+          - cell "FIX progress + FAIL, code 1, no OK"
+        - row "legacy fix preview no apply/complete event":
+          - cell "legacy"
+          - cell "fix preview"
+          - cell "no apply/complete event"
+        - row "direct binary --legacy-cli explicit allowed only as fixed global mode":
+          - cell "direct binary"
+          - cell "--legacy-cli explicit"
+          - cell "allowed only as fixed global mode"
+        - row "malformed global flag placement reject":
+          - cell "malformed global flag placement"
+          - cell "reject"
+          - cell
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: All handler tests should capture stdout/stderr/code in memory where practical rather than spawning the full binary.
+    - separator
+    - heading "11. Fake shim executable test" [level=1]
+    - paragraph: Installer test should write generated shim into temp HOME and point its embedded executable at a fake argv recorder, as the existing shim forwarding test already does.
+    - paragraph: "Assert exact argv:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition public --legacy-cli status"
+    - paragraph: "and:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition public --legacy-cli check --json"
+    - paragraph: No real Rust executable or app launches.
+    - separator
+    - heading "12. Files and scope" [level=1]
+    - paragraph: "Planned source files exactly:"
+    - list:
+      - listitem: crates/switcher-core/src/bin/claude-switcher.rs
+      - listitem: crates/switcher-core/src/repair_cli.rs
+      - listitem: packaging/macos/local_install.py
+      - listitem: packaging/macos/test_local_install.py
+    - paragraph:
+      - text: Do
+      - strong: not
+      - text: "modify:"
+    - list:
+      - listitem: accounts.rs — use accepted F01 helper;
+      - listitem: lifecycle.rs;
+      - listitem: regions.rs;
+      - listitem: checks.rs;
+      - listitem: checks_cli.rs;
+      - listitem: any previously accepted R04/R05 source.
+    - paragraph: If implementation genuinely cannot expose structured egress IP without modifying a fifth source file, stop and return BLOCKED/PLAN with evidence instead of parsing free-form reason text or adding a network lookup.
+    - separator
+    - heading "13. Final verification" [level=1]
+    - paragraph: "After behavioral RED, run at minimum:"
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "cargo test --offline --locked -p switcher-core --bin claude-switcher f06_ -- --nocapture cargo test --offline --locked -p switcher-core --lib repair_cli:: python3 -B -m unittest discover \\ -s packaging/macos -p 'test_local_install.py' -k f06 -v python3 -B -m unittest discover \\ -s packaging/macos -p 'test_local_install.py' -v cargo test --offline --locked -p switcher-core --lib accounts:: cargo test --offline --locked -p switcher-core --lib lifecycle:: cargo clippy --offline --locked -p switcher-core --all-targets -- -D warnings rustfmt --check --edition 2024 \\ crates/switcher-core/src/bin/claude-switcher.rs \\ crates/switcher-core/src/repair_cli.rs git diff --check"
+    - paragraph: 如果 bin test filter 的 Cargo 语法与当前 target 不匹配，用实际可运行的等价命令，并记录非零 matched count；不要把 compile-only 当 RED/GREEN。
+    - paragraph: Python 完整模块必须继续包含此前 F02/F03 安装器保护。
+    - separator
+    - heading "14. Evidence" [level=1]
+    - paragraph: 写入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R06-F06-整改-20261025/
+    - paragraph: 记录：
+    - list:
+      - listitem: CLI behavioral RED；
+      - listitem: shim generation RED；
+      - listitem: legacy/modern output matrix；
+      - listitem: stdout/stderr/code receipts；
+      - listitem: fake shim exact argv；
+      - listitem: old/new archived generation compatibility cases；
+      - listitem: partial fix failure无 OK；
+      - listitem: F01 unknown ownership case；
+      - listitem: 每条最终命令前后累计 source hashes；
+      - listitem: R01-R05 11 个 accepted hashes 不变。
+    - paragraph: 成功后预期累计 tracked diff：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 13 files = existing accepted 11 + claude-switcher.rs + repair_cli.rs
+    - paragraph: 注意 installer 两文件已经在 accepted cumulative 11 中，因此它们继续变化不会增加“文件种类”数量，但 R06 evidence 必须记录其新 hash。
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "BOUNDARIES: - no dependencies/install - no real accounts - no network/loopback diagnostics - no apps/services/system settings - no push/merge - stop after R06; do not start R07"
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

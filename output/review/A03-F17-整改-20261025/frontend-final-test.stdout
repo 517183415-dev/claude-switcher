@@ -1,0 +1,92 @@
+
+> claude-switcher-desktop@0.2.0 test
+> node --test tests/*.test.mjs && node scripts/core-preparation-regression.mjs
+
+✔ backup card renders local message and recovery in a polite status, with nearby errors (37.912292ms)
+✔ export shows the returned message and clears the password on success (63.877083ms)
+✔ restore preserves a completed=false outcome and its recovery guidance (24.656625ms)
+✔ a new export clears stale feedback while pending and reports failures locally (16.539042ms)
+✔ restore validation clears stale feedback and reports the error beside the card (12.509ms)
+✔ restore rejection stays local and clears the file selection (8.609375ms)
+✔ fixture backup handlers make zero IPC calls even when invoked directly (14.121542ms)
+✔ restore success remains visible if the subsequent draft refresh fails (9.834042ms)
+✔ opening the backup folder clears old errors and shows its real outcome (7.436709ms)
+✔ Taipei and Los Angeles labels match date conversion and parse (65.868667ms)
+✔ a running page retains consistent old-zone display but cannot write after TZ changes (24.672541ms)
+✔ Los Angeles to Taipei changes reject old inputs before any poll (4.839333ms)
+✔ UTC editing survives a running process timezone change (4.35775ms)
+✔ Los Angeles DST offsets use the timestamp rather than the current offset (6.237667ms)
+✔ empty or invalid input cannot become epoch zero (1.843791ms)
+✔ image handler accepts the inclusive 1 MiB boundary (64.190584ms)
+✔ image handler rejects over 1 MiB before reading or invoking (13.129167ms)
+✔ restore handler accepts the inclusive 64 MiB boundary (4.744833ms)
+✔ restore handler rejects oversized files and short passwords before invoke (8.231708ms)
+✔ real handlers report backend failure and release busy state (7.651792ms)
+✔ production defaults are 128 and no implicit evidence release; preview only reads (2.320708ms)
+✔ cancelling a preview does not execute either phase (0.592291ms)
+✔ first confirmation commits the bound index plan once and never starts GC (0.626917ms)
+✔ changed options and known pending state invalidate index execution (2.518625ms)
+✔ second preview and a separate confirmation are required for file GC (0.511667ms)
+✔ GC pending and duplicate clicks cannot bypass the confirmation gate (0.492417ms)
+✔ backend rejection clears the consumed plan and never invents completion (0.412666ms)
+✔ fixture and busy handlers perform zero IPC (0.764292ms)
+✔ production markup connects both previews, separate confirmations and cancellation (46.738333ms)
+✔ non-completed terminal outcome is delivered and status is refreshed (2.232333ms)
+✔ status refresh failure retains the delivered terminal outcome (0.649834ms)
+✔ ordinary backend failure does not become a terminal outcome (0.486375ms)
+✔ fixture, busy and missing draft do not invoke IPC (1.249583ms)
+✔ outcome: production presentation translates codes and preserves Chinese guidance (32.278291ms)
+✔ formatting preserves the outcome contract and the ad confirmation discriminator (1.130291ms)
+✔ fixture update and account actions make zero IPC calls (78.248791ms)
+✔ preview_repair: production registers request before spawning worker (3.517666ms)
+✔ preview_region_change: production registers request before spawning worker (0.109625ms)
+✔ production worker never re-registers canceled or superseded requests (0.165333ms)
+R07_RECEIPT {"case":"ordinary-success","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":1},"calls":[["preview_repair",{"requestId":"request-8-1"}],["execute_repair",{"requestId":"request-8-1"}],["check_environment",null],["region_view",null]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":{"id":"FRESH","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"triple-click-both-stages","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":1},"calls":[["preview_repair",{"requestId":"request-9-1"}],["execute_repair",{"requestId":"request-9-1"}],["check_environment",null],["region_view",null]],"outcomes":[{"completed":true,"message":"done"}],"parentBusy":"","repairBusy":false,"report":{"id":"FRESH","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"blocked","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-10-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"recovery-required","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-11-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"preview-error","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-12-1"}],["cancel_repair",{"requestId":"request-12-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":"Error: synthetic preview failure"}
+R07_RECEIPT {"case":"not-completed","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-13-1"}],["execute_repair",{"requestId":"request-13-1"}],["region_view",null],["workspace_snapshot",null]],"outcomes":[{"completed":false,"message":"incomplete"}],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"execute-error","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-14-1"}],["execute_repair",{"requestId":"request-14-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":"Error: synthetic execute failure"}
+R07_RECEIPT {"case":"cancel-preview","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-15-1"}],["cancel_repair",{"requestId":"request-15-1"}],["cancel_repair",{"requestId":"request-15-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"destroy-execute","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-16-1"}],["execute_repair",{"requestId":"request-16-1"}],["workspace_snapshot",null]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"cancel-execute-new-owner","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-17-1"}],["execute_repair",{"requestId":"request-17-1"}]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"parent-concurrency","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-20-1"}]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"old-check-snapshot-races","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":2},"calls":[["workspace_snapshot",null],["check_environment",null],["cancel_check",null],["workspace_snapshot",null],["preview_repair",{"requestId":"request-21-1"}],["execute_repair",{"requestId":"request-21-1"}],["check_environment",null],["region_view",null]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":{"id":"FRESH","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"region-jp-explicit","counts":{"preview_repair":0,"preview_region_change":1,"execute_repair":1,"check_environment":1},"calls":[["preview_region_change",{"region":"jp","requestId":"request-22-1"}],["execute_repair",{"requestId":"request-22-1"}],["check_environment",null],["region_view",null]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":{"id":"FRESH","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"recovery-fresh-preview","counts":{"preview_repair":2,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-23-1"}],["recover_repair",null],["region_view",null],["cancel_repair",{"requestId":"request-23-1"}],["preview_repair",{"requestId":"request-23-3"}]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"fixture-zero-ipc","counts":{"preview_repair":0,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[],"outcomes":[],"parentBusy":"","repairBusy":false,"report":{"id":"OLD","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"late-old-snapshot","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":1,"check_environment":1},"calls":[["workspace_snapshot",null],["preview_repair",{"requestId":"request-25-1"}],["execute_repair",{"requestId":"request-25-1"}],["check_environment",null],["region_view",null]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":{"id":"FRESH","summary":{"passed":14,"advisory":0,"blocking":0},"checks":[]},"suppressed":false,"childBusy":"","error":""}
+R07_RECEIPT {"case":"old-preview-new-owner","counts":{"preview_repair":2,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-26-1"}],["cancel_repair",{"requestId":"request-26-1"}],["preview_repair",{"requestId":"request-26-2"}],["cancel_repair",{"requestId":"request-26-1"}]],"outcomes":[],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+R07_RECEIPT {"case":"recovery-late-load","counts":{"preview_repair":1,"preview_region_change":0,"execute_repair":0,"check_environment":0},"calls":[["preview_repair",{"requestId":"request-27-1"}],["recover_repair",null],["region_view",null],["cancel_repair",{"requestId":"request-27-1"}]],"outcomes":[{"completed":true,"message":"synthetic result","recovery":null}],"parentBusy":"","repairBusy":false,"report":null,"suppressed":true,"childBusy":"","error":""}
+✔ environment buttons use full shared preview and retain current region (48.088791ms)
+✔ full production preview renders unchanged system values and all user original/target values (36.811ms)
+✔ execute requires visible valid preview, consumes its request ID once (23.319875ms)
+✔ failed repreview and cancel invalidate the old executable plan (8.306625ms)
+✔ navigation/unmount and late old success cannot restore or execute a preview (14.491708ms)
+✔ blocked or recovery-required preview cannot execute (13.638959ms)
+✔ late recovery completion after navigation cannot create a fresh executable plan (8.2695ms)
+✔ f09 ordinary markup click clears OLD and performs preview/execute/full-check 1/1/1 (34.543208ms)
+✔ f09 ordinary triple clicks during preview and execute never replay (15.209958ms)
+✔ f09 denied and failed ordinary actions suppress old evidence without full check (63.827084ms)
+✔ f09 cancel preview prevents execute and keeps OLD suppressed (9.277625ms)
+✔ f09 destroy during execute holds parent guard until settlement and suppresses stale completion (14.323916ms)
+✔ f09 cancel execute ignores outcome and cannot release another component repair (12.029958ms)
+✔ f09 parent busy blocks repair and repair blocks launch/check/account actions (16.193375ms)
+✔ f09 old check and snapshot races cannot replace cleared or FRESH evidence (8.312959ms)
+✔ f09 selected jp remains visible preview until explicit same-id execution (7.9305ms)
+✔ f09 recovery loads fresh preview but never auto executes or full checks (7.927583ms)
+✔ f09 fixture ordinary click is zero IPC (10.89ms)
+✔ f09 an OLD snapshot in flight before repair cannot overwrite FRESH completion (8.162167ms)
+✔ f09 stale preview cannot release a new operation busy owner (8.713416ms)
+✔ f09 recovery cancel during load cannot publish fresh preview or completed repair check (8.85075ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1078.2245
+PASS: immediate invalidation, cancel late success, failure refresh, newer check race, stale snapshot race, fixture zero IPC
+PASS: automatic opening check, fixture zero IPC, single-action first-B switch and launch

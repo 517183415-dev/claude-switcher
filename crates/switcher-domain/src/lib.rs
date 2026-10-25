@@ -56,7 +56,9 @@ pub fn export_types(directory: impl Into<std::path::PathBuf>) -> Result<(), ts_r
     desktop::RegionView::export_all(&config)?;
     desktop::RegionPreset::export_all(&config)?;
     desktop::RepairPreview::export_all(&config)?;
-    desktop::PublisherView::export_all(&config)
+    desktop::PublisherView::export_all(&config)?;
+    desktop::PublisherCleanupPreview::export_all(&config)?;
+    desktop::PublisherGcPreview::export_all(&config)
 }
 
 pub mod ads;

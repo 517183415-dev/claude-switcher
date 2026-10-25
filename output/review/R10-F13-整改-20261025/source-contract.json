@@ -1,0 +1,97 @@
+{
+  "exact_three_file_deletion": true,
+  "all_other_27_baseline_files_unchanged": true,
+  "remaining_timezone_guard_references": [
+    {
+      "file": "crates/switcher-helper/src/policy.rs",
+      "line": 80,
+      "text": "Err(\"timezone_guard_unavailable\")"
+    },
+    {
+      "file": "crates/switcher-helper/src/policy.rs",
+      "line": 1265,
+      "text": "fn timezone_guard_requires_guardian_owner_live_session_and_sequence() {"
+    },
+    {
+      "file": "crates/switcher-helper/src/policy.rs",
+      "line": 1289,
+      "text": "Ok(HelperResponse::status(\"timezone_guard_unchanged\", true))"
+    },
+    {
+      "file": "crates/switcher-helper/src/xpc.rs",
+      "line": 252,
+      "text": "crate::platform::require_idle_timezone_guard(std::path::Path::new("
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 10,
+      "text": "mod timezone_guard;"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 11,
+      "text": "pub use timezone_guard::require_idle_timezone_guard;"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 112,
+      "text": "timezone_guard::reconcile(expected)"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 1088,
+      "text": "timezone_guard_plan_id: Option<String>,"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 1126,
+      "text": "timezone_guard_plan_id: None,"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 1130,
+      "text": "state.timezone_guard_plan_id = Some(plan.id.clone());"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 1524,
+      "text": "timezone_guard_plan_id: Some(\"b\".repeat(64)),"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform.rs",
+      "line": 1720,
+      "text": "timezone_guard_plan_id: Some(plan().id),"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 5,
+      "text": "pub fn require_idle_timezone_guard(_root: &Path) -> Result<(), &'static str> {"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 31,
+      "text": "return Err(\"timezone_guard_verification\");"
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 36,
+      "text": "\"timezone_guard_restored\""
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 38,
+      "text": "\"timezone_guard_unchanged\""
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 86,
+      "text": "\"timezone_guard_verification\""
+    },
+    {
+      "file": "crates/switcher-helper/src/platform/timezone_guard.rs",
+      "line": 91,
+      "text": "assert!(require_idle_timezone_guard(Path::new(\"/fixture/not-read\")).is_ok());"
+    }
+  ],
+  "evidence_layer": "static source contract, not native execution"
+}

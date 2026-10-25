@@ -1,0 +1,23 @@
+
+running 18 tests
+test inspected_current_account_never_offers_reinitialization ... ok
+test metadata_observed_never_implies_dependency_preservation ... ok
+test bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace ... ok
+test missing_scoped_context_never_implies_local_permission ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test recovery_failure_guidance_does_not_require_new_application_or_keychain_evidence ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test current_compatibility_readiness_matches_core_without_login_claims ... ok
+test available_handling_plan_exposes_no_metadata_or_login_preservation_claim ... ok
+test scoped_permission_never_removes_global_keychain_gate ... ok
+test only_consistent_complete_readiness_is_presented_as_ready ... ok
+test projection_keeps_all_blockers_and_excludes_keychain_metadata ... ok
+test handling_plan_preserves_every_backend_blocker_and_ready_consistency ... ok
+test unsupported_backup_is_never_offered ... ok
+test scoped_blockers_and_inconsistent_ready_fail_closed ... ok
+test compatibility_assessments_preserve_backend_blockers_and_false_readiness ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s
+

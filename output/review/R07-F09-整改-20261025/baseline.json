@@ -1,0 +1,31 @@
+{
+  "unit": "R07/F09",
+  "task_id": "c2c_be95",
+  "HEAD": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "accepted_R01_R06_sources": {
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "packaging/macos/local_install.py": "fbe4c2ecbc37d2775bb2fd5c1626d20f3c4e97cebc910bf1d189bd345114ba3e",
+    "packaging/macos/test_local_install.py": "f7bf3b561d2b3ceb3c2882f0eb52c5e0a6975f5db5282a91d31dae668bb9a3f4"
+  },
+  "candidates": {
+    "apps/desktop/src/components/RegionSettings.svelte": "62c0b3c0dc20dfdaf77d634e08893c3084a571ea932e9601a45d4771417ee3c4",
+    "apps/desktop/src/App.svelte": "323e890f03dbf7553539bc9aebabe0561d8b43c57c25116f9d9e4d6110dd283b",
+    "apps/desktop/tests/repair-preview.test.mjs": "60048b9f60cb3b0b9d7951e028036e67a9ae1374bdeb0e567ca552b2e4bbaace",
+    "apps/desktop/tests/repair-preview-queue.test.mjs": "cbccbdff75343ac72db28ac97cab71a73c5177a9947312197c87218aceaf657d",
+    "apps/desktop/tests/recovery-copy.test.mjs": "ff30a185a78f56358feee728c5db33e07c137e358f6f5ba9a4f7b1f1423d1f68"
+  },
+  "notes": [
+    "No product/dependency installation or real accounts, system mutation, product network probes.",
+    "Existing project frontend dependency imports unresolved; inspecting existing offline runtimes only."
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "python": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+  "pyyaml": "6.0.3",
+  "yaml_module": "/Users/gua/Library/Python/3.14/lib/python/site-packages/yaml/__init__.py",
+  "artifact": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R05-F08-F10-整改-20261025/f10-fixtures.json",
+  "artifact_sha256": "4e7691d34b4568f5562b878f224b8557f942fb80a01229a9c2ac0e1b17d84890",
+  "script_sha256": "596f623e75bd56c51b67fa1204b019c846145b5e55934b2cbef7a1331ec773ef",
+  "counts": {
+    "PASS": 42,
+    "FAIL": 2,
+    "BLOCKED": 0
+  },
+  "cases": [
+    {
+      "index": 0,
+      "name": "plain",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "43faf5ac6a68c2df975ccdc2116775b5d949b390aac9bfacf4c2ffcf242311e7"
+    },
+    {
+      "index": 1,
+      "name": "spaces",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "f0251011ee8386b5b7ec3933722e0f2c665d467d17250ffffbc0eb119a3a9fec"
+    },
+    {
+      "index": 2,
+      "name": "tabs",
+      "status": "FAIL",
+      "reason": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"<unicode string>\", line 4, column 15:\n    prepend-rules:\t \n                  ^"
+    },
+    {
+      "index": 3,
+      "name": "comment",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "47b68cbfc8b29380b5a3a137e8eb3a7918a8398f89880b0cbf841e74fb407b63"
+    },
+    {
+      "index": 4,
+      "name": "crlf-comment",
+      "status": "FAIL",
+      "reason": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"<unicode string>\", line 4, column 16:\n    prepend-rules: \t# keep comment\n                   ^"
+    },
+    {
+      "index": 5,
+      "name": "no-final-newline",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "9a31757606bd820e7c8269f888cb645f5caa3da7917232f836aca92a0692d0bc"
+    },
+    {
+      "index": 6,
+      "name": "---\n",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "10a04b185c74cc3a945ebb03502e6f490fc31535a33e03db3ee21be6ecab6adc"
+    },
+    {
+      "index": 7,
+      "name": "# keep\n\n--- # document\n",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "a53b815635896102d79525c7fe95d51e62e584bd4fcd6484cd6dbefd8095bee0"
+    },
+    {
+      "index": 8,
+      "name": "# keep\r\n---\r\n",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "d79ba615458898881adcb8b36853172df26d2112b60fe1fb46da206e7f0a7a95"
+    },
+    {
+      "index": 9,
+      "name": "---",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "03eae6027c204b1c1e7386384568ef8142fc12175a5213fedeaf7dc373a6e2b8"
+    },
+    {
+      "index": 10,
+      "name": "nested-only",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "707dab3644b3d7553064a4403a93f89a0314f618335657084c740aa6ae1acae9"
+    },
+    {
+      "index": 11,
+      "name": "nested-before-target",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "02bf80d60f1d1742dba2b77f24065902f197575bef08f68b750cfa5a31316648"
+    },
+    {
+      "index": 12,
+      "name": "case-12",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 13,
+      "name": "case-13",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 14,
+      "name": "case-14",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 15,
+      "name": "case-15",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 16,
+      "name": "case-16",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 17,
+      "name": "case-17",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 18,
+      "name": "case-18",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 19,
+      "name": "legacy-migration",
+      "status": "PASS",
+      "accepted": true,
+      "managed_rules": 13,
+      "output_sha256": "33973c0674190e30c7892003c86024ca8ee964229259350fd2948eef67efc119"
+    },
+    {
+      "index": 20,
+      "name": "missing-comment-separator",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 21,
+      "name": "case-21",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 22,
+      "name": "case-22",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 23,
+      "name": "case-23",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 24,
+      "name": "case-24",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 25,
+      "name": "case-25",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 26,
+      "name": "case-26",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 27,
+      "name": "case-27",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 28,
+      "name": "case-28",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 29,
+      "name": "case-29",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 30,
+      "name": "case-30",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 31,
+      "name": "case-31",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 32,
+      "name": "case-32",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 33,
+      "name": "case-33",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 34,
+      "name": "case-34",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 35,
+      "name": "case-35",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 36,
+      "name": "case-36",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 37,
+      "name": "case-37",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 38,
+      "name": "case-38",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 39,
+      "name": "case-39",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 40,
+      "name": "case-40",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 41,
+      "name": "case-41",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 42,
+      "name": "case-42",
+      "status": "PASS",
+      "accepted": false
+    },
+    {
+      "index": 43,
+      "name": "case-43",
+      "status": "PASS",
+      "accepted": false
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "protected_functions": {
+    "recheck_uninstall": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "7d29a04bba3ab1edd97546dc6537d511eb4754656022a9774d5a189e917fed33"
+    },
+    "check_uninstall_backups": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "5b79a455001b9832786793b510091a1b85122417344296522b50e4e9b3ef359e"
+    },
+    "check_uninstall_holdings": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "bb96e6b3edc658f37de43c726c8e6c59b8a5a668e1a61ebda65235dec2fbf437"
+    },
+    "check_uninstall_recovery": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "0eee84cecef799af8ffa6f4006fd0a874c9dc10195a4f49c49628536c6e189b7"
+    },
+    "record_uninstall_prepared": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "d6e8799e042d08d83b461945442d32268d817cfd65413f90eeef4a706758f356"
+    },
+    "restore_uninstall_file": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "202a24837e48e4aa7fdc17299a8918810045fc51b27d5727d7d479e63164bf80"
+    },
+    "verify_uninstall_restored": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "6c55621489010cd08ba93dd7d4dc5eb183b7f9f30af70be0d0a9cf3e4f1dcb02"
+    },
+    "plan_uninstall": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "32d3ca15b7abd5a74846237ab50242facf798246fbbcc9db178da5c249ec26e3"
+    },
+    "watchdog_script": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "4967153f1c121f23247a970660cb7efae4b232e62b1d42ed5105bbf467a7f942"
+    },
+    "watchdog_payload": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "608de295e637c40aacb02f7fc829faa3f14f777af7e66bf2d84b49285305e447"
+    },
+    "root_service_spec": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "5654a95f6fd945b81b5fe73a4b667e6b497969bc832edd3e8f9fd70a52a58e04"
+    },
+    "watchdog_backup": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "063e2d76c3d84d6652356d8a562fc50358a49338a7c3b332ff45ef4dfd17f601"
+    },
+    "root_service_ownership": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "e0f98cb4ae0f4dbc53c27b99c0d88bd7a10d40eba6d845a79d8aa7746efaa742"
+    },
+    "pending_service_ownership": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "32c57615978589f4410af3378000335aa6b48916a2b33455b3176a8c4b99add0"
+    },
+    "watchdog_install": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "e44f7a77e6b75ac468c14d45fb9c6094c980a30759ec2522099bedba946810bc"
+    },
+    "watchdog_verify": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "027edb021bb0d58daac76718f0692193277365335633c164abe818150bd9549a"
+    },
+    "watchdog_restore": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "74cecbe6e6185db3a57d0181ff6319a963cb67c4aeb526d23c5dbe37bee4ed79"
+    },
+    "cli_contract": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "abd46280efb05a396d9c76a925ca35ae7535070a96b2525f1e5146324f5d0938"
+    },
+    "cli_shim": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "8fc4441ef6c991fb84aeac979ae6cf0d8530c2230a67b9907ea9e643cfae8d62"
+    },
+    "installed_cli_plan": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "c8f72d870753365ec74d31cd51d743ee4681b5a605118b8ee9de2d6308b69e56"
+    },
+    "cli_verify": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "1fd11a5ed86a22a3d999f0653e86733e3545a1db8e4b87e14fc2351dc787f160"
+    },
+    "cli_restore": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "85f9f7d7e233df2a50e8184a4524cdb38036a93d9205defa73124afb1ec8aa63"
+    },
+    "cli_install": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "10d17e7710dd1ab2c41d200d4a2f434bdb07a95389b25379c0ed259165e642f3"
+    },
+    "write_owner_cli": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "4af73acd91d2248f1479b893e3f2fef9302a632a108b6d9fbb4f12e179b40070"
+    },
+    "finish": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "d29e96d9773dff7dd97152953532b3c6a9ba93a1864cfc9ae97ffa617341a25b"
+    },
+    "resume_terminal": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "37ecc7c81dd81cd4e5befe2a748e1aa93c5b70c41c3f483ecff9f7824b1cc943"
+    },
+    "transact": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "3bcf97bbb177d6b52004e1f47839ce0623deb2328069592cec2705ccdf8e36c8"
+    },
+    "recover": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "83bfaa21c0c9175f546bb52c0403deb075bc27286154de85250a620976746812"
+    },
+    "finalize": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "5ee330370116de995bbeeaa0c828f172ba4c97a3e29d5f4aed42eeeb0badf6de"
+    },
+    "launch_health": {
+      "ast_unchanged": true,
+      "source_unchanged": true,
+      "source_sha256": "53fb0211abacfe437a96f550bd5ac45ba7aa12f406b38301c7704080ed0ca5a5"
+    }
+  },
+  "unchanged_files": {
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/tests/repair-preview.test.mjs": "cea7e7b368c0bd6d43154c823f36e86abdad3d3cd46fb1071118c70eed5a5726",
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79"
+  }
+}

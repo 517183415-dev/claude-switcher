@@ -1,0 +1,27 @@
+{
+  "source_sha256": {
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/tests/repair-preview.test.mjs": "cea7e7b368c0bd6d43154c823f36e86abdad3d3cd46fb1071118c70eed5a5726"
+  },
+  "anchors": {
+    "apps/desktop/src/components/RegionSettings.svelte": {
+      "function begin": 29,
+      "function finish": 34,
+      "function cancelPlan": 38,
+      "function previewPlan": 46,
+      "function apply": 66,
+      "function execute": 82,
+      "function recover": 89
+    },
+    "apps/desktop/src/App.svelte": {
+      "function repairBusyChanged": 64,
+      "function repairSucceeded": 71,
+      "function perform": 75,
+      "function runChecks": 94
+    }
+  },
+  "targeted_tests": 21,
+  "targeted_failures": 0,
+  "source_frozen": true
+}

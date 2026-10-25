@@ -1,0 +1,27 @@
+F02 progress-save physical boundaries: 74
+F06 shim argv: ["--edition", "public", "--legacy-cli", "check", "--json", "", "space value", "quote'\"", "$(touch NEVER)", "semi;colon", "中文"] exit: 7
+F07 existing config receipt legacy clash-verge probe calls = 0
+F07 existing config receipt v2 clash-verge probe calls = 0
+F07 existing config receipt v2 auto probe calls = 0
+F07 group receipt {'groups': [], 'selected': None, 'accepted': False}
+F07 group receipt {'groups': [], 'selected': '自选 组', 'accepted': True}
+F07 group receipt {'groups': ['唯一 组'], 'selected': None, 'accepted': True}
+F07 group receipt {'groups': ['First', '第二 组'], 'selected': None, 'accepted': False}
+F07 group receipt {'groups': ['First', '第二 组'], 'selected': '第二 组', 'accepted': True}
+F07 group receipt {'groups': ['First', 'Second'], 'selected': 'Missing', 'accepted': False}
+F07 group receipt {'groups': ['Only'], 'selected': 'Wrong', 'accepted': False}
+F07 GUI receipt {'operation': 'commit', 'failed': False, 'events': ['lock enter', 'component committed', 'lock exit'], 'status': 'committed', 'spawn_count': 0, 'gui_launch': None, 'environment': None}
+F07 GUI receipt {'operation': 'finalize', 'failed': False, 'events': ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'], 'status': 'committed', 'spawn_count': 1, 'gui_launch': 'requested', 'environment': 'NOT_RUN'}
+F07 GUI receipt {'operation': 'install', 'failed': False, 'events': ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'], 'status': 'committed', 'spawn_count': 1, 'gui_launch': 'requested', 'environment': 'NOT_RUN'}
+F07 digest receipt {'digest': '0578cb2822386fb5d8ad7db7f5d5c93051409bfd81c0589234feb0675630f76c', 'accepted_same': True, 'rejected_changed': 3}
+F07 GUI receipt {'operation': 'replace', 'failed': False, 'events': ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'], 'status': 'committed', 'spawn_count': 1, 'gui_launch': 'requested', 'environment': 'NOT_RUN'}
+F07 GUI receipt {'operation': 'install', 'failed': True, 'events': ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'], 'status': 'committed', 'spawn_count': 1, 'gui_launch': 'failed', 'environment': 'NOT_RUN'}
+F07 multiple clients receipt clash-verge accepted explicit choice
+F07 multiple clients receipt shadowrocket accepted explicit choice
+F07 selection receipt {'groups': ['First', 'Second'], 'error': 'proxy group selection required; use --proxy-group; candidates: First, Second', 'locks': 0, 'stopped': 0, 'transact': 0}
+F07 unknown receipt shadowrocket accepted
+F07 unknown receipt auto accepted
+F07 unknown receipt sing-box accepted
+F07 unknown receipt clashx accepted
+F07 unknown receipt surge accepted
+F07 selection receipt {'groups': None, 'error': 'proxy client selection required; use --proxy-mode; detected: ', 'locks': 0, 'stopped': 0, 'transact': 0}

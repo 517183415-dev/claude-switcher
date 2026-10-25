@@ -1,0 +1,261 @@
+    - separator "今天 16:24":
+      - time: 今天 16:24
+    - heading "你说：" [level=4]
+    - generic: "[C2C] STATE: INIT TASK_ID: c2c_9364 ITERATION: 0 GOAL: Continue the full remediation plan at output/review/GPTPro-整改核实-20261025/最小整改计划.md using ponytail and stop-that-shit. F01 accepted sources and evidence are current and unchanged. Next bounded unit: R02/F02, then continue remaining units in plan order. BOUNDARIES: No product/dependency installation, real accounts, system changes, push or merge. Isolated synthetic roots and fake service runtime only. Preserve accepted F01. INSTRUCTION: Use Codex with ChatGPT · claude-switcher to inspect current plan, install-review.md, local_install.py and tests. Produce a substantive C2C PLAN for R02 only: real plan install→uninstall→finalize, ownership, backups, rollback, service/file symmetry. Reuse existing transactions. Keep unrelated fixes for later units."
+    - generic: …
+    - button "显示更多":
+      - generic: 显示更多
+    - button "复制消息":
+    - button "共享提示":
+    - button "编辑消息":
+    - button "思考了 8m 1s":
+      - generic: 思考了 8m 1s
+    - heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "[C2C] STATE: PLAN TASK_ID: c2c_9364 ITERATION: 0 UNIT: R02 / F02 PREREQUISITE: F01 accepted; preserve its sources and evidence WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc EXECUTION_SCOPE: Two Python files; isolated fixtures and fake service runtime STOP_AFTER: R02 execution evidence for independent review"
+    - heading "Review conclusion" [level=2]
+    - paragraph:
+      - strong: Proceed with R02 by extending the existing installer transaction. No replacement transaction engine is needed.
+    - paragraph:
+      - text: I reread the remediation plan and install-review.md, and read all
+      - strong: 1,617 lines of local_install.py
+      - text: and
+      - strong: 1,253 lines of test_local_install.py
+      - text: . The packaging directory has no current HEAD diff. Final Git status still shows only the three accepted F01 Rust changes.
+    - paragraph:
+      - text: Use
+      - generic: $ponytail
+      - text: for the bounded implementation and
+      - generic: $stop-that-shit
+      - text: "for the final scope review. Keep changes in:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: packaging/macos/local_install.py packaging/macos/test_local_install.py
+    - heading "Findings that determine this plan" [level=3]
+    - region "可滚动表格":
+      - table:
+        - rowgroup:
+          - row "Current code Consequence for R02":
+            - columnheader "Current code"
+            - columnheader "Consequence for R02"
+        - rowgroup:
+          - row "local_install.py:140–153 sets uninstall’s cli_entry=None, leaves settings empty, and lists only six main destinations. The generated uninstall plan does not describe removal of the CLI or either root-service pair.":
+            - cell "local_install.py:140–153 sets uninstall’s cli_entry=None, leaves settings empty, and lists only six main destinations."
+            - cell "The generated uninstall plan does not describe removal of the CLI or either root-service pair."
+          - 'row "cli_backup() and watchdog_backup() return when their plan inputs are absent; transact() later calls cli_install() and both watchdog_install() calls unconditionally. Populating uninstall snapshots alone is insufficient: without operation-specific dispatch, the tail would install those objects instead of removing them."':
+            - cell "cli_backup() and watchdog_backup() return when their plan inputs are absent; transact() later calls cli_install() and both watchdog_install() calls unconditionally."
+            - 'cell "Populating uninstall snapshots alone is insufficient: without operation-specific dispatch, the tail would install those objects instead of removing them."':
+              - strong: "Populating uninstall snapshots alone is insufficient:"
+              - text: without operation-specific dispatch, the tail would install those objects instead of removing them.
+          - row "legacy_migrate():1002–1019 skips the two root-service labels. Simply removing that continue would create overlapping responsibilities with the dedicated root-service transaction paths.":
+            - cell "legacy_migrate():1002–1019 skips the two root-service labels."
+            - cell "Simply removing that continue would create overlapping responsibilities with the dedicated root-service transaction paths."
+          - row "watchdog_backup():831–853 checks metadata and records current bytes; watchdog_restore():922–946 can replace current destinations without rejecting a third-party replacement first. A fresh snapshot is change-detection evidence, not proof that an object belongs to this installation. Removal and rollback need ownership/conflict checks.":
+            - cell "watchdog_backup():831–853 checks metadata and records current bytes; watchdog_restore():922–946 can replace current destinations without rejecting a third-party replacement first."
+            - cell "A fresh snapshot is change-detection evidence, not proof that an object belongs to this installation. Removal and rollback need ownership/conflict checks."
+          - row "finalize():1462–1472, verify():1517–1532, and registered_services():1376–1379 use the reduced component/service set. resume_terminal() can return an already-terminal result without repeating absence checks. The same complete uninstall condition must govern initial completion, interrupted completion, and later verification.":
+            - cell "finalize():1462–1472, verify():1517–1532, and registered_services():1376–1379 use the reduced component/service set. resume_terminal() can return an already-terminal result without repeating absence checks."
+            - cell "The same complete uninstall condition must govern initial completion, interrupted completion, and later verification."
+          - row "Existing uninstall tests use the manually assembled six-component plan. Their passing result cannot establish real-plan uninstall symmetry. See test_local_install.py:46–50, 116–125, 238–245.":
+            - cell "Existing uninstall tests use the manually assembled six-component plan."
+            - cell "Their passing result cannot establish real-plan uninstall symmetry. See test_local_install.py:46–50, 116–125, 238–245."
+    - button "复制表格":
+    - button "展开表格":
+    - heading "1. Establish the real-plan regression first" [level=2]
+    - paragraph:
+      - strong: "File: test_local_install.py."
+    - paragraph: "Add F02-prefixed tests around the actual sequence:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: plan(install) → transact → finalize installation → plan(uninstall) → transact → finalize uninstall → verify completed uninstall
+    - paragraph: Do not mutate the install plan into an uninstall plan or manually delete its journal/barrier to advance the fixture. Generate a fresh uninstall plan through the real plan().
+    - paragraph: "Build on the existing temporary-root and fresh-bundle fixtures, with these corrections:"
+    - list:
+      - text: Map
+      - strong: every fixed path
+      - text: ", including both root plists, root scripts, owner home, CLI, templates, and paths returned by legacy_specs(), into the temporary root."
+      - listitem: Use a stateful fake run() for service registration, loaded service identity, disabled overrides, and command history. Unknown commands must fail rather than return success.
+      - listitem: Keep the real planning, snapshot comparison, backup, journal, mutation, recovery, and completion functions. Do not mock away legacy_snapshot, uninstall ownership checks, or the final absence predicate in this regression.
+    - paragraph: Signing, credentials, and root-owned metadata may be simulated at the operating-system boundary. File type, symlink, hard-link, mode, byte comparison, and identity checks must still be exercised. Do not execute generated watchdog/bodyguard scripts.
+    - paragraph: Supply complete synthetic configuration. Treat discovery/network calls during uninstall as a test failure.
+    - paragraph:
+      - strong: "Required red result:"
+      - text: the real install leaves a valid shim and both root services; current uninstall either falsely completes with those objects remaining or fails the explicit full-footprint assertions. Record the observed failure before changing production behavior.
+    - heading "2. Make the uninstall plan describe and prove its complete scope" [level=2]
+    - paragraph:
+      - strong: "File: local_install.py."
+      - strong: "Primary functions:"
+      - text: plan, edition_transition, CLI/root-service snapshot helpers.
+    - paragraph: "The required fixed footprint is:"
+    - region "可滚动表格":
+      - table:
+        - rowgroup:
+          - row "Object group Files Service":
+            - columnheader "Object group"
+            - columnheader "Files"
+            - columnheader "Service"
+        - rowgroup:
+          - row "Existing main components Selected App, helper, guardian, their two plists, installation record system/local.claudeswitcher.helper; gui/<owner>/local.claudeswitcher.guardian":
+            - cell "Existing main components"
+            - cell "Selected App, helper, guardian, their two plists, installation record"
+            - cell "system/local.claudeswitcher.helper; gui/<owner>/local.claudeswitcher.guardian"
+          - row "Owner CLI ~/.local/bin/claude-switch.sh None":
+            - cell "Owner CLI"
+            - cell "~/.local/bin/claude-switch.sh"
+            - cell "None"
+          - row "Timezone watchdog SYSTEM/tz-watchdog.sh; WATCHDOG_PLIST system/local.tz-watchdog":
+            - cell "Timezone watchdog"
+            - cell "SYSTEM/tz-watchdog.sh; WATCHDOG_PLIST"
+            - cell "system/local.tz-watchdog"
+          - row "Bodyguard SYSTEM/claude-bodyguard.sh; BODYGUARD_PLIST system/local.claude-bodyguard":
+            - cell "Bodyguard"
+            - cell "SYSTEM/claude-bodyguard.sh; BODYGUARD_PLIST"
+            - cell "system/local.claude-bodyguard"
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph:
+      - text: Keep the six-component loop and reuse the existing auxiliary CLI/root-service machinery. A small explicit auxiliary inventory in the plan/journal is sufficient.
+      - strong: "Do not append destinations without updating their corresponding keys and snapshots:"
+      - text: the current zip(component_keys(p), p['destinations']) would silently omit unmatched entries.
+    - heading "Ownership contract" [level=3]
+    - paragraph: Before an object becomes an uninstall target, establish that it belongs to the installed owner/edition/generation. Use the validated installation record and, where auxiliary ownership is not recorded there, the existing generation-bound staged record/committed result. Bind that evidence to the current record; do not trust whichever transaction happens to be in LAST_RESULT.
+    - paragraph: Require fixed paths, supported file types, link counts, expected ownership/modes, and recognized component content or recorded identities. An arbitrary root-owned script, matching label, or user-owned file at the CLI pathname is not sufficient proof.
+    - paragraph: Record the observed bytes/hash, metadata, file identity where needed for replacement detection, presence/absence, and service registration state in the approved plan. Preserve the existing disabled-override state; uninstall must not issue enable or disable.
+    - paragraph:
+      - strong: No discovery on uninstall.
+      - text: "Do not call installation_settings() merely to obtain timezone/proxy values: that function can perform first-run discovery. Use recorded installation evidence and read-only snapshots. Do not regenerate the backup from current configuration."
+    - paragraph: Missing components may be represented as absent. A registered job without sufficient evidence identifying its installed program/plist must block rather than authorize stopping a possibly unrelated job.
+    - paragraph: Unknown ownership, wrong owner/edition, unexpected bytes, or unsafe paths must produce an explicit conflict without deleting the object. Do not introduce an automatic “force cleanup” fallback.
+    - heading "3. Extend removal and rollback within the existing journal" [level=2]
+    - paragraph:
+      - strong: "File: local_install.py."
+      - strong: "Primary functions:"
+      - text: transact, cli_backup/cli_restore, root-service backup/restore helpers, recover, and legacy-service coordination.
+    - paragraph: "Use this uninstall order:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: Validate approved ownership and snapshots → create and verify all required backups → persist mutation intent → establish existing transaction barrier → stop the owned registered services → remove only approved components, recording progress → verify complete absence → archive result and finish
+    - heading "Backup and removal" [level=3]
+    - paragraph: Reuse the current stage directory, save(), synchronization, pending/completed state, and backup naming conventions.
+    - paragraph:
+      - text: Back up the CLI and both script/plist pairs
+      - strong: before stopping services or deleting components
+      - text: . Verify copied backups against approved snapshots. Preserve the pre-uninstall record and relevant metadata in the existing stage.
+    - paragraph: Add explicit uninstall actions; do not call the install variants on this branch. Stop all four owned registered service targets before deleting their corresponding components, and confirm stopping succeeded. An absent file does not establish that its loaded service is gone.
+    - paragraph: Recheck the approved object before each destructive operation. CLI operations must remain owner-scoped and no-follow. Root-file operations must remain fixed-path. Reject an external replacement rather than treating its newly observed bytes as approved.
+    - paragraph: Keep one mutation/rollback owner for each root service. Coordinate the dedicated root-service path with legacy_migrate/legacy_restore; do not duplicate bootout, deletion, or bootstrap. Retain the existing handling of a recognized legacy update agent without expanding removal to arbitrary legacy files.
+    - heading "Rollback" [level=3]
+    - paragraph:
+      - strong: Restore the state immediately before uninstall
+      - text: ", not the state before the original installation."
+    - paragraph: "Before restoration, validate the needed backup hashes and current destinations. Permit only transaction-explainable states: approved untouched data, the transaction’s removal state, or an already-restored state recognized by recovery. An unrelated replacement or corrupt backup must stop recovery and preserve the journal and remaining evidence."
+    - paragraph: Restore bytes, ownership and modes, then restore exactly the prior registration set. A previously unregistered service must remain unregistered. Verify each service’s files before bootstrap; preserve disabled overrides unchanged.
+    - paragraph: Apply the same checks to the main components removed by this uninstall, not only the five newly included auxiliary files. Scope these additions to uninstall where necessary; do not rewrite install/replace behavior.
+    - paragraph: Repeated recovery must be idempotent. Existing install/replace journals must remain readable. Older uninstall journals lacking auxiliary evidence must not acquire guessed deletion authority.
+    - heading "Data that must remain outside deletion" [level=3]
+    - paragraph: Preserve account archives, active account data, v2 configuration, account/repair journals, system-original.json, repair results, and historical backup stages. Do not recursively delete the user data root or SYSTEM.
+    - paragraph: If configuration literals exist only inside the removed CLI, retain its exact pre-uninstall bytes and metadata in the transaction backup. Do not add a configuration migration in R02.
+    - paragraph:
+      - text: Normal retirement of this installer transaction’s journal remains permitted
+      - strong: after
+      - text: its durable result is archived.
+    - heading "4. Use one complete absence predicate for success" [level=2]
+    - paragraph:
+      - strong: "File: local_install.py."
+      - strong: "Primary functions:"
+      - text: finalize, verify, resume_terminal/finish.
+    - paragraph: "Add a small shared uninstall verification helper that checks:"
+    - paragraph:
+      - strong: All fixed installed files absent, including dangling links; all four fixed service targets unregistered.
+    - paragraph: Also check any explicitly included legacy scheduler that the transaction promises to retire. Use fixed allowlisted paths, not arbitrary paths supplied by journal data.
+    - paragraph: Call this predicate before initially reporting uninstalled, when resuming interrupted terminal cleanup, and when verifying an archived uninstall result. A returned service-query error that does not establish absence must not become success.
+    - paragraph: Test components or services reappearing both before finalization and between interrupted cleanup and retry.
+    - paragraph: For older narrow uninstall receipts/journals, missing auxiliary fields must not mean “those objects are absent.” Read-only checking of the full fixed footprint is still possible. If remaining objects lack approved removal evidence, retain the recovery information and report the conflict rather than deleting them or returning success.
+    - paragraph: This does not require changing GUI health, public verification formatting, or the F03 installer/Rust payload contract.
+    - heading "5. Acceptance matrix and receipts" [level=2]
+    - paragraph:
+      - strong: "File: test_local_install.py."
+    - region "可滚动表格":
+      - table:
+        - rowgroup:
+          - row "Test family Required assertions":
+            - columnheader "Test family"
+            - columnheader "Required assertions"
+        - rowgroup:
+          - row "Real-plan round trip Install and commit, then independently plan/uninstall/finalize for Personal and Public. All owned components and four service targets are absent; a second finalize/verification is consistent.":
+            - cell "Real-plan round trip"
+            - cell "Install and commit, then independently plan/uninstall/finalize for Personal and Public. All owned components and four service targets are absent; a second finalize/verification is consistent."
+          - row "Preservation Account/configuration/repair-journal sentinels and historical backups remain byte-for-byte unchanged. CLI backup retains embedded configuration. Another owner’s data is untouched.":
+            - cell "Preservation"
+            - cell "Account/configuration/repair-journal sentinels and historical backups remain byte-for-byte unchanged. CLI backup retains embedded configuration. Another owner’s data is untouched."
+          - row "Ownership refusal Wrong owner/edition/generation, unknown CLI/root script, unsupported plist/program, symlink, hard link, unsafe mode/owner, and unproven loaded service. No destructive action is authorized.":
+            - cell "Ownership refusal"
+            - cell "Wrong owner/edition/generation, unknown CLI/root script, unsupported plist/program, symlink, hard link, unsafe mode/owner, and unproven loaded service. No destructive action is authorized."
+          - row "Preview-to-execution drift Change each auxiliary object or relevant service identity after preview; reject rather than approving the new state. Include same-content file replacement where identity is pinned.":
+            - cell "Preview-to-execution drift"
+            - cell "Change each auxiliary object or relevant service identity after preview; reject rather than approving the new state. Include same-content file replacement where identity is pinned."
+          - row "Backup interruption/corruption Interrupt each new backup and corrupt a completed backup. No unbacked component is removed; recovery does not write corrupt bytes over installed data.":
+            - cell "Backup interruption/corruption"
+            - cell "Interrupt each new backup and corrupt a completed backup. No unbacked component is removed; recovery does not write corrupt bytes over installed data."
+          - row "Uninstall interruptions Inject failures before and after service bootout, each component/CLI/script/plist removal, progress saves, and transition to verification. Recover twice; compare bytes, metadata, and exact prior registration/disabled state.":
+            - cell "Uninstall interruptions"
+            - cell "Inject failures before and after service bootout, each component/CLI/script/plist removal, progress saves, and transition to verification. Recover twice; compare bytes, metadata, and exact prior registration/disabled state."
+          - row "Recovery conflicts Introduce external replacements after partial uninstall and before rollback. Recovery preserves replacements and transaction evidence instead of overwriting or falsely completing.":
+            - cell "Recovery conflicts"
+            - cell "Introduce external replacements after partial uninstall and before rollback. Recovery preserves replacements and transaction evidence instead of overwriting or falsely completing."
+          - row "Terminal cleanup Interrupt durable result/last-result writes and barrier/journal cleanup. Retry safely; reappearing files, dangling links, or registered services prevent false success.":
+            - cell "Terminal cleanup"
+            - cell "Interrupt durable result/last-result writes and barrier/journal cleanup. Retry safely; reappearing files, dangling links, or registered services prevent false success."
+          - row "Compatibility Existing install/replace, owner/edition handoff, legacy-agent, and repair-record-preservation tests stay green. Old journals are readable and cannot bypass the expanded absence requirement.":
+            - cell "Compatibility"
+            - cell "Existing install/replace, owner/edition handoff, legacy-agent, and repair-record-preservation tests stay green. Old journals are readable and cannot bypass the expanded absence requirement."
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: Cover mixed registered/unregistered root services and absent/false/true disabled overrides. Fault injection must bracket physical side effects as well as journal writes; a failure injected only before every operation misses the post-operation crash window.
+    - paragraph: "Run with the existing unprivileged local Python:"
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: python3 -B -m unittest discover \ -s packaging/macos -p 'test_local_install.py' -k f02 -v python3 -B -m unittest discover \ -s packaging/macos -p 'test_local_install.py' -v git diff --check
+    - paragraph: "Record individual commands, exit codes, nonzero matched test counts, source hashes before/after, and red/green logs under:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/F02-整改-20261025/
+    - paragraph: Include a compact file/service inventory and fault-boundary result table. An all-success fake service runner is not an acceptance receipt.
+    - paragraph:
+      - text: Before and after execution, compare the three F01 source hashes with the accepted F01-整改-20261025/verification.json; leave that evidence unchanged. The expected tracked diff is
+      - strong: the existing three F01 Rust files plus these two Python files
+      - text: ", with no unrelated tracked changes."
+    - heading "Stop condition" [level=2]
+    - paragraph:
+      - text: Return EXECUTED for
+      - strong: R02 only
+      - text: ", with actual changed files, acceptance receipts, and released execution-output IDs. Return BLOCKED for a specific ownership or fixture limitation rather than weakening checks."
+    - paragraph: Do not include F03 payload normalization, first-install configuration changes, CLI output redesign, helper recovery changes, or additional services. No product/dependency installation, real accounts, host service/system changes, push, or merge. R03 remains the next unit after R02 review.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button:
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: Pro
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成
+- button "向 ChatGPT 提问"

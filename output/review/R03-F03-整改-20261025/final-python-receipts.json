@@ -1,0 +1,78 @@
+[
+  {
+    "name": "python-f03",
+    "command": [
+      "/opt/homebrew/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "packaging/macos",
+      "-p",
+      "test_local_install.py",
+      "-k",
+      "f03",
+      "-v"
+    ],
+    "command_display": "/opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f03 -v",
+    "exit_code": 0,
+    "seconds": 20.26,
+    "log": "output/review/R03-F03-整改-20261025/final-python-f03.log",
+    "matched_tests": 17,
+    "source_hashes_before": {
+      "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+      "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+      "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+      "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+      "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+      "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f"
+    },
+    "source_hashes_after": {
+      "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+      "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+      "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+      "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+      "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+      "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f"
+    },
+    "unchanged": true
+  },
+  {
+    "name": "python-module",
+    "command": [
+      "/opt/homebrew/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "packaging/macos",
+      "-p",
+      "test_local_install.py",
+      "-v"
+    ],
+    "command_display": "/opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -v",
+    "exit_code": 0,
+    "seconds": 38.749,
+    "log": "output/review/R03-F03-整改-20261025/final-python-module.log",
+    "matched_tests": 153,
+    "source_hashes_before": {
+      "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+      "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+      "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+      "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+      "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+      "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f"
+    },
+    "source_hashes_after": {
+      "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+      "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+      "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+      "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+      "packaging/macos/local_install.py": "b8f6dfc5f164346ae27158258579845ea86aa7e9dc55a126a858b6ead2618e4c",
+      "packaging/macos/test_local_install.py": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f"
+    },
+    "unchanged": true
+  }
+]

@@ -1,0 +1,31 @@
+
+running 6 tests
+test publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history ... ok
+test publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas ... ok
+test publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas ... ok
+test publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history ... ok
+test publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release ... ok
+test publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.84s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 30 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.00s
+

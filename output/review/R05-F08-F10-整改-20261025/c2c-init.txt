@@ -1,0 +1,8 @@
+[C2C]
+STATE: INIT
+TASK_ID: c2c_824e
+ITERATION: 0
+WORKSPACE_ID: 5686a1f55261
+Next bounded unit: R05/F08+F10 from output/review/GPTPro-整改核实-20261025/最小整改计划.md. R01-R04 accepted; nine source files frozen. Scope macos.rs and pinned_routes.rs only.
+Need minimal plan: DNS-specific child deadline must permit a synthetic 2.5s dig result while preserving generic 2s/output/UTF8/kill-wait bounds. YAML rules recognition must accept legal top-level comments/trailing spaces/CRLF and single document header, preserve nested/user text, reject unsupported inline/duplicates/multi-doc. First behavioral isolated RED, then minimal fix.
+Use MCP workspace_info/current source and output/review/R05-F08-F10-整改-20261025/baseline.json. No installs, real DNS/network/apps/accounts/services/system settings, push or merge. Return bounded PLAN; no execution yet.

@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/publisher/mod.rs",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/publisher/local_store.rs",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/publisher/cleanup.rs",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri/src/publisher/cleanup_tests.rs"
+  ],
+  "exit": 0
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "label": "targeted",
+    "command": [
+      "/opt/homebrew/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "packaging/macos",
+      "-p",
+      "test_local_install.py",
+      "-k",
+      "f07",
+      "-v"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 0.2691514999605715,
+    "source_before": {
+      "packaging/macos/local_install.py": "3c1c250151535ed0fb9b6ebe601b5fb2e7e222930b3a67d122d684e0c1ad81b8",
+      "packaging/macos/test_local_install.py": "e30f3edd23ee0764eeb3e58e5c9214b9e88a4ee5bf3b6418d430b3d261f6ff97"
+    },
+    "source_after": {
+      "packaging/macos/local_install.py": "3c1c250151535ed0fb9b6ebe601b5fb2e7e222930b3a67d122d684e0c1ad81b8",
+      "packaging/macos/test_local_install.py": "e30f3edd23ee0764eeb3e58e5c9214b9e88a4ee5bf3b6418d430b3d261f6ff97"
+    },
+    "synthetic_HOME": true
+  },
+  {
+    "label": "full",
+    "command": [
+      "/opt/homebrew/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "packaging/macos",
+      "-p",
+      "test_local_install.py",
+      "-v"
+    ],
+    "exit": 1,
+    "elapsed_seconds": 66.76033120800275,
+    "source_before": {
+      "packaging/macos/local_install.py": "3c1c250151535ed0fb9b6ebe601b5fb2e7e222930b3a67d122d684e0c1ad81b8",
+      "packaging/macos/test_local_install.py": "e30f3edd23ee0764eeb3e58e5c9214b9e88a4ee5bf3b6418d430b3d261f6ff97"
+    },
+    "source_after": {
+      "packaging/macos/local_install.py": "3c1c250151535ed0fb9b6ebe601b5fb2e7e222930b3a67d122d684e0c1ad81b8",
+      "packaging/macos/test_local_install.py": "e30f3edd23ee0764eeb3e58e5c9214b9e88a4ee5bf3b6418d430b3d261f6ff97"
+    },
+    "synthetic_HOME": true
+  }
+]

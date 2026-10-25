@@ -1,5 +1,8 @@
 //! Personal-only local editor, recoverable publication and encrypted backup.
 pub mod backup;
+pub(crate) mod cleanup;
+#[cfg(test)]
+mod cleanup_tests;
 pub mod local_store;
 pub mod protocol;
 pub mod security;
@@ -33,6 +36,8 @@ pub enum Error {
     MissingSigningKey,
     PendingOperation,
     RecoveryReadRequired,
+    Resolved(ResolutionSummary),
+    ResolutionOccupied,
     Store(StoreError),
 }
 impl From<std::io::Error> for Error {
@@ -52,6 +57,10 @@ impl std::fmt::Display for Error {
             }
             Self::MissingSource => f.write_str("尚未配置广告托管源，未执行远端发布"),
             Self::PendingOperation => f.write_str("请先回查未完成发布，沿用已有 release_id"),
+            Self::Resolved(_) => f.write_str("发布已核实为非展示终态，未记入已验证历史"),
+            Self::ResolutionOccupied => {
+                f.write_str("上一次发布处理证据尚未确认，保留当前未完成发布")
+            }
             Self::RecoveryReadRequired => f.write_str("恢复备份后，必须先回读正式最高内容序号"),
             Self::Store(StoreError::Conflict) => {
                 f.write_str("内容已被其他发布者更改，请重新读取并合并")
@@ -78,6 +87,42 @@ pub struct HistoryRecord {
     pub payload_hash: String,
 }
 
+/// A non-verified terminal outcome. Evidence is retained until an explicit operator action.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ResolutionKind {
+    Superseded,
+    ExpiredCommitted,
+    CommittedAssetsUnavailable,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResolutionSummary {
+    pub kind: ResolutionKind,
+    pub release_id: String,
+    pub channel: AdChannel,
+    pub revision: u64,
+    pub current_release_id: String,
+    pub current_revision: u64,
+    pub resolved_at: u64,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Resolution {
+    pub pending: Pending,
+    pub current_wire: Vec<u8>,
+    pub current_etag: String,
+    pub kind: ResolutionKind,
+    pub resolved_at: u64,
+    pub watermark: signed::Sequence,
+    pub unavailable_assets: Vec<String>,
+}
+#[cfg(test)]
+thread_local! {
+    // Synthetic errors around the real atomic state write, only for terminal retirement.
+    static F16_TERMINAL_WRITE_FAULT: std::cell::Cell<u8> = const { std::cell::Cell::new(0) };
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct State {
@@ -88,6 +133,10 @@ struct State {
     sequences: [signed::Sequence; 2],
     pending: Option<Pending>,
     recovery_required: bool,
+    #[serde(default)]
+    last_resolution: Option<Resolution>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    cleanup: Option<cleanup::CleanupBatch>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -128,6 +177,7 @@ pub struct Status {
     pub pending_release_id: Option<String>,
     pub recovery_required: bool,
     pub history: Vec<HistoryRecord>,
+    pub last_resolution: Option<ResolutionSummary>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -267,6 +317,8 @@ impl Publisher {
                     sequences: Default::default(),
                     pending: None,
                     recovery_required: false,
+                    last_resolution: None,
+                    cleanup: None,
                 };
                 Self::write_generation(root, &generation, &state, &[])?;
                 storage::atomic_write(
@@ -300,14 +352,52 @@ impl Publisher {
     }
     fn persist(&mut self, state: State) -> Result<()> {
         self.validate_state(&state)?;
-        storage::atomic_write(
-            &self.directory().join("state.json"),
-            &encode(&state, STATE_LIMIT)?,
-        )?;
-        self.state = state;
-        Ok(())
+        cleanup::reserve_gc_state(&state)?;
+        let path = self.directory().join("state.json");
+        let bytes = encode(&state, STATE_LIMIT)?;
+        #[cfg(test)]
+        let fault = if self.state.pending.is_some()
+            && state.pending.is_none()
+            && state.last_resolution.is_some()
+        {
+            F16_TERMINAL_WRITE_FAULT.with(|fault| fault.replace(0))
+        } else {
+            0
+        };
+        #[cfg(test)]
+        let fault = if fault != 0 {
+            fault
+        } else {
+            cleanup::persist_fault(self.state.cleanup.as_ref(), state.cleanup.as_ref())
+        };
+        #[cfg(test)]
+        if fault == 1 {
+            return Err(Error::Io(std::io::Error::other("synthetic before rename")));
+        }
+        let committed = storage::atomic_write(&path, &bytes);
+        #[cfg(test)]
+        let committed = committed.and_then(|()| {
+            if fault == 2 {
+                Err(std::io::Error::other(
+                    "synthetic after rename directory sync",
+                ))
+            } else {
+                Ok(())
+            }
+        });
+        // Rename can commit before directory fsync reports an error. Keep memory
+        // aligned with the exact validated state actually published on disk.
+        if committed.is_ok() || read_private(&path, STATE_LIMIT).is_ok_and(|actual| actual == bytes)
+        {
+            self.state = state;
+        }
+        committed.map_err(Error::Io)
     }
     fn validate_state(&self, state: &State) -> Result<()> {
+        self.validate_state_with_key(state, self.public_key.as_ref())
+    }
+    fn validate_state_with_key(&self, state: &State, key: Option<&VerifyingKey>) -> Result<()> {
+        cleanup::validate_batch(state.cleanup.as_ref(), &self.generation)?;
         if state.schema != 1
             || state.history.len() > HISTORY_LIMIT
             || state.assets.len() > ASSET_LIMIT
@@ -347,7 +437,7 @@ impl Publisher {
             }
         }
         if let Some(pending) = &state.pending {
-            let manifest = if let Some(key) = &self.public_key {
+            let manifest = if let Some(key) = key {
                 ads::verify_manifest(
                     &pending.wire,
                     key,
@@ -383,7 +473,128 @@ impl Publisher {
                 return Err(Error::Invalid("etag"));
             }
         }
+        if let Some(resolution) = &state.last_resolution {
+            self.validate_resolution_with_key(
+                resolution,
+                state,
+                key.ok_or(Error::MissingSigningKey)?,
+            )?;
+        }
         Ok(())
+    }
+    fn authenticated_manifest(
+        &self,
+        wire: &[u8],
+        channel: AdChannel,
+        now: u64,
+    ) -> Result<(AdManifest, String)> {
+        self.authenticated_manifest_with_key(wire, channel, now, self.verifying_key()?)
+    }
+    fn authenticated_manifest_with_key(
+        &self,
+        wire: &[u8],
+        channel: AdChannel,
+        now: u64,
+        key: &VerifyingKey,
+    ) -> Result<(AdManifest, String)> {
+        let (manifest, hash): (AdManifest, String) =
+            signed::verify(wire, key, ads::MAX_MANIFEST_BYTES).map_err(Error::Invalid)?;
+        // Authentication may accept expiry. Display/publication verification may not.
+        ads::validate_manifest(&manifest, channel, &self.key_id, manifest.issued_at)
+            .map_err(Error::Invalid)?;
+        if manifest.issued_at > now {
+            return Err(Error::Invalid("remote_clock"));
+        }
+        Ok((manifest, hash))
+    }
+    fn validate_resolution(
+        &self,
+        resolution: &Resolution,
+        state: &State,
+    ) -> Result<ResolutionSummary> {
+        self.validate_resolution_with_key(resolution, state, self.verifying_key()?)
+    }
+    fn validate_resolution_with_key(
+        &self,
+        resolution: &Resolution,
+        state: &State,
+        key: &VerifyingKey,
+    ) -> Result<ResolutionSummary> {
+        let pending = &resolution.pending;
+        let channel = pending.manifest.channel;
+        let (manifest, _) = self.authenticated_manifest_with_key(
+            &pending.wire,
+            channel,
+            resolution.resolved_at,
+            key,
+        )?;
+        let (current, hash) = self.authenticated_manifest_with_key(
+            &resolution.current_wire,
+            channel,
+            resolution.resolved_at,
+            key,
+        )?;
+        if manifest != pending.manifest
+            || resolution.current_etag.is_empty()
+            || resolution.current_etag.len() > 1024
+            || resolution.current_etag.chars().any(char::is_control)
+            || pending.expected_etag.as_ref().is_some_and(|etag| {
+                etag.is_empty() || etag.len() > 1024 || etag.chars().any(char::is_control)
+            })
+            || resolution.watermark.highest != current.content_revision
+            || resolution.watermark.payload_hash.as_deref() != Some(hash.as_str())
+        {
+            return Err(Error::Invalid("resolution_binding"));
+        }
+        let local = &state.sequences[channel_index(channel)];
+        if local.highest < current.content_revision
+            || (local.highest == current.content_revision
+                && local.payload_hash.as_deref() != Some(hash.as_str()))
+        {
+            return Err(Error::Invalid("resolution_watermark"));
+        }
+        let exact = resolution.current_wire == pending.wire;
+        match resolution.kind {
+            ResolutionKind::Superseded
+                if current.content_revision > manifest.content_revision
+                    && resolution.unavailable_assets.is_empty() => {}
+            ResolutionKind::ExpiredCommitted
+                if exact
+                    && manifest.expires_at <= resolution.resolved_at
+                    && resolution.unavailable_assets.is_empty() => {}
+            ResolutionKind::CommittedAssetsUnavailable
+                if exact
+                    && manifest.expires_at > resolution.resolved_at
+                    && !resolution.unavailable_assets.is_empty() =>
+            {
+                let mut seen = std::collections::HashSet::new();
+                for hash in &resolution.unavailable_assets {
+                    if !seen.insert(hash)
+                        || !manifest
+                            .slots
+                            .iter()
+                            .flat_map(|slot| &slot.campaigns)
+                            .any(|campaign| &campaign.image.sha256 == hash)
+                    {
+                        return Err(Error::Invalid("resolution_assets"));
+                    }
+                }
+            }
+            _ => return Err(Error::Invalid("resolution_kind")),
+        }
+        Ok(ResolutionSummary {
+            kind: resolution.kind,
+            release_id: manifest.release_id,
+            channel,
+            revision: manifest.content_revision,
+            current_release_id: current.release_id,
+            current_revision: current.content_revision,
+            resolved_at: resolution.resolved_at,
+        })
+    }
+    /// Full retained evidence also pins both manifests' assets for local cleanup.
+    pub fn resolution_read(&self) -> Option<Resolution> {
+        self.state.last_resolution.clone()
     }
     pub fn draft_read(&self) -> AdManifest {
         self.state.draft.clone()
@@ -433,6 +644,9 @@ impl Publisher {
         for content in &mut draft.slots {
             if slot.is_none_or(|slot| content.slot == slot) {
                 content.enabled = false;
+                if slot.is_none() {
+                    content.campaigns.clear();
+                }
             }
         }
         self.draft_save(draft, now)
@@ -509,6 +723,11 @@ impl Publisher {
                 .map(|pending| pending.manifest.release_id.clone()),
             recovery_required: self.state.recovery_required,
             history: self.state.history.clone(),
+            last_resolution: self
+                .state
+                .last_resolution
+                .as_ref()
+                .and_then(|resolution| self.validate_resolution(resolution, &self.state).ok()),
         }
     }
     pub fn credentials_save(&mut self, vault: &mut dyn Vault, secrets: &Secrets) -> Result<()> {
@@ -596,18 +815,7 @@ impl Publisher {
             {
                 return Err(Error::Invalid("etag"));
             }
-            let (manifest, hash): (AdManifest, String) = signed::verify(
-                &object.bytes,
-                self.verifying_key()?,
-                ads::MAX_MANIFEST_BYTES,
-            )
-            .map_err(Error::Invalid)?;
-            // Expired current still authenticates its replay watermark, never display.
-            ads::validate_manifest(&manifest, channel, &self.key_id, manifest.issued_at)
-                .map_err(Error::Invalid)?;
-            if manifest.issued_at > now {
-                return Err(Error::Invalid("remote_clock"));
-            }
+            let (manifest, hash) = self.authenticated_manifest(&object.bytes, channel, now)?;
             state.sequences[channel_index(channel)]
                 .remember(manifest.content_revision, hash)
                 .map_err(Error::Invalid)?;
@@ -647,6 +855,17 @@ impl Publisher {
             self.read_remote(source, now)?;
         }
         if self.state.pending.is_none() {
+            if let Some(resolution) = self.state.last_resolution.clone()
+                && resolution.pending.manifest.release_id == self.state.draft.release_id
+                && resolution.pending.manifest.channel == channel
+            {
+                // Repeating a retired operation is not an implicit new publish.
+                // Re-authenticate current; an explicit draft edit gets a fresh ID.
+                self.read_remote(source, now)?;
+                return Err(Error::Resolved(
+                    self.validate_resolution(&resolution, &self.state)?,
+                ));
+            }
             if self.state.history.len() >= HISTORY_LIMIT {
                 return Err(Error::Invalid("history_capacity_no_history_pruned"));
             }
@@ -738,21 +957,37 @@ impl Publisher {
         if pending.phase == Phase::Conflict {
             return Err(Error::Store(StoreError::Conflict));
         }
-        let public_current =
-            source.public_read(&protocol::current_key(channel), ads::MAX_MANIFEST_BYTES)?;
-        if protocol::same_object(&public_current, &pending.wire) {
-            return self.finish_readback(source, now);
+        // Only the authenticated source determines commit/supersession. Public
+        // readback alone must never bypass the replay watermark or source errors.
+        let current = self.read_remote(source, now)?;
+        if let Some(object) = &current {
+            let (manifest, _) = self.authenticated_manifest(&object.bytes, channel, now)?;
+            if object.bytes == pending.wire {
+                // read_remote durably saved the authenticated commit watermark.
+                if pending.manifest.expires_at <= now {
+                    return self.resolve_pending(
+                        object,
+                        ResolutionKind::ExpiredCommitted,
+                        vec![],
+                        now,
+                    );
+                }
+                return self.repair_committed(source, object, now);
+            }
+            if manifest.content_revision > pending.manifest.content_revision {
+                return self.resolve_pending(object, ResolutionKind::Superseded, vec![], now);
+            }
+            if manifest.content_revision == pending.manifest.content_revision {
+                return Err(Error::Invalid("pending_sequence_conflict"));
+            }
+        }
+        if current.as_ref().map(|object| &object.etag) != pending.expected_etag.as_ref() {
+            return Err(Error::Store(StoreError::Conflict));
+        }
+        if pending.manifest.expires_at <= now {
+            return Err(Error::Invalid("pending_expired_uncommitted"));
         }
         if matches!(pending.phase, Phase::CommitUnknown | Phase::ReadbackFailed) {
-            // Resolve the ambiguous authenticated commit before another write.
-            let current = source.current()?;
-            if protocol::same_object(&current, &pending.wire) {
-                return self.finish_readback(source, now);
-            }
-            if current.as_ref().map(|object| &object.etag) != pending.expected_etag.as_ref() {
-                self.set_phase(Phase::Conflict)?;
-                return Err(Error::Store(StoreError::Conflict));
-            }
             let version = source.public_read(
                 &protocol::version_key(&pending.manifest),
                 ads::MAX_MANIFEST_BYTES,
@@ -783,6 +1018,96 @@ impl Publisher {
             }
             Err(error) => Err(Error::Store(error)),
         }
+    }
+    fn resolve_pending(
+        &mut self,
+        current: &protocol::Object,
+        kind: ResolutionKind,
+        unavailable_assets: Vec<String>,
+        now: u64,
+    ) -> Result<Publication> {
+        if self.state.last_resolution.is_some() {
+            return Err(Error::ResolutionOccupied);
+        }
+        let mut state = self.state.clone();
+        let pending = state
+            .pending
+            .take()
+            .ok_or(Error::Invalid("pending_missing"))?;
+        let watermark = state.sequences[channel_index(pending.manifest.channel)].clone();
+        let resolution = Resolution {
+            pending,
+            current_wire: current.bytes.clone(),
+            current_etag: current.etag.clone(),
+            kind,
+            resolved_at: now,
+            watermark,
+            unavailable_assets,
+        };
+        let summary = self.validate_resolution(&resolution, &state)?;
+        state.last_resolution = Some(resolution);
+        self.persist(state)?;
+        Err(Error::Resolved(summary))
+    }
+    fn repair_committed(
+        &mut self,
+        source: &mut dyn ObjectStore,
+        current: &protocol::Object,
+        now: u64,
+    ) -> Result<Publication> {
+        let pending = self
+            .state
+            .pending
+            .clone()
+            .ok_or(Error::Invalid("pending_missing"))?;
+        let version_key = protocol::version_key(&pending.manifest);
+        let version = source.public_read(&version_key, ads::MAX_MANIFEST_BYTES)?;
+        if version
+            .as_ref()
+            .is_some_and(|object| object.bytes != pending.wire)
+        {
+            return Err(Error::Invalid("public_version_readback"));
+        }
+        let mut uploads = Vec::new();
+        let mut missing = Vec::new();
+        for campaign in pending
+            .manifest
+            .slots
+            .iter()
+            .flat_map(|slot| &slot.campaigns)
+        {
+            let asset = &campaign.image;
+            let key = protocol::asset_key(pending.manifest.channel, asset);
+            match source.public_read(&key, ads::MAX_IMAGE_BYTES)? {
+                Some(object) => {
+                    ads::validate_image(&object.bytes, asset).map_err(Error::Invalid)?
+                }
+                None => match self.image_bytes(asset) {
+                    Ok(bytes) => uploads.push((key, bytes)),
+                    Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {
+                        if !missing.contains(&asset.sha256) {
+                            missing.push(asset.sha256.clone());
+                        }
+                    }
+                    Err(error) => return Err(error),
+                },
+            }
+        }
+        if !missing.is_empty() {
+            return self.resolve_pending(
+                current,
+                ResolutionKind::CommittedAssetsUnavailable,
+                missing,
+                now,
+            );
+        }
+        for (key, bytes) in uploads {
+            source.put_immutable(&key, &bytes)?;
+        }
+        if version.is_none() {
+            source.put_immutable(&version_key, &pending.wire)?;
+        }
+        self.finish_readback(source, now)
     }
     fn set_phase(&mut self, phase: Phase) -> Result<()> {
         let mut state = self.state.clone();
@@ -885,11 +1210,13 @@ impl Publisher {
                 })
             })
             .collect::<Result<Vec<_>>>()?;
+        let mut portable_state = self.state.clone();
+        portable_state.cleanup = None;
         let snapshot = Snapshot {
             schema: 1,
             key_id: self.key_id.clone(),
             public_key: self.verifying_key()?.to_bytes(),
-            state: self.state.clone(),
+            state: portable_state,
             assets,
             secrets,
         };
@@ -902,6 +1229,9 @@ impl Publisher {
         passphrase: &[u8],
         vault: &mut dyn Vault,
     ) -> Result<()> {
+        if self.state.cleanup.is_some() {
+            return Err(Error::Invalid("cleanup_finish_gc_before_restore"));
+        }
         if self
             .state
             .pending
@@ -937,7 +1267,8 @@ impl Publisher {
             )
             .map_err(Error::Invalid)?;
         }
-        self.validate_state(&snapshot.state)?;
+        snapshot.state.cleanup = None;
+        self.validate_state_with_key(&snapshot.state, Some(&restored_key))?;
         if snapshot.assets.len() != snapshot.state.assets.len() {
             return Err(Error::Invalid("backup_asset_index"));
         }
@@ -948,6 +1279,19 @@ impl Publisher {
                 return Err(Error::Invalid("backup_asset_index"));
             }
             ads::validate_image(&asset.bytes, &asset.asset).map_err(Error::Invalid)?;
+        }
+        if let Some(local) = &self.state.last_resolution {
+            if snapshot
+                .state
+                .last_resolution
+                .as_ref()
+                .is_some_and(|restored| {
+                    encode(restored, STATE_LIMIT).ok() != encode(local, STATE_LIMIT).ok()
+                })
+            {
+                return Err(Error::ResolutionOccupied);
+            }
+            snapshot.state.last_resolution = Some(local.clone());
         }
         // Keep the local replay watermark when restoring an older backup.
         for index in 0..2 {
@@ -971,7 +1315,7 @@ impl Publisher {
                 .checked_add(1)
                 .ok_or(Error::Invalid("revision_overflow"))?;
         }
-        self.validate_state(&snapshot.state)?;
+        self.validate_state_with_key(&snapshot.state, Some(&restored_key))?;
         let generation = random_id()?;
         Self::write_generation(&self.root, &generation, &snapshot.state, &snapshot.assets)?;
         // Both old active state and old Keychain item remain valid on any failure.

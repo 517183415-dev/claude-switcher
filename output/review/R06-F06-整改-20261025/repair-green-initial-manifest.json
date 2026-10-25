@@ -1,0 +1,25 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--lib",
+    "repair_cli::tests::f06_",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 2.218,
+  "sources_before": {
+    "crates/switcher-core/src/bin/claude-switcher.rs": "5ef86518a56ecabbd9950da3c6771cdcc1664e837bfc7e856dc8376de7742dd1",
+    "crates/switcher-core/src/repair_cli.rs": "25bcb359d22d76a575703f922368293d0bd06715d68d6778d6bf7499b38ab08a"
+  },
+  "sources_after": {
+    "crates/switcher-core/src/bin/claude-switcher.rs": "5ef86518a56ecabbd9950da3c6771cdcc1664e837bfc7e856dc8376de7742dd1",
+    "crates/switcher-core/src/repair_cli.rs": "25bcb359d22d76a575703f922368293d0bd06715d68d6778d6bf7499b38ab08a"
+  }
+}

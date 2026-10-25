@@ -1,0 +1,29 @@
+
+running 4 tests
+test publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors ... ok
+test publisher_commands::f16_feedback_tests::only_verified_publication_is_completed ... ok
+test publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication ... FAILED
+test publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history ... FAILED
+
+failures:
+
+---- publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication stdout ----
+
+thread 'publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication' (28295974) panicked at apps/desktop/src-tauri/src/publisher_commands.rs:149:97:
+called `Result::unwrap()` on an `Err` value: Resolved(ResolutionSummary { kind: Superseded, release_id: "synthetic-pending", channel: Production, revision: 3, current_release_id: "synthetic-current", current_revision: 4, resolved_at: 100 })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history stdout ----
+
+thread 'publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history' (28295975) panicked at apps/desktop/src-tauri/src/publisher_commands.rs:173:9:
+assertion `left == right` failed
+  left: "ready_local"
+ right: "resolution_recorded"
+
+
+failures:
+    publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication
+    publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 61 filtered out; finished in 0.00s
+

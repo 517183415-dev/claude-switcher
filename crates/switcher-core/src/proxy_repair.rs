@@ -34,6 +34,18 @@ pub(crate) trait Runtime {
 
 pub(crate) struct Native;
 
+pub(crate) fn reload_if_needed(
+    needs_reload: bool,
+    runtime: &mut impl Runtime,
+) -> Result<(), &'static str> {
+    if needs_reload {
+        runtime.stop()?;
+        runtime.start()?;
+        runtime.verify("")?;
+    }
+    Ok(())
+}
+
 // Sync coordinator callers may already run in Tokio. A scoped worker avoids nested runtimes.
 fn worker<T: Send>(
     task: impl FnOnce() -> Result<T, &'static str> + Send,
@@ -161,13 +173,13 @@ pub(crate) fn prepare_app_open(
 pub(crate) fn execute_app_open(plan: &AppOpenPlan) -> Result<(), &'static str> {
     execute_app_open_with(plan, &mut NativeAppOpener, crate::checks::unix_now)
 }
-trait AppOpener {
+pub(crate) trait AppOpener {
     fn running(&mut self, mode: &str) -> Result<bool, &'static str>;
     fn ready(&mut self, mode: &str) -> Result<bool, &'static str>;
     fn open(&mut self, app: &str) -> Result<(), &'static str>;
     fn pause(&mut self);
 }
-fn execute_app_open_with(
+pub(crate) fn execute_app_open_only_with(
     plan: &AppOpenPlan,
     backend: &mut impl AppOpener,
     now: impl Fn() -> u64,
@@ -184,6 +196,15 @@ fn execute_app_open_with(
     if !backend.running(mode)? {
         backend.open(app)?;
     }
+    Ok(())
+}
+fn execute_app_open_with(
+    plan: &AppOpenPlan,
+    backend: &mut impl AppOpener,
+    now: impl Fn() -> u64,
+) -> Result<(), &'static str> {
+    execute_app_open_only_with(plan, backend, now)?;
+    let mode = mode_name(plan.mode);
     for _ in 0..40 {
         if backend.ready(mode)? {
             return Ok(());
@@ -192,7 +213,7 @@ fn execute_app_open_with(
     }
     Err(APP_OPEN_MANUAL)
 }
-struct NativeAppOpener;
+pub(crate) struct NativeAppOpener;
 impl AppOpener for NativeAppOpener {
     fn running(&mut self, mode: &str) -> Result<bool, &'static str> {
         native(|| runtime()?.block_on(crate::macos::proxy_running(mode)))
@@ -242,6 +263,130 @@ mod tests {
         }
         fn pause(&mut self) {
             self.pauses += 1;
+        }
+    }
+    #[derive(Default, Debug)]
+    struct F05Opener {
+        running: bool,
+        open_error: bool,
+        running_checks: usize,
+        checks: usize,
+        pauses: usize,
+        opened: Vec<String>,
+    }
+    impl AppOpener for F05Opener {
+        fn running(&mut self, _: &str) -> Result<bool, &'static str> {
+            self.running_checks += 1;
+            Ok(self.running)
+        }
+        fn ready(&mut self, _: &str) -> Result<bool, &'static str> {
+            self.checks += 1;
+            Ok(false)
+        }
+        fn open(&mut self, name: &str) -> Result<(), &'static str> {
+            self.opened.push(name.to_owned());
+            if self.open_error {
+                Err("synthetic_open_failure")
+            } else {
+                Ok(())
+            }
+        }
+        fn pause(&mut self) {
+            self.pauses += 1;
+        }
+    }
+    fn f05_plan(mode: crate::user_repairs::ProxyRepairMode) -> AppOpenPlan {
+        AppOpenPlan {
+            issued_at: 100,
+            expires_at: 220,
+            mode,
+            observation: None,
+        }
+    }
+    #[test]
+    fn f05_open_only_has_no_readiness_budget_and_keeps_app_names() {
+        use crate::user_repairs::ProxyRepairMode::*;
+        for (mode, name) in [
+            (ClashVerge, "Clash Verge"),
+            (Shadowrocket, "Shadowrocket"),
+            (ClashX, "ClashX"),
+            (Surge, "Surge"),
+        ] {
+            for running in [false, true] {
+                let mut fake = F05Opener {
+                    running,
+                    ..Default::default()
+                };
+                let result = execute_app_open_only_with(&f05_plan(mode), &mut fake, || 101);
+                println!(
+                    "F05 open-only mode={mode:?} running={running} result={result:?} counters={fake:?}"
+                );
+                assert_eq!((fake.checks, fake.pauses), (0, 0));
+                assert_eq!(result, Ok(()));
+                assert_eq!(fake.running_checks, 1);
+                assert_eq!(
+                    fake.opened,
+                    if running {
+                        vec![]
+                    } else {
+                        vec![name.to_owned()]
+                    }
+                );
+            }
+        }
+    }
+    #[test]
+    fn f05_open_only_rejects_bad_time_or_unsupported_mode_before_operations() {
+        use crate::user_repairs::ProxyRepairMode::*;
+        for (issued_at, expires_at, now) in [
+            (100, 220, 99),
+            (100, 220, 220),
+            (100, 100, 100),
+            (100, 221, 101),
+        ] {
+            let mut plan = f05_plan(Surge);
+            plan.issued_at = issued_at;
+            plan.expires_at = expires_at;
+            let mut fake = F05Opener::default();
+            assert_eq!(
+                execute_app_open_only_with(&plan, &mut fake, || now),
+                Err(APP_OPEN_MANUAL)
+            );
+            println!(
+                "F05 timing issued={issued_at} expires={expires_at} now={now} counters={fake:?}"
+            );
+            assert_eq!(
+                (
+                    fake.running_checks,
+                    fake.checks,
+                    fake.pauses,
+                    fake.opened.len()
+                ),
+                (0, 0, 0, 0)
+            );
+        }
+        for mode in [Auto, SingBox, ZeroDCloud] {
+            assert!(prepare_app_open(mode).unwrap().is_none());
+            let mut fake = F05Opener::default();
+            assert_eq!(
+                execute_app_open_only_with(&f05_plan(mode), &mut fake, || 101),
+                Err(APP_OPEN_MANUAL)
+            );
+            assert_eq!(fake.running_checks, 0);
+        }
+    }
+    #[test]
+    fn f05_open_only_propagates_open_failure_without_waiting() {
+        use crate::user_repairs::ProxyRepairMode::*;
+        for mode in [ClashVerge, Shadowrocket, ClashX, Surge] {
+            let mut fake = F05Opener {
+                open_error: true,
+                ..Default::default()
+            };
+            let result = execute_app_open_only_with(&f05_plan(mode), &mut fake, || 101);
+            println!("F05 open-error mode={mode:?} result={result:?} counters={fake:?}");
+            assert_eq!(result, Err("synthetic_open_failure"));
+            assert_eq!((fake.opened.len(), fake.checks, fake.pauses), (1, 0, 0));
         }
     }
     #[test]

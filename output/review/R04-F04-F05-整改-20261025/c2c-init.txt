@@ -1,0 +1,11 @@
+[C2C]
+STATE: INIT
+TASK_ID: c2c_ad0b
+ITERATION: 0
+UNIT: R04/F04+F05
+WORKSPACE_ID: 5686a1f55261
+GOAL: Execute R04 of output/review/GPTPro-整改核实-20261025/最小整改计划.md. R01-R03 accepted.
+SCOPE: crates/switcher-core/src/user_repairs.rs, crates/switcher-core/src/regions/legacy.rs, crates/switcher-core/src/proxy_repair.rs; module tests only.
+ACCEPTANCE: Correct Merge but missing live rules still reloads once; passing rules avoid restart. Legacy composition owns one 40-iteration readiness budget, reports app-open failure, preserves Verge TUN repair and named-app opening. Keep other execute_app_open callers compatible. Test real composition with fakes, not a stubbed proxy result.
+PREFLIGHT: output/review/后续单元只读交接-20261025.md and R04 baseline.json.
+REQUEST: Return bounded RED-first PLAN. No installs/dependencies, real accounts, host app/services/settings, network probes, push or merge.

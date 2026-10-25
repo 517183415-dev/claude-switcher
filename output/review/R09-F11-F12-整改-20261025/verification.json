@@ -1,0 +1,69 @@
+{
+  "unit": "R09",
+  "findings": [
+    "F11",
+    "F12"
+  ],
+  "status": "ACCEPTED_LOCAL_ISOLATED",
+  "changed_files": [
+    "crates/switcher-helper/src/platform.rs",
+    "crates/switcher-helper/src/policy.rs",
+    "crates/switcher-helper/src/main.rs"
+  ],
+  "source_sha256": {
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/tests/repair-preview.test.mjs": "cea7e7b368c0bd6d43154c823f36e86abdad3d3cd46fb1071118c70eed5a5726",
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "packaging/macos/local_install.py": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+    "packaging/macos/test_local_install.py": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+    "crates/switcher-helper/src/platform.rs": "019da211ee5b152760fb799ab9c449c540470485766a463c6c4b5dbd6a6a471b",
+    "crates/switcher-helper/src/policy.rs": "153ca41f23c46aff961d89e867f9035ef55ca154397d9f57b7b2a90dea321dd2",
+    "crates/switcher-helper/src/main.rs": "1606db2246e1f33826702ab969194f465af86ee8f19c40406f413df942eb40f3",
+    "crates/switcher-helper/src/xpc.rs": "778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833",
+    "crates/switcher-helper/src/root_operation.rs": "4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825"
+  },
+  "accepted_previous_sources_unchanged": true,
+  "isolated_tests": {
+    "distinct_rust_methods": 57,
+    "groups": {
+      "platform": 31,
+      "policy": 21,
+      "installation_health": 5
+    },
+    "new_methods_included": 23,
+    "python_installer_methods": 178,
+    "f11_interrupts": "caught panic at write boundaries, not physical SIGKILL"
+  },
+  "receipts": {
+    "platform-final": "platform-final.json",
+    "policy-final": "policy-final.json",
+    "installation-health-final": "installation-health-final.json",
+    "installer-final": "installer-final.json",
+    "clippy-final": "clippy-final.json",
+    "fmt-final": "fmt-final.json"
+  },
+  "diff_check_exit": 0,
+  "review": "local-review.md",
+  "native_runtime": "NOT_RUN",
+  "installation": "NOT_RUN",
+  "real_accounts": "NOT_RUN",
+  "long_duration": "WAIT",
+  "boundaries": [
+    "synthetic HOME and test fixtures",
+    "pinned existing direct Rust toolchain, offline locked cargo",
+    "Python guard is not an OS-wide sandbox",
+    "no C2C after user stop instruction"
+  ],
+  "historical_incident": "R08 download attempt remains NOT_ACCEPTED; not erased by this acceptance"
+}

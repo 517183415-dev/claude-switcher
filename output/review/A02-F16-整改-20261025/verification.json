@@ -1,0 +1,56 @@
+{
+  "methods": 18,
+  "method_names": [
+    "f16_committed_missing_version_is_repaired_without_another_cas",
+    "f16_committed_missing_image_is_repaired_from_local_bytes_without_cas",
+    "f16_committed_expired_reply_retires_pending_without_verified_history",
+    "f16_committed_proven_missing_image_retires_without_verified_history",
+    "f16_trusted_higher_current_supersedes_pending_without_remote_write",
+    "f16_global_pause_removes_all_campaign_references_for_safe_higher_release",
+    "f16_authenticated_current_failures_cannot_be_bypassed_by_public_exact_wire",
+    "f16_corrupt_immutable_objects_are_never_overwritten_or_retired",
+    "f16_unsafe_or_corrupt_local_assets_never_become_missing_asset_resolutions",
+    "f16_remote_read_or_upload_errors_keep_pending_and_never_claim_resolution",
+    "f16_terminal_evidence_survives_restart_save_and_successful_higher_pause",
+    "f16_second_terminal_preserves_both_original_evidence_and_new_pending",
+    "f16_terminal_write_failures_preserve_or_calibrate_exact_disk_commit",
+    "f16_old_state_without_resolution_field_remains_readable",
+    "f16_resolution_tampering_fails_closed_on_reopen",
+    "f16_retired_release_retry_after_restart_returns_same_resolution_without_cas",
+    "f16_small_backup_restore_retains_current_resolution_from_older_snapshot",
+    "f16_clean_publisher_restores_resolution_using_authenticated_backup_key"
+  ],
+  "table_input_scenarios": 41,
+  "scenario_count_note": "41 table inputs across 18 methods. Previous 40 inputs plus clean no-key/trust backup restore. Sequential calls/restarts/assertions do not count as extra tests.",
+  "a01_tests_exact_prefix_preserved": true,
+  "protocol_unchanged": true,
+  "final_hashes": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "90f0f535908eaa229c00383fcbc86c569744612c9c3f42aaa0c7b596ce7189a6",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "a1302532121908867d8b7a07ca3c773ca483235b6c428361a81ea316a4f1ada3",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "98d631952fc227ead9168192c29474a8c88f6c0296ca3622cbbf63ec84de7462"
+  },
+  "source_frozen": true,
+  "commands": [
+    "rust-red-retired-retry.json",
+    "rust-green-f16.json",
+    "rust-core-final.json",
+    "rust-red-clean-resolution-restore.json",
+    "rust-green-expanded.json",
+    "rust-green-clean-resolution-restore.json",
+    "rust-red.json",
+    "rust-core-regression.json",
+    "rust-green-initial.json"
+  ],
+  "not_run": [
+    "real object store/network/DNS",
+    "real HOME/accounts",
+    "native IPC/Keychain",
+    "GUI/services",
+    "commands/UI wiring",
+    "full desktop/e03 updater",
+    "A01 f15_ large ciphertext suite (prior accepted evidence; small new terminal backup tested)"
+  ],
+  "final_core_methods": 30,
+  "final_receipt": "rust-core-final.json",
+  "final_exit": 0
+}

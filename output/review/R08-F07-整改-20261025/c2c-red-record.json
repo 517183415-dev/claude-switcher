@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "node",
+    "/Users/gua/codex-with-chatgpt/bin/c2c.js",
+    "record",
+    "-w",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher",
+    "--task",
+    "c2c_c74e",
+    "--iteration",
+    "1",
+    "--changed-files",
+    "packaging/macos/test_local_install.py",
+    "--tests",
+    "R08 behavior RED:3tests3assertion failures0errors;ambiguous selection reaches transaction and no post-lock GUI launch",
+    "--exit-status",
+    "failed",
+    "--executor",
+    "codex",
+    "--notes",
+    "Production installer hash unchanged;actual main/plan/transact/finalize in isolated fixture;raw source snapshots retained",
+    "--command",
+    "/opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f07 -v",
+    "--output-file",
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R08-F07-整改-20261025/f07-red.log",
+    "--exit-code",
+    "1"
+  ],
+  "exit": 0,
+  "stdout": "✓ 已记录执行摘要与输出\n",
+  "stderr": ""
+}

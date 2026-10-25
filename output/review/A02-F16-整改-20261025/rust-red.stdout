@@ -1,0 +1,21 @@
+
+running 6 tests
+test publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history ... FAILED
+test publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas ... FAILED
+test publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas ... FAILED
+test publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history ... FAILED
+test publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release ... FAILED
+test publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write ... FAILED
+
+failures:
+
+failures:
+    publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history
+    publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas
+    publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas
+    publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history
+    publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release
+    publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.58s
+

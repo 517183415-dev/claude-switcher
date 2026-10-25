@@ -13,6 +13,8 @@ pub use timezone_guard::require_idle_timezone_guard;
 pub struct Platform;
 fn command(program: &str, args: &[&str]) -> Result<String, &'static str> {
     #[cfg(test)]
+    f12_tests::deny_native_command();
+    #[cfg(test)]
     if let Some(result) = dns_cache::test_io::command(program, args) {
         return result;
     }
@@ -93,6 +95,18 @@ fn require_tunnel() -> Result<(), &'static str> {
         Err("tun_route_required")
     }
 }
+fn validate_policy_value(p: &RegionPolicy) -> Result<(), &'static str> {
+    validate_timezone(&p.timezone)?;
+    if p.network_service.is_empty()
+        || p.network_service.starts_with('-')
+        || p.network_service.len() > 128
+        || p.network_service.chars().any(char::is_control)
+    {
+        return Err("network_service_invalid");
+    }
+    Ok(())
+}
+
 impl SystemActions for Platform {
     fn reconcile_managed_timezone(&self, expected: &str) -> Result<HelperResponse, &'static str> {
         timezone_guard::reconcile(expected)
@@ -120,14 +134,7 @@ impl SystemActions for Platform {
         Ok(bytes.iter().map(|v| format!("{v:02x}")).collect())
     }
     fn validate_policy(&self, p: &RegionPolicy) -> Result<(), &'static str> {
-        validate_timezone(&p.timezone)?;
-        if p.network_service.is_empty()
-            || p.network_service.starts_with('-')
-            || p.network_service.len() > 128
-            || p.network_service.chars().any(char::is_control)
-        {
-            return Err("network_service_invalid");
-        }
+        validate_policy_value(p)?;
         let services = command("/usr/sbin/networksetup", &["-listallnetworkservices"])?;
         if !services
             .lines()
@@ -196,6 +203,9 @@ impl SystemActions for Platform {
     }
     fn repair_status(&self, plan_id: &str) -> Result<HelperResponse, &'static str> {
         read_repair_status(plan_id)
+    }
+    fn pending_repair(&self) -> Result<Option<String>, &'static str> {
+        read_pending_plan().map(|pending| pending.map(|plan| plan.id))
     }
     fn apply_plan(&self, p: &RepairPlan) -> Vec<RepairItemResult> {
         if let Err(code) = require_tunnel() {
@@ -362,31 +372,11 @@ impl SystemActions for Platform {
                 return Err("installation_backup_permissions");
             }
         }
-        use std::{io::Write, os::unix::fs::OpenOptionsExt};
         let record = load_root_record(Path::new(INSTALL_RECORD))?;
         if record.owner_uid != uid {
             return Err("installation_owner_uid");
         }
-        let temporary = base.join(".component-committed.next");
-        let mut file = std::fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .mode(0o600)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(&temporary)
-            .map_err(|_| "installation_commit_create")?;
-        let bytes = serde_json::to_vec(&record).map_err(|_| "installation_commit_encode")?;
-        file.write_all(&bytes)
-            .and_then(|_| file.sync_all())
-            .map_err(|_| "installation_commit_write")?;
-        std::fs::rename(temporary, base.join("component-committed.json"))
-            .map_err(|_| "installation_commit_rename")?;
-        std::fs::File::open(base)
-            .and_then(|f| f.sync_all())
-            .map_err(|_| "installation_commit_sync")?;
-        // The marker is the commit point. Keep the rollback snapshot until the next transaction.
-        let _ = std::fs::remove_file(base.join("component-pending"));
-        Ok(())
+        write_component_record_at(base, &record)
     }
     fn guardian_status(&self, uid: u32) -> Result<(), &'static str> {
         command(
@@ -395,6 +385,90 @@ impl SystemActions for Platform {
         )
         .map(|_| ())
     }
+}
+
+// RootLock serializes product writers. Never reclaim an unproven historical temporary.
+fn verify_temporary(file: &std::fs::File, path: &Path) -> Result<(), ()> {
+    use std::os::unix::fs::MetadataExt;
+    let descriptor = file.metadata().map_err(|_| ())?;
+    let current = std::fs::symlink_metadata(path).map_err(|_| ())?;
+    if !current.is_file()
+        || current.file_type().is_symlink()
+        || current.nlink() != 1
+        || descriptor.nlink() != 1
+        || current.mode() & 0o777 != 0o600
+        || (
+            current.dev(),
+            current.ino(),
+            current.uid(),
+            current.gid(),
+            current.len(),
+        ) != (
+            descriptor.dev(),
+            descriptor.ino(),
+            descriptor.uid(),
+            descriptor.gid(),
+            descriptor.len(),
+        )
+    {
+        return Err(());
+    }
+    Ok(())
+}
+fn exclusive_journal_commit(from: &Path, to: &Path) -> std::io::Result<()> {
+    #[cfg(target_os = "macos")]
+    {
+        use std::ffi::CString;
+        let from = CString::new(from.as_os_str().as_encoded_bytes())?;
+        let to = CString::new(to.as_os_str().as_encoded_bytes())?;
+        if unsafe { libc::renamex_np(from.as_ptr(), to.as_ptr(), libc::RENAME_EXCL) } == 0 {
+            Ok(())
+        } else {
+            Err(std::io::Error::last_os_error())
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (from, to);
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "macos_required",
+        ))
+    }
+}
+
+fn write_component_record_at(base: &Path, record: &InstallRecord) -> Result<(), &'static str> {
+    use std::{io::Write, os::unix::fs::OpenOptionsExt};
+    let temporary = base.join(format!(
+        ".component-committed.{}.next",
+        Platform.random_token()?
+    ));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open(&temporary)
+        .map_err(|_| "installation_commit_create")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("created", &temporary);
+    let bytes = serde_json::to_vec(&record).map_err(|_| "installation_commit_encode")?;
+    file.write_all(&bytes)
+        .and_then(|_| file.sync_all())
+        .map_err(|_| "installation_commit_write")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("written", &temporary);
+    #[cfg(test)]
+    f11_test_io::checkpoint("before_commit", &temporary);
+    verify_temporary(&file, &temporary).map_err(|_| "installation_commit_rename")?;
+    std::fs::rename(temporary, base.join("component-committed.json"))
+        .map_err(|_| "installation_commit_rename")?;
+    std::fs::File::open(base)
+        .and_then(|f| f.sync_all())
+        .map_err(|_| "installation_commit_sync")?;
+    // The marker is the commit point. Keep the rollback snapshot until the next transaction.
+    let _ = std::fs::remove_file(base.join("component-pending"));
+    Ok(())
 }
 
 pub fn load_root_record(path: &Path) -> Result<InstallRecord, &'static str> {
@@ -602,13 +676,17 @@ fn persist_repair(plan: &RepairPlan) -> Result<(), &'static str> {
     }
     #[cfg(test)]
     no_tun_test_io::persist_tripwire();
+    persist_repair_at(Path::new(SYSTEM_ROOT), plan)
+}
+fn persist_repair_at(base: &Path, plan: &RepairPlan) -> Result<(), &'static str> {
     use std::{io::Write, os::unix::fs::OpenOptionsExt};
-    let base = Path::new(SYSTEM_ROOT);
     let path = base.join("repair-journal.json");
-    if path.exists() {
-        return Err("repair_recovery_required");
+    match std::fs::symlink_metadata(&path) {
+        Ok(_) => return Err("repair_recovery_required"),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
+        Err(_) => return Err("repair_journal_create"),
     }
-    let temporary = base.join(".repair-journal.next");
+    let temporary = base.join(format!(".repair-journal.{}.next", Platform.random_token()?));
     let mut file = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -616,11 +694,18 @@ fn persist_repair(plan: &RepairPlan) -> Result<(), &'static str> {
         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(&temporary)
         .map_err(|_| "repair_journal_create")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("created", &temporary);
     let bytes = serde_json::to_vec(plan).map_err(|_| "repair_journal_encode")?;
     file.write_all(&bytes)
         .and_then(|_| file.sync_all())
         .map_err(|_| "repair_journal_write")?;
-    std::fs::rename(temporary, path).map_err(|_| "repair_journal_commit")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("written", &temporary);
+    #[cfg(test)]
+    f11_test_io::checkpoint("before_commit", &temporary);
+    verify_temporary(&file, &temporary).map_err(|_| "repair_journal_commit")?;
+    exclusive_journal_commit(&temporary, &path).map_err(|_| "repair_journal_commit")?;
     std::fs::File::open(base)
         .and_then(|f| f.sync_all())
         .map_err(|_| "repair_journal_sync")
@@ -702,6 +787,13 @@ fn remember_repair_completion(plan: &RepairPlan, code: &str) -> Result<(), &'sta
     write_completion_at(&path, plan, code, true, repair_owner()?)
 }
 fn read_repair_file<T: serde::de::DeserializeOwned>(name: &str) -> Result<Option<T>, &'static str> {
+    read_repair_file_at(Path::new(SYSTEM_ROOT), name, 0)
+}
+fn read_repair_file_at<T: serde::de::DeserializeOwned>(
+    root: &Path,
+    name: &str,
+    file_uid: u32,
+) -> Result<Option<T>, &'static str> {
     use std::{
         io::Read,
         os::unix::fs::{MetadataExt, OpenOptionsExt},
@@ -709,14 +801,19 @@ fn read_repair_file<T: serde::de::DeserializeOwned>(name: &str) -> Result<Option
     let file = match std::fs::OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
-        .open(Path::new(SYSTEM_ROOT).join(name))
+        .open(root.join(name))
     {
         Ok(file) => file,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(_) => return Err("repair_status_read"),
     };
     let m = file.metadata().map_err(|_| "repair_status_metadata")?;
-    if !m.is_file() || m.uid() != 0 || m.mode() & 0o077 != 0 || m.nlink() != 1 || m.len() > 16384 {
+    if !m.is_file()
+        || m.uid() != file_uid
+        || m.mode() & 0o077 != 0
+        || m.nlink() != 1
+        || m.len() > 16384
+    {
         return Err("repair_status_permissions");
     }
     let mut bytes = Vec::new();
@@ -727,6 +824,101 @@ fn read_repair_file<T: serde::de::DeserializeOwned>(name: &str) -> Result<Option
         .map(Some)
         .map_err(|_| "repair_status_schema")
 }
+fn validate_pending_binding(
+    plan: &RepairPlan,
+    completion: Option<&RepairCompletion>,
+    owner_uid: u32,
+) -> Result<(), &'static str> {
+    let receipt = completion.ok_or("repair_result_owner")?;
+    if receipt.owner_uid != owner_uid {
+        return Err("repair_result_owner");
+    }
+    if !matches!(
+        receipt.code.as_str(),
+        "repair_applied" | "repair_restored" | "repair_not_started"
+    ) {
+        return Err("repair_status_schema");
+    }
+    if serde_json::to_vec(plan).map_err(|_| "repair_status_schema")?
+        != serde_json::to_vec(&receipt.plan).map_err(|_| "repair_status_schema")?
+    {
+        return Err("repair_result_plan");
+    }
+    Ok(())
+}
+fn read_pending_plan() -> Result<Option<RepairPlan>, &'static str> {
+    read_pending_plan_at(Path::new(SYSTEM_ROOT), repair_owner()?, 0)
+}
+fn read_pending_plan_at(
+    root: &Path,
+    owner_uid: u32,
+    file_uid: u32,
+) -> Result<Option<RepairPlan>, &'static str> {
+    use std::os::unix::fs::MetadataExt;
+    let Some(plan) = read_repair_file_at::<RepairPlan>(root, "repair-journal.json", file_uid)?
+    else {
+        return Ok(None);
+    };
+    if plan.id.len() != 64 || !plan.id.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err("repair_plan_id");
+    }
+    validate_policy_value(&plan.target)?;
+    validate_timezone(&plan.original.timezone)?;
+    if plan.target.network_service != plan.original.network_service {
+        return Err("repair_recovery_service");
+    }
+    let receipt = match std::fs::symlink_metadata(root.join("repair-results")) {
+        Ok(directory) => {
+            if !directory.is_dir() || directory.uid() != file_uid || directory.mode() & 0o077 != 0 {
+                return Err("repair_result_directory");
+            }
+            let name = format!("repair-results/{}.json", plan.id);
+            read_repair_file_at::<RepairCompletion>(root, &name, file_uid)?
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(_) => return Err("repair_result_directory"),
+    };
+    if receipt.is_some() {
+        validate_pending_binding(&plan, receipt.as_ref(), owner_uid)?;
+    } else {
+        validate_internal_restore_at(root, &plan, file_uid)?;
+    }
+    Ok(Some(plan))
+}
+// Internal uninstall restores predate completion receipts. Bind only their exact managed backup.
+// The current validated installation owner supplies authority; this is not historical owner proof.
+fn validate_internal_restore_at(
+    root: &Path,
+    plan: &RepairPlan,
+    file_uid: u32,
+) -> Result<(), &'static str> {
+    if plan.expires_at != 0 {
+        return Err("repair_result_owner");
+    }
+    let state = read_repair_file_at::<ManagedSystem>(root, "system-original.json", file_uid)?
+        .ok_or("repair_result_owner")?;
+    validate_timezone(&state.timezone_original)?;
+    validate_timezone(&state.timezone_last)?;
+    let (original, last) = state
+        .services
+        .get(&plan.target.network_service)
+        .ok_or("repair_result_plan")?;
+    if state.services.is_empty()
+        || state.services.len() > 32
+        || plan.target.timezone != state.timezone_original
+        || plan.target.ipv6 != *original
+        || ![
+            state.timezone_original.as_str(),
+            state.timezone_last.as_str(),
+        ]
+        .contains(&plan.original.timezone.as_str())
+        || ![*original, *last].contains(&plan.original.ipv6)
+    {
+        return Err("repair_result_plan");
+    }
+    Ok(())
+}
+
 fn status_response(
     plan_id: &str,
     pending: Option<RepairPlan>,
@@ -734,6 +926,9 @@ fn status_response(
     system: &impl SystemActions,
     owner_uid: u32,
 ) -> Result<HelperResponse, &'static str> {
+    if let Some(plan) = pending.as_ref() {
+        validate_pending_binding(plan, completion.as_ref(), owner_uid)?;
+    }
     if completion
         .as_ref()
         .is_some_and(|receipt| receipt.owner_uid != owner_uid)
@@ -772,6 +967,13 @@ fn status_response(
     if plan.id != plan_id {
         return Ok(HelperResponse::status("repair_unknown", false));
     }
+    plan_status_response(plan, code, system)
+}
+fn plan_status_response(
+    plan: RepairPlan,
+    code: &str,
+    system: &impl SystemActions,
+) -> Result<HelperResponse, &'static str> {
     let state = system.read_state(&plan.target.network_service)?;
     let mut response = HelperResponse::status(code, code != "repair_not_started");
     response.state = Some(state);
@@ -782,7 +984,14 @@ fn read_repair_status(plan_id: &str) -> Result<HelperResponse, &'static str> {
     if plan_id.len() != 64 || !plan_id.bytes().all(|b| b.is_ascii_hexdigit()) {
         return Err("repair_plan_id");
     }
-    let pending = read_repair_file("repair-journal.json")?;
+    let pending = read_pending_plan()?;
+    if let Some(plan) = pending.as_ref() {
+        if plan.id != plan_id {
+            return Ok(HelperResponse::status("repair_unknown", false));
+        }
+        // The reader already bound the full receipt or the exact internal-restore backup.
+        return plan_status_response(plan.clone(), "repair_recovery_required", &Platform);
+    }
     let path = repair_result_path(plan_id, false)?;
     let name = path
         .strip_prefix(SYSTEM_ROOT)
@@ -804,36 +1013,31 @@ fn clear_repair() -> Result<(), &'static str> {
         .map_err(|_| "repair_journal_sync")
 }
 /// Resume only a root-protected repair journal. External changes cause a conflict, never overwrite.
+pub fn recover_for_startup() -> Result<(), &'static str> {
+    startup_recovery_result(recover_pending_repair())
+}
+fn startup_recovery_result(result: Result<(), &'static str>) -> Result<(), &'static str> {
+    match result {
+        Err(
+            "repair_recovery_conflict"
+            | "network_service_unknown"
+            | "timezone_unreadable"
+            | "ipv6_unreadable"
+            | "repair_recovery_verification",
+        ) => Ok(()),
+        result => result,
+    }
+}
 pub fn recover_pending_repair() -> Result<(), &'static str> {
     #[cfg(test)]
     if let Some(pending) = dns_cache::test_io::pending_plan() {
         return pending.as_ref().map_or(Ok(()), recover_saved_plan);
     }
-    use std::{
-        io::Read,
-        os::unix::fs::{MetadataExt, OpenOptionsExt},
-    };
-    let path = Path::new(SYSTEM_ROOT).join("repair-journal.json");
-    let file = match std::fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC)
-        .open(path)
-    {
-        Ok(file) => file,
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
-        Err(_) => return Err("repair_recovery_read"),
-    };
-    let m = file.metadata().map_err(|_| "repair_recovery_metadata")?;
-    if !m.is_file() || m.uid() != 0 || m.mode() & 0o077 != 0 || m.len() > 16384 {
-        return Err("repair_recovery_permissions");
-    }
-    let mut bytes = Vec::new();
-    file.take(16385)
-        .read_to_end(&mut bytes)
-        .map_err(|_| "repair_recovery_read")?;
-    let p: RepairPlan = serde_json::from_slice(&bytes).map_err(|_| "repair_recovery_schema")?;
-    recover_saved_plan(&p)
+    read_pending_plan()?
+        .as_ref()
+        .map_or(Ok(()), recover_saved_plan)
 }
+
 fn recover_saved_plan(p: &RepairPlan) -> Result<(), &'static str> {
     let system = Platform;
     system.validate_policy(&p.target)?;
@@ -916,7 +1120,6 @@ fn remember_managed(plan: &RepairPlan) -> Result<(), &'static str> {
     if dns_cache::test_io::journal("managed", None) {
         return Ok(());
     }
-    use std::{io::Write, os::unix::fs::OpenOptionsExt};
     let mut state = read_managed()?.unwrap_or(ManagedSystem {
         timezone_original: plan.original.timezone.clone(),
         timezone_last: plan.original.timezone.clone(),
@@ -930,8 +1133,14 @@ fn remember_managed(plan: &RepairPlan) -> Result<(), &'static str> {
         .entry(plan.target.network_service.clone())
         .or_insert((plan.original.ipv6, plan.original.ipv6));
     item.1 = plan.target.ipv6;
-    let base = Path::new(SYSTEM_ROOT);
-    let temporary = base.join(".system-original.next");
+    write_managed_record_at(Path::new(SYSTEM_ROOT), &state)
+}
+fn write_managed_record_at(base: &Path, state: &ManagedSystem) -> Result<(), &'static str> {
+    use std::{io::Write, os::unix::fs::OpenOptionsExt};
+    let temporary = base.join(format!(
+        ".system-original.{}.next",
+        Platform.random_token()?
+    ));
     let mut file = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -939,10 +1148,17 @@ fn remember_managed(plan: &RepairPlan) -> Result<(), &'static str> {
         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(&temporary)
         .map_err(|_| "system_backup_create")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("created", &temporary);
     let bytes = serde_json::to_vec(&state).map_err(|_| "system_backup_encode")?;
     file.write_all(&bytes)
         .and_then(|_| file.sync_all())
         .map_err(|_| "system_backup_write")?;
+    #[cfg(test)]
+    f11_test_io::checkpoint("written", &temporary);
+    #[cfg(test)]
+    f11_test_io::checkpoint("before_commit", &temporary);
+    verify_temporary(&file, &temporary).map_err(|_| "system_backup_commit")?;
     std::fs::rename(temporary, base.join("system-original.json"))
         .map_err(|_| "system_backup_commit")?;
     std::fs::File::open(base)
@@ -1011,6 +1227,675 @@ fn restore_managed(system: &Platform) -> Result<(), &'static str> {
     std::fs::File::open(SYSTEM_ROOT)
         .and_then(|f| f.sync_all())
         .map_err(|_| "system_backup_sync")
+}
+
+#[cfg(test)]
+mod f12_tests {
+    use super::*;
+    use std::{cell::Cell, os::unix::fs::PermissionsExt, path::PathBuf};
+    thread_local! { static NO_NATIVE: Cell<bool> = const { Cell::new(false) }; }
+    pub(super) fn deny_native_command() {
+        NO_NATIVE
+            .with(|active| assert!(!active.get(), "pending reader attempted a native command"));
+    }
+    struct Directory(PathBuf);
+    impl Directory {
+        fn new() -> Self {
+            NO_NATIVE.with(|active| {
+                assert!(!active.replace(true));
+            });
+            let path = std::env::temp_dir()
+                .join(format!("helper-f12-{}", Platform.random_token().unwrap()));
+            std::fs::create_dir(&path).unwrap();
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+            Self(path)
+        }
+    }
+    impl Drop for Directory {
+        fn drop(&mut self) {
+            NO_NATIVE.with(|active| active.set(false));
+            std::fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+    fn put(root: &Path, name: &str, value: &impl serde::Serialize) {
+        let path = root.join(name);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+            std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700)).unwrap();
+        }
+        std::fs::write(&path, serde_json::to_vec(value).unwrap()).unwrap();
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).unwrap();
+    }
+    fn records(root: &Path, p: &RepairPlan, receipt: bool) {
+        put(root, "repair-journal.json", p);
+        if receipt {
+            put(
+                root,
+                &format!("repair-results/{}.json", p.id),
+                &RepairCompletion {
+                    owner_uid: 501,
+                    code: "repair_not_started".into(),
+                    plan: p.clone(),
+                },
+            );
+        }
+    }
+    fn pending(root: &Path) -> Result<Option<RepairPlan>, &'static str> {
+        read_pending_plan_at(root, 501, unsafe { libc::geteuid() })
+    }
+    struct ReadOnly(Result<SystemState, &'static str>);
+    impl SystemActions for ReadOnly {
+        fn random_token(&self) -> Result<String, &'static str> {
+            panic!("readonly")
+        }
+        fn read_state(&self, _: &str) -> Result<SystemState, &'static str> {
+            self.0.clone()
+        }
+        fn validate_policy(&self, _: &RegionPolicy) -> Result<(), &'static str> {
+            panic!("readonly")
+        }
+        fn apply_plan(&self, _: &RepairPlan) -> Vec<RepairItemResult> {
+            panic!("readonly")
+        }
+        fn guardian_status(&self, _: u32) -> Result<(), &'static str> {
+            panic!("readonly")
+        }
+    }
+    fn plan() -> RepairPlan {
+        RepairPlan {
+            id: "a".repeat(64),
+            original: SystemState {
+                timezone: "UTC".into(),
+                network_service: "Wi-Fi".into(),
+                ipv6: Ipv6Policy::Automatic,
+            },
+            target: RegionPolicy {
+                timezone: "Asia/Tokyo".into(),
+                network_service: "Wi-Fi".into(),
+                ipv6: Ipv6Policy::Off,
+            },
+            expires_at: 1,
+        }
+    }
+    #[test]
+    fn f12_pending_status_binds_full_receipt_before_state_read() {
+        for changed in [
+            "id",
+            "target_timezone",
+            "target_service",
+            "target_ipv6",
+            "original_timezone",
+            "original_service",
+            "original_ipv6",
+            "expiry",
+            "code",
+            "owner",
+            "missing",
+        ] {
+            let p = plan();
+            let mut receipt = RepairCompletion {
+                owner_uid: 501,
+                code: "repair_not_started".into(),
+                plan: p.clone(),
+            };
+            match changed {
+                "id" => receipt.plan.id = "b".repeat(64),
+                "target_timezone" => receipt.plan.target.timezone = "Europe/London".into(),
+                "target_service" => receipt.plan.target.network_service = "Ethernet".into(),
+                "target_ipv6" => receipt.plan.target.ipv6 = Ipv6Policy::Automatic,
+                "original_timezone" => receipt.plan.original.timezone = "Europe/London".into(),
+                "original_service" => receipt.plan.original.network_service = "Ethernet".into(),
+                "original_ipv6" => receipt.plan.original.ipv6 = Ipv6Policy::Off,
+                "expiry" => receipt.plan.expires_at += 1,
+                "code" => receipt.code = "unexpected_success".into(),
+                "owner" => receipt.owner_uid = 502,
+                "missing" => (),
+                _ => unreachable!(),
+            }
+            let receipt = if changed == "missing" {
+                None
+            } else {
+                Some(receipt)
+            };
+            let result = status_response(
+                &p.id,
+                Some(p.clone()),
+                receipt,
+                &ReadOnly(Ok(p.original.clone())),
+                501,
+            );
+            assert!(result.is_err(), "{changed}");
+        }
+    }
+    #[test]
+    fn f12_pending_status_reports_actual_state_or_read_error() {
+        let p = plan();
+        for code in ["repair_not_started", "repair_applied", "repair_restored"] {
+            let receipt = || {
+                Some(RepairCompletion {
+                    owner_uid: 501,
+                    code: code.into(),
+                    plan: p.clone(),
+                })
+            };
+            let mut actual = p.original.clone();
+            actual.timezone = "Europe/London".into();
+            let response = status_response(
+                &p.id,
+                Some(p.clone()),
+                receipt(),
+                &ReadOnly(Ok(actual)),
+                501,
+            )
+            .unwrap();
+            assert_eq!(response.code, "repair_recovery_required");
+            assert_eq!(response.state.unwrap().timezone, "Europe/London");
+            for error in [
+                "network_service_unknown",
+                "timezone_unreadable",
+                "ipv6_unreadable",
+            ] {
+                assert!(
+                    matches!(status_response(&p.id,Some(p.clone()),receipt(),&ReadOnly(Err(error)),501),Err(e) if e==error)
+                );
+            }
+        }
+    }
+    #[test]
+    fn f12_startup_preserves_service_for_explicit_business_conflicts() {
+        for code in [
+            "repair_recovery_conflict",
+            "network_service_unknown",
+            "timezone_unreadable",
+            "ipv6_unreadable",
+            "repair_recovery_verification",
+        ] {
+            assert_eq!(startup_recovery_result(Err(code)), Ok(()), "{code}");
+        }
+        assert_eq!(startup_recovery_result(Ok(())), Ok(()));
+    }
+    #[test]
+    fn f12_startup_refuses_trust_io_and_unknown_errors() {
+        for code in [
+            "repair_recovery_read",
+            "repair_recovery_metadata",
+            "repair_recovery_permissions",
+            "repair_recovery_schema",
+            "repair_result_owner",
+            "repair_result_plan",
+            "repair_status_schema",
+            "timezone_invalid",
+            "timezone_unknown",
+            "network_service_invalid",
+            "repair_recovery_service",
+            "system_command_failed",
+            "system_command_spawn",
+            "system_command_timeout",
+            "root_transaction_busy",
+            "root_installer_active",
+            "unexpected_error",
+            "repair_journal_remove",
+            "repair_journal_sync",
+        ] {
+            assert_eq!(startup_recovery_result(Err(code)), Err(code), "{code}");
+        }
+    }
+    #[test]
+    fn f12_trusted_pending_reader_is_readonly_and_accepts_expired_receipt_plan() {
+        use std::os::unix::fs::MetadataExt;
+        let root = Directory::new();
+        assert!(pending(&root.0).unwrap().is_none());
+        let p = plan();
+        records(&root.0, &p, true);
+        let journal = root.0.join("repair-journal.json");
+        let before = std::fs::metadata(&journal).unwrap();
+        let bytes = std::fs::read(&journal).unwrap();
+        for _ in 0..2 {
+            assert_eq!(pending(&root.0).unwrap().unwrap().id, p.id);
+        }
+        let after = std::fs::metadata(&journal).unwrap();
+        assert_eq!(
+            (before.dev(), before.ino(), before.len()),
+            (after.dev(), after.ino(), after.len())
+        );
+        assert_eq!(std::fs::read(journal).unwrap(), bytes);
+    }
+    #[test]
+    fn f12_trusted_pending_refuses_unsafe_journal_and_receipt_nodes() {
+        use std::os::unix::fs::symlink;
+        for node in ["journal", "receipt"] {
+            for kind in [
+                "mode",
+                "symlink",
+                "hardlink",
+                "directory",
+                "json",
+                "oversize",
+                "wrong_uid",
+            ] {
+                let root = Directory::new();
+                let p = plan();
+                records(&root.0, &p, true);
+                let path = root.0.join(if node == "journal" {
+                    "repair-journal.json".into()
+                } else {
+                    format!("repair-results/{}.json", p.id)
+                });
+                match kind {
+                    "mode" => {
+                        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644))
+                            .unwrap()
+                    }
+                    "symlink" => {
+                        std::fs::rename(&path, path.with_extension("held")).unwrap();
+                        symlink(path.with_extension("held"), &path).unwrap();
+                    }
+                    "hardlink" => std::fs::hard_link(&path, path.with_extension("link")).unwrap(),
+                    "directory" => {
+                        std::fs::remove_file(&path).unwrap();
+                        std::fs::create_dir(&path).unwrap();
+                    }
+                    "json" => std::fs::write(&path, b"{").unwrap(),
+                    "oversize" => std::fs::write(&path, vec![b' '; 16385]).unwrap(),
+                    "wrong_uid" => (),
+                    _ => unreachable!(),
+                }
+                let result = if kind == "wrong_uid" {
+                    read_pending_plan_at(&root.0, 501, unsafe { libc::geteuid() } + 1)
+                } else {
+                    pending(&root.0)
+                };
+                assert!(result.is_err(), "{node} {kind}");
+                assert!(std::fs::symlink_metadata(&path).is_ok());
+            }
+        }
+    }
+    fn internal_plan() -> RepairPlan {
+        let mut p = plan();
+        p.expires_at = 0;
+        std::mem::swap(&mut p.original.timezone, &mut p.target.timezone);
+        std::mem::swap(&mut p.original.ipv6, &mut p.target.ipv6);
+        p
+    }
+    fn managed() -> ManagedSystem {
+        ManagedSystem {
+            timezone_original: "UTC".into(),
+            timezone_last: "Asia/Tokyo".into(),
+            timezone_guard_plan_id: Some("b".repeat(64)),
+            services: [("Wi-Fi".into(), (Ipv6Policy::Automatic, Ipv6Policy::Off))].into(),
+        }
+    }
+    #[test]
+    fn f12_internal_restore_without_receipt_binds_exact_managed_backup() {
+        for timezone in ["UTC", "Asia/Tokyo"] {
+            for ipv6 in [Ipv6Policy::Automatic, Ipv6Policy::Off] {
+                for results_directory in [false, true] {
+                    let root = Directory::new();
+                    let mut p = internal_plan();
+                    p.original.timezone = timezone.into();
+                    p.original.ipv6 = ipv6;
+                    records(&root.0, &p, false);
+                    put(&root.0, "system-original.json", &managed());
+                    if results_directory {
+                        std::fs::create_dir(root.0.join("repair-results")).unwrap();
+                        std::fs::set_permissions(
+                            root.0.join("repair-results"),
+                            std::fs::Permissions::from_mode(0o700),
+                        )
+                        .unwrap();
+                    }
+                    assert_eq!(pending(&root.0).unwrap().unwrap().id, p.id);
+                }
+            }
+        }
+    }
+    #[test]
+    fn f12_internal_restore_rejects_nonmatching_or_unsafe_backup() {
+        use std::os::unix::fs::symlink;
+        for changed in [
+            "expiry",
+            "target_timezone",
+            "target_ipv6",
+            "original_timezone",
+            "original_ipv6",
+            "service",
+            "missing",
+            "mode",
+            "symlink",
+            "hardlink",
+            "json",
+        ] {
+            let root = Directory::new();
+            let mut p = internal_plan();
+            let mut backup = managed();
+            match changed {
+                "expiry" => p.expires_at = 1,
+                "target_timezone" => p.target.timezone = "Europe/London".into(),
+                "target_ipv6" => p.target.ipv6 = Ipv6Policy::Off,
+                "original_timezone" => p.original.timezone = "Europe/London".into(),
+                "original_ipv6" => {
+                    backup.services.insert(
+                        "Wi-Fi".into(),
+                        (Ipv6Policy::Automatic, Ipv6Policy::Automatic),
+                    );
+                }
+                "service" => {
+                    backup.services.clear();
+                    backup
+                        .services
+                        .insert("Ethernet".into(), (Ipv6Policy::Automatic, Ipv6Policy::Off));
+                }
+                _ => (),
+            }
+            records(&root.0, &p, false);
+            put(&root.0, "system-original.json", &backup);
+            let path = root.0.join("system-original.json");
+            match changed {
+                "missing" => std::fs::remove_file(&path).unwrap(),
+                "mode" => {
+                    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap()
+                }
+                "symlink" => {
+                    std::fs::rename(&path, path.with_extension("held")).unwrap();
+                    symlink(path.with_extension("held"), &path).unwrap();
+                }
+                "hardlink" => std::fs::hard_link(&path, path.with_extension("link")).unwrap(),
+                "json" => std::fs::write(&path, b"{").unwrap(),
+                _ => (),
+            }
+            assert!(pending(&root.0).is_err(), "{changed}");
+        }
+    }
+    #[test]
+    fn f12_present_bad_receipt_never_uses_internal_restore_compatibility() {
+        for changed in ["json", "mode", "owner", "plan", "code"] {
+            let root = Directory::new();
+            let p = internal_plan();
+            records(&root.0, &p, true);
+            put(&root.0, "system-original.json", &managed());
+            let name = format!("repair-results/{}.json", p.id);
+            let path = root.0.join(&name);
+            let mut receipt = RepairCompletion {
+                owner_uid: 501,
+                code: "repair_not_started".into(),
+                plan: p.clone(),
+            };
+            match changed {
+                "owner" => receipt.owner_uid = 502,
+                "plan" => receipt.plan.expires_at = 1,
+                "code" => receipt.code = "unexpected".into(),
+                _ => (),
+            }
+            put(&root.0, &name, &receipt);
+            if changed == "json" {
+                std::fs::write(&path, b"{").unwrap();
+            }
+            if changed == "mode" {
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap();
+            }
+            assert!(pending(&root.0).is_err(), "{changed}");
+        }
+    }
+}
+
+#[cfg(test)]
+mod f11_test_io {
+    use super::*;
+    use std::{cell::RefCell, os::unix::fs::MetadataExt, path::PathBuf};
+
+    type Hook = Box<dyn Fn(&str, &Path)>;
+    thread_local! {
+        static HOOK: RefCell<Option<Hook>> = const { RefCell::new(None) };
+    }
+    pub(super) fn checkpoint(stage: &str, path: &Path) {
+        HOOK.with(|hook| {
+            if let Some(hook) = hook.borrow().as_ref() {
+                hook(stage, path);
+            }
+        });
+    }
+    fn scoped(hook: impl Fn(&str, &Path) + 'static, action: impl FnOnce()) {
+        struct Reset;
+        impl Drop for Reset {
+            fn drop(&mut self) {
+                HOOK.with(|hook| *hook.borrow_mut() = None);
+            }
+        }
+        HOOK.with(|slot| {
+            assert!(slot.borrow().is_none());
+            *slot.borrow_mut() = Some(Box::new(hook));
+        });
+        let _reset = Reset;
+        action();
+    }
+    struct Directory(PathBuf);
+    impl Directory {
+        fn new() -> Self {
+            let path = std::env::temp_dir()
+                .join(format!("helper-f11-{}", Platform.random_token().unwrap()));
+            std::fs::create_dir(&path).unwrap();
+            Self(path)
+        }
+    }
+    impl Drop for Directory {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+    #[derive(Clone, Copy, Debug)]
+    enum Writer {
+        Journal,
+        Component,
+        Managed,
+    }
+    impl Writer {
+        fn names(self) -> (&'static str, &'static str) {
+            match self {
+                Self::Journal => (".repair-journal.next", "repair-journal.json"),
+                Self::Component => (".component-committed.next", "component-committed.json"),
+                Self::Managed => (".system-original.next", "system-original.json"),
+            }
+        }
+        fn write(self, root: &Path) -> Result<(), &'static str> {
+            match self {
+                Self::Journal => persist_repair_at(root, &plan()),
+                Self::Component => write_component_record_at(
+                    root,
+                    &InstallRecord {
+                        schema_version: 2,
+                        owner_uid: 501,
+                        edition: switcher_domain::Edition::Personal,
+                        trust: InstallTrust::DeveloperId {
+                            team_id: "TESTTEAM01".into(),
+                        },
+                        helper_version: "0.2.0".into(),
+                        minimum_app_version: "0.2.0".into(),
+                    },
+                ),
+                Self::Managed => write_managed_record_at(
+                    root,
+                    &ManagedSystem {
+                        timezone_original: "UTC".into(),
+                        timezone_last: "Asia/Tokyo".into(),
+                        timezone_guard_plan_id: Some(plan().id),
+                        services: [("Wi-Fi".into(), (Ipv6Policy::Automatic, Ipv6Policy::Off))]
+                            .into(),
+                    },
+                ),
+            }
+        }
+    }
+    fn plan() -> RepairPlan {
+        RepairPlan {
+            id: "a".repeat(64),
+            original: SystemState {
+                timezone: "UTC".into(),
+                network_service: "Wi-Fi".into(),
+                ipv6: Ipv6Policy::Automatic,
+            },
+            target: RegionPolicy {
+                timezone: "Asia/Tokyo".into(),
+                network_service: "Wi-Fi".into(),
+                ipv6: Ipv6Policy::Off,
+            },
+            expires_at: 100,
+        }
+    }
+    fn retry_interrupted(writer: Writer) {
+        for stage in ["created", "partial", "written", "before_commit"] {
+            let root = Directory::new();
+            let result = std::panic::catch_unwind(|| {
+                scoped(
+                    move |point, path| {
+                        if (stage == "partial" && point == "created") || point == stage {
+                            if stage == "partial" {
+                                std::fs::write(path, b"{").unwrap();
+                            }
+                            panic!("synthetic interruption {stage}");
+                        }
+                    },
+                    || {
+                        writer.write(&root.0).unwrap();
+                    },
+                )
+            });
+            assert!(result.is_err(), "{writer:?} {stage}");
+            let leftovers: Vec<_> = std::fs::read_dir(&root.0)
+                .unwrap()
+                .map(|p| {
+                    let path = p.unwrap().path();
+                    let meta = std::fs::symlink_metadata(&path).unwrap();
+                    (path, meta.dev(), meta.ino(), meta.len())
+                })
+                .collect();
+            assert_eq!(leftovers.len(), 1);
+            assert_eq!(writer.write(&root.0), Ok(()), "{writer:?} {stage}");
+            for (path, dev, ino, len) in leftovers {
+                let now = std::fs::symlink_metadata(path).unwrap();
+                assert_eq!((now.dev(), now.ino(), now.len()), (dev, ino, len));
+            }
+            let final_path = root.0.join(writer.names().1);
+            serde_json::from_slice::<serde_json::Value>(&std::fs::read(final_path).unwrap())
+                .unwrap();
+        }
+    }
+    #[test]
+    fn f11_journal_retries_after_each_interrupted_write() {
+        retry_interrupted(Writer::Journal);
+    }
+    #[test]
+    fn f11_component_retries_after_each_interrupted_write() {
+        retry_interrupted(Writer::Component);
+    }
+    #[test]
+    fn f11_managed_retries_after_each_interrupted_write() {
+        retry_interrupted(Writer::Managed);
+    }
+    #[test]
+    fn f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes() {
+        use std::os::unix::fs::symlink;
+        for writer in [Writer::Journal, Writer::Component, Writer::Managed] {
+            for kind in ["regular", "directory", "symlink", "dangling", "hardlink"] {
+                let root = Directory::new();
+                let old = root.0.join(writer.names().0);
+                let referent = root.0.join("referent");
+                std::fs::write(&referent, b"external data").unwrap();
+                match kind {
+                    "regular" => std::fs::write(&old, b"old residue").unwrap(),
+                    "directory" => std::fs::create_dir(&old).unwrap(),
+                    "symlink" => symlink(&referent, &old).unwrap(),
+                    "dangling" => symlink(root.0.join("absent"), &old).unwrap(),
+                    "hardlink" => std::fs::hard_link(&referent, &old).unwrap(),
+                    _ => unreachable!(),
+                }
+                let before = std::fs::symlink_metadata(&old).unwrap();
+                assert_eq!(writer.write(&root.0), Ok(()), "{writer:?} {kind}");
+                let after = std::fs::symlink_metadata(&old).unwrap();
+                assert_eq!(
+                    (before.dev(), before.ino(), before.mode(), before.nlink()),
+                    (after.dev(), after.ino(), after.mode(), after.nlink())
+                );
+                assert_eq!(std::fs::read(&referent).unwrap(), b"external data");
+            }
+        }
+    }
+    #[test]
+    fn f11_replaced_temp_is_neither_published_nor_removed() {
+        use std::os::unix::fs::symlink;
+        for writer in [Writer::Journal, Writer::Component, Writer::Managed] {
+            for linked in [false, true] {
+                let root = Directory::new();
+                let referent = root.0.join("referent");
+                std::fs::write(&referent, b"external data").unwrap();
+                let referent_hook = referent.clone();
+                scoped(
+                    move |stage, path| {
+                        if stage == "before_commit" {
+                            std::fs::rename(path, path.with_extension("held")).unwrap();
+                            if linked {
+                                symlink(&referent_hook, path).unwrap();
+                            } else {
+                                std::fs::write(path, b"external replacement").unwrap();
+                            }
+                        }
+                    },
+                    || {
+                        assert!(writer.write(&root.0).is_err(), "{writer:?} {linked}");
+                    },
+                );
+                assert!(!root.0.join(writer.names().1).exists());
+                let residues: Vec<_> = std::fs::read_dir(&root.0)
+                    .unwrap()
+                    .map(|p| p.unwrap().path())
+                    .collect();
+                assert_eq!(residues.len(), 3);
+                assert_eq!(std::fs::read(referent).unwrap(), b"external data");
+            }
+        }
+    }
+    #[test]
+    fn f11_existing_and_racing_final_journals_are_never_overwritten() {
+        use std::os::unix::fs::symlink;
+        for kind in ["file", "symlink", "dangling", "directory"] {
+            for racing in [false, true] {
+                let root = Directory::new();
+                let path = root.0.join("repair-journal.json");
+                let make = move |_: &str, _: &Path| match kind {
+                    "file" => std::fs::write(&path, b"existing journal").unwrap(),
+                    "symlink" => symlink("referent", &path).unwrap(),
+                    "dangling" => symlink("absent", &path).unwrap(),
+                    "directory" => std::fs::create_dir(&path).unwrap(),
+                    _ => unreachable!(),
+                };
+                std::fs::write(root.0.join("referent"), b"external data").unwrap();
+                if racing {
+                    scoped(
+                        move |stage, temp| {
+                            if stage == "before_commit" {
+                                make(stage, temp)
+                            }
+                        },
+                        || assert!(Writer::Journal.write(&root.0).is_err(), "{kind} race"),
+                    );
+                } else {
+                    make("", &root.0);
+                    assert!(Writer::Journal.write(&root.0).is_err(), "{kind}");
+                }
+                let final_path = root.0.join("repair-journal.json");
+                let meta = std::fs::symlink_metadata(&final_path).unwrap();
+                match kind {
+                    "file" => assert_eq!(std::fs::read(final_path).unwrap(), b"existing journal"),
+                    "symlink" | "dangling" => assert!(meta.file_type().is_symlink()),
+                    "directory" => assert!(meta.is_dir()),
+                    _ => unreachable!(),
+                }
+                assert_eq!(
+                    std::fs::read(root.0.join("referent")).unwrap(),
+                    b"external data"
+                );
+            }
+        }
+    }
 }
 
 // These scoped boundaries exist only in the unit-test binary. No environment or IPC switch.

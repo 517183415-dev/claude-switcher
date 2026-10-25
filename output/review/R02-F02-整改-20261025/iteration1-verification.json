@@ -1,0 +1,56 @@
+{
+  "finished_at": "2026-10-25T08:57:41.743829+00:00",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "scope": "R02/F02",
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "packaging/macos",
+    "-p",
+    "test_local_install.py",
+    "-k",
+    "f02",
+    "-v"
+  ],
+  "exit_code": 0,
+  "tests_run": 34,
+  "duration_seconds": 37.34205816593021,
+  "full_module": {
+    "command": "python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -v",
+    "exit_code": 0,
+    "tests_run": 127,
+    "log": "review-full-green.log",
+    "executor": "isolated test agent"
+  },
+  "diff_check_exit": 0,
+  "diff_check_output": "",
+  "source_before": {
+    "packaging/macos/local_install.py": "a0bf7e4c5bf3ce43af91cc0dd1fabb8bcb9f5e3c86e40b115849d93198404aef",
+    "packaging/macos/test_local_install.py": "da4d557b1891ae6263681d9f9e03b2ca6b7bc0f3575ea2c4d327533de5837625",
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  },
+  "source_after": {
+    "packaging/macos/local_install.py": "a0bf7e4c5bf3ce43af91cc0dd1fabb8bcb9f5e3c86e40b115849d93198404aef",
+    "packaging/macos/test_local_install.py": "da4d557b1891ae6263681d9f9e03b2ca6b7bc0f3575ea2c4d327533de5837625",
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  },
+  "source_stable": true,
+  "f01_unchanged": true,
+  "not_run": [
+    "actual product installation",
+    "real account access",
+    "host service management",
+    "system settings",
+    "native GUI",
+    "48h or 7d acceptance"
+  ],
+  "review": "Independent read-only review found no remaining code blocker in R02 scope"
+}

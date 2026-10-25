@@ -1,0 +1,11 @@
+[C2C]
+STATE: EXECUTED
+TASK_ID: c2c_c74e
+ITERATION: 1
+UNIT: R08/F07
+WORKSPACE_ID: 5686a1f55261
+RESULT: Two planned files frozen;18 targeted methods included in178 full methods;3 final commands exit0.30 protected functions and14 other accepted paths unchanged.
+EVIDENCE_DIR: output/review/R08-F07-整改-20261025/
+READ: verification.json;iteration1-整改记录.md;final-receipts.json;final-runtime.json;independent-review-final.md;f07-source-diff.patch.
+INCIDENT: Earlier temp-HOME run triggered rustup download flow; NOT_ACCEPTED. Read f07-boundary-violation.json. Final checks pin existing direct offline tools. No claim that all rounds obeyed no-download.
+Please inspect MCP current diff/files and execution_output list then read74-80. Outputs75/79 truncate; read full log tails via read_file, final-installer-full.log210-231. Review R08 only; reply DONE or bounded PLAN. Real product install/accounts/network/GUI/system NOT_RUN; long WAIT.

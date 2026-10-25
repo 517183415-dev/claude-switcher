@@ -1,0 +1,21 @@
+{
+  "status": "ACCEPTED_LOCAL_ISOLATED",
+  "reviewed_checkpoint_sha256": "462c7a487f511c9be70627aa28218680bbe381798b24a1466907e95f2661c330",
+  "final_checkpoint_sha256": "23d4364ef80c71787fb5ae68b4c02b49b5482cef81487da3c3208c944aaa3339",
+  "reviewed_content_unchanged": {
+    "baseline_head": true,
+    "branch": true,
+    "source_sha256": true,
+    "deleted_sources": true,
+    "document_sha256": true,
+    "artifacts": true,
+    "accepted_units": true,
+    "source_invariants": true,
+    "historical_process_deviations_sha256": true
+  },
+  "source_files": 45,
+  "documents": 7,
+  "final_receipts": 22,
+  "working_tree_uncommitted": true,
+  "native_install_accounts_longrun": "NOT_RUN_WAIT"
+}

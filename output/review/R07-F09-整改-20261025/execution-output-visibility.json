@@ -1,0 +1,74 @@
+[
+  {
+    "id": 65,
+    "exit": 1,
+    "truncated": true,
+    "command": "/opt/homebrew/bin/node --test tests/repair-preview.test.mjs",
+    "bytes": 12343,
+    "tail": "/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/tests/repair-preview.test.mjs:142:9)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 1,\n    expected: 0,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at tests/repair-preview.test.mjs:147:1\n✖ f09 old check and snapshot races cannot replace cleared or FRESH evidence (8.347625ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n…[truncated]"
+  },
+  {
+    "id": 66,
+    "exit": 0,
+    "truncated": false,
+    "command": "/opt/homebrew/bin/node --test tests/repair-preview.test.mjs",
+    "bytes": 9871,
+    "tail": "eplace cleared or FRESH evidence (4.692416ms)\n✔ f09 selected jp remains visible preview until explicit same-id execution (4.289292ms)\n✔ f09 recovery loads fresh preview but never auto executes or full checks (4.156458ms)\n✔ f09 fixture ordinary click is zero IPC (5.693666ms)\n✔ f09 an OLD snapshot in flight before repair cannot overwrite FRESH completion (4.274ms)\n✔ f09 stale preview cannot release a new operation busy owner (4.628583ms)\n✔ f09 recovery cancel during load cannot publish fresh preview or completed repair check (4.53825ms)\nℹ tests 21\nℹ suites 0\nℹ pass 21\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 483.558666\n\nSTDERR\n"
+  },
+  {
+    "id": 67,
+    "exit": 0,
+    "truncated": false,
+    "command": "/opt/homebrew/bin/node --test tests/repair-preview-queue.test.mjs",
+    "bytes": 363,
+    "tail": "✔ preview_repair: production registers request before spawning worker (0.672792ms)\n✔ preview_region_change: production registers request before spawning worker (0.053083ms)\n✔ production worker never re-registers canceled or superseded requests (0.090708ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 37.455417\n\nSTDERR\n"
+  },
+  {
+    "id": 68,
+    "exit": 0,
+    "truncated": false,
+    "command": "/opt/homebrew/bin/node --test tests/recovery-copy.test.mjs",
+    "bytes": 367,
+    "tail": "✔ outcome: production presentation translates codes and preserves Chinese guidance (11.439917ms)\n✔ formatting preserves the outcome contract and the ad confirmation discriminator (0.3085ms)\n✔ fixture update and account actions make zero IPC calls (31.06975ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 288.553083\n\nSTDERR\n"
+  },
+  {
+    "id": 69,
+    "exit": 0,
+    "truncated": false,
+    "command": "/opt/homebrew/bin/npm test",
+    "bytes": 11979,
+    "tail": "5ms)\n✔ f09 fixture ordinary click is zero IPC (4.185458ms)\n✔ f09 an OLD snapshot in flight before repair cannot overwrite FRESH completion (5.742417ms)\n✔ f09 stale preview cannot release a new operation busy owner (4.14375ms)\n✔ f09 recovery cancel during load cannot publish fresh preview or completed repair check (4.476209ms)\nℹ tests 42\nℹ suites 0\nℹ pass 42\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 465.739666\nPASS: immediate invalidation, cancel late success, failure refresh, newer check race, stale snapshot race, fixture zero IPC\nPASS: automatic opening check, fixture zero IPC, single-action first-B switch and launch\n\nSTDERR\n"
+  },
+  {
+    "id": 70,
+    "exit": 0,
+    "truncated": false,
+    "command": "/opt/homebrew/bin/npm run check",
+    "bytes": 305,
+    "tail": "\n> claude-switcher-desktop@0.2.0 check\n> svelte-check --tsconfig ./tsconfig.json\n\nLoading svelte-check in workspace: /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop\nGetting Svelte diagnostics...\n\nsvelte-check found 0 errors and 0 warnings\n\nSTDERR\n"
+  },
+  {
+    "id": 71,
+    "exit": 0,
+    "truncated": false,
+    "command": "VITE_EDITION=personal /opt/homebrew/bin/npm run build",
+    "bytes": 772,
+    "tail": "] no Svelte config found at /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop - using default configuration.\nvite v8.3.5 building client environment for production...\ntransforming...\n✓ 123 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                       0.36 kB │ gzip:  0.28 kB\ndist/assets/Operations-BX8ABjmX.css   4.07 kB │ gzip:  1.08 kB\ndist/assets/index-Dv7E4Yva.css       17.25 kB │ gzip:  4.26 kB\ndist/assets/Operations-CWdbKeWM.js   21.12 kB │ gzip:  8.30 kB\ndist/assets/index-CeqpgLe4.js        90.20 kB │ gzip: 34.09 kB\n\n✓ built in 240ms\n\nSTDERR\n"
+  },
+  {
+    "id": 72,
+    "exit": 0,
+    "truncated": false,
+    "command": "VITE_EDITION=public /opt/homebrew/bin/npm run build",
+    "bytes": 631,
+    "tail": "\n> claude-switcher-desktop@0.2.0 build\n> VITE_EDITION=${VITE_EDITION:-personal} vite build\n\n4:09:45 AM [vite-plugin-svelte] no Svelte config found at /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop - using default configuration.\nvite v8.3.5 building client environment for production...\ntransforming...\n✓ 120 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                  0.36 kB │ gzip:  0.28 kB\ndist/assets/index-Dv7E4Yva.css  17.25 kB │ gzip:  4.26 kB\ndist/assets/index-B_P7B5X0.js   85.58 kB │ gzip: 32.29 kB\n\n✓ built in 159ms\n\nSTDERR\n"
+  },
+  {
+    "id": 73,
+    "exit": 0,
+    "truncated": false,
+    "command": "git diff --check",
+    "bytes": 8,
+    "tail": "\nSTDERR\n"
+  }
+]

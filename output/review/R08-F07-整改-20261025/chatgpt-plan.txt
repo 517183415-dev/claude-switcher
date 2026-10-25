@@ -1,0 +1,439 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_c74e ITERATION: 0 UNIT: R08 / F07 VERDICT: PROCEED — behavioral RED first WORKSPACE_ID: 5686a1f55261 BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE_MAX: 5 files PLANNED_SCOPE: packaging/macos/local_install.py packaging/macos/test_local_install.py EXPECTED_ACTUAL_SCOPE: 2 files STOP_AFTER: R08 evidence; do not start R09"
+    - heading "1. 已确认真实调用链" [level=2]
+    - paragraph: 只读核对得到的当前链路是：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "安装: plan → installation_settings → transact → finalize → component committed 正常 GUI 首次打开: App.onMount → bootstrap → runtime_info → workspace_snapshot → check_environment R07 环境收尾: 修复环境 → preview_repair → execute_repair → completed=true → check_environment"
+    - paragraph: 关键事实：
+    - list:
+      - text: finalize(..., launch=True) 在普通 authenticated=False 分支中实际上直接 finish(... committed ...) 返回，
+      - strong: 不会启动普通 GUI
+      - text: 。
+      - listitem: GUI 首次正常打开已经自动执行完整 check_environment。
+      - listitem: R07 已经提供现成的“一键 fix → 完整 check”。
+      - listitem: finalize 当前在 installer lifecycle locks 内执行；不能在锁内调用 Rust fix，因为 RegionCoordinator 会重新申请 lifecycle lock。
+    - paragraph:
+      - text: 因此 R08
+      - strong: 不新增任何代理/IPv6/DNS/规则修复实现
+      - text: 。环境收尾复用现有 GUI check + R07 fix。
+    - separator
+    - heading "2. 修复配置选择：只在真的歧义时要求选择" [level=2]
+    - paragraph: 当前缺配置时：
+    - list:
+      - listitem: Clash Verge：找到第一个 select 就静默采用；
+      - listitem: 未识别客户端：静默使用 auto/GLOBAL。
+    - paragraph: 这两个才是 F07 要修的地方。
+    - heading "新的显式选择入口" [level=3]
+    - paragraph: 给 installer CLI 增加固定可选参数：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--proxy-mode <clash-verge|shadowrocket|sing-box|clashx|surge|auto> --proxy-group <group>"
+    - paragraph: 并把它们显式传入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: main → plan → installation_settings
+    - paragraph: 不能通过环境变量、当前 live shim 内容或调用栈猜选择。
+    - heading "已有明确配置" [level=3]
+    - paragraph: 若 v2 config / 已验证 legacy literals 已提供足够值：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: COUNTRY_TARGET TZ_TARGET LOCALE_TARGET PROXY_MODE PROXY_GROUP（仅 Clash Verge 真正需要）
+    - paragraph: 则：
+    - list:
+      - listitem: 不重新询问；
+      - listitem: 不调用 proxy discovery；
+      - listitem: 不覆盖原值；
+      - listitem: 用户额外传入相同值可接受；
+      - listitem: 用户传入冲突值应拒绝，而不是暗改已配置目标。
+    - paragraph: 这条必须有“probe call count = 0”测试。
+    - separator
+    - heading "3. Clash Verge group 选择合同" [level=2]
+    - paragraph: 把当前“找到第一个就 break”的逻辑改为只读收集所有 block-style select groups。
+    - heading "0 个 select group" [level=3]
+    - paragraph: 若没有已有 PROXY_GROUP：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: selection required
+    - paragraph: 要求重新运行时显式：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--proxy-group <name>"
+    - paragraph: 不得静默 GLOBAL。
+    - heading "1 个 select group" [level=3]
+    - paragraph: 自动选择唯一 group，不要求用户再选。
+    - heading "多个 select group" [level=3]
+    - paragraph: 无 --proxy-group：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: fail before locks/stopped/writes
+    - paragraph: 错误信息列出候选，要求用户选择。
+    - paragraph: 有 --proxy-group：
+    - list:
+      - listitem: 必须精确属于已发现候选；
+      - listitem: 不属于候选 → reject。
+    - paragraph: 保留 spaces/Unicode group 支持；继续拒绝控制字符。
+    - separator
+    - heading "4. 未知客户端合同" [level=2]
+    - paragraph: 只保留当前有证据的自动识别能力，不顺带新增一套进程检测器。
+    - paragraph: 现有自动识别：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: Clash Verge directory Shadowrocket VPN registration
+    - paragraph: 如果没有明确配置且二者都未识别：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: proxy client selection required
+    - paragraph: 用户必须显式给 --proxy-mode。
+    - paragraph: auto 仍可使用，但必须是用户显式选择，不能继续作为“未知客户端”的静默默认。
+    - paragraph: 若同时发现多个可识别客户端，也应视为歧义，要求 --proxy-mode，而不是靠硬编码优先级替用户决定。
+    - paragraph: 非 Clash 模式不要求 --proxy-group，其 compatibility literal 可继续为固定 GLOBAL。
+    - separator
+    - heading "5. Selection 必须进入同一 plan/digest" [level=2]
+    - paragraph: 选择不能只影响 install runtime。
+    - paragraph: 例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: plan --proxy-mode clash-verge --proxy-group "Claude"
+    - paragraph: 和之后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: install --proxy-mode clash-verge --proxy-group "Claude" --digest ...
+    - paragraph: 必须生成同一配置和同一 digest。
+    - paragraph: 如果 install 没有重复必要选择或换成别的选择：
+    - list:
+      - listitem: 在任何锁、stop、写入前失败；
+      - listitem: 不能靠旧 plan digest 授权另一套配置。
+    - paragraph: 最终选择继续物化到既有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_entry.install_literals proxy_mode timezone_target
+    - paragraph: 不新增第二套配置权威。
+    - separator
+    - heading "6. 环境 finish：组件提交后、锁释放后进入现有 GUI" [level=2]
+    - paragraph: 不要在 finalize() 锁内运行 fix/check。
+    - paragraph: 最小接线：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "with locks(...): transact(...) finalize component commit # locks released here post_install_handoff(...) → launch normal installed GUI as owner"
+    - paragraph: 适用：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: install replace explicit finalize
+    - paragraph: 不适用：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: uninstall recover→restored commit（明确仅提交）
+    - heading "普通 GUI launcher" [level=3]
+    - paragraph: 复用现有 launch_health() 已有的安全边界：
+    - list:
+      - listitem: 固定 installed App；
+      - listitem: 固定 owner uid/gid；
+      - listitem: isolated HOME/PATH；
+      - listitem: 不接受调用方路径；
+      - listitem: 不执行 shell。
+    - paragraph:
+      - text: 正常 GUI启动
+      - strong: 不带
+      - text: ：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--installation-health"
+    - paragraph: 可以抽一个很小的共享 executable/owner command builder，让 health launch 与 normal launch 不漂移，但不得改变 authenticated-health 语义。
+    - separator
+    - heading "7. 组件完成 ≠ 环境完成" [level=2]
+    - paragraph: 这是本轮重要输出合同。
+    - paragraph: 组件成功提交后返回结果必须明确表达类似：
+    - generic: JSON
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "{ \"status\": \"committed\", \"components_verified\": true, \"environment_verified\": false, \"environment_finish\": \"first_gui_check_then_existing_fix\", \"gui_launch\": \"requested\" }"
+    - paragraph: 字段名称可最小调整，但语义必须明确：
+    - blockquote:
+      - paragraph: 安装成功只证明组件/服务合同；14 项环境尚未由首次 GUI check 验证。
+    - heading "GUI 启动失败" [level=3]
+    - paragraph: 如果正常 GUI spawn 失败：
+    - list:
+      - strong: 不要把已经 durable committed 的组件伪报成安装失败/回滚
+      - text: ；
+      - text: 返回：
+      - list:
+        - listitem: components committed；
+        - listitem: environment still unverified；
+        - listitem: gui_launch=failed/manual_open_required。
+    - paragraph: 不要声称环境完成。
+    - heading "GUI 启动成功" [level=3]
+    - paragraph: 也只能写：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: gui launch requested environment verification pending
+    - paragraph: 不能把成功 Popen 当成 check PASS。
+    - separator
+    - heading "8. 为什么不直接从 installer 调 fix" [level=2]
+    - paragraph: 不做：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: installer → duplicate proxy/TUN/rules/IPv6 repair
+    - paragraph: 也不做：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: root finalize lock → Rust fix
+    - paragraph: 因为现有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: GUI check_environment R07 preview_repair/execute_repair/check_environment
+    - paragraph: 已经是正式环境收尾入口，并保留：
+    - list:
+      - listitem: lifecycle lock；
+      - listitem: transaction recovery；
+      - listitem: proxy/国家 gate；
+      - listitem: helper authorization；
+      - listitem: R07 one-click exactly-once/epoch guards。
+    - paragraph: R08 只把安装成功交接给它。
+    - separator
+    - heading "9. Behavioral RED-first" [level=1]
+    - paragraph: 先只改测试，确保 RED 是行为失败而不是语法/import 错误。
+    - heading "RED A — 多组不能静默选第一个" [level=2]
+    - paragraph: Synthetic HOME：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "Clash config: select First select Second"
+    - paragraph: 当前生产会选 First。
+    - paragraph: 新断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: no explicit group → selection-required error → no locks → no stopped() → no filesystem mutation
+    - paragraph: 这是核心 RED。
+    - separator
+    - heading "RED B — 未知客户端不能静默 auto" [level=2]
+    - paragraph: 合成：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: no Clash directory scutil contains no Shadowrocket
+    - paragraph: 当前生产返回：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: auto / GLOBAL
+    - paragraph: 新断言要求 selection-required。
+    - separator
+    - heading "RED C — 明确配置绝不重新探测" [level=2]
+    - paragraph: 分别覆盖：
+    - list:
+      - listitem: complete v2 config；
+      - listitem: legacy shim literals；
+      - listitem: Clash Verge + existing explicit group。
+    - paragraph: Patch：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: detect_region proxy discovery scutil
+    - paragraph: 为“调用即失败”。
+    - paragraph: plan() 必须成功且这些 probe 次数均为 0。
+    - separator
+    - heading "RED D — 0/1/N group matrix" [level=2]
+    - list:
+      - listitem: 0 group + no selection → reject；
+      - listitem: 0 group + explicit group → accept；
+      - listitem: 1 group → automatic accept；
+      - listitem: N group + no selection → reject；
+      - listitem: N group + valid explicit selection → accept；
+      - listitem: N group + unknown selection → reject。
+    - separator
+    - heading "RED E — unknown-client explicit mode" [level=2]
+    - paragraph: 无自动识别：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--proxy-mode shadowrocket → accept --proxy-mode auto → accept --proxy-mode clash-verge without group → still require group"
+    - paragraph: 非法 mode 在 argparse/validator 层拒绝。
+    - separator
+    - heading "RED F — plan/install selection binding" [level=2]
+    - paragraph: 相同 explicit selection：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: plan digest == install regenerated plan digest
+    - paragraph: 改变 mode/group：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: digest mismatch / selection failure before mutation
+    - paragraph: 保留现有“first-run discovery before locks/stopped”合同。
+    - separator
+    - heading "10. GUI handoff RED" [level=1]
+    - paragraph: 现有测试：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: test_install_commits_without_gui_health_receipt
+    - paragraph: 已经证明 launch=True 不调用 health probe。
+    - paragraph: 扩展为新的行为 RED：
+    - paragraph: 组件 commit 后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: normal GUI launch = 1 health launch = 0
+    - paragraph: 并且事件顺序必须是：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: lock enter → transact/finalize → lock exit → normal GUI launch
+    - paragraph: 绝不能：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: GUI launch while lifecycle/root lock held
+    - separator
+    - heading "RED G — launch result ≠ environment verified" [level=2]
+    - paragraph: Fake normal launcher成功：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: status=committed components_verified=true environment_verified=false gui_launch=requested
+    - paragraph: Fake launcher失败：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: status=committed components_verified=true environment_verified=false gui_launch=failed/manual
+    - paragraph: 两种情况都不修改 transaction archive 或回滚已提交组件。
+    - separator
+    - heading "RED H — explicit commit/recovery/uninstall" [level=2]
+    - paragraph: 断言 normal GUI launch counts：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: install 1 replace 1 finalize 1 commit 0 recover 0 uninstall 0
+    - separator
+    - heading "11. 首次 GUI finish 调用证据作为冻结前置" [level=1]
+    - paragraph: 不修改 R07 文件。
+    - paragraph: 最终证据中绑定当前 accepted R07 hashes，并记录只读 anchors：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "App.bootstrap: runtime_info → workspace_snapshot → check_environment RegionSettings environment: preview_repair → execute_repair → completed=true → check_environment"
+    - paragraph:
+      - text: 因此 installer launch 之后的环境 finish 是
+      - strong: 已有生产路径
+      - text: ，不是测试假设。
+    - paragraph: 真实 GUI/native IPC 仍标 NOT_RUN。
+    - separator
+    - heading "12. 受保护合同" [level=1]
+    - paragraph: R08 不得改变：
+    - heading "R02" [level=3]
+    - list:
+      - listitem: uninstall snapshot/holding/prepared/restored exact contracts；
+      - listitem: 七个已冻结 transaction functions AST。
+    - heading "R03" [level=3]
+    - list:
+      - listitem: watchdog TARGET-only generation comparison；
+      - listitem: service artifact validation。
+    - heading "R06" [level=3]
+    - list:
+      - listitem: cli_contract v1/v2 generation binding；
+      - listitem: cli_shim byte renderer；
+      - listitem: installed_cli_plan;
+      - listitem: cli_verify/restore.
+    - heading "R07" [level=3]
+    - paragraph: 13 个 accepted backend/source paths及 3 个 R07 frontend hashes全部不变。
+    - paragraph: 尤其不要为了 F07 改：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_shim plan_uninstall cli_verify cli_restore watchdog_verify
+    - paragraph: plan() / installation_settings() 可以做本轮最小 selection 参数接线，但不能改 F06 generation semantics。
+    - separator
+    - heading "13. 预计实际文件范围" [level=1]
+    - paragraph: 优先只改：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: packaging/macos/local_install.py packaging/macos/test_local_install.py
+    - paragraph: 当前调用证据不要求修改 Rust、Svelte 或旧 installer/安装.command。
+    - paragraph: 如果实现时发现正常 GUI post-lock 启动无法在这两个文件内完成，必须先返回 bounded PLAN，不得自行扩展到第三套修复入口。
+    - separator
+    - heading "14. Isolated verification" [level=1]
+    - paragraph: 全部 synthetic HOME/fakes，无真实网络/VPN/GUI/system。
+    - paragraph: 至少：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: python3 -B -m unittest discover \ -s packaging/macos -p 'test_local_install.py' -k f07 -v python3 -B -m unittest discover \ -s packaging/macos -p 'test_local_install.py' -v git diff --check
+    - paragraph: 并单独记录/核验：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: R02 protected AST hashes unchanged R03 watchdog functions unchanged R06 cli contract/render/verify functions unchanged R07 3 frontend hashes unchanged
+    - paragraph: 如果现有本地 Python 版本不同，记录实际 executable/version；不安装任何包。
+    - separator
+    - heading "15. Final evidence" [level=1]
+    - paragraph: 写入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R08-F07-整改-20261025/
+    - paragraph: 必须包含：
+    - list:
+      - listitem: behavioral RED；
+      - listitem: 0/1/N group selection matrix；
+      - listitem: unknown client selection matrix；
+      - listitem: “explicit config = zero discovery calls” receipt；
+      - listitem: plan/install digest binding；
+      - listitem: lock-exit-before-GUI-launch order；
+      - listitem: component-complete/environment-pending output matrix；
+      - listitem: GUI launch failure remains committed receipt；
+      - listitem: first-GUI accepted R07 call-chain anchors/hashes；
+      - listitem: protected R02/R03/R06 function/hash receipts；
+      - listitem: full Python regression结果；
+      - listitem: source hashes before/after final commands。
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "BOUNDARIES: - no install/download - no real accounts - no real DNS/network/proxy - no real GUI/native IPC/apps/services/system mutation - no push/merge - no R09"
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-helper",
+    "--lib",
+    "platform::f11_test_io::f11_",
+    "--",
+    "--nocapture"
+  ],
+  "exit": 101,
+  "seconds": 4.73608816601336,
+  "source_before": {
+    "crates/switcher-helper/src/platform.rs": "1f9189387eadb6315808727d135c95f4fd8d6c8d75edc5d4d0a4d73a79a43a31",
+    "crates/switcher-helper/src/policy.rs": "615145df87fccbc369a42c26adf933ed0ed1569fd3b5509e24de480346b3ef94",
+    "crates/switcher-helper/src/main.rs": "a2a5d6de73f7fae8aa4cf1c1c6fdf2f18e658cbea2cc2340b496842803c886d5",
+    "crates/switcher-helper/src/xpc.rs": "778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833",
+    "crates/switcher-helper/src/root_operation.rs": "4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825"
+  },
+  "source_after": {
+    "crates/switcher-helper/src/platform.rs": "1f9189387eadb6315808727d135c95f4fd8d6c8d75edc5d4d0a4d73a79a43a31",
+    "crates/switcher-helper/src/policy.rs": "615145df87fccbc369a42c26adf933ed0ed1569fd3b5509e24de480346b3ef94",
+    "crates/switcher-helper/src/main.rs": "a2a5d6de73f7fae8aa4cf1c1c6fdf2f18e658cbea2cc2340b496842803c886d5",
+    "crates/switcher-helper/src/xpc.rs": "778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833",
+    "crates/switcher-helper/src/root_operation.rs": "4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825"
+  },
+  "source_frozen": true,
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r09-f11-red-a3w3yc_z",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc"
+  }
+}

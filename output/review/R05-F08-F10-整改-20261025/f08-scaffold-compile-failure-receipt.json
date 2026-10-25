@@ -1,0 +1,17 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--lib",
+    "f08_",
+    "--",
+    "--nocapture"
+  ],
+  "exit_code": 101,
+  "source_sha256_before": "99d4344d7f1a613545122ffbf1b4339922e6da0d6de6aecaccd82c5ef6cf8706",
+  "source_sha256_after": "99d4344d7f1a613545122ffbf1b4339922e6da0d6de6aecaccd82c5ef6cf8706"
+}

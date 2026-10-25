@@ -531,9 +531,8 @@ pub async fn run(
     events: tokio::sync::mpsc::Receiver<ProtectionEvent>,
     shutdown: tokio::sync::watch::Receiver<bool>,
 ) -> Result<(), &'static str> {
-    let timezone_guard = crate::timezone_guard::spawn(state_path, shutdown.clone())?;
     let mut installation_probe = crate::installation_health::GuardianProbe::default();
-    let result = run_driver(
+    run_driver(
         (state_path, config),
         events,
         shutdown,
@@ -551,9 +550,7 @@ pub async fn run(
             move |sequence| installation_probe.tick(sequence),
         ),
     )
-    .await;
-    timezone_guard.abort();
-    result
+    .await
 }
 #[derive(Clone, Copy)]
 struct DriverTiming {

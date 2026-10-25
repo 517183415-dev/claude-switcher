@@ -1,0 +1,580 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_be95 ITERATION: 0 UNIT: R07 / F09 VERDICT: PROCEED — behavioral RED first WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE_MAX: 5 source/test files SCOPE: apps/desktop/src/components/RegionSettings.svelte apps/desktop/src/App.svelte apps/desktop/tests/repair-preview.test.mjs apps/desktop/tests/repair-preview-queue.test.mjs apps/desktop/tests/recovery-copy.test.mjs STOP_AFTER: R07 execution evidence for independent review"
+    - paragraph: 当前调用链已经确认：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: RegionSettings.plan() → preview_repair / preview_region_change → 用户明确确认 RegionSettings.execute() → execute_repair exactly once → onoutcome(...) → load(region_view)
+    - paragraph:
+      - text: 问题是普通环境修复成功后
+      - strong: 没有触发 App 的完整 check_environment
+      - text: ；另外 execute() 没有像 preview/recovery 一样在异步完成后核对 epoch/disposed，因此迟到的成功结果仍可能回写 outcome / load。
+    - paragraph: R07 不需要改 Rust/Tauri command 层。
+    - heading "1. 保留现有两阶段确认，不把“one click”解释成绕过 preview" [level=2]
+    - paragraph: F09 的 “一次点击只执行一次” 应限定为：
+    - blockquote:
+      - paragraph: 用户已经看到有效 preview 并点击“确认执行地区计划”后，这一次点击最多产生一个 execute_repair。
+    - paragraph: 不要改成：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 点击“修复” → 自动 preview + 自动 execute
+    - paragraph: 现有地区选择、preview、明确确认、recovery-required gate 都保留。
+    - paragraph: 尤其 settings 页的地区切换继续：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 选择 region → preview_region_change(region, requestId) → 显示 original/target → 用户确认 → execute_repair
+    - paragraph: 不能跳过真实 region choice。
+    - separator
+    - heading "2. 父组件显式拥有“修复开始”和“成功后完整检查”" [level=1]
+    - paragraph: 不要把 check_environment 复制进 RegionSettings.svelte。
+    - paragraph: 给 RegionSettings 增加两个窄回调，概念上：
+    - generic: TypeScript
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "onexecutestart?: () => void onexecutesuccess?: (outcome: OperationOutcome) => Promise<void> | void"
+    - paragraph: 现有 onoutcome 继续用于 recovery、地区页或普通结果展示；具体命名可调整，但职责必须分开。
+    - heading "Environment 页接线" [level=2]
+    - paragraph: 当前：
+    - generic: svelte
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "<RegionSettings {fixture} environment onoutcome={announce}/>"
+    - paragraph: 改为让 App 负责：
+    - heading "execute 开始时" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: checkEpoch++ clearReport() outcome = null error = ''
+    - paragraph: 关键是 clearReport() 会：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: suppressReport = true snapshot.check_report = null
+    - paragraph: 因此旧检查证据在修复开始时立即失效。
+    - heading "execute 真正成功后" [level=3]
+    - paragraph: 只在 OperationOutcome.completed === true 时：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: announce(result) → runChecks()
+    - paragraph: runChecks() 使用现有生产实现：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: ++checkEpoch clearReport invoke('check_environment') → fresh CheckReport → suppressReport=false
+    - paragraph: 这就是“立即完整检查”。
+    - paragraph: 不要增加新的 check IPC command。
+    - separator
+    - heading "3. 失败结果不能触发 full check" [level=1]
+    - paragraph: execute_repair 有两种非成功形态必须区分：
+    - heading "invoke 抛错" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_repair rejects → error → no success callback → no check_environment → old report remains suppressed
+    - heading "invoke 正常返回 completed:false" [level=3]
+    - paragraph: 这不能被当成成功。
+    - paragraph: 当前代码直接：
+    - generic: TypeScript
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: onoutcome(await invoke(...))
+    - paragraph: 所以 R07 要先保存 result：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: result = await execute_repair
+    - paragraph: 然后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: completed=true → success path completed=false → announce(result), but NO full check
+    - paragraph: 不能因为 IPC resolve 了就自动重新检查或显示“修复完成”。
+    - separator
+    - heading "4. execute 自己必须增加 epoch / disposed completion guard" [level=1]
+    - paragraph: 当前 execute() 在发请求前：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: requestId=null preview=null epoch++
+    - paragraph: 这足以阻止第二次 execute，但不足以阻止迟到完成写 UI。
+    - paragraph: 增加本次执行 token：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: const current = ++epoch
+    - paragraph: 异步返回后，在所有 UI/父回调前检查：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: if (current !== epoch || disposed) return
+    - paragraph: 包括：
+    - list:
+      - listitem: onoutcome
+      - listitem: onexecutesuccess
+      - listitem: load()
+      - listitem: 清 busy / error 等完成态写入
+    - paragraph: 如果执行过程中：
+    - list:
+      - listitem: component unmount；
+      - listitem: 本地 epoch 被其它操作推进；
+      - listitem: cancellation/recovery/navigation 使当前操作失效；
+    - paragraph: 迟到结果不得：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: announce completed restore preview load region trigger full check
+    - separator
+    - heading "5. duplicate operation guard" [level=1]
+    - paragraph: 现有逻辑已经有两个保护：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: busy requestId=null before await
+    - paragraph: 保留，并用 RED 明确锁死。
+    - paragraph: 对于同一有效 preview：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute() execute() execute()
+    - paragraph: 即使第一条 Promise 未完成：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_repair count == 1
+    - paragraph: 第二次和第三次不得排队等待后再执行。
+    - paragraph: 不要实现“busy 结束后自动重放点击”。
+    - separator
+    - heading "6. ordinary fix 与 region change 分开接线" [level=1]
+    - paragraph: F09 要求普通修复成功立即全检查，但“地区变更保留真实选择/明确确认”。
+    - paragraph: 建议：
+    - heading "environment=true" [level=3]
+    - paragraph: 启用：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute start → invalidate old report successful execute → runChecks()
+    - heading "settings region selector" [level=3]
+    - paragraph: 继续主要使用：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "onoutcome={announce}"
+    - paragraph: 不要因为 R07 自动把 settings 页变成无提示的检查/跳页流程。
+    - paragraph: 如果决定 region change 成功后也进行 full check，也必须有单独测试证明地区选择/preview/确认仍保留；但最小整改优先只把 F09 的普通 environment repair 接入 full check。
+    - separator
+    - heading "7. recovery 合同保持独立" [level=1]
+    - paragraph: 当前 recover() 已经有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: current=epoch ... if(current!==epoch||disposed)return
+    - paragraph: 并且完成后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: load() → plan()
+    - paragraph: 保留这个事务恢复流程。
+    - paragraph: R07 不应该把 recovery success 直接复用 ordinary execute-success callback，否则可能：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: recover → full check → auto plan
+    - paragraph: 导致额外并发或破坏现有恢复语义。
+    - paragraph: Recovery 继续使用其现有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: recover_repair → outcome → load → fresh preview
+    - paragraph: 路径。
+    - separator
+    - heading "8. RED-first：repair-preview.test.mjs" [level=1]
+    - paragraph: 现有 VM 测试已经直接运行 production <script>，这是本轮最重要入口。
+    - paragraph: 扩展 sandbox props，使测试可以记录：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: outcome callbacks execute-start callbacks execute-success callbacks
+    - paragraph: 建议至少增加以下行为 RED。
+    - heading "RED A — one confirmation = one execution" [level=2]
+    - paragraph: 构造 deferred execute_repair：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: plan() execute() execute() execute()
+    - paragraph: 第一条未 resolve 时断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: preview_repair = 1 execute_repair = 1
+    - paragraph: resolve success 后仍为 1。
+    - separator
+    - heading "RED B — success invokes full-check callback exactly once" [level=2]
+    - paragraph: 使用 environment=true 和 success callback fake：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "execute_repair → {completed:true}"
+    - paragraph: 断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_repair 1 onexecutestart 1 onexecutesuccess 1
+    - paragraph: 不要在这个子组件测试里 fake check_environment；完整 check 的 IPC 次数由 App-level VM test验证。
+    - separator
+    - heading "RED C — completed:false is not success" [level=2]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "execute_repair → {completed:false,...}"
+    - paragraph: 断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: onoutcome 1 onexecutesuccess 0
+    - paragraph: 且不能出现任何“completed success”本地状态。
+    - separator
+    - heading "RED D — thrown failure" [level=2]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_repair throws
+    - paragraph: 断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: success callback = 0 error set preview remains consumed
+    - paragraph: 再次点击 execute 不得复用旧 requestId。
+    - paragraph: 必须重新 preview 才能再次 execute。
+    - separator
+    - heading "RED E — stale late success" [level=2]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "plan execute → deferred destroy/cancel/invalidate resolve {completed:true}"
+    - paragraph: 断言：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: outcome callback = 0 success callback = 0 load(region_view) after completion = 0
+    - paragraph: 且 preview 不复活。
+    - paragraph: 这是本轮 epoch/disposed 的核心 RED。
+    - separator
+    - heading "9. App-level production-script VM test" [level=1]
+    - paragraph: 不要只证明子组件 callback 被调用；必须证明 App 的实际 callback 会：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: clear old report → on real success invoke check_environment exactly once
+    - paragraph: 可以在 repair-preview.test.mjs 中增加一个针对 App.svelte script 的 VM helper，和现有 fixture test 方法一致：
+    - list:
+      - listitem: 去 import；
+      - listitem: 注入 $state/$derived/$effect;
+      - listitem: fake invoke;
+      - listitem: synthetic snapshot;
+      - listitem: 只导出本轮需要的 parent callbacks / runChecks.
+    - paragraph: 不要运行整 App DOM。
+    - heading "Success matrix" [level=2]
+    - paragraph: 初始 snapshot 带旧 check_report=OLD.
+    - paragraph: 执行 start callback 后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: snapshot.check_report === null suppressReport === true
+    - paragraph: 然后 success callback：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: check_environment calls == 1
+    - paragraph: fresh report 返回后：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: snapshot.check_report === FRESH suppressReport === false
+    - separator
+    - heading "10. App failure/cancel/stale matrix" [level=1]
+    - paragraph: 必须证明旧 check evidence 不回来。
+    - heading "Failed repair" [level=3]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: on start → clear old report execute failure
+    - paragraph: 不调用 success callback。
+    - paragraph: 之后即使调用 refresh()，只要 suppressReport=true：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "workspace_snapshot` 返回 OLD → UI check_report remains null"
+    - heading "Cancelled operation" [level=3]
+    - paragraph: 同样：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: old report cleared no success no full check
+    - heading "Stale old check result" [level=3]
+    - paragraph: 还要覆盖 App 自己已有 checkEpoch：
+    - list:
+      - listitem: 开始一条旧 runChecks()，返回 deferred OLD2；
+      - listitem: repair start 推进 epoch/clearReport；
+      - listitem: OLD2 resolve；
+      - listitem: OLD2 不得写回 snapshot；
+      - listitem: repair success 触发新 runChecks()；
+      - listitem: 只有 FRESH 被采用。
+    - paragraph: 最终调用数明确：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: old check_environment = 1 new check_environment = 1 accepted report = only FRESH
+    - separator
+    - heading "11. onoutcome 不得等价于 “completed”" [level=1]
+    - paragraph: 当前 announce() 无条件：
+    - generic: TypeScript
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: outcome=result
+    - paragraph: 可以保留。
+    - paragraph: 但是测试必须明确：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: outcome.completed === false
+    - paragraph: 只是结果展示，不是 full-check trigger。
+    - paragraph: 所以 success callback 的判断必须发生在 RegionSettings.execute()：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: if(result.completed) ...
+    - paragraph: 而不是 App 根据任何 onoutcome 都去跑 checks。
+    - paragraph: 这样 recovery、failure、manual outcomes 不会误触发 full check。
+    - separator
+    - heading "12. Region choice / explicit confirmation regression" [level=1]
+    - paragraph: 现有这些测试必须继续绿：
+    - list:
+      - listitem: environment buttons use full shared preview...
+      - listitem: execute requires visible valid preview;
+      - listitem: failed repreview invalidates old plan;
+      - listitem: cancel invalidates old plan;
+      - listitem: blocked/recovery-required cannot execute;
+      - listitem: late recovery completion cannot create fresh executable plan.
+    - paragraph: 再补 region-specific：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: environment=false selected='jp' plan()
+    - paragraph: 确认：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: preview_region_change args.region === 'jp' requestId exists
+    - paragraph: 并且：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: execute_repair 不发生，直到 explicit execute()
+    - paragraph: 不要因为 ordinary fix 的 success callback 重构破坏这里。
+    - separator
+    - heading "13. Queue/recovery tests" [level=1]
+    - paragraph: repair-preview-queue.test.mjs 当前验证 Tauri backend：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: begin request before worker spawn worker doesn't re-register canceled request
+    - paragraph: R07 不改 Rust，但仍运行它作为 regression gate。
+    - paragraph: recovery-copy.test.mjs 继续运行，确保 App props/callback 重构没有破坏 recovery presentation 或 fixture zero-IPC 合同。
+    - paragraph:
+      - text: 原则上这两个测试文件
+      - strong: 可以不修改
+      - text: ；它们仍算允许 scope 内的 existing frontend tests。
+    - paragraph: 如果不需要新增断言，保持其 hash 不变更好。
+    - separator
+    - heading "14. 视觉范围" [level=1]
+    - paragraph: 不要改变：
+    - list:
+      - listitem: panel structure；
+      - listitem: region comparison；
+      - listitem: button class；
+      - listitem: wording/layout，除非必须表达已有结果状态；
+      - listitem: CSS。
+    - paragraph: 本轮理想情况下 RegionSettings.svelte 的 markup/style 0 diff，只改 script props/logic。
+    - paragraph: App.svelte 也只加 callback functions 和两个 RegionSettings props 的 wiring。
+    - separator
+    - heading "15. Offline validation / dependency gap" [level=1]
+    - paragraph: baseline 已指出项目 dependency imports 当前可能 unresolved。
+    - paragraph: 先检查已有本机工具，不安装任何东西：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: node typescript svelte/compiler svelte/server
+    - paragraph: 若 existing repair-preview.test.mjs 能运行，则它本身已经证明 TypeScript/Svelte runtime 可用。
+    - paragraph: 如果 package resolution 失败：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: do NOT npm install do NOT npm ci do NOT download
+    - paragraph: 仍可运行纯 Node/static tests，例如 queue test；但 Svelte compile tests必须标记 BLOCKED，不能声称完整 frontend validation。
+    - paragraph: 同样：
+    - list:
+      - listitem: npm test 只有在现有依赖可直接解析时才运行；
+      - listitem: npm run check 若 svelte-check unresolved，记录 gap；
+      - listitem: 不因缺依赖扩大 R07 文件范围。
+    - separator
+    - heading "16. RED / GREEN command set" [level=1]
+    - paragraph: 先保存 behavior RED，至少精确跑：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: node --test apps/desktop/tests/repair-preview.test.mjs
+    - paragraph: RED 必须是：
+    - list:
+      - listitem: call count / stale completion / old evidence assertion failures；
+    - paragraph: 不能把 module-not-found 当 behavioral RED。
+    - paragraph: 修复后运行：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: node --test apps/desktop/tests/repair-preview.test.mjs node --test apps/desktop/tests/repair-preview-queue.test.mjs node --test apps/desktop/tests/recovery-copy.test.mjs
+    - paragraph: 若本机 dependencies 可用，再运行：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cd apps/desktop && npm test cd apps/desktop && npm run check
+    - paragraph: 但只使用已经存在的离线依赖。
+    - paragraph: 最后：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: git diff --check
+    - paragraph: 如有项目现成 formatter/static command且无需下载，可加；不要为了“看起来完整”安装工具。
+    - separator
+    - heading "17. Acceptance call-count matrix" [level=1]
+    - paragraph: 最终 evidence 至少固定这些计数：
+    - region "可滚动表格":
+      - table:
+        - rowgroup:
+          - row "Scenario preview execute full check outcome-success":
+            - columnheader "Scenario"
+            - columnheader "preview"
+            - columnheader "execute"
+            - columnheader "full check"
+            - columnheader "outcome-success"
+        - rowgroup:
+          - row "normal fix success 1 1 1 1":
+            - cell "normal fix success"
+            - cell "1"
+            - cell "1"
+            - cell "1"
+            - cell "1"
+          - row "repeated confirm while pending 1 1 0 until success 0 until success":
+            - cell "repeated confirm while pending"
+            - cell "1"
+            - cell "1"
+            - cell "0 until success"
+            - cell "0 until success"
+          - row "completed:false 1 1 0 0":
+            - cell "completed:false"
+            - cell "1"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+          - row "execute throws 1 1 0 0":
+            - cell "execute throws"
+            - cell "1"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+          - row "stale completion after destroy 1 1 0 0":
+            - cell "stale completion after destroy"
+            - cell "1"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+          - row "canceled preview 1 0 0 0":
+            - cell "canceled preview"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+            - cell "0"
+          - row "recovery-required preview 1 0 0 0":
+            - cell "recovery-required preview"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+            - cell "0"
+          - row "region preview only 1 0 0 0":
+            - cell "region preview only"
+            - cell "1"
+            - cell "0"
+            - cell "0"
+            - cell "0"
+          - row "explicit region execute success 1 1 per chosen region policy, explicitly tested 1":
+            - cell "explicit region execute success"
+            - cell "1"
+            - cell "1"
+            - cell "per chosen region policy, explicitly tested"
+            - cell "1"
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: 普通 environment fix 的 full check 必须严格 1，不能 0 或 2。
+    - separator
+    - heading "18. Evidence" [level=1]
+    - paragraph: 写入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R07-F09-整改-20261025/
+    - paragraph: 记录：
+    - list:
+      - listitem: behavioral RED；
+      - listitem: final call-count matrix；
+      - listitem: stale/epoch receipts；
+      - listitem: old-check suppression → fresh-check replacement receipt；
+      - listitem: region selection/explicit confirmation receipt；
+      - listitem: queue/recovery regression；
+      - listitem: Svelte compile result；
+      - listitem: dependency-resolution status；
+      - listitem: source hashes before/after each final command；
+      - listitem: R01-R06 13 accepted paths unchanged。
+    - paragraph: 预期最小生产 diff：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: RegionSettings.svelte App.svelte
+    - paragraph: 测试最好只需修改：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: repair-preview.test.mjs
+    - paragraph:
+      - text: 因此理想 R07 实际修改为
+      - strong: 3 个文件
+      - text: ；最多允许题目给出的 5 文件。
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "BOUNDARIES: - no dependency install/download - no real accounts - no product network - no apps/services/system mutation - no push/merge - no R08 work"
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

@@ -1,0 +1,21 @@
+{
+  "base": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_",
+  "mirror": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace",
+  "app": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop",
+  "node": "/opt/homebrew/bin/node",
+  "dependency_source": "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/node_modules",
+  "dependency_source_read_only": true,
+  "copy_command": [
+    "/bin/cp",
+    "-cR",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/node_modules",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules"
+  ],
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/home",
+    "TMPDIR": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/tmp",
+    "npm_config_offline": "true",
+    "npm_config_update_notifier": "false"
+  },
+  "no_install_or_download": true
+}

@@ -1,0 +1,2 @@
+PASS: immediate invalidation, cancel late success, failure refresh, newer check race, stale snapshot race, fixture zero IPC
+PASS: automatic opening check, fixture zero IPC, single-action first-B switch and launch

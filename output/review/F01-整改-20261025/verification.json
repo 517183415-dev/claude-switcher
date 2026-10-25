@@ -1,0 +1,183 @@
+{
+  "finding": "F01",
+  "scope": "local isolated synthetic fixtures only",
+  "started_at": "2026-10-24T19:47:24.483953+00:00",
+  "head": "98c42fc6825ab90fe018032ae4243883e988d856",
+  "source_hashes_before": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  },
+  "product_install": "NOT_RUN",
+  "real_accounts": "NOT_ACCESSED",
+  "gui_and_system_services": "NOT_RUN",
+  "chatgpt_review": {
+    "status": "PASS",
+    "verdict": "ACCEPTED",
+    "scope": "F01 source review and isolated macOS regression/recovery acceptance only",
+    "task_id": "c2c_f01a",
+    "iteration": 2,
+    "reviewed_execution_output": 3,
+    "remaining_f01_work": "NONE",
+    "conversation_url": "https://chatgpt.com/c/6add07c2-a9e8-83ec-856e-74d8442a2396",
+    "evidence_file": "chatgpt-final-review.txt",
+    "evidence_sha256": "eea4708df9468f9a5c0c8fe8c1091558d71b01126db9585109a2d5313627e2c3",
+    "recorded_at": "2026-10-24T19:54:58.797936+00:00"
+  },
+  "steps": [
+    {
+      "file": "green-final-f01.log",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "f01_",
+        "--",
+        "--nocapture"
+      ],
+      "started_at": "2026-10-24T19:47:24.523754+00:00",
+      "finished_at": "2026-10-24T19:47:37.862173+00:00",
+      "exit_code": 0,
+      "sha256": "ad4c091fd8fff65ca01d2150d51c92329571fda9123d9c838c6b3c78a50e0196",
+      "passed": 21,
+      "failed": 0,
+      "accepted": true
+    },
+    {
+      "file": "accounts-final.log",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "accounts::"
+      ],
+      "started_at": "2026-10-24T19:47:37.862583+00:00",
+      "finished_at": "2026-10-24T19:47:53.505518+00:00",
+      "exit_code": 0,
+      "sha256": "c24660bee933a6d6a0f2c15cfe2550aaccbfd2a69d284a9ec7960e516456e1f0",
+      "passed": 59,
+      "failed": 0,
+      "accepted": true
+    },
+    {
+      "file": "migration-final.log",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "migration::"
+      ],
+      "started_at": "2026-10-24T19:47:53.505907+00:00",
+      "finished_at": "2026-10-24T19:47:58.255943+00:00",
+      "exit_code": 0,
+      "sha256": "e2f7682fcb8b4611485192a211b9f682f2eb284eaf5492e3aa9f73dc8d179308",
+      "passed": 12,
+      "failed": 0,
+      "accepted": true
+    },
+    {
+      "file": "lifecycle-final.log",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "lifecycle::"
+      ],
+      "started_at": "2026-10-24T19:47:58.277997+00:00",
+      "finished_at": "2026-10-24T19:47:58.464193+00:00",
+      "exit_code": 0,
+      "sha256": "d801218eeabc9142a91dc08806b61af5b03da87959c69d6204cd67287cc2e3bd",
+      "passed": 5,
+      "failed": 0,
+      "accepted": true
+    },
+    {
+      "file": "clippy-final.log",
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "--tests",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-24T19:47:58.464418+00:00",
+      "finished_at": "2026-10-24T19:48:01.637235+00:00",
+      "exit_code": 0,
+      "sha256": "dc919667c9f910a85648832af312255e310b217513a1a3513a9adcce0ab7fa78",
+      "passed": null,
+      "failed": null,
+      "accepted": true
+    },
+    {
+      "file": "rustfmt-final.log",
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "crates/switcher-core/src/accounts.rs",
+        "crates/switcher-core/src/accounts/legacy.rs",
+        "crates/switcher-core/src/migration.rs"
+      ],
+      "started_at": "2026-10-24T19:48:01.637486+00:00",
+      "finished_at": "2026-10-24T19:48:01.726962+00:00",
+      "exit_code": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": null,
+      "failed": null,
+      "accepted": true
+    },
+    {
+      "file": "diff-check-final.log",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-10-24T19:48:01.727344+00:00",
+      "finished_at": "2026-10-24T19:48:01.738983+00:00",
+      "exit_code": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": null,
+      "failed": null,
+      "accepted": true
+    }
+  ],
+  "finished_at": "2026-10-24T19:48:01.739393+00:00",
+  "source_hashes_after": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  },
+  "source_unchanged_during_acceptance": true,
+  "all_checks_passed": true,
+  "scope_verified": true,
+  "source_hashes_at_closure": {
+    "crates/switcher-core/src/accounts.rs": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a"
+  },
+  "accepted_sources_unchanged_at_closure": true
+}

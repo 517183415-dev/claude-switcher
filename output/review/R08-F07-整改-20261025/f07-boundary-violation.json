@@ -1,0 +1,54 @@
+{
+  "status": "NOT_ACCEPTED",
+  "boundary": "no-install/no-download boundary violation",
+  "files": {
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R08-F07-整改-20261025/f07-full.stdout": {
+      "bytes": 2897,
+      "sha256": "4e9ae42005806c20322df1d20de04c092ab654da785668f1bd1c8328ccf62fcd"
+    },
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R08-F07-整改-20261025/f07-full.stderr": {
+      "bytes": 35584,
+      "sha256": "4886d49e0e63e21ca6b264aa811f350432f095775e9550af302efc5771b0f811"
+    },
+    "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/review/R08-F07-整改-20261025/f07-validation.json": {
+      "bytes": 1695,
+      "sha256": "c9867bf6493826989a70cc72cff7cd3c16dbf8d7cf907db73481cfe5a7c2924f"
+    }
+  },
+  "toolchain_log": [
+    {
+      "line": 196,
+      "text": "AssertionError: 101 != 0 : info: syncing channel updates for 1.96.0-aarch64-apple-darwin"
+    },
+    {
+      "line": 197,
+      "text": "info: latest update on 2026-05-28 for version 1.96.0 (ac68faa20 2026-05-25)"
+    },
+    {
+      "line": 198,
+      "text": "info: downloading 5 components"
+    },
+    {
+      "line": 199,
+      "text": "error: no matching package named `serde` found"
+    },
+    {
+      "line": 216,
+      "text": "AssertionError: 101 != 0 : error: no matching package named `serde` found"
+    },
+    {
+      "line": 235,
+      "text": "AssertionError: 101 != 0 : error: no matching package named `serde` found"
+    },
+    {
+      "line": 254,
+      "text": "AssertionError: 101 != 0 : error: no matching package named `serde` found"
+    }
+  ],
+  "temporary_HOME_prefix": "f07-verification-home-",
+  "remaining_temporary_HOMEs": [],
+  "remaining_toolchain_process_metadata": [],
+  "runner_session": 39402,
+  "runner_session_completed": true,
+  "note": "Runner context exited normally and TemporaryDirectory cleanup completed; exact generated HOME path was not saved. No shared caches were deleted or repaired."
+}

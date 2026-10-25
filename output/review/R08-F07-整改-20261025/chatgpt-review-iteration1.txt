@@ -1,0 +1,114 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: DONE TASK_ID: c2c_c74e ITERATION: 1 UNIT: R08 / F07 VERDICT: ACCEPTED_WITH_RECORDED_PROCESS_INCIDENT REMAINING_R08_SOURCE_WORK: NONE WORKSPACE_ID: 5686a1f55261 BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 REVIEWED_OUTPUTS: 74-80 R01-R07: PRESERVED NEXT_UNIT: R09 — separate bounded PLAN"
+    - paragraph:
+      - text: R08 的
+      - strong: 最终源码和最终隔离验证可以接受
+      - text: 。我独立核对了当前两文件 diff、18 项 F07 测试、178 项全量 installer 测试、保护函数/旧路径哈希、首次 GUI 调用证据，以及独立复核结果，没有发现剩余 blocker/P1/P2。
+    - heading "F07 配置选择合同成立" [level=3]
+    - paragraph: 现在不会再静默选择：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 多个 Clash select group → 必须显式 --proxy-group 未知代理客户端 → 必须显式 --proxy-mode 同时发现多个客户端 → 必须显式选择
+    - paragraph: 而且拒绝发生在：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: locks = 0 stopped = 0 transact = 0
+    - paragraph: 即第一次系统副作用之前。
+    - paragraph: "0/1/N group、Unicode/空格 group、非法 candidate、CRLF、proxy-groups: 尾注释及 type: select # comment 均有最终 GREEN。后补的两个真实 RED 也确实抓到了早期解析遗漏，而不是测试噪声。"
+    - paragraph:
+      - text: 已有明确配置保持优先。最终 receipt 明确证明 v2、legacy Clash 配置以及已有 auto 配置的 discovery/probe 次数为
+      - strong: "0"
+      - text: ，并且显式参数与已有配置冲突时拒绝，而不是覆盖。
+    - heading "plan/install 绑定成立" [level=3]
+    - paragraph: 用户的 --proxy-mode / --proxy-group 进入同一 installation plan 和 digest。
+    - paragraph: 相同选择可重现同 digest；改变选择会在 mutation 前拒绝。没有引入第二套配置权威。
+    - heading "安装收尾正确复用现有 GUI 路径" [level=3]
+    - paragraph: 关键顺序已经变成：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: lock enter → component committed → lock exit → normal GUI launch
+    - paragraph: 因此没有在 installer lifecycle lock 内调用 repair/fix。
+    - paragraph: 普通 GUI 本身已经有：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: bootstrap → workspace_snapshot → check_environment
+    - paragraph: 而 R07 已冻结：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 修复环境 → preview_repair → execute_repair → completed=true → check_environment
+    - paragraph: R08 没有复制 proxy/TUN/DNS/IPv6/规则修复器。
+    - heading "组件完成和环境完成正确分离" [level=3]
+    - paragraph: 安装/replace/finalize 成功后，即使 GUI 成功发起，也只报告：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: components committed / verified environment_verified = false environment_status = NOT_RUN gui_launch = requested
+    - paragraph: GUI spawn 失败时仍保持 durable committed，只变成：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: gui_launch = failed manual_open_required = true environment still NOT_RUN
+    - paragraph: 不会错误回滚已经提交的组件，也不会伪称环境已验证。
+    - paragraph: commit、recover、uninstall、非 committed terminal 状态都不会启动普通 GUI。
+    - heading "旧合同保护通过" [level=3]
+    - paragraph: 最终记录显示：
+    - list:
+      - text: F07 targeted：
+      - strong: 18/18 PASS
+      - text: installer full：
+      - strong: 178/178 PASS
+      - listitem: "git diff --check: PASS"
+      - listitem: 30 个受保护函数 AST/source 不变
+      - listitem: 其余 14 个 accepted source paths 不变
+      - listitem: R07 三个前端 hash 完全保持
+      - listitem: R02/R03/R06 关键 installer 合同保持
+    - heading "关于 rustup 下载事件" [level=3]
+    - paragraph: 这里必须保留一个明确例外。
+    - paragraph: 较早的一次 temp-HOME 全量运行触发了：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: rustup syncing downloading 5 components
+    - paragraph:
+      - text: 这
+      - strong: 违反了本单元的 no-download 执行边界
+      - text: 。该运行已正确标记为 NOT_ACCEPTED，不能被后面的 GREEN “洗掉”，所以不能声称：
+    - blockquote:
+      - paragraph: R08 所有执行轮次都遵守 no-download。
+    - paragraph: 后续最终验收已改成固定现有 Rust 1.96.0 二进制、CARGO_NET_OFFLINE=true，并加入 rustup/proxy/native/socket guard；最终 18/178/whitespace 三条验收链均在该环境下通过。临时 HOME 已清理，没有残留 Rust 进程；证据也没有声称下载了多少或修改了哪些共享缓存。
+    - paragraph:
+      - text: 这个历史过程违规
+      - strong: 无法通过新的源码修改来修复
+      - text: ，因此不构成再开一轮代码 PLAN 的理由，但必须永久保留在 R08 验收记录中。
+    - paragraph:
+      - strong: 结论：R08/F07 源码整改接受；执行历史存在一项已披露的 no-download 边界违规，不应从审计记录中删除。
+    - paragraph: 真实安装、真实 GUI/native IPC、账号、产品网络、代理和系统修改仍正确标记为 NOT_RUN；长期验收继续 WAIT。
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

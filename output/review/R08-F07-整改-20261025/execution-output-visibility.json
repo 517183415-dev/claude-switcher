@@ -1,0 +1,66 @@
+{
+  "taskId": "c2c_c74e",
+  "iteration": 1,
+  "items": [
+    {
+      "id": 74,
+      "exitCode": 1,
+      "phase": "behavioral_RED",
+      "truncated": false,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 75,
+      "exitCode": 1,
+      "phase": "boundary_incident_NOT_ACCEPTED",
+      "truncated": true,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 76,
+      "exitCode": 1,
+      "phase": "type_comment_RED",
+      "truncated": false,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 77,
+      "exitCode": 1,
+      "phase": "header_comment_RED",
+      "truncated": false,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 78,
+      "exitCode": 0,
+      "phase": "final_f07",
+      "truncated": false,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 79,
+      "exitCode": 0,
+      "phase": "final_full",
+      "truncated": true,
+      "readable": true,
+      "read": true
+    },
+    {
+      "id": 80,
+      "exitCode": 0,
+      "phase": "final_diff",
+      "truncated": false,
+      "readable": true,
+      "read": true
+    }
+  ],
+  "paginated_read_file_confirmed": [
+    "final-installer-full.log:210-231 shows178/178 OK",
+    "f07-boundary-violation.json:1-54 untruncated"
+  ]
+}

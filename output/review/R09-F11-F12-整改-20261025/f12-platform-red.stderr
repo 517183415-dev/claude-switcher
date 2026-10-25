@@ -1,0 +1,23 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.03s
+     Running unittests src/lib.rs (target/debug/deps/switcher_helper-1b8e376566b84708)
+
+thread 'platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts' (27679202) panicked at crates/switcher-helper/src/platform.rs:1148:13:
+assertion `left == right` failed: repair_recovery_conflict
+  left: Err("repair_recovery_conflict")
+ right: Ok(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read' (27679200) panicked at crates/switcher-helper/src/platform.rs:1128:13:
+id
+error: test failed, to rerun pass `-p switcher-helper --lib`

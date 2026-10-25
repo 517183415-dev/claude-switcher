@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/opt/homebrew/bin/npm",
+    "run",
+    "check"
+  ],
+  "cwd": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-baseline-2vi4z8hq/workspace/apps/desktop",
+  "exit": 1,
+  "elapsed": 0.46710712497588247,
+  "log": "baseline-svelte-check.log",
+  "source": "R07 baseline sources (R01-R06 accepted cumulative code)"
+}

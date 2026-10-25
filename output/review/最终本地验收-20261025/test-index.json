@@ -1,0 +1,89 @@
+{
+  "rust_distinct": 57,
+  "sets": {
+    "output/review/A03-F17-\u6574\u6539-20261025/core-final-green.stdout": {
+      "count": 19,
+      "sha256": "496e396cf734da777a89d3c0bf572bd6c7c4459ad840661a9f3eae780a5a158f",
+      "methods": [
+        "publisher::cleanup_tests::f17_backup_portability_and_active_target_restore_refusal",
+        "publisher::cleanup_tests::f17_candidate_identity_is_bounded_no_follow_and_content_bound",
+        "publisher::cleanup_tests::f17_cleanup_state_rename_errors_reconcile_memory_and_restart",
+        "publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity",
+        "publisher::cleanup_tests::f17_current_watermark_authentication_and_stale_preview_binding",
+        "publisher::cleanup_tests::f17_current_without_history_does_not_create_verified_history_and_expiry_is_allowed",
+        "publisher::cleanup_tests::f17_gc_atomic_boundaries_restart_and_partial_reclaim_are_idempotent",
+        "publisher::cleanup_tests::f17_gc_four_classes_finish_without_deleting_blocked_referenced_or_unknown",
+        "publisher::cleanup_tests::f17_gc_identity_capacity_is_reserved_before_checkpoint_and_ordinary_persist",
+        "publisher::cleanup_tests::f17_gc_second_confirmation_reclaims_verified_candidate",
+        "publisher::cleanup_tests::f17_index_atomic_boundaries_preserve_old_state_or_durable_batch",
+        "publisher::cleanup_tests::f17_local_store_reads_two_currents_under_one_lock_and_batch_survives_save_publish",
+        "publisher::cleanup_tests::f17_missing_only_restart_must_sync_both_directories_before_finishing",
+        "publisher::cleanup_tests::f17_pending_allows_read_only_preview_and_marks_execution_blocked",
+        "publisher::cleanup_tests::f17_quarantine_replacement_is_retained_and_recreated_source_is_never_unlinked",
+        "publisher::cleanup_tests::f17_reference_union_resolution_release_and_checkpoint_evidence",
+        "publisher::cleanup_tests::f17_restart_with_both_paths_and_unexpected_io_preserves_batch",
+        "publisher::cleanup_tests::f17_retention_full_capacity_pins_currents_inside_default_128",
+        "publisher::cleanup_tests::f17_stale_previews_and_pending_cannot_commit"
+      ]
+    },
+    "output/review/\u6700\u7ec8\u672c\u5730\u9a8c\u6536-20261025/a01-compat.stdout": {
+      "count": 4,
+      "sha256": "5286a58e16740499fd381aad6ce59c66289b94e15fcd7917b64cdb08977e2302",
+      "methods": [
+        "publisher::tests::f15_backup_plaintext_budget_includes_header_and_tag",
+        "publisher::tests::f15_command_body_failures_preserve_source_target_and_vault",
+        "publisher::tests::f15_command_body_restores_valid_33_mib_backup",
+        "publisher::tests::f15_command_body_restores_inclusive_64_mib_backup"
+      ]
+    },
+    "output/review/\u6700\u7ec8\u672c\u5730\u9a8c\u6536-20261025/a02-compat.stdout": {
+      "count": 30,
+      "sha256": "fe140f3b986814335d651a9e882adb7b9109de4a9e67b1d204c19350d14761e3",
+      "methods": [
+        "publisher::tests::drafts_need_no_key_and_explicit_generation_persists_only_public_trust_on_disk",
+        "publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history",
+        "publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas",
+        "publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history",
+        "publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas",
+        "publisher::tests::cas_conflict_requires_explicit_edit_and_never_reports_success",
+        "publisher::tests::f16_old_state_without_resolution_field_remains_readable",
+        "publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release",
+        "publisher::tests::cas_success_repeat_idempotence_pause_history_and_environment_isolation",
+        "publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas",
+        "publisher::tests::f16_corrupt_immutable_objects_are_never_overwritten_or_retired",
+        "publisher::tests::f16_second_terminal_preserves_both_original_evidence_and_new_pending",
+        "publisher::tests::f16_remote_read_or_upload_errors_keep_pending_and_never_claim_resolution",
+        "publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write",
+        "publisher::tests::f16_terminal_evidence_survives_restart_save_and_successful_higher_pause",
+        "publisher::tests::missing_or_wrong_signing_credentials_never_create_remote_objects",
+        "publisher::tests::f16_terminal_write_failures_preserve_or_calibrate_exact_disk_commit",
+        "publisher::tests::local_store_fixed_scope_cas_immutable_private_files_and_restart",
+        "publisher::tests::strict_local_draft_atomic_lock_pause_history_and_private_images",
+        "publisher::tests::public_readback_must_validate_all_images_and_current_before_success",
+        "publisher::tests::f16_authenticated_current_failures_cannot_be_bypassed_by_public_exact_wire",
+        "publisher::tests::unknown_before_commit_rechecks_version_and_retries_same_id",
+        "publisher::tests::unknown_result_recovers_same_release_after_restart_without_duplicate_commit",
+        "publisher::tests::f16_unsafe_or_corrupt_local_assets_never_become_missing_asset_resolutions",
+        "publisher::tests::f16_clean_publisher_restores_resolution_using_authenticated_backup_key",
+        "publisher::tests::f16_resolution_tampering_fails_closed_on_reopen",
+        "publisher::tests::restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets",
+        "publisher::tests::f16_small_backup_restore_retains_current_resolution_from_older_snapshot",
+        "publisher::tests::encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_restore",
+        "publisher::tests::local_publication_both_editions_pause_history_backup_and_signature_verification"
+      ]
+    },
+    "output/review/\u6700\u7ec8\u672c\u5730\u9a8c\u6536-20261025/a02-feedback.stdout": {
+      "count": 4,
+      "sha256": "9cfde581716565230ba543f2a7fe6d2444aa0ad80d11a188cc926032bc58f77e",
+      "methods": [
+        "publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors",
+        "publisher_commands::f16_feedback_tests::only_verified_publication_is_completed",
+        "publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication",
+        "publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history"
+      ]
+    }
+  },
+  "frontend_node_distinct": 60,
+  "app_vm_groups": 2,
+  "historical_stage_counts_overlap": true
+}

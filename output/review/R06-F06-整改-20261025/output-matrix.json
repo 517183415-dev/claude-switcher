@@ -1,0 +1,1065 @@
+{
+  "cli": [
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "empty",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=none hasA=0 hasB=0\n",
+      "stdout_bytes": 27,
+      "stdout_sha256": "a30abade6c3ec48ebe540dbd403874fbece8eaeb7bc24e46d30be6eb4c9beaf9",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "modern-bare-check",
+      "code": 0,
+      "stderr": "",
+      "stdout": "OK\n",
+      "stdout_bytes": 3,
+      "stdout_sha256": "a12b7cb43c9d9134b5bb1b35e9096b66775d9e92e7611d1cc92b02edd6782a87",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-check-blocked",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic gate\n",
+      "stdout_bytes": 20,
+      "stdout_sha256": "3f238392755a16b0760b7f1c6dd2631cfbe038a69abc74e3fa8dce67832f81fd",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-check-allowed",
+      "code": 0,
+      "stderr": "",
+      "stdout": "OK:unavailable\n",
+      "stdout_bytes": 15,
+      "stdout_sha256": "6641813a60cd8b85ec9a53b3b699bc67bcf6376b3b1c7fc0070a4c07420c976e",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "legacy-status-None",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=none hasA=0 hasB=0\n",
+      "stdout_bytes": 27,
+      "stdout_sha256": "a30abade6c3ec48ebe540dbd403874fbece8eaeb7bc24e46d30be6eb4c9beaf9",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "switch",
+        "B"
+      ],
+      "calls": [
+        "switch:Public:B"
+      ],
+      "case": "synthetic complete",
+      "code": 0,
+      "stderr": "",
+      "stdout": "OK\n",
+      "stdout_bytes": 3,
+      "stdout_sha256": "a12b7cb43c9d9134b5bb1b35e9096b66775d9e92e7611d1cc92b02edd6782a87",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "modern-status",
+      "code": 0,
+      "stderr": "",
+      "stdout": "{\"accounts\":{\"a_saved\":false,\"b_saved\":false,\"current\":\"A\",\"recovery_pending\":false},\"login\":\"unknown\"}\n",
+      "stdout_bytes": 104,
+      "stdout_sha256": "78adffb7dde2f825608a0a2ff8277f79223d69ce52a495ef044e99897305acc7",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "switch",
+        "B"
+      ],
+      "calls": [
+        "switch:Public:B"
+      ],
+      "case": "synthetic gate",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic gate\n",
+      "stdout_bytes": 20,
+      "stdout_sha256": "3f238392755a16b0760b7f1c6dd2631cfbe038a69abc74e3fa8dce67832f81fd",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "legacy-status-Some(A)",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=A hasA=1 hasB=0\n",
+      "stdout_bytes": 24,
+      "stdout_sha256": "8af55c65fe7da201fc777ee4c28517b66719955000b26102de28a3a26ebf4f5e",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-check-allowed",
+      "code": 0,
+      "stderr": "",
+      "stdout": "OK:unavailable|synthetic advisory 198.18.0.1 second line\n",
+      "stdout_bytes": 57,
+      "stdout_sha256": "46691ccdf0c5f6cc739ea72fb2f0ec3266afbde315ced1f6899656fe4a6070a2",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "status",
+        "--legacy-cli"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-runtime-error",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic_check_error\n",
+      "stdout_bytes": 27,
+      "stdout_sha256": "0216ecd6e5684b06cdd5779f4e947a220f95212e157987e6adcbffb03baea9fc",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "switch",
+        "B"
+      ],
+      "calls": [
+        "switch:Public:B"
+      ],
+      "case": "synthetic selection",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic selection\n",
+      "stdout_bytes": 25,
+      "stdout_sha256": "bab024afb7ce8fd3f990bc598c9233bda0e5a3d4b48d3368728ad7e8cab60e52",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "legacy-status-Some(B)",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=B hasA=1 hasB=1\n",
+      "stdout_bytes": 24,
+      "stdout_sha256": "eee95c48d659dbdf8472abb483e6cb12cea03cb6b72373b440ebabd9c88ffd2e",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [],
+      "case": "nonutf8-modern",
+      "code": 2,
+      "raw_args": [
+        [
+          115,
+          116,
+          97,
+          116,
+          117,
+          115
+        ],
+        [
+          255
+        ]
+      ],
+      "stderr": "",
+      "stdout": "{\"error\":\"invalid_command\",\"recovery\":\"按错误提示检查配置和命令；账号事务中断时保留资料并执行 recover\",\"schema_version\":1}\n",
+      "stdout_bytes": 150,
+      "stdout_sha256": "1dbdaa3c82f03c4681700edd843788c6ebd30a2295a186f4eba77bce7aae0b79",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check",
+        "--json"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-json-override",
+      "code": 0,
+      "stderr": "",
+      "stdout": "{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n",
+      "stdout_bytes": 204,
+      "stdout_sha256": "2dcca7269bbc1515c1d66bdd01a1c464204b72ff9b8ea123e7dbaf3716652c8e",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "legacy-runtime-error",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic_status_error\n",
+      "stdout_bytes": 28,
+      "stdout_sha256": "63e52f9156b8fdb98b730fb26d5df439755af012da41e8621b5206d772778235",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "checkdetail",
+        "--json"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "legacy-json-override",
+      "code": 0,
+      "stderr": "",
+      "stdout": "{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n",
+      "stdout_bytes": 204,
+      "stdout_sha256": "2dcca7269bbc1515c1d66bdd01a1c464204b72ff9b8ea123e7dbaf3716652c8e",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "active-unrecorded",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=none hasA=0 hasB=0\n",
+      "stdout_bytes": 27,
+      "stdout_sha256": "a30abade6c3ec48ebe540dbd403874fbece8eaeb7bc24e46d30be6eb4c9beaf9",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "public",
+        "--legacy-cli",
+        "switch",
+        "B"
+      ],
+      "calls": [
+        "switch:Public:B"
+      ],
+      "case": "synthetic launch",
+      "code": 1,
+      "stderr": "",
+      "stdout": "FAIL:synthetic launch\n",
+      "stdout_bytes": 22,
+      "stdout_sha256": "c9d6135422f6f6e0c7f31a7ad280c22bb6737805759bfb949a203c8a2a26eb5b",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "switch",
+        "C"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "checkdetail"
+      ],
+      "calls": [
+        "check",
+        "save_detail"
+      ],
+      "case": "bare-checkdetail",
+      "code": 0,
+      "stderr": "",
+      "stdout": "代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n",
+      "stdout_bytes": 469,
+      "stdout_sha256": "ec7fd6181467f9da9bcdea01296e9788295ecd3b11d011e81aa9691705527042",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status",
+        "--json"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "fix",
+        "--json"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "checkdetail"
+      ],
+      "calls": [
+        "check",
+        "save_detail"
+      ],
+      "case": "bare-checkdetail",
+      "code": 0,
+      "stderr": "",
+      "stdout": "代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n",
+      "stdout_bytes": 469,
+      "stdout_sha256": "ec7fd6181467f9da9bcdea01296e9788295ecd3b11d011e81aa9691705527042",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "switch",
+        "A",
+        "--json"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "recorded-A",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=A hasA=0 hasB=0\n",
+      "stdout_bytes": 24,
+      "stdout_sha256": "1c4fd9eb2ffeb82ddf17641a621a7c0f68eef1141617c49a9b3c1df60449dfca",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "check",
+        "--json",
+        "extra"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "switch",
+        "A"
+      ],
+      "calls": [
+        "switch:Personal:A"
+      ],
+      "case": "modern-switch",
+      "code": 2,
+      "stderr": "",
+      "stdout": "{\"outcome\":{\"completed\":false,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n",
+      "stdout_bytes": 315,
+      "stdout_sha256": "9f05b4aa683949d07e7e5cf0d8809451fe62efabdd579ba7702774757a430121",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "--unknown"
+      ],
+      "calls": [],
+      "case": "legacy-invalid-args",
+      "code": 2,
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "calls": [],
+      "case": "nonutf8-modern-json",
+      "code": 2,
+      "raw_args": [
+        [
+          99,
+          104,
+          101,
+          99,
+          107
+        ],
+        [
+          45,
+          45,
+          106,
+          115,
+          111,
+          110
+        ],
+        [
+          255
+        ]
+      ],
+      "stderr": "",
+      "stdout": "{\"error\":\"invalid_command\",\"recovery\":\"按错误提示检查配置和命令；账号事务中断时保留资料并执行 recover\",\"schema_version\":1}\n",
+      "stdout_bytes": 150,
+      "stdout_sha256": "1dbdaa3c82f03c4681700edd843788c6ebd30a2295a186f4eba77bce7aae0b79",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "switch",
+        "A"
+      ],
+      "calls": [
+        "switch:Personal:A"
+      ],
+      "case": "modern-switch",
+      "code": 0,
+      "stderr": "",
+      "stdout": "{\"outcome\":{\"completed\":true,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n",
+      "stdout_bytes": 314,
+      "stdout_sha256": "efbbcbaa6dc84a0c210d2bfcce49b2a06abbc11a1e1f5bad10082c23de48b066",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [],
+      "case": "nonutf8-legacy",
+      "code": 2,
+      "raw_args": [
+        [
+          45,
+          45,
+          101,
+          100,
+          105,
+          116,
+          105,
+          111,
+          110
+        ],
+        [
+          112,
+          101,
+          114,
+          115,
+          111,
+          110,
+          97,
+          108
+        ],
+        [
+          45,
+          45,
+          108,
+          101,
+          103,
+          97,
+          99,
+          121,
+          45,
+          99,
+          108,
+          105
+        ],
+        [
+          115,
+          116,
+          97,
+          116,
+          117,
+          115
+        ],
+        [
+          255
+        ]
+      ],
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "calls": [],
+      "case": "nonutf8-misplaced-legacy",
+      "code": 2,
+      "raw_args": [
+        [
+          115,
+          116,
+          97,
+          116,
+          117,
+          115
+        ],
+        [
+          45,
+          45,
+          108,
+          101,
+          103,
+          97,
+          99,
+          121,
+          45,
+          99,
+          108,
+          105
+        ],
+        [
+          255
+        ]
+      ],
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "status"
+      ],
+      "calls": [
+        "status"
+      ],
+      "case": "recorded-B",
+      "code": 0,
+      "stderr": "",
+      "stdout": "current=B hasA=0 hasB=0\n",
+      "stdout_bytes": 24,
+      "stdout_sha256": "7dbfa15aa5e52e7c56c513aab078310c9453308878e329f7b8c6de20da740cc0",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [],
+      "case": "nonutf8-duplicate-legacy",
+      "code": 2,
+      "raw_args": [
+        [
+          45,
+          45,
+          101,
+          100,
+          105,
+          116,
+          105,
+          111,
+          110
+        ],
+        [
+          112,
+          117,
+          98,
+          108,
+          105,
+          99
+        ],
+        [
+          45,
+          45,
+          108,
+          101,
+          103,
+          97,
+          99,
+          121,
+          45,
+          99,
+          108,
+          105
+        ],
+        [
+          45,
+          45,
+          108,
+          101,
+          103,
+          97,
+          99,
+          121,
+          45,
+          99,
+          108,
+          105
+        ],
+        [
+          115,
+          116,
+          97,
+          116,
+          117,
+          115
+        ],
+        [
+          255
+        ]
+      ],
+      "stderr": "invalid_command\n",
+      "stdout": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 16,
+      "stderr_sha256": "05132bdba6f4a11ca032a58aaa09b8c752a19549b5b96f52a38380e50af151ec"
+    },
+    {
+      "args": [
+        "--edition",
+        "personal",
+        "--legacy-cli",
+        "set-region",
+        "us",
+        "--preview"
+      ],
+      "calls": [
+        "repair:SetRegion { preset: Us, apply: false }:Modern"
+      ],
+      "case": "legacy-set-region-stays-modern",
+      "code": 0,
+      "stderr": "",
+      "stdout": "{\"synthetic_repair\":true}\n",
+      "stdout_bytes": 26,
+      "stdout_sha256": "5510ba0cf409e7f755d9369efbcd5095f3e4dd38dbf9644743d85b445ef3af17",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "check"
+      ],
+      "calls": [
+        "check"
+      ],
+      "case": "modern-runtime-error",
+      "code": 2,
+      "stderr": "",
+      "stdout": "{\"error\":\"synthetic_check_error\",\"recovery\":\"按错误提示检查配置和命令；账号事务中断时保留资料并执行 recover\",\"schema_version\":1}\n",
+      "stdout_bytes": 156,
+      "stdout_sha256": "643000dfc5b5bb1f69bc986016361f1eda8f31ed2af6fa8739d50f554aaf776d",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "repair": [
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "legacy-complete",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "FIX:prepare\nFIX:preview\nFIX:apply\nFIX:complete\nOK\n",
+      "stdout_bytes": 50,
+      "stdout_sha256": "f3d0c9ef0182c31ab9bfb27725792a607300d467ac60e5ea1689e8bdfad7decb",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare"
+      ],
+      "case": "legacy-prepare-error",
+      "code": 1,
+      "execute_calls": 0,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 1
+      },
+      "stderr": "",
+      "stdout": "FIX:prepare\nFAIL:synthetic_precondition\n",
+      "stdout_bytes": 40,
+      "stdout_sha256": "592a3d7b57487eb2dee9c985afb9e7c4f1176e668b9b49bdb5d800238ab073ad",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "legacy-partial-error",
+      "code": 1,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 1
+      },
+      "stderr": "",
+      "stdout": "FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n",
+      "stdout_bytes": 65,
+      "stdout_sha256": "67faa1f97cd065b9f97bcba8d78a95a563cead69b9ff0e5679535b91191c4848",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-Fix { apply: true }-Modern",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n",
+      "stdout_bytes": 442,
+      "stdout_sha256": "265245780f9fcfc4cdad3c0e9d540e0d7961194657b53f44d2b258269bd566b4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare"
+      ],
+      "case": "legacy-preview",
+      "code": 0,
+      "execute_calls": 0,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "FIX:prepare\nFIX:preview\n",
+      "stdout_bytes": 24,
+      "stdout_sha256": "a4fbcec56492e4b49dd844b366648abbadc7f5126c57056b5447b1b34630dc9b",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-SetRegion { preset: Us, apply: true }-Modern",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n",
+      "stdout_bytes": 442,
+      "stdout_sha256": "265245780f9fcfc4cdad3c0e9d540e0d7961194657b53f44d2b258269bd566b4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-SetRegion { preset: Us, apply: true }-Legacy",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n",
+      "stdout_bytes": 442,
+      "stdout_sha256": "265245780f9fcfc4cdad3c0e9d540e0d7961194657b53f44d2b258269bd566b4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-DetectRegion { apply: true }-Modern",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n",
+      "stdout_bytes": 442,
+      "stdout_sha256": "265245780f9fcfc4cdad3c0e9d540e0d7961194657b53f44d2b258269bd566b4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-DetectRegion { apply: true }-Legacy",
+      "code": 0,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Ok": 0
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n",
+      "stdout_bytes": 442,
+      "stdout_sha256": "265245780f9fcfc4cdad3c0e9d540e0d7961194657b53f44d2b258269bd566b4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "calls": [
+        "prepare",
+        "apply"
+      ],
+      "case": "modern-partial-error",
+      "code": 2,
+      "execute_calls": 1,
+      "preview_calls": 1,
+      "result": {
+        "Err": "synthetic_partial_failure"
+      },
+      "stderr": "",
+      "stdout": "{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n",
+      "stdout_bytes": 313,
+      "stdout_sha256": "53c5d70278b8fd531f57559ff1fae2b173f368cf288f6f32806a91f6dff08e7a",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "evidence_boundary": "CLI captures real in-memory stdout/stderr/code at production handler boundary. Repair library captures its production output sink and Result; it has no stderr interface. Library modern Err to code 2 is a main-contract mapping; it is not represented as an executed main process."
+}

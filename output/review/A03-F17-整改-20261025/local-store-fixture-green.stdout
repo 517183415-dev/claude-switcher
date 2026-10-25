@@ -1,0 +1,6 @@
+
+running 1 test
+test publisher::cleanup_tests::f17_local_store_reads_two_currents_under_one_lock_and_batch_survives_save_publish ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 81 filtered out; finished in 0.23s
+

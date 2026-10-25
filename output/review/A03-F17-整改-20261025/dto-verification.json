@@ -1,0 +1,33 @@
+{
+  "PublisherCleanupPreview": {
+    "fields_exact": true,
+    "count": 11,
+    "u64_maps_to_existing_number_convention": true
+  },
+  "PublisherGcPreview": {
+    "fields_exact": true,
+    "count": 8,
+    "u64_maps_to_existing_number_convention": true
+  },
+  "whitespace": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "crates/switcher-domain/src/desktop.rs",
+      "crates/switcher-domain/src/lib.rs",
+      "apps/desktop/src/generated/PublisherCleanupPreview.ts",
+      "apps/desktop/src/generated/PublisherGcPreview.ts"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "four_files_frozen": {
+    "crates/switcher-domain/src/desktop.rs": "88c7fb872fe6d40a1d00eef67c100ed289f2380ef5e8d2451ee47e809dedf31c",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "apps/desktop/src/generated/PublisherCleanupPreview.ts": "b08db9ffefbc839ada23cbcc2ce04ef655f78fe8eafdda24979311f8eadf3aa4",
+    "apps/desktop/src/generated/PublisherGcPreview.ts": "9ee966ec1d7c1ac52115def859c528d694ee37c9e08340eba8bf19c17e942358"
+  }
+}

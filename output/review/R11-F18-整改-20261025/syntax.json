@@ -1,0 +1,10 @@
+{
+  "python_ast": true,
+  "embedded_Javascript_check_exit": 0,
+  "browser_flow": "NOT_RUN",
+  "static_script_changes": [
+    "await opening check, first list count1",
+    "manual check second list count2, first locator",
+    "log describes automatic opening check"
+  ]
+}

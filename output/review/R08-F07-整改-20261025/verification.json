@@ -1,0 +1,122 @@
+{
+  "unit": "R08",
+  "finding": "F07",
+  "task_id": "c2c_c74e",
+  "iteration": 1,
+  "status": "accepted_source_and_final_isolated_tests_with_recorded_process_incident",
+  "changed_files": [
+    "packaging/macos/local_install.py",
+    "packaging/macos/test_local_install.py"
+  ],
+  "frozen_sources": {
+    "apps/desktop/src/App.svelte": "7f4cd1555f105afb7a39c54be0b94a2f9a78e11d13e5c43b049e0ecf5ee6fe86",
+    "apps/desktop/src/components/RegionSettings.svelte": "3607ccb1d5d053c67716962559a055b1e9f85da9c3d2cdd3b518648af87a47e1",
+    "apps/desktop/tests/repair-preview.test.mjs": "cea7e7b368c0bd6d43154c823f36e86abdad3d3cd46fb1071118c70eed5a5726",
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "packaging/macos/local_install.py": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+    "packaging/macos/test_local_install.py": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0"
+  },
+  "other_accepted_paths_unchanged": 14,
+  "protected_functions_AST_and_source_unchanged": 30,
+  "final_commands": 3,
+  "all_exit_zero": true,
+  "unique_Python_test_methods": 178,
+  "targeted_methods": 18,
+  "targeted_included_in_full": true,
+  "actual_scenario_receipt_rows": 43,
+  "behavioral_RED": [
+    {
+      "file": "f07-red.json",
+      "tests": 3,
+      "failures": 3,
+      "errors": 0,
+      "exit": 1
+    },
+    {
+      "file": "f07-type-comment-red.json",
+      "tests": 2,
+      "failing_subcases": 4,
+      "exit": 1
+    },
+    {
+      "file": "f07-header-comment-red.json",
+      "tests": 1,
+      "failing_subcases": 4,
+      "exit": 1
+    }
+  ],
+  "independent_review": {
+    "result": "no_remaining_blocker_P1_P2",
+    "first_review": "independent-review-iteration1.md",
+    "final_review": "independent-review-final.md"
+  },
+  "execution_boundary_incident": {
+    "status": "NOT_ACCEPTED_HISTORICAL_RUN",
+    "file": "f07-boundary-violation.json",
+    "description": "Temporary HOME without fixed Rust/cache paths triggered rustup syncing and downloading5components log; completion amount not established. Temporary HOME cleaned, no Rust process remained. Cannot claim all rounds obeyed no-download boundary.",
+    "full_original_logs": [
+      "f07-full.stdout",
+      "f07-full.stderr",
+      "f07-validation.json"
+    ],
+    "C2C_output_id": 75,
+    "C2C_output_truncated": true
+  },
+  "final_validation_environment": {
+    "synthetic_HOME": true,
+    "direct_existing_toolchain": {
+      "cargo": {
+        "path": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "version": "cargo 1.96.0 (30a34c682 2026-05-25)",
+        "resolved": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo"
+      },
+      "rustc": {
+        "path": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+        "version": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+        "resolved": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc"
+      }
+    },
+    "CARGO_NET_OFFLINE": "true",
+    "rustup_or_proxy_binary_launch_blocked": true,
+    "native_and_socket_audit_guard": true,
+    "limitations": "Python audit hook guards direct subprocess/network calls; not a whole-OS sandbox. Native/product commands are separately mocked."
+  },
+  "evidence": [
+    "final-receipts.json",
+    "final-runtime.json",
+    "final-scenario-receipts.json",
+    "final-protected-functions.json",
+    "first-gui-call-evidence.md",
+    "f07-source-diff.patch",
+    "independent-review-final.md",
+    "f07-boundary-violation.json"
+  ],
+  "not_run": [
+    "product installation",
+    "real accounts",
+    "real product network/DNS/proxy checks",
+    "real GUI/native IPC/helper authorization",
+    "app/service/system mutation"
+  ],
+  "long_duration": "WAIT",
+  "notes": [
+    "No declared Python lint/typecheck command; AST/hash protection, imports/full unittest and git diff whitespace check are recorded; no fabricated lint/LSP pass.",
+    "R08 protected-path wording interpreted as14other unchanged paths plus2approved installer files; all30existing protected functions unchanged.",
+    "Later green results do not erase the earlier no-download boundary incident."
+  ],
+  "GPT_review": {
+    "state": "DONE",
+    "verdict": "ACCEPTED_WITH_RECORDED_PROCESS_INCIDENT",
+    "path": "chatgpt-review-iteration1.txt"
+  }
+}

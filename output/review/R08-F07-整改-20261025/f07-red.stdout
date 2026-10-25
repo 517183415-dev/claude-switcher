@@ -1,0 +1,3 @@
+F07 GUI receipt {'events': ['lock enter', 'component committed', 'lock exit'], 'status': 'committed', 'spawn_count': 0}
+F07 selection receipt {'groups': ['First', 'Second'], 'error': None, 'locks': 1, 'stopped': 1, 'transact': 1}
+F07 selection receipt {'groups': None, 'error': None, 'locks': 1, 'stopped': 1, 'transact': 1}

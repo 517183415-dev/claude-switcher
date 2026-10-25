@@ -1,0 +1,17 @@
+python3 -B - <<'PY' > output/review/R03-F03-整改-20261025/python-crosslang-pref03-red.log 2>&1
+import hashlib,importlib.util,sys,types,unittest
+from pathlib import Path
+root=Path.cwd(); saved=root/'output/review/R03-F03-整改-20261025/python-pref03-local_install.py'
+original=root/'packaging/macos/local_install.py'
+print('Python executable:',sys.executable,flush=True)
+print('Production snapshot:',saved,flush=True)
+print('Snapshot SHA256:',hashlib.sha256(saved.read_bytes()).hexdigest(),flush=True)
+print('__file__ resolution only:',original,flush=True)
+old=types.ModuleType('local_install_pref03'); old.__file__=str(original)
+exec(compile(saved.read_bytes(),str(saved),'exec'),old.__dict__)
+spec=importlib.util.spec_from_file_location('f03_pref03_tests',root/'packaging/macos/test_local_install.py')
+tests=importlib.util.module_from_spec(spec);spec.loader.exec_module(tests);tests.m=old
+suite=unittest.defaultTestLoader.loadTestsFromName('F02UninstallTests.test_f03_rust_watchdog_update_passes_real_public_verification',tests)
+result=unittest.TextTestRunner(verbosity=2).run(suite)
+sys.exit(not result.wasSuccessful())
+PY

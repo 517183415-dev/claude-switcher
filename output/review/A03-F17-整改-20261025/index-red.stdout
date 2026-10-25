@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity ... FAILED
+
+failures:
+
+failures:
+    publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 70 filtered out; finished in 0.13s
+

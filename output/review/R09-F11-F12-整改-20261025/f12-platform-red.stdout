@@ -1,0 +1,15 @@
+
+running 4 tests
+test platform::f12_tests::f12_startup_refuses_trust_io_and_unknown_errors ... ok
+test platform::f12_tests::f12_pending_status_reports_actual_state_or_read_error ... ok
+test platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts ... FAILED
+test platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read ... FAILED
+
+failures:
+
+failures:
+    platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read
+    platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 62 filtered out; finished in 0.00s
+

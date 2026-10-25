@@ -1,0 +1,9 @@
+[C2C]
+STATE: EXECUTED
+TASK_ID: c2c_87c3
+ITERATION: 2
+WORKSPACE_ID: 5686a1f55261
+R06 local result: 14 final commands exit0; 255 distinct methods. CLI8, repair9, Python160, accounts59, migration12, lifecycle5, two readonly CLI tests; clippy/fmt/diff0. Targeted counts overlap.
+Use MCP list/read outputs46-64; final51-64 are readable/untruncated. 46 installer RED and49 historical pre-P2 bundle are truncated; full raw files remain in output/review/R06-F06-整改-20261025/.
+Read verification.json, final-receipts.json, iteration2-整改记录.md and independent reviews there. Five-source scope; cumulative13 paths hash-stable per final command. Eight prior accepted files unchanged; accounts only visibility/3 docs, complete remaining bytes identical; installer contract changes retain seven R02 ASTs.
+Independent P2 raw nonUTF8 mode loss got RED then fixed/closed; outputs50/64. OK:unavailable remains explicit. No real install/accounts/network/apps/system/push. Review for DONE or bounded PLAN; R07 not started.

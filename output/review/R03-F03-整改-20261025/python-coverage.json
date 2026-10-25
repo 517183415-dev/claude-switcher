@@ -1,0 +1,100 @@
+{
+  "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+  "secondary_python": "/usr/bin/python3 (3.9)",
+  "f03_method_count": 17,
+  "explicit_subtest_case_count": 50,
+  "standalone_case_count": 7,
+  "total_behavior_cases": 57,
+  "methods": [
+    "test_f03_historical_unquoted_target_passes_public_verification",
+    "test_f03_quoted_region_change_keeps_generation_uninstall_authority",
+    "test_f03_current_config_mismatch_is_not_hidden_by_registration",
+    "test_f03_rust_watchdog_update_passes_real_public_verification",
+    "test_f03_rust_bridge_handles_historical_input_and_same_target_noop",
+    "test_f03_target_grammar_accepts_only_complete_valid_literals",
+    "test_f03_target_grammar_rejects_malformed_assignments",
+    "test_f03_generation_authority_is_separate_from_current_config",
+    "test_f03_generation_baseline_target_and_evidence_remain_required",
+    "test_f03_target_exception_does_not_allow_other_component_bytes",
+    "test_f03_target_exception_preserves_filesystem_restrictions",
+    "test_f03_preview_snapshot_remains_exact_after_region_change",
+    "test_f03_generation_comparison_cannot_authorize_different_snapshot_bytes",
+    "test_f03_region_uninstall_rollback_restores_new_target_not_generation",
+    "test_f03_unpublished_candidate_is_preserved_without_being_adopted",
+    "test_f03_published_prepared_target_conflict_is_not_adopted",
+    "test_f03_transaction_objects_reject_valid_target_conflicts"
+  ],
+  "cases": {
+    "historical_unquoted_public_verify": 1,
+    "quoted_changed_target_generation_plan": 1,
+    "config_changed_script_not_updated_refuses_verify": 1,
+    "actual_rust_update_verify_and_region_rollback": 1,
+    "actual_rust_historical_input_and_same_target_noop": 3,
+    "quoted_and_unquoted_valid_literals": 4,
+    "malformed_target_assignments": 18,
+    "generation_ownership_separate_from_current_config": 2,
+    "generation_evidence_missing_or_wrong": 4,
+    "non_target_component_bytes_remain_exact": 5,
+    "filesystem_policy_uid_gid_modes_links_parent": 8,
+    "after_preview_valid_target_or_same_bytes_new_inode": 2,
+    "ownership_read_bound_to_observed_snapshot": 2,
+    "quoted_region_uninstall_rollback_preserves_new_target": 1,
+    "unpublished_changed_private_fragment_preserved_not_adopted": 1,
+    "published_prepared_target_change_refused_without_chown": 1,
+    "held_and_durable_restored_target_changes_refused": 2
+  },
+  "red": [
+    {
+      "log": "python-red-initial.log",
+      "command": "python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f03 -v",
+      "methods_at_run": 3,
+      "production_refusals": 2,
+      "exit_code": 1
+    },
+    {
+      "log": "python-crosslang-pref03-red.log",
+      "selection": "F02UninstallTests.test_f03_rust_watchdog_update_passes_real_public_verification; isolated frozen pre-F03 module, actual old Rust bridge and fixed sed",
+      "methods": 1,
+      "production_refusals": 1,
+      "exit_code": 1,
+      "snapshot": "python-pref03-local_install.py",
+      "snapshot_sha256": "b3162368775afc82c4c78cec4d1dea6a7b3de355ef5d68b6b615825bd9ee3f8a",
+      "resource_resolution_only": "__file__ set to original packaging/macos/local_install.py; no comparator or ownership predicate mocked"
+    }
+  ],
+  "not_red": [
+    {
+      "log": "python-crosslang-red.log",
+      "exit_code": 0,
+      "reason": "Historical filename only. Python compatibility had already landed, so old unquoted Rust output passed live verify."
+    },
+    {
+      "log": "python-green-first.log",
+      "reason": "Two ELOOP refusals were correct but initially expected only ValueError; unpublished candidate rejection expectation later clarified."
+    },
+    {
+      "log": "python-green-second.log",
+      "reason": "Only unpublished private candidate rejection expectation failed; contract clarified without production change."
+    }
+  ],
+  "green": [
+    {
+      "log": "python-targeted-green.log",
+      "methods": 17,
+      "exit_code": 0,
+      "seconds": 4.147
+    },
+    {
+      "log": "python-39-targeted-green.log",
+      "methods": 17,
+      "exit_code": 0,
+      "seconds": 13.933
+    }
+  ],
+  "boundary_clarification": "Only held objects, published prepared candidates and durable restored live targets must retain exact approved fingerprints. An unpublished private fragment may be retained unchanged and abandoned while recovery creates a fresh candidate from a trusted backup. The new positive test confirms the changed LA fragment survives with its identity/bytes while live NY restores twice. No R02 production relaxation was made.",
+  "bridge": "cargo test --offline --locked -p switcher-core --lib guardian_repair::legacy_tests::f03_emit_watchdog_update -- --exact --nocapture; temporary input/output env; exact production sed validated and only fixed destination replaced with temp path; scripts never executed",
+  "artifact_evidence": "python-bridge-calls.jsonl includes source script/Rust/Python source hashes and rendered command; applied_fixed_sed entries include resulting script hashes. For frozen-Python RED, actual verifier source/hash is the header of python-crosslang-pref03-red.log; bridge python_source_sha256 records the live on-disk source, not the isolated snapshot.",
+  "frozen_test_sha256": "91e5884745cc1c372e38e755ec03e22016094b075399222fd21921c4cc2df15f",
+  "isolation": "Reuses R02 temporary filesystem, virtual UID/GID/credentials/signing, real bytes/modes/links/inodes, fake stateful launchctl. Cargo uses cached offline locked dependencies. Only fixed sed operates on temporary script data. No products/dependencies/accounts/host services/settings/network.",
+  "full_module_acceptance": "Parent owns final 153-method source-hash-bracketed run. 17 F03 methods overlap with that total."
+}

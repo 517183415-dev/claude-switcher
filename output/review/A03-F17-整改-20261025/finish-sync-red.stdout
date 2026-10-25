@@ -1,0 +1,11 @@
+
+running 1 test
+test publisher::cleanup_tests::f17_missing_only_restart_must_sync_both_directories_before_finishing ... FAILED
+
+failures:
+
+failures:
+    publisher::cleanup_tests::f17_missing_only_restart_must_sync_both_directories_before_finishing
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 82 filtered out; finished in 0.11s
+

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "RED Rust 4 methods, 3 behavioral failures",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "RED Python 3 methods, 2 production refusals",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "RED actual old Rust update rejected by hash-verified pre-F03 Python",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "python-f03",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "python-module",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "rust-f03",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "rust-guardian",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "rust-regions",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "clippy",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "rustfmt",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  },
+  {
+    "name": "diff-check",
+    "record_exit": 0,
+    "response": "✓ 已记录执行摘要与输出\n"
+  }
+]

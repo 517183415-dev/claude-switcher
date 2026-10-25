@@ -94,38 +94,54 @@ impl Operations for Native {
             .map(|_| ())
     }
     fn proxy(&mut self, config: &CheckConfig) -> Result<(), &'static str> {
-        let mode = ProxyRepairMode::parse(&config.proxy_mode).ok_or("代理类型不在支持列表")?;
-        if let Some(plan) = proxy_repair::prepare_app_open(mode)? {
-            let _ = proxy_repair::execute_app_open(&plan);
+        proxy_with(config, &mut proxy_repair::NativeAppOpener)
+    }
+    fn preferences(&mut self, locale: UserLocale, region_only: bool) -> Vec<String> {
+        let mut errors = Vec::new();
+        if !region_only {
+            errors.extend(crate::user_repairs::repair_legacy_preferences(None));
         }
-        if config.proxy_mode == "clash-verge" {
-            // Restore the original TUN flag before the final proxy/TUN/egress gate.
-            let _ = crate::user_repairs::repair_legacy_tun();
-            if !proxy_repair::Native.running().unwrap_or(false) {
-                proxy_repair::Native.start()?;
-            }
+        errors.extend(crate::user_repairs::repair_legacy_preferences(Some(locale)));
+        errors
+    }
+    fn merge(&mut self, mode: &str) -> Result<(), &'static str> {
+        if mode == "clash-verge" {
+            let needs_reload = crate::user_repairs::repair_legacy_merge(legacy_routes_ok())
+                .map_err(|_| "置顶规则修复失败")?;
+            proxy_repair::reload_if_needed(needs_reload, &mut proxy_repair::Native)?;
         }
-        let mode = config.proxy_mode.clone();
-        let target = config.country_target.clone().ok_or("目标国家缺失")?;
+        Ok(())
+    }
+    fn guardian_commands(&mut self) -> (Vec<String>, bool) {
+        crate::guardian_repair::legacy_admin_commands()
+    }
+    fn watchdog_command(&mut self, timezone: &str) -> Option<String> {
+        crate::guardian_repair::legacy_watchdog_command(timezone)
+    }
+}
+
+// These seams feed the same composition used by Native::proxy; tests never replace
+// the entire proxy gate with a canned success when checking opening/wait ordering.
+trait ProxyOperations: proxy_repair::AppOpener {
+    fn repair_tun(&mut self);
+    fn start(&mut self) -> Result<(), &'static str>;
+    fn country(&mut self, target: &str) -> Result<(), &'static str>;
+}
+impl ProxyOperations for proxy_repair::NativeAppOpener {
+    fn repair_tun(&mut self) {
+        let _ = crate::user_repairs::repair_legacy_tun();
+    }
+    fn start(&mut self) -> Result<(), &'static str> {
+        proxy_repair::Native.start()
+    }
+    fn country(&mut self, target: &str) -> Result<(), &'static str> {
+        let target = target.to_owned();
         std::thread::spawn(move || {
             let runtime = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .map_err(|_| "代理检查不可用")?;
             runtime.block_on(async {
-                let mut ready = false;
-                for _ in 0..40 {
-                    if crate::macos::proxy_running(&mode).await.unwrap_or(false)
-                        && crate::macos::tunnel_route().await.unwrap_or(false)
-                    {
-                        ready = true;
-                        break;
-                    }
-                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                }
-                if !ready {
-                    return Err("代理内核与 TUN 未就绪；未修改系统与用户偏好");
-                }
                 let client = egress_client()?;
                 let geo = crate::network::lookup_egress(&client).await;
                 if geo.ip.is_none() || geo.country.as_deref() != Some(target.as_str()) {
@@ -137,31 +153,26 @@ impl Operations for Native {
         .join()
         .map_err(|_| "代理检查线程中断")?
     }
-    fn preferences(&mut self, locale: UserLocale, region_only: bool) -> Vec<String> {
-        let mut errors = Vec::new();
-        if !region_only {
-            errors.extend(crate::user_repairs::repair_legacy_preferences(None));
+}
+fn proxy_with(config: &CheckConfig, io: &mut impl ProxyOperations) -> Result<(), &'static str> {
+    let mode = ProxyRepairMode::parse(&config.proxy_mode).ok_or("代理类型不在支持列表")?;
+    if let Some(plan) = proxy_repair::prepare_app_open(mode)? {
+        proxy_repair::execute_app_open_only_with(&plan, io, crate::checks::unix_now)?;
+    }
+    if mode == ProxyRepairMode::ClashVerge {
+        io.repair_tun();
+        if !io.running(&config.proxy_mode).unwrap_or(false) {
+            io.start()?;
         }
-        errors.extend(crate::user_repairs::repair_legacy_preferences(Some(locale)));
-        errors
     }
-    fn merge(&mut self, mode: &str) -> Result<(), &'static str> {
-        if mode == "clash-verge"
-            && crate::user_repairs::repair_legacy_merge(legacy_routes_ok())
-                .map_err(|_| "置顶规则修复失败")?
-        {
-            proxy_repair::Native.stop()?;
-            proxy_repair::Native.start()?;
-            proxy_repair::Native.verify("")?;
+    let target = config.country_target.as_deref().ok_or("目标国家缺失")?;
+    for _ in 0..40 {
+        if io.ready(&config.proxy_mode).unwrap_or(false) {
+            return io.country(target);
         }
-        Ok(())
+        io.pause();
     }
-    fn guardian_commands(&mut self) -> (Vec<String>, bool) {
-        crate::guardian_repair::legacy_admin_commands()
-    }
-    fn watchdog_command(&mut self, timezone: &str) -> Option<String> {
-        crate::guardian_repair::legacy_watchdog_command(timezone)
-    }
+    Err("代理内核与 TUN 未就绪；未修改系统与用户偏好")
 }
 
 pub(super) fn execute(
@@ -318,6 +329,248 @@ mod tests {
         fn watchdog_command(&mut self, _: &str) -> Option<String> {
             Some("watchdog".into())
         }
+    }
+    #[derive(Debug)]
+    struct ProxyFake {
+        running: bool,
+        open_sets_running: bool,
+        open_error: bool,
+        ready_at: usize,
+        checks: usize,
+        pauses: usize,
+        starts: usize,
+        stops: usize,
+        tun_repairs: usize,
+        countries: usize,
+        opened: Vec<String>,
+        events: Vec<&'static str>,
+        tun_home: Option<PathBuf>,
+    }
+    impl Default for ProxyFake {
+        fn default() -> Self {
+            Self {
+                running: false,
+                open_sets_running: true,
+                open_error: false,
+                ready_at: 1,
+                checks: 0,
+                pauses: 0,
+                starts: 0,
+                stops: 0,
+                tun_repairs: 0,
+                countries: 0,
+                opened: vec![],
+                events: vec![],
+                tun_home: None,
+            }
+        }
+    }
+    impl proxy_repair::AppOpener for ProxyFake {
+        fn running(&mut self, _: &str) -> Result<bool, &'static str> {
+            Ok(self.running)
+        }
+        fn open(&mut self, name: &str) -> Result<(), &'static str> {
+            self.opened.push(name.to_owned());
+            self.events.push("open");
+            if self.open_error {
+                return Err("synthetic_open_failure");
+            }
+            self.running = self.open_sets_running;
+            Ok(())
+        }
+        fn ready(&mut self, _: &str) -> Result<bool, &'static str> {
+            self.checks += 1;
+            self.events.push("ready");
+            Ok(self.checks >= self.ready_at)
+        }
+        fn pause(&mut self) {
+            self.pauses += 1;
+            self.events.push("pause");
+        }
+    }
+    impl ProxyOperations for ProxyFake {
+        fn repair_tun(&mut self) {
+            self.tun_repairs += 1;
+            self.events.push("tun");
+            if let Some(home) = self.tun_home.clone() {
+                #[cfg(target_os = "macos")]
+                assert!(crate::user_repairs::repair_legacy_tun_at(&home, self).unwrap());
+                #[cfg(not(target_os = "macos"))]
+                panic!("TUN fixture is macOS-only: {}", home.display());
+            }
+        }
+        fn start(&mut self) -> Result<(), &'static str> {
+            self.starts += 1;
+            self.events.push("start");
+            self.running = true;
+            Ok(())
+        }
+        fn country(&mut self, target: &str) -> Result<(), &'static str> {
+            assert_eq!(target, "US");
+            self.countries += 1;
+            self.events.push("country");
+            Ok(())
+        }
+    }
+    impl proxy_repair::Runtime for ProxyFake {
+        fn running(&mut self) -> Result<bool, &'static str> {
+            Ok(self.running)
+        }
+        fn stop(&mut self) -> Result<(), &'static str> {
+            self.stops += 1;
+            self.events.push("stop");
+            self.running = false;
+            Ok(())
+        }
+        fn start(&mut self) -> Result<(), &'static str> {
+            ProxyOperations::start(self)
+        }
+        fn verify(&mut self, _: &str) -> Result<(), &'static str> {
+            panic!("TUN flag repair must not introduce a separate readiness wait")
+        }
+    }
+    fn f05_config(mode: &str) -> CheckConfig {
+        CheckConfig {
+            proxy_mode: mode.into(),
+            country_target: Some("US".into()),
+            ..Default::default()
+        }
+    }
+    #[test]
+    fn f05_composition_timeout_has_one_forty_iteration_budget() {
+        let mut fake = ProxyFake {
+            ready_at: usize::MAX,
+            ..Default::default()
+        };
+        let result = proxy_with(&f05_config("surge"), &mut fake);
+        println!("F05 timeout result={result:?} counters={fake:?}");
+        assert_eq!(result, Err("代理内核与 TUN 未就绪；未修改系统与用户偏好"));
+        assert_eq!(
+            (fake.opened.len(), fake.checks, fake.pauses, fake.countries),
+            (1, 40, 40, 0)
+        );
+    }
+    #[test]
+    fn f05_composition_late_ready_has_no_second_phase() {
+        let mut fake = ProxyFake {
+            ready_at: 40,
+            ..Default::default()
+        };
+        let result = proxy_with(&f05_config("shadowrocket"), &mut fake);
+        println!("F05 late-ready result={result:?} counters={fake:?}");
+        assert_eq!(result, Ok(()));
+        assert_eq!(
+            (fake.opened.len(), fake.checks, fake.pauses, fake.countries),
+            (1, 40, 39, 1)
+        );
+        assert_eq!(fake.events.last(), Some(&"country"));
+    }
+    #[test]
+    fn f05_composition_open_failure_stops_before_tun_start_wait_and_country() {
+        for mode in ["clash-verge", "shadowrocket", "clashx", "surge"] {
+            let mut fake = ProxyFake {
+                open_error: true,
+                ..Default::default()
+            };
+            let result = proxy_with(&f05_config(mode), &mut fake);
+            println!("F05 composition open-error mode={mode} result={result:?} counters={fake:?}");
+            assert_eq!(result, Err("synthetic_open_failure"));
+            assert_eq!(fake.events, ["open"]);
+            assert_eq!(
+                (
+                    fake.checks,
+                    fake.pauses,
+                    fake.tun_repairs,
+                    fake.starts,
+                    fake.countries
+                ),
+                (0, 0, 0, 0, 0)
+            );
+        }
+    }
+    #[test]
+    fn f05_composition_verge_order_and_optional_start() {
+        for (running, open_sets_running, expected) in [
+            (
+                false,
+                false,
+                vec!["open", "tun", "start", "ready", "country"],
+            ),
+            (false, true, vec!["open", "tun", "ready", "country"]),
+            (true, true, vec!["tun", "ready", "country"]),
+        ] {
+            let mut fake = ProxyFake {
+                running,
+                open_sets_running,
+                ..Default::default()
+            };
+            let result = proxy_with(&f05_config("clash-verge"), &mut fake);
+            println!(
+                "F05 verge-order initial-running={running} open-starts={open_sets_running} result={result:?} counters={fake:?}"
+            );
+            assert_eq!(result, Ok(()));
+            assert_eq!(fake.events, expected);
+            assert_eq!(
+                (fake.checks, fake.pauses, fake.tun_repairs, fake.countries),
+                (1, 0, 1, 1)
+            );
+        }
+    }
+    #[test]
+    fn f05_composition_named_and_unnamed_modes_keep_open_selection() {
+        for (mode, app) in [
+            ("clash-verge", Some("Clash Verge")),
+            ("shadowrocket", Some("Shadowrocket")),
+            ("clashx", Some("ClashX")),
+            ("surge", Some("Surge")),
+            ("auto", None),
+            ("sing-box", None),
+            ("0dcloud", None),
+        ] {
+            let mut fake = ProxyFake::default();
+            let result = proxy_with(&f05_config(mode), &mut fake);
+            println!("F05 mode-selection mode={mode} result={result:?} counters={fake:?}");
+            assert_eq!(result, Ok(()));
+            assert_eq!(
+                fake.opened,
+                app.into_iter().map(str::to_owned).collect::<Vec<_>>()
+            );
+            assert_eq!((fake.checks, fake.pauses, fake.countries), (1, 0, 1));
+        }
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn f05_composition_verge_real_tun_edit_keeps_one_readiness_gate() {
+        let fixture = crate::user_repairs::tests::Fixture::new();
+        let path = fixture.root.join(
+            "Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/verge.yaml",
+        );
+        let mut fake = ProxyFake {
+            tun_home: Some(fixture.root.clone()),
+            ..Default::default()
+        };
+        let result = proxy_with(&f05_config("clash-verge"), &mut fake);
+        println!("F05 real-tun-edit result={result:?} counters={fake:?}");
+        assert_eq!(result, Ok(()));
+        assert_eq!(
+            fake.events,
+            ["open", "tun", "stop", "start", "ready", "country"]
+        );
+        assert_eq!(
+            (
+                fake.stops,
+                fake.starts,
+                fake.checks,
+                fake.pauses,
+                fake.countries
+            ),
+            (1, 1, 1, 0, 1)
+        );
+        assert!(
+            fs::read_to_string(path)
+                .unwrap()
+                .contains("enable_tun_mode: true")
+        );
     }
     fn fixture() -> (PathBuf, RegionCoordinator, Fake) {
         let home = std::env::temp_dir().canonicalize().unwrap().join(format!(

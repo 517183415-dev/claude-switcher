@@ -1,0 +1,32 @@
+{
+  "status": "NOT_ACCEPTED_FOR_ZERO_SYSTEM_COMMAND_BOUNDARY",
+  "receipt": "preparation-behavior-red.json",
+  "cause": "e03 includes update_runtime::tests via path module; time::sample can execute read-only /usr/sbin/sysctl -n kern.bootsessionuuid",
+  "included_update_test_methods": 20,
+  "methods": [
+    "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+    "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+    "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+    "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+    "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+    "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+    "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+    "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+    "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+    "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+    "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+    "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+    "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+    "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+    "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+    "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+    "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+    "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+    "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+    "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume"
+  ],
+  "evidence": "read-only source audit by /root/audit_runtime; no per-process execution trace captured",
+  "system_mutation": "no mutation from sysctl invocation identified",
+  "next_selector_exclusion": "--skip update_runtime::tests::",
+  "no_rewrite_time_module_for_this_unit": true
+}

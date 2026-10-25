@@ -1,0 +1,8 @@
+{
+  "apps/desktop/src-tauri/src/publisher_commands.rs": "0fc97bfd3b8863df227ba8a8a677b83d6382cbd2fb60e3aca9e3116aad1f1316",
+  "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+  "apps/desktop/src-tauri/src/publisher/mod.rs": "67ca13a152abcdb5a46a64d041fb8b94307d91c246098fa0eeab11f747f8cc2d",
+  "apps/desktop/src-tauri/src/publisher/tests.rs": "3048653ce706daecfe255c0ef3251820a30b83bec53c19d1371c34ee5973c366",
+  "apps/desktop/src/pages/Operations.svelte": "6f3623451d36a3c08987fd5b2a784f5f5b612050d86893864b2f0c2152c0f161",
+  "apps/desktop/tests/publisher-limits.test.mjs": null
+}

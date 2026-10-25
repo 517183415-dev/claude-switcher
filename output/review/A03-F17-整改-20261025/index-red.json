@@ -1,0 +1,46 @@
+{
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity",
+    "--",
+    "--exact",
+    "--nocapture"
+  ],
+  "exit": 101,
+  "seconds": 13.539115624967963,
+  "source_before": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "59e223c70babaf72039cf08e77ad21fbfdd919a7ecad43db1ba5b2b651e062a8",
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "6488a5b68e3b4758803ba808947dc3176e3aa9be0863daefb088cce00e274ef7",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "233ecd3aa7adb4e7526b3b17ac51d2544e8cdc9e108c68d5a31f2b0a995d73bc",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "0d05d68641d8b0d7db758b6acabfb99ca60dd794cd3765d698bbae2104308432",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "98d631952fc227ead9168192c29474a8c88f6c0296ca3622cbbf63ec84de7462",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68"
+  },
+  "source_after": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "59e223c70babaf72039cf08e77ad21fbfdd919a7ecad43db1ba5b2b651e062a8",
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "6488a5b68e3b4758803ba808947dc3176e3aa9be0863daefb088cce00e274ef7",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "233ecd3aa7adb4e7526b3b17ac51d2544e8cdc9e108c68d5a31f2b0a995d73bc",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "0d05d68641d8b0d7db758b6acabfb99ca60dd794cd3765d698bbae2104308432",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "98d631952fc227ead9168192c29474a8c88f6c0296ca3622cbbf63ec84de7462",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68"
+  },
+  "source_frozen": true,
+  "environment": {
+    "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-a03-index-red-_ll8nfix",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc",
+    "TAURI_CONFIG": "{\"bundle\": {\"resources\": []}, \"build\": {\"frontendDist\": \"/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-final-v9bqk37d/workspace/apps/desktop/dist\"}}"
+  }
+}

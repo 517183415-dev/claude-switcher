@@ -1,0 +1,50 @@
+test_f07_main_opens_normal_gui_after_component_commit_and_unlock (test_local_install.LocalInstallTests.test_f07_main_opens_normal_gui_after_component_commit_and_unlock) ... FAIL
+test_f07_multiple_groups_require_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_multiple_groups_require_selection_before_mutation) ... FAIL
+test_f07_unknown_client_requires_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_unknown_client_requires_selection_before_mutation) ... FAIL
+
+======================================================================
+FAIL: test_f07_main_opens_normal_gui_after_component_commit_and_unlock (test_local_install.LocalInstallTests.test_f07_main_opens_normal_gui_after_component_commit_and_unlock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 157, in test_f07_main_opens_normal_gui_after_component_commit_and_unlock
+    self.assertEqual(events, ['lock enter', 'component committed', 'lock exit', 'normal GUI launch'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['lock enter', 'component committed', 'lock exit'] != ['lock enter', 'component committed', 'lock exit', 'normal GUI launch']
+
+Second list contains 1 additional elements.
+First extra element 3:
+'normal GUI launch'
+
+- ['lock enter', 'component committed', 'lock exit']
++ ['lock enter', 'component committed', 'lock exit', 'normal GUI launch']
+?                                                  +++++++++++++++++++++
+
+
+======================================================================
+FAIL: test_f07_multiple_groups_require_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_multiple_groups_require_selection_before_mutation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 115, in test_f07_multiple_groups_require_selection_before_mutation
+    self.f07_reject_selection_before_mutation(['First', 'Second'])
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 109, in f07_reject_selection_before_mutation
+    self.assertIsNotNone(failure, 'ambiguous discovery silently accepted without explicit selection')
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None : ambiguous discovery silently accepted without explicit selection
+
+======================================================================
+FAIL: test_f07_unknown_client_requires_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_unknown_client_requires_selection_before_mutation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 118, in test_f07_unknown_client_requires_selection_before_mutation
+    self.f07_reject_selection_before_mutation(None)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 109, in f07_reject_selection_before_mutation
+    self.assertIsNotNone(failure, 'ambiguous discovery silently accepted without explicit selection')
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None : ambiguous discovery silently accepted without explicit selection
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.032s
+
+FAILED (failures=3)

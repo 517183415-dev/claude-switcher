@@ -1,0 +1,18 @@
+{
+  "crates/switcher-core/src/bin/claude-switcher.rs:26": "fn parse(mut args: Vec<String>) -> Result<Self, String> {",
+  "crates/switcher-core/src/bin/claude-switcher.rs:93": "fn status(&mut self) -> Result<(AccountStatus, Option<AccountId>), String>;",
+  "crates/switcher-core/src/bin/claude-switcher.rs:107": "fn status(&mut self) -> Result<(AccountStatus, Option<AccountId>), String> {",
+  "crates/switcher-core/src/bin/claude-switcher.rs:140": "async fn execute_with(",
+  "crates/switcher-core/src/bin/claude-switcher.rs:341": "fn legacy_check_with_advisories(report: &CheckReport) -> String {",
+  "crates/switcher-core/src/bin/claude-switcher.rs:362": "fn finish_result(",
+  "crates/switcher-core/src/bin/claude-switcher.rs:390": "async fn run_cli(",
+  "crates/switcher-core/src/bin/claude-switcher.rs:459": "fn status(&mut self) -> Result<(AccountStatus, Option<AccountId>), String> {",
+  "crates/switcher-core/src/bin/claude-switcher.rs:777": "async fn f06_public_inspection_is_read_only_for_unknown_and_recorded_accounts() {",
+  "crates/switcher-core/src/repair_cli.rs:18": "pub fn parse(args: &[String]) -> Result<Self, String> {",
+  "crates/switcher-core/src/repair_cli.rs:83": "async fn prepare(",
+  "crates/switcher-core/src/repair_cli.rs:98": "async fn prepare(",
+  "crates/switcher-core/src/repair_cli.rs:127": "pub async fn run_with_output(",
+  "crates/switcher-core/src/repair_cli.rs:136": "async fn run_with_backend<B: RepairBackend>(",
+  "crates/switcher-core/src/repair_cli.rs:249": "async fn prepare(",
+  "crates/switcher-core/src/repair_cli.rs:413": "fn parse(args: &[&str]) -> Result<RepairCommand, String> {"
+}

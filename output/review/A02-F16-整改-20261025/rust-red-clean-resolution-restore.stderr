@@ -1,0 +1,18 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.01s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+
+thread 'publisher::tests::f16_clean_publisher_restores_resolution_using_authenticated_backup_key' (27829417) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1578:67:
+called `Result::unwrap()` on an `Err` value: MissingSigningKey
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

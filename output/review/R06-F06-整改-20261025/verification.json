@@ -1,0 +1,117 @@
+{
+  "task_id": "c2c_87c3",
+  "iteration": 2,
+  "unit": "R06/F06",
+  "status": "accepted_source_and_isolated_tests",
+  "source_scope": [
+    "crates/switcher-core/src/bin/claude-switcher.rs",
+    "crates/switcher-core/src/repair_cli.rs",
+    "packaging/macos/local_install.py",
+    "packaging/macos/test_local_install.py",
+    "crates/switcher-core/src/accounts.rs"
+  ],
+  "cumulative_tracked_paths": 13,
+  "source_sha256": {
+    "crates/switcher-core/src/accounts.rs": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+    "crates/switcher-core/src/accounts/legacy.rs": "fe90e11178b7f88f62e12e67aadd9e9a67fb61eb3f9bd765967cb65e1251359f",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "f2ffa888354ef2e8ab61a9f3d778224dc3f90ba30188ffc63159f0409f4db907",
+    "crates/switcher-core/src/guardian_repair.rs": "de4a3c3b0829f30a99b3d5b5ca3524ed8c04917ec6bd0ab07d901bb8a3fac67d",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "ffa668befc4e75f816b1c23ebb93bb22e46a416e0243889c92f1b45fb49efd9a",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/regions/legacy.rs": "7ca6ecd950489f406ab21b143a07c27f1f2f7add37732e98a95e2db70b506d23",
+    "crates/switcher-core/src/repair_cli.rs": "959f34138a5bef7bfbf196ae341bb66d27727f3110bfe7549703ccb971ed97e1",
+    "crates/switcher-core/src/user_repairs.rs": "34a7477132223727b160bdbb5b0b664da4e224e84b61a74872043d9cb68ace79",
+    "packaging/macos/local_install.py": "fbe4c2ecbc37d2775bb2fd5c1626d20f3c4e97cebc910bf1d189bd345114ba3e",
+    "packaging/macos/test_local_install.py": "f7bf3b561d2b3ceb3c2882f0eb52c5e0a6975f5db5282a91d31dae668bb9a3f4"
+  },
+  "frozen_during_all_final_commands": true,
+  "accepted_previous_sources_unchanged_exactly": [
+    "crates/switcher-core/src/accounts/legacy.rs",
+    "crates/switcher-core/src/guardian_repair.rs",
+    "crates/switcher-core/src/macos.rs",
+    "crates/switcher-core/src/migration.rs",
+    "crates/switcher-core/src/pinned_routes.rs",
+    "crates/switcher-core/src/proxy_repair.rs",
+    "crates/switcher-core/src/regions/legacy.rs",
+    "crates/switcher-core/src/user_repairs.rs"
+  ],
+  "accepted_previous_source_exceptions": {
+    "crates/switcher-core/src/accounts.rs": "visibility/doc only; complete remainder byte-identical",
+    "packaging/macos/local_install.py": "R06 generation-bound cli contract; R02 seven AST functions frozen",
+    "packaging/macos/test_local_install.py": "R06 synthetic regression additions and explicit historical contract fixtures"
+  },
+  "accounts_visibility_body_receipt": "accounts-visibility-receipt.json",
+  "protected_R02_AST_unchanged": true,
+  "commands": 14,
+  "all_exit_zero": true,
+  "counts": {
+    "cli-f06": 8,
+    "repair-f06": 5,
+    "repair-cli": 9,
+    "installer-f06": 7,
+    "installer-full": 160,
+    "accounts": 59,
+    "migration": 12,
+    "lifecycle": 5,
+    "status-readonly": 1,
+    "invalid-arguments": 1,
+    "cli-nonutf8": 1
+  },
+  "distinct_test_methods": 255,
+  "test_method_count_note": "Targeted repair/f06 and installer/f06 plus non-UTF8 focused test overlap full module/bin filters and are not counted twice.",
+  "CLI_synthetic_stream_receipts": 40,
+  "repair_production_sink_receipts": 10,
+  "repair_evidence_boundary": "Library stdout sink and Result; stderr is absent by API. Modern Err code2 is a main contract mapping; actual binary error sink tested independently.",
+  "preflight_iteration1": "blocked plan assumption: pub(crate) API unavailable; revised PLAN allows visibility/doc only and OK:unavailable.",
+  "behavior_RED": {
+    "CLI": {
+      "methods": 7,
+      "passed": 1,
+      "failed": 6,
+      "exit": 101
+    },
+    "repair": {
+      "methods": 5,
+      "passed": 1,
+      "failed": 4,
+      "exit": 101
+    },
+    "installer": {
+      "methods": 6,
+      "failures": 54,
+      "errors_valid_v2_rejected": 4,
+      "exit": 1
+    },
+    "nonUTF8": {
+      "methods": 1,
+      "failed": 1,
+      "exit": 101
+    }
+  },
+  "independent_review": {
+    "installer": "no blocker/P1/P2",
+    "CLI": "P2 nonUTF8 channel fixed and closed; no remaining blocker/P1/P2",
+    "tests_by_reviewer": "NOT_RUN; root receipts supply validation"
+  },
+  "real_install_or_uninstall": "NOT_RUN",
+  "real_accounts": "NOT_RUN",
+  "real_network_DNS_proxy": "NOT_RUN",
+  "native_UI_or_apps_or_services_or_system_mutation": "NOT_RUN",
+  "actual_installed_shim_to_Rust_end_to_end": "NOT_RUN; real bash shim uses fake executable; Rust CLI handlers use synthetic backends",
+  "long_duration_acceptance": "WAIT",
+  "push_merge": "NOT_RUN",
+  "GPT_review": "DONE / ACCEPTED",
+  "evidence": [
+    "final-receipts.json",
+    "output-matrix.json",
+    "installer-summary.md",
+    "cli-summary.md",
+    "cli-nonutf8-summary.md",
+    "independent-review-installer.md",
+    "independent-review-cli.md",
+    "pre-p2-unified/receipts.json"
+  ],
+  "GPT_review_file": "chatgpt-review-iteration2.txt"
+}

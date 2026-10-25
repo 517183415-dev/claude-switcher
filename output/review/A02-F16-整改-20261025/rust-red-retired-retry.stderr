@@ -1,0 +1,20 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.11s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+
+thread 'publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas' (27810277) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:1272:9:
+assertion failed: matches!(publisher.publish_with(&mut store, &vault, AdChannel::Production,
+    summary.resolved_at + 1), Err(Error::Resolved(actual)) if actual ==
+    summary)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

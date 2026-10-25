@@ -1,0 +1,17 @@
+{
+  "changed": [
+    "cli_install",
+    "cli_restore",
+    "cli_shim",
+    "cli_verify",
+    "plan",
+    "plan_uninstall",
+    "verify",
+    "verify_public"
+  ],
+  "added": [
+    "cli_contract",
+    "installed_cli_plan"
+  ],
+  "removed": []
+}

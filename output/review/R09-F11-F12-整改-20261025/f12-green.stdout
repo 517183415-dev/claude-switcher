@@ -1,0 +1,22 @@
+
+running 17 tests
+test platform::f12_tests::f12_startup_refuses_trust_io_and_unknown_errors ... ok
+test platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts ... ok
+test policy::tests::f12_pending_allows_sessions_and_readonly_diagnostics ... ok
+test policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt ... ok
+test policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects ... ok
+test platform::f12_tests::f12_pending_status_reports_actual_state_or_read_error ... ok
+test platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read ... ok
+test policy::tests::f12_pending_preserves_owner_role_session_and_replay_boundaries ... ok
+test policy::tests::f12_pending_recovery_rejects_expired_or_apply_scoped_grants ... ok
+test policy::tests::f12_pending_read_error_never_bypasses_gate ... ok
+test policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization ... ok
+test policy::tests::f12_pending_requires_fresh_recovery_grant_then_reopens_after_clear ... ok
+test platform::f12_tests::f12_trusted_pending_reader_is_readonly_and_accepts_expired_receipt_plan ... ok
+test platform::f12_tests::f12_present_bad_receipt_never_uses_internal_restore_compatibility ... ok
+test platform::f12_tests::f12_internal_restore_without_receipt_binds_exact_managed_backup ... ok
+test platform::f12_tests::f12_internal_restore_rejects_nonmatching_or_unsafe_backup ... ok
+test platform::f12_tests::f12_trusted_pending_refuses_unsafe_journal_and_receipt_nodes ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 54 filtered out; finished in 0.02s
+

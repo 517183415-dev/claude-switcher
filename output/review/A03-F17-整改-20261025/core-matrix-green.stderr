@@ -1,0 +1,35 @@
+   Compiling switcher-domain v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-domain)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+warning: unused import: `cleanup::CleanupOptions`
+ --> apps/desktop/src-tauri/src/publisher_commands.rs:4:34
+  |
+4 |     publisher::{self, Publisher, cleanup::CleanupOptions, local_store::LocalObjectStore, security::KeychainVault},
+  |                                  ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 1 warning (run `cargo fix --bin "switcher-desktop" -p switcher-desktop --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.55s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+
+thread 'publisher::cleanup_tests::f17_local_store_reads_two_currents_under_one_lock_and_batch_survives_save_publish' (28327788) panicked at apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:423:123:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'publisher::cleanup_tests::f17_reference_union_resolution_release_and_checkpoint_evidence' (28327807) panicked at apps/desktop/src-tauri/src/publisher/cleanup_tests.rs:376:5:
+assertion `left == right` failed
+  left: 4
+ right: 3
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

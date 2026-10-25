@@ -1,0 +1,5 @@
+{
+  "apps/desktop/src-tauri/src/publisher/mod.rs": "90f0f535908eaa229c00383fcbc86c569744612c9c3f42aaa0c7b596ce7189a6",
+  "apps/desktop/src-tauri/src/publisher/protocol.rs": "a1302532121908867d8b7a07ca3c773ca483235b6c428361a81ea316a4f1ada3",
+  "apps/desktop/src-tauri/src/publisher/tests.rs": "98d631952fc227ead9168192c29474a8c88f6c0296ca3622cbbf63ec84de7462"
+}

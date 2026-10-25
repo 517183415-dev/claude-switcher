@@ -1,0 +1,12 @@
+{
+  "file": "crates/switcher-core/src/accounts.rs",
+  "before_sha256": "fcf5977dbd5eb6c854ba76e508252290f722529c5d81cd5a25dd0da490943302",
+  "after_sha256": "4fb21f00d8004ba3989186bce581466fb198f2ba61f8b1a4c1309c6192b756d7",
+  "exact_expected_visibility_and_doc_only": true,
+  "entire_remaining_file_identical": true,
+  "function_body_byte_identical": true,
+  "source_edits": {
+    "visibility": "pub(crate) -> pub",
+    "doc_lines_added": 3
+  }
+}

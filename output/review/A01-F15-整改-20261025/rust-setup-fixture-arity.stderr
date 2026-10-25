@@ -1,0 +1,30 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+error[E0061]: this function takes 2 arguments but 1 argument was supplied
+   --> apps/desktop/src-tauri/src/publisher/tests.rs:824:5
+    |
+824 |     attach_campaign(&mut source);
+    |     ^^^^^^^^^^^^^^^------------- argument #2 of type `u64` is missing
+    |
+note: function defined here
+   --> apps/desktop/src-tauri/src/publisher/tests.rs:195:4
+    |
+195 | fn attach_campaign(publisher: &mut Publisher, now: u64) {
+    |    ^^^^^^^^^^^^^^^                            --------
+help: provide the argument
+    |
+824 |     attach_campaign(&mut source, /* u64 */);
+    |                                +++++++++++
+
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `switcher-desktop` (bin "switcher-desktop" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

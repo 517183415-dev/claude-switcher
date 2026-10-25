@@ -1,0 +1,10 @@
+
+running 5 tests
+test installation_health::tests::guardian_zero_sequence_is_rejected_before_native_io ... ok
+test installation_health::tests::gui_context_requires_current_owner_edition_and_full_install_record ... ok
+test installation_health::tests::successful_pending_challenge_is_reported_again_after_retry_interval ... ok
+test installation_health::tests::guardian_probe_is_single_flight_and_does_not_block_ticks ... ok
+test installation_health::tests::failed_probe_worker_does_not_prevent_a_later_tick ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.01s
+

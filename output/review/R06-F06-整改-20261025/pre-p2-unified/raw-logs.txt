@@ -1,0 +1,499 @@
+
+COMMAND cargo test --offline --locked -p switcher-core --bin claude-switcher f06_ -- --nocapture
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running unittests src/bin/claude-switcher.rs (target/debug/deps/claude_switcher-c506376841127026)
+
+running 7 tests
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-blocked","code":1,"stderr":"","stdout":"FAIL:synthetic gate\n"}
+F06_CLI_RECEIPT {"args":["--legacy-cli","status"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic complete","code":0,"stderr":"","stdout":"OK\n"}
+F06_CLI_RECEIPT {"args":["check"],"calls":["check"],"case":"modern-bare-check","code":0,"stderr":"","stdout":"OK\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-None","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"empty","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-allowed","code":0,"stderr":"","stdout":"OK:unavailable\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-runtime-error","code":1,"stderr":"","stdout":"FAIL:synthetic_check_error\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","status","--legacy-cli"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic gate","code":1,"stderr":"","stdout":"FAIL:synthetic gate\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-Some(A)","code":0,"stderr":"","stdout":"current=A hasA=1 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["status"],"calls":["status"],"case":"modern-status","code":0,"stderr":"","stdout":"{\"accounts\":{\"a_saved\":false,\"b_saved\":false,\"current\":\"A\",\"recovery_pending\":false},\"login\":\"unknown\"}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","--legacy-cli","status"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check"],"calls":["check"],"case":"legacy-check-allowed","code":0,"stderr":"","stdout":"OK:unavailable|synthetic advisory 198.18.0.1 second line\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"legacy-runtime-error","code":1,"stderr":"","stdout":"FAIL:synthetic_status_error\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","status"],"calls":["status"],"case":"legacy-status-Some(B)","code":0,"stderr":"","stdout":"current=B hasA=1 hasB=1\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","switch","C"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic selection","code":1,"stderr":"","stdout":"FAIL:synthetic selection\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check","--json"],"calls":["check"],"case":"legacy-json-override","code":0,"stderr":"","stdout":"{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n"}
+F06_CLI_RECEIPT {"args":["--edition","public","--legacy-cli","switch","B"],"calls":["switch:Public:B"],"case":"synthetic launch","code":1,"stderr":"","stdout":"FAIL:synthetic launch\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"active-unrecorded","code":0,"stderr":"","stdout":"current=none hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","fix","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","checkdetail","--json"],"calls":["check"],"case":"legacy-json-override","code":0,"stderr":"","stdout":"{\"schema_version\":1,\"observed_at\":1,\"completed_at\":2,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","switch","A","--json"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","check","--json","extra"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","--unknown"],"calls":[],"case":"legacy-invalid-args","code":2,"stderr":"invalid_command\n","stdout":""}
+test tests::f06_legacy_switch_outcome_and_exit_codes ... ok
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"recorded-A","code":0,"stderr":"","stdout":"current=A hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["checkdetail"],"calls":["check","save_detail"],"case":"bare-checkdetail","code":0,"stderr":"","stdout":"代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n"}
+test tests::f06_legacy_check_blocking_and_runtime_errors ... ok
+test tests::f06_legacy_status_uses_recorded_owner_not_display_default ... ok
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","checkdetail"],"calls":["check","save_detail"],"case":"bare-checkdetail","code":0,"stderr":"","stdout":"代理内核=fail:缺少检查结果\nTUN网卡=fail:缺少检查结果\n出口IP=fail:缺少检查结果\nIP一致=fail:缺少检查结果\n时区=fail:缺少检查结果\n地区=fail:缺少检查结果\nIPv6=fail:缺少检查结果\nDNS=fail:缺少检查结果\nWebRTC=fail:缺少检查结果\n保镖=fail:缺少检查结果\n规则置顶=fail:缺少检查结果\n客户端语言=fail:缺少检查结果\nASN属性=fail:缺少检查结果\n生态可达性=fail:缺少检查结果\n"}
+test tests::f06_legacy_check_allowed_uses_unavailable_and_display_advisory ... ok
+test tests::f06_global_flag_and_command_errors_have_zero_backend_calls ... ok
+F06_CLI_RECEIPT {"args":["switch","A"],"calls":["switch:Personal:A"],"case":"modern-switch","code":2,"stderr":"","stdout":"{\"outcome\":{\"completed\":false,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n"}
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","status"],"calls":["status"],"case":"recorded-B","code":0,"stderr":"","stdout":"current=B hasA=0 hasB=0\n"}
+F06_CLI_RECEIPT {"args":["switch","A"],"calls":["switch:Personal:A"],"case":"modern-switch","code":0,"stderr":"","stdout":"{\"outcome\":{\"completed\":true,\"message\":\"synthetic outcome\",\"recovery\":null},\"report\":{\"checks\":[],\"completed_at\":2,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":1,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}},\"requested_account\":\"A\"}\n"}
+test tests::f06_public_inspection_is_read_only_for_unknown_and_recorded_accounts ... ok
+F06_CLI_RECEIPT {"args":["--edition","personal","--legacy-cli","set-region","us","--preview"],"calls":["repair:SetRegion { preset: Us, apply: false }:Modern"],"case":"legacy-set-region-stays-modern","code":0,"stderr":"","stdout":"{\"synthetic_repair\":true}\n"}
+F06_CLI_RECEIPT {"args":["check"],"calls":["check"],"case":"modern-runtime-error","code":2,"stderr":"","stdout":"{\"error\":\"synthetic_check_error\",\"recovery\":\"按错误提示检查配置和命令；账号事务中断时保留资料并执行 recover\",\"schema_version\":1}\n"}
+test tests::f06_modern_defaults_json_override_and_set_region_stay_unchanged ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.01s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --lib repair_cli::tests::f06_ -- --nocapture
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 5 tests
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-prepare-error","code":1,"execute_calls":0,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFAIL:synthetic_precondition\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-preview","code":0,"execute_calls":0,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-Fix { apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"legacy-partial-error","code":1,"execute_calls":1,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"legacy-complete","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFIX:complete\nOK\n"}
+test repair_cli::tests::f06_legacy_repair_complete_has_real_events_and_ok ... ok
+test repair_cli::tests::f06_legacy_repair_partial_failure_has_no_complete_or_ok ... ok
+test repair_cli::tests::f06_legacy_repair_preview_only_has_no_apply_or_ok ... ok
+test repair_cli::tests::f06_legacy_repair_prepare_failure_has_no_apply_or_ok ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Legacy","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Legacy","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-partial-error","code":2,"execute_calls":1,"preview_calls":1,"result":{"Err":"synthetic_partial_failure"},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"}
+test repair_cli::tests::f06_modern_repair_and_set_region_keep_json_and_errors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 346 filtered out; finished in 0.01s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --lib repair_cli::
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 9 tests
+test repair_cli::tests::f06_legacy_repair_partial_failure_has_no_complete_or_ok ... ok
+test repair_cli::tests::f06_legacy_repair_prepare_failure_has_no_apply_or_ok ... ok
+test repair_cli::tests::f06_legacy_repair_complete_has_real_events_and_ok ... ok
+test repair_cli::tests::f06_legacy_repair_preview_only_has_no_apply_or_ok ... ok
+test repair_cli::tests::f06_modern_repair_and_set_region_keep_json_and_errors ... ok
+test repair_cli::tests::edition_mismatch_and_unverified_gui_are_rejected ... ok
+test repair_cli::tests::fixed_commands_execute_by_default_with_explicit_preview ... ok
+test repair_cli::tests::serialized_forwarding_keeps_only_fixed_arguments ... ok
+test repair_cli::tests::command_allowlist_rejects_extra_arguments_and_paths ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 342 filtered out; finished in 0.00s
+
+
+COMMAND /opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -k f06 -v
+test_f06_archive_proof_tampering_is_rejected (test_local_install.F02UninstallTests.test_f06_archive_proof_tampering_is_rejected) ... ok
+test_f06_bash_shim_preserves_argv_streams_and_exit (test_local_install.F02UninstallTests.test_f06_bash_shim_preserves_argv_streams_and_exit) ... ok
+test_f06_generation_selects_exactly_one_template (test_local_install.F02UninstallTests.test_f06_generation_selects_exactly_one_template) ... ok
+test_f06_invalid_contract_types_and_values_reject (test_local_install.F02UninstallTests.test_f06_invalid_contract_types_and_values_reject) ... ok
+test_f06_new_plan_persists_contract_two (test_local_install.F02UninstallTests.test_f06_new_plan_persists_contract_two) ... ok
+test_f06_pending_journal_uses_its_recorded_contract (test_local_install.F02UninstallTests.test_f06_pending_journal_uses_its_recorded_contract) ... ok
+test_f06_restore_only_accepts_transaction_contract (test_local_install.F02UninstallTests.test_f06_restore_only_accepts_transaction_contract) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.017s
+
+OK
+F06 shim argv: ["--edition", "public", "--legacy-cli", "check", "--json", "", "space value", "quote'\"", "$(touch NEVER)", "semi;colon", "中文"] exit: 7
+
+COMMAND /opt/homebrew/bin/python3 -B -m unittest discover -s packaging/macos -p test_local_install.py -v
+test_f02_cli_backup_interruption_never_removes_unbacked_files (test_local_install.F02UninstallTests.test_f02_cli_backup_interruption_never_removes_unbacked_files) ... ok
+test_f02_corrupt_completed_backups_pause_recovery_without_overwrite (test_local_install.F02UninstallTests.test_f02_corrupt_completed_backups_pause_recovery_without_overwrite) ... ok
+test_f02_each_file_backup_interruption_leaves_installation_untouched (test_local_install.F02UninstallTests.test_f02_each_file_backup_interruption_leaves_installation_untouched) ... ok
+test_f02_each_journal_progress_save_boundary_recovers_twice (test_local_install.F02UninstallTests.test_f02_each_journal_progress_save_boundary_recovers_twice) ... ok
+test_f02_each_physical_removal_boundary_recovers_twice (test_local_install.F02UninstallTests.test_f02_each_physical_removal_boundary_recovers_twice) ... ok
+test_f02_each_service_bootout_boundary_recovers_exact_registration (test_local_install.F02UninstallTests.test_f02_each_service_bootout_boundary_recovers_exact_registration) ... ok
+test_f02_execution_rejects_loaded_identity_and_destination_drift (test_local_install.F02UninstallTests.test_f02_execution_rejects_loaded_identity_and_destination_drift) ... ok
+test_f02_execution_rejects_same_byte_replacements_after_preview (test_local_install.F02UninstallTests.test_f02_execution_rejects_same_byte_replacements_after_preview) ... ok
+test_f02_external_replacements_after_removal_pause_recovery (test_local_install.F02UninstallTests.test_f02_external_replacements_after_removal_pause_recovery) ... ok
+test_f02_finalization_and_archived_verify_reject_reappearing_footprint (test_local_install.F02UninstallTests.test_f02_finalization_and_archived_verify_reject_reappearing_footprint) ... ok
+test_f02_iter2_genuine_publication_without_final_save_recovers_twice (test_local_install.F02UninstallTests.test_f02_iter2_genuine_publication_without_final_save_recovers_twice) ... ok
+test_f02_iter2_intent_only_external_candidate_is_not_adopted (test_local_install.F02UninstallTests.test_f02_iter2_intent_only_external_candidate_is_not_adopted) ... ok
+test_f02_iter2_old_restoring_journal_without_candidate_refuses_live_file (test_local_install.F02UninstallTests.test_f02_iter2_old_restoring_journal_without_candidate_refuses_live_file) ... ok
+test_f02_iter2_published_candidate_external_change_is_not_adopted (test_local_install.F02UninstallTests.test_f02_iter2_published_candidate_external_change_is_not_adopted) ... ok
+test_f02_iter2_replacement_at_physical_removal_survives (test_local_install.F02UninstallTests.test_f02_iter2_replacement_at_physical_removal_survives) ... ok
+test_f02_iter2_terminal_restore_rechecks_disabled_overrides (test_local_install.F02UninstallTests.test_f02_iter2_terminal_restore_rechecks_disabled_overrides) ... ok
+test_f02_iter2_terminal_restore_rechecks_external_file_change (test_local_install.F02UninstallTests.test_f02_iter2_terminal_restore_rechecks_external_file_change) ... ok
+test_f02_iter2_terminal_restore_rechecks_service_registration (test_local_install.F02UninstallTests.test_f02_iter2_terminal_restore_rechecks_service_registration) ... ok
+test_f02_iter2_terminal_restore_unchanged_finishes_twice (test_local_install.F02UninstallTests.test_f02_iter2_terminal_restore_unchanged_finishes_twice) ... ok
+test_f02_missing_auxiliary_files_and_mixed_registration_are_recorded (test_local_install.F02UninstallTests.test_f02_missing_auxiliary_files_and_mixed_registration_are_recorded) ... ok
+test_f02_missing_install_record_never_guesses_removal_authority (test_local_install.F02UninstallTests.test_f02_missing_install_record_never_guesses_removal_authority) ... ok
+test_f02_old_narrow_uninstall_receipt_cannot_hide_auxiliary_objects (test_local_install.F02UninstallTests.test_f02_old_narrow_uninstall_receipt_cannot_hide_auxiliary_objects) ... ok
+test_f02_ownership_uses_current_generation_instead_of_last_result (test_local_install.F02UninstallTests.test_f02_ownership_uses_current_generation_instead_of_last_result) ... ok
+test_f02_plan_refuses_unknown_component_bytes_without_deletion (test_local_install.F02UninstallTests.test_f02_plan_refuses_unknown_component_bytes_without_deletion) ... ok
+test_f02_plan_refuses_unproven_loaded_program_plist_and_query_errors (test_local_install.F02UninstallTests.test_f02_plan_refuses_unproven_loaded_program_plist_and_query_errors) ... ok
+test_f02_plan_refuses_unsafe_auxiliary_owner_mode_and_link_type (test_local_install.F02UninstallTests.test_f02_plan_refuses_unsafe_auxiliary_owner_mode_and_link_type) ... ok
+test_f02_plan_refuses_wrong_owner_edition_and_generation (test_local_install.F02UninstallTests.test_f02_plan_refuses_wrong_owner_edition_and_generation) ... ok
+test_f02_real_plan_install_uninstall_removes_all_files_and_services (test_local_install.F02UninstallTests.test_f02_real_plan_install_uninstall_removes_all_files_and_services) ... ok
+test_f02_review_corruption_after_backup_stops_before_first_side_effect (test_local_install.F02UninstallTests.test_f02_review_corruption_after_backup_stops_before_first_side_effect) ... ok
+test_f02_review_durable_restored_external_deletion_is_rejected (test_local_install.F02UninstallTests.test_f02_review_durable_restored_external_deletion_is_rejected) ... ok
+test_f02_review_durable_restored_gid_change_stops_without_chown (test_local_install.F02UninstallTests.test_f02_review_durable_restored_gid_change_stops_without_chown) ... ok
+test_f02_review_durable_restored_inode_replacement_stops_without_chown (test_local_install.F02UninstallTests.test_f02_review_durable_restored_inode_replacement_stops_without_chown) ... ok
+test_f02_review_fchown_to_final_snapshot_replacement_is_rejected (test_local_install.F02UninstallTests.test_f02_review_fchown_to_final_snapshot_replacement_is_rejected) ... ok
+test_f02_review_missing_unregistered_root_script_can_uninstall (test_local_install.F02UninstallTests.test_f02_review_missing_unregistered_root_script_can_uninstall) ... ok
+test_f02_review_partial_root_restore_copy_can_resume (test_local_install.F02UninstallTests.test_f02_review_partial_root_restore_copy_can_resume) ... ok
+test_f02_review_recovery_check_to_open_replacement_is_rejected (test_local_install.F02UninstallTests.test_f02_review_recovery_check_to_open_replacement_is_rejected) ... ok
+test_f02_review_registered_services_with_missing_required_files_refuse_preview (test_local_install.F02UninstallTests.test_f02_review_registered_services_with_missing_required_files_refuse_preview) ... ok
+test_f02_review_two_megabyte_binaries_install_and_uninstall (test_local_install.F02UninstallTests.test_f02_review_two_megabyte_binaries_install_and_uninstall) ... ok
+test_f02_rollback_restores_exact_mixed_registration_and_disabled_overrides (test_local_install.F02UninstallTests.test_f02_rollback_restores_exact_mixed_registration_and_disabled_overrides) ... ok
+test_f02_same_byte_external_replacements_after_removal_pause_recovery (test_local_install.F02UninstallTests.test_f02_same_byte_external_replacements_after_removal_pause_recovery) ... ok
+test_f02_terminal_cleanup_retry_rechecks_reappearing_files_and_services (test_local_install.F02UninstallTests.test_f02_terminal_cleanup_retry_rechecks_reappearing_files_and_services) ... ok
+test_f02_terminal_result_and_cleanup_boundaries_are_idempotent (test_local_install.F02UninstallTests.test_f02_terminal_result_and_cleanup_boundaries_are_idempotent) ... ok
+test_f02_uninstall_preserves_account_config_repair_and_historical_bytes (test_local_install.F02UninstallTests.test_f02_uninstall_preserves_account_config_repair_and_historical_bytes) ... ok
+test_f03_current_config_mismatch_is_not_hidden_by_registration (test_local_install.F02UninstallTests.test_f03_current_config_mismatch_is_not_hidden_by_registration) ... ok
+test_f03_generation_authority_is_separate_from_current_config (test_local_install.F02UninstallTests.test_f03_generation_authority_is_separate_from_current_config) ... ok
+test_f03_generation_baseline_target_and_evidence_remain_required (test_local_install.F02UninstallTests.test_f03_generation_baseline_target_and_evidence_remain_required) ... ok
+test_f03_generation_comparison_cannot_authorize_different_snapshot_bytes (test_local_install.F02UninstallTests.test_f03_generation_comparison_cannot_authorize_different_snapshot_bytes) ... ok
+test_f03_historical_unquoted_target_passes_public_verification (test_local_install.F02UninstallTests.test_f03_historical_unquoted_target_passes_public_verification) ... ok
+test_f03_preview_snapshot_remains_exact_after_region_change (test_local_install.F02UninstallTests.test_f03_preview_snapshot_remains_exact_after_region_change) ... ok
+test_f03_published_prepared_target_conflict_is_not_adopted (test_local_install.F02UninstallTests.test_f03_published_prepared_target_conflict_is_not_adopted) ... ok
+test_f03_quoted_region_change_keeps_generation_uninstall_authority (test_local_install.F02UninstallTests.test_f03_quoted_region_change_keeps_generation_uninstall_authority) ... ok
+test_f03_region_uninstall_rollback_restores_new_target_not_generation (test_local_install.F02UninstallTests.test_f03_region_uninstall_rollback_restores_new_target_not_generation) ... ok
+test_f03_rust_bridge_handles_historical_input_and_same_target_noop (test_local_install.F02UninstallTests.test_f03_rust_bridge_handles_historical_input_and_same_target_noop) ... ok
+test_f03_rust_watchdog_update_passes_real_public_verification (test_local_install.F02UninstallTests.test_f03_rust_watchdog_update_passes_real_public_verification) ... ok
+test_f03_target_exception_does_not_allow_other_component_bytes (test_local_install.F02UninstallTests.test_f03_target_exception_does_not_allow_other_component_bytes) ... ok
+test_f03_target_exception_preserves_filesystem_restrictions (test_local_install.F02UninstallTests.test_f03_target_exception_preserves_filesystem_restrictions) ... ok
+test_f03_target_grammar_accepts_only_complete_valid_literals (test_local_install.F02UninstallTests.test_f03_target_grammar_accepts_only_complete_valid_literals) ... ok
+test_f03_target_grammar_rejects_malformed_assignments (test_local_install.F02UninstallTests.test_f03_target_grammar_rejects_malformed_assignments) ... ok
+test_f03_transaction_objects_reject_valid_target_conflicts (test_local_install.F02UninstallTests.test_f03_transaction_objects_reject_valid_target_conflicts) ... ok
+test_f03_unpublished_candidate_is_preserved_without_being_adopted (test_local_install.F02UninstallTests.test_f03_unpublished_candidate_is_preserved_without_being_adopted) ... ok
+test_f06_archive_proof_tampering_is_rejected (test_local_install.F02UninstallTests.test_f06_archive_proof_tampering_is_rejected) ... ok
+test_f06_bash_shim_preserves_argv_streams_and_exit (test_local_install.F02UninstallTests.test_f06_bash_shim_preserves_argv_streams_and_exit) ... ok
+test_f06_generation_selects_exactly_one_template (test_local_install.F02UninstallTests.test_f06_generation_selects_exactly_one_template) ... ok
+test_f06_invalid_contract_types_and_values_reject (test_local_install.F02UninstallTests.test_f06_invalid_contract_types_and_values_reject) ... ok
+test_f06_new_plan_persists_contract_two (test_local_install.F02UninstallTests.test_f06_new_plan_persists_contract_two) ... ok
+test_f06_pending_journal_uses_its_recorded_contract (test_local_install.F02UninstallTests.test_f06_pending_journal_uses_its_recorded_contract) ... ok
+test_f06_restore_only_accepts_transaction_contract (test_local_install.F02UninstallTests.test_f06_restore_only_accepts_transaction_contract) ... ok
+test_admin_owner_handoff_and_edition_change_commits (test_local_install.LocalInstallTests.test_admin_owner_handoff_and_edition_change_commits) ... ok
+test_admin_owner_handoff_same_edition_commits_without_old_data_changes (test_local_install.LocalInstallTests.test_admin_owner_handoff_same_edition_commits_without_old_data_changes) ... ok
+test_app_publish_refuses_competing_entry_without_following_it (test_local_install.LocalInstallTests.test_app_publish_refuses_competing_entry_without_following_it) ... ok
+test_approved_previous_components_cannot_change_before_staging (test_local_install.LocalInstallTests.test_approved_previous_components_cannot_change_before_staging) ... ok
+test_authenticated_receipt_commits_and_retry_is_idempotent (test_local_install.LocalInstallTests.test_authenticated_receipt_commits_and_retry_is_idempotent) ... ok
+test_automatic_quit_targets_only_owner_and_waits (test_local_install.LocalInstallTests.test_automatic_quit_targets_only_owner_and_waits) ... ok
+test_backup_drift_stops_before_installed_mutation (test_local_install.LocalInstallTests.test_backup_drift_stops_before_installed_mutation) ... ok
+test_bad_pending_service_preserves_pending_without_any_chown (test_local_install.LocalInstallTests.test_bad_pending_service_preserves_pending_without_any_chown) ... ok
+test_bodyguard_fixed_template_and_fresh_registration_failure_rollback (test_local_install.LocalInstallTests.test_bodyguard_fixed_template_and_fresh_registration_failure_rollback) ... ok
+test_bodyguard_payload_matches_reviewed_legacy_template (test_local_install.LocalInstallTests.test_bodyguard_payload_matches_reviewed_legacy_template) ... ok
+test_bodyguard_rejects_mode_injection_and_user_owned_script (test_local_install.LocalInstallTests.test_bodyguard_rejects_mode_injection_and_user_owned_script) ... ok
+test_bodyguard_restores_old_bytes_and_registration_after_failure (test_local_install.LocalInstallTests.test_bodyguard_restores_old_bytes_and_registration_after_failure) ... ok
+test_challenge_exact_mode_and_complete_record (test_local_install.LocalInstallTests.test_challenge_exact_mode_and_complete_record) ... ok
+test_clash_detection_reads_first_select_group_without_evaluating_dollar (test_local_install.LocalInstallTests.test_clash_detection_reads_first_select_group_without_evaluating_dollar) ... ok
+test_cleanup_crash_can_finish_without_receipt (test_local_install.LocalInstallTests.test_cleanup_crash_can_finish_without_receipt) ... ok
+test_cli_change_after_preview_never_overwrites_user_file (test_local_install.LocalInstallTests.test_cli_change_after_preview_never_overwrites_user_file) ... ok
+test_cli_entry_preserves_all_configuration_and_rolls_back (test_local_install.LocalInstallTests.test_cli_entry_preserves_all_configuration_and_rolls_back) ... ok
+test_cli_shim_quotes_dollars_and_quotes_and_forwards_arguments (test_local_install.LocalInstallTests.test_cli_shim_quotes_dollars_and_quotes_and_forwards_arguments) ... ok
+test_codesign_adhoc_runtime_flags_and_candidate_hashes (test_local_install.LocalInstallTests.test_codesign_adhoc_runtime_flags_and_candidate_hashes) ... ok
+test_commit_rechecks_changed_installed_component (test_local_install.LocalInstallTests.test_commit_rechecks_changed_installed_component) ... ok
+test_copy_rejects_link_without_reading_target (test_local_install.LocalInstallTests.test_copy_rejects_link_without_reading_target) ... ok
+test_copy_rejects_symlink_ancestor (test_local_install.LocalInstallTests.test_copy_rejects_symlink_ancestor) ... ok
+test_digest_mismatch_never_stages (test_local_install.LocalInstallTests.test_digest_mismatch_never_stages) ... ok
+test_discovery_curl_inherits_only_proxy_environment (test_local_install.LocalInstallTests.test_discovery_curl_inherits_only_proxy_environment) ... ok
+test_dual_lifecycle_locks_are_ordered_and_root_lock_taken_once (test_local_install.LocalInstallTests.test_dual_lifecycle_locks_are_ordered_and_root_lock_taken_once) ... ok
+test_edition_transition_failure_restores_single_old_app_and_cli (test_local_install.LocalInstallTests.test_edition_transition_failure_restores_single_old_app_and_cli) ... ok
+test_edition_transition_rejects_old_identity_without_mutation (test_local_install.LocalInstallTests.test_edition_transition_rejects_old_identity_without_mutation) ... ok
+test_exhausted_geo_fallback_fails_production_plan_without_writes (test_local_install.LocalInstallTests.test_exhausted_geo_fallback_fails_production_plan_without_writes) ... ok
+test_existing_config_plan_never_probes_network_and_keeps_group_literal (test_local_install.LocalInstallTests.test_existing_config_plan_never_probes_network_and_keeps_group_literal) ... ok
+test_existing_install_is_replaced_by_default (test_local_install.LocalInstallTests.test_existing_install_is_replaced_by_default) ... ok
+test_first_install_is_pending_and_reversible (test_local_install.LocalInstallTests.test_first_install_is_pending_and_reversible) ... ok
+test_fixed_service_fd_normalizes_admin_inheritance_without_real_chown (test_local_install.LocalInstallTests.test_fixed_service_fd_normalizes_admin_inheritance_without_real_chown) ... ok
+test_fresh_cli_entry_is_removed_on_transaction_rollback (test_local_install.LocalInstallTests.test_fresh_cli_entry_is_removed_on_transaction_rollback) ... ok
+test_fresh_plan_rejects_cn_missing_data_and_mismatch_without_writes (test_local_install.LocalInstallTests.test_fresh_plan_rejects_cn_missing_data_and_mismatch_without_writes) ... ok
+test_fresh_watchdog_is_fixed_root_template_and_recoverable (test_local_install.LocalInstallTests.test_fresh_watchdog_is_fixed_root_template_and_recoverable) ... ok
+test_geo_fallback_handles_429_bad_json_missing_fields_and_provider_shapes (test_local_install.LocalInstallTests.test_geo_fallback_handles_429_bad_json_missing_fields_and_provider_shapes) ... ok
+test_health_timeout_keeps_recoverable_journal (test_local_install.LocalInstallTests.test_health_timeout_keeps_recoverable_journal) ... ok
+test_indentless_proxy_groups_stop_only_at_next_top_level_mapping (test_local_install.LocalInstallTests.test_indentless_proxy_groups_stop_only_at_next_top_level_mapping) ... ok
+test_install_commits_without_gui_health_receipt (test_local_install.LocalInstallTests.test_install_commits_without_gui_health_receipt) ... ok
+test_install_rejected_discovery_never_locks_or_stops_apps (test_local_install.LocalInstallTests.test_install_rejected_discovery_never_locks_or_stops_apps) ... ok
+test_install_without_digest_generates_internal_plan_digest (test_local_install.LocalInstallTests.test_install_without_digest_generates_internal_plan_digest) ... ok
+test_interrupted_backup_recover_twice_never_removes_components (test_local_install.LocalInstallTests.test_interrupted_backup_recover_twice_never_removes_components) ... ok
+test_legacy_crash_after_removal_restores_plist_and_schedule (test_local_install.LocalInstallTests.test_legacy_crash_after_removal_restores_plist_and_schedule) ... ok
+test_legacy_existing_restore_corrects_interrupted_metadata (test_local_install.LocalInstallTests.test_legacy_existing_restore_corrects_interrupted_metadata) ... ok
+test_legacy_migration_and_recovery_restore_only_original_registration (test_local_install.LocalInstallTests.test_legacy_migration_and_recovery_restore_only_original_registration) ... ok
+test_legacy_nondefault_group_restored_exactly (test_local_install.LocalInstallTests.test_legacy_nondefault_group_restored_exactly) ... ok
+test_legacy_unknown_program_rejected_before_mutation (test_local_install.LocalInstallTests.test_legacy_unknown_program_rejected_before_mutation) ... ok
+test_legacy_unregistered_agent_stays_unregistered_after_recovery (test_local_install.LocalInstallTests.test_legacy_unregistered_agent_stays_unregistered_after_recovery) ... ok
+test_legacy_user_symlink_is_never_followed (test_local_install.LocalInstallTests.test_legacy_user_symlink_is_never_followed) ... ok
+test_main_replace_accepts_actual_public_plan_digest (test_local_install.LocalInstallTests.test_main_replace_accepts_actual_public_plan_digest) ... ok
+test_main_verify_is_unprivileged_and_never_stops_applications (test_local_install.LocalInstallTests.test_main_verify_is_unprivileged_and_never_stops_applications) ... ok
+test_metadata_reader_rejects_user_owned_receipt (test_local_install.LocalInstallTests.test_metadata_reader_rejects_user_owned_receipt) ... ok
+test_missing_fixed_system_directory_is_created (test_local_install.LocalInstallTests.test_missing_fixed_system_directory_is_created) ... ok
+test_owner_handoff_failure_restores_record_registration_and_new_cli (test_local_install.LocalInstallTests.test_owner_handoff_failure_restores_record_registration_and_new_cli) ... ok
+test_owner_handoff_partial_new_registration_failure_recovers (test_local_install.LocalInstallTests.test_owner_handoff_partial_new_registration_failure_recovers) ... ok
+test_owner_handoff_rollback_restores_existing_new_owner_cli (test_local_install.LocalInstallTests.test_owner_handoff_rollback_restores_existing_new_owner_cli) ... ok
+test_owner_record_race_rejects_before_writes (test_local_install.LocalInstallTests.test_owner_record_race_rejects_before_writes) ... ok
+test_partial_copy_failure_recovers_first_install (test_local_install.LocalInstallTests.test_partial_copy_failure_recovers_first_install) ... ok
+test_payload_changed_after_preview (test_local_install.LocalInstallTests.test_payload_changed_after_preview) ... ok
+test_pending_blocks_new_generation (test_local_install.LocalInstallTests.test_pending_blocks_new_generation) ... ok
+test_pending_health_normalizes_service_group_before_strict_verify (test_local_install.LocalInstallTests.test_pending_health_normalizes_service_group_before_strict_verify) ... ok
+test_pending_resume_repairs_only_gid_without_replacing_app_or_backups (test_local_install.LocalInstallTests.test_pending_resume_repairs_only_gid_without_replacing_app_or_backups) ... ok
+test_production_fresh_plan_to_commit_uses_one_detected_configuration (test_local_install.LocalInstallTests.test_production_fresh_plan_to_commit_uses_one_detected_configuration) ... ok
+test_proxy_detection_falls_back_to_old_auto_mode (test_local_install.LocalInstallTests.test_proxy_detection_falls_back_to_old_auto_mode) ... ok
+test_proxy_mode_reads_config_then_safe_shim_literal (test_local_install.LocalInstallTests.test_proxy_mode_reads_config_then_safe_shim_literal) ... ok
+test_read_timezone_uses_json_then_literal_legacy_without_execution (test_local_install.LocalInstallTests.test_read_timezone_uses_json_then_literal_legacy_without_execution) ... ok
+test_receipt_rejects_cross_boot_and_expiry (test_local_install.LocalInstallTests.test_receipt_rejects_cross_boot_and_expiry) ... ok
+test_receipt_rejects_missing_role_sequence_and_stale_generation (test_local_install.LocalInstallTests.test_receipt_rejects_missing_role_sequence_and_stale_generation) ... ok
+test_repair_records_do_not_gate_install_replace_or_uninstall (test_local_install.LocalInstallTests.test_repair_records_do_not_gate_install_replace_or_uninstall) ... ok
+test_replace_restores_every_component_after_each_write_failure (test_local_install.LocalInstallTests.test_replace_restores_every_component_after_each_write_failure) ... ok
+test_restore_explicitly_normalizes_copied_service_target_group (test_local_install.LocalInstallTests.test_restore_explicitly_normalizes_copied_service_target_group) ... ok
+test_root_service_install_explicitly_materializes_wheel (test_local_install.LocalInstallTests.test_root_service_install_explicitly_materializes_wheel) ... ok
+test_same_owner_edition_install_replaces_old_app_and_cli (test_local_install.LocalInstallTests.test_same_owner_edition_install_replaces_old_app_and_cli) ... ok
+test_same_owner_explicit_replace_also_changes_edition (test_local_install.LocalInstallTests.test_same_owner_explicit_replace_also_changes_edition) ... ok
+test_standard_applications_permissions_only_exception (test_local_install.LocalInstallTests.test_standard_applications_permissions_only_exception) ... ok
+test_symlink_and_hardlink_artifacts_rejected (test_local_install.LocalInstallTests.test_symlink_and_hardlink_artifacts_rejected) ... ok
+test_system_original_is_preserved_without_parsing (test_local_install.LocalInstallTests.test_system_original_is_preserved_without_parsing) ... ok
+test_templates_changed_after_preview (test_local_install.LocalInstallTests.test_templates_changed_after_preview) ... ok
+test_uninstall_finalizes_without_forever_pending (test_local_install.LocalInstallTests.test_uninstall_finalizes_without_forever_pending) ... ok
+test_uninstall_is_reversible_and_retains_record_in_backup (test_local_install.LocalInstallTests.test_uninstall_is_reversible_and_retains_record_in_backup) ... ok
+test_uninstall_other_owner_is_still_rejected (test_local_install.LocalInstallTests.test_uninstall_other_owner_is_still_rejected) ... ok
+test_v2_configuration_plan_has_priority_without_external_probe (test_local_install.LocalInstallTests.test_v2_configuration_plan_has_priority_without_external_probe) ... ok
+test_watchdog_registration_failure_restores_previous_script (test_local_install.LocalInstallTests.test_watchdog_registration_failure_restores_previous_script) ... ok
+test_watchdog_rejects_injection_and_user_owned_existing_script (test_local_install.LocalInstallTests.test_watchdog_rejects_injection_and_user_owned_existing_script) ... ok
+test_world_writable_artifact_rejected (test_local_install.LocalInstallTests.test_world_writable_artifact_rejected) ... ok
+test_kernel_groups_over_limit_rejected_without_truncation (test_local_install.OwnerCredentialsTests.test_kernel_groups_over_limit_rejected_without_truncation) ... ok
+test_kernel_groups_uses_raw_libc_symbol_and_preserves_order (test_local_install.OwnerCredentialsTests.test_kernel_groups_uses_raw_libc_symbol_and_preserves_order) ... ok
+test_owner_group_restore_attempted_when_gid_restore_fails (test_local_install.OwnerCredentialsTests.test_owner_group_restore_attempted_when_gid_restore_fails) ... ok
+test_owner_restore_failure_is_not_suppressed (test_local_install.OwnerCredentialsTests.test_owner_restore_failure_is_not_suppressed) ... ok
+test_owner_restores_after_body_exception (test_local_install.OwnerCredentialsTests.test_owner_restores_after_body_exception) ... ok
+test_owner_restores_after_each_drop_failure (test_local_install.OwnerCredentialsTests.test_owner_restores_after_each_drop_failure) ... ok
+test_owner_restores_kernel_groups_not_oversized_directory_groups (test_local_install.OwnerCredentialsTests.test_owner_restores_kernel_groups_not_oversized_directory_groups) ... ok
+test_owner_snapshot_failure_does_not_mutate_credentials (test_local_install.OwnerCredentialsTests.test_owner_snapshot_failure_does_not_mutate_credentials) ... ok
+
+----------------------------------------------------------------------
+Ran 160 tests in 37.763s
+
+OK
+F02 progress-save physical boundaries: 74
+F06 shim argv: ["--edition", "public", "--legacy-cli", "check", "--json", "", "space value", "quote'\"", "$(touch NEVER)", "semi;colon", "中文"] exit: 7
+
+COMMAND cargo test --offline --locked -p switcher-core --lib accounts::
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 59 tests
+test accounts::legacy::tests::f01_empty_directory_fingerprint_matches_disk ... ok
+test accounts::legacy::tests::changed_stage_is_preserved_instead_of_overwriting_account_data ... ok
+test accounts::legacy::tests::cleanup_resumes_when_child_removed_before_stage_directory ... ok
+test accounts::legacy::tests::f01_empty_outgoing_copy_cannot_replace_saved_archive ... ok
+test accounts::legacy::tests::f01_preserve_flag_cannot_hide_nonempty_outgoing ... ok
+test accounts::legacy::tests::f01_sigkill_child_fixture ... ok
+test accounts::legacy::tests::f01_mismatched_outgoing_journal_stops_before_recovery_mutation ... ok
+test accounts::legacy::tests::ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes ... ok
+test accounts::legacy::tests::f01_old_empty_journals_without_at_risk_a_archive_still_recover ... ok
+test accounts::legacy::tests::f01_preserved_archive_rejects_changed_outgoing_staging ... ok
+test accounts::legacy::tests::f01_source_becoming_empty_before_snapshot_preserves_archive ... ok
+test accounts::legacy::tests::f01_source_restored_after_empty_copy_is_rejected ... ok
+test accounts::legacy::tests::f01_recorded_empty_active_keeps_legacy_archiving ... ok
+test accounts::legacy::tests::f01_committed_cleanup_recovers_after_child_removal ... ok
+test accounts::legacy::tests::legacy_process_crash_child ... ok
+test accounts::legacy::tests::journal_write_error_after_rename_preserves_recoverable_stages ... ok
+test accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity ... ok
+test accounts::legacy::tests::pending_journal_without_in_place_field_retains_exchange_recovery ... ok
+test accounts::legacy::tests::unsupported_fifo_times_out_in_native_ditto_without_touching_source ... ok
+test accounts::legacy::tests::f01_old_empty_first_a_in_place_journal_stops_before_recovery_writes ... ok
+test accounts::tests::account_process_crash_child_fixture ... ok
+test accounts::legacy::tests::writable_acl_is_copied_without_becoming_a_business_gate ... ok
+test accounts::legacy::tests::in_place_adoption_recovers_every_durable_boundary_without_replacing_live ... ok
+test accounts::legacy::tests::f01_preexisting_empty_outgoing_journal_is_preserved_for_review ... ok
+test accounts::legacy::tests::pre_journal_failures_remove_stages_and_preserve_accounts ... ok
+test accounts::tests::copy_provenance_addition_is_allowed_only_for_a_new_verified_copy ... ok
+test accounts::tests::copy_provenance_direction_and_existing_values_remain_strict ... ok
+test accounts::legacy::tests::f01_unowned_empty_prejournal_errors_remove_only_attempt_stages ... ok
+test accounts::tests::copy_proof_rejects_other_xattrs_acl_content_and_mtime_changes ... ok
+test accounts::tests::copy_rejects_destination_child_replaced_after_proof ... ok
+test accounts::tests::copy_rejects_destination_mtime_changed_after_proof ... ok
+test accounts::legacy::tests::destination_local_stages_resume_every_persisted_boundary_without_receipts ... ok
+test accounts::tests::copy_rejects_destination_content_changed_after_proof ... ok
+test accounts::tests::graceful_quit_requests_once_waits_for_stop_and_bounds_retries ... ok
+test accounts::tests::derived_current_is_repaired_from_authoritative_state ... ok
+test accounts::tests::legacy_0755_archive_container_opens_without_changing_permissions ... ok
+test accounts::tests::existing_a_missing_state_requires_matching_explicit_preview ... ok
+test accounts::tests::journal_staged_hash_legacy_fallback_and_format_validation ... ok
+test accounts::tests::legacy_archive_compatibility_keeps_v2_directories_private ... ok
+test accounts::tests::legacy_archive_contents_and_metadata_survive_open ... ok
+test accounts::tests::legacy_archive_container_modes_and_acl_are_accepted_but_root_links_are_not ... ok
+test accounts::tests::malformed_journal_and_replaced_directory_preserve_every_directory ... ok
+test accounts::tests::missing_archive_container_is_created_private ... ok
+test accounts::tests::legacy_selection_recovers_interrupted_exchange_without_backup_permit ... ok
+test accounts::tests::copy_provenance_round_trip_and_separate_artifact_tampering ... ok
+test accounts::tests::readonly_inspection_uses_legacy_current_without_creating_v2 ... ok
+test accounts::tests::pending_repairs_survive_lock_release_and_block_all_account_mutations ... ok
+test accounts::tests::missing_outgoing_archive_is_recreated_and_recovered_after_rename ... ok
+test accounts::tests::synthetic_process_records_preserve_owner_and_path_boundaries ... ok
+test accounts::tests::synthetic_process_records_block_account_initialization_without_running_apps ... ok
+test accounts::legacy::tests::sigkill_recovers_destination_local_transactions_at_every_boundary ... ok
+test accounts::tests::unsafe_links_owners_space_and_lock_conflicts_fail_before_exchange ... ok
+test accounts::tests::readonly_acl_is_preserved_and_write_grant_acl_is_rejected ... ok
+test accounts::tests::synthetic_exchange_round_trip_keeps_latest_data_modes_and_xattrs ... ok
+test accounts::legacy::tests::f01_unowned_empty_active_recovers_every_durable_boundary ... ok
+test accounts::legacy::tests::f01_sigkill_preserves_archives_at_every_durable_boundary ... ok
+test accounts::tests::all_durable_and_physical_interruption_points_recover_by_identity ... ok
+test accounts::tests::copy_provenance_exchange_recovers_all_existing_checkpoints ... ok
+test accounts::tests::killed_process_recovers_every_durable_and_physical_checkpoint ... ok
+
+test result: ok. 59 passed; 0 failed; 0 ignored; 0 measured; 292 filtered out; finished in 15.60s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --lib migration::
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.21s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 12 tests
+test migration::tests::failed_quit_never_creates_store_or_changes_active_data ... ok
+test migration::tests::first_a_archives_without_requiring_existing_v2_or_backup ... ok
+test migration::tests::missing_current_uses_existing_v2_account_selection ... ok
+test migration::tests::selecting_current_account_does_not_quit_or_rewrite_live_data ... ok
+test migration::tests::previous_in_place_journal_recovers_copy_without_version_keychain_or_backup ... ok
+test migration::tests::old_current_wins_and_replaced_live_directory_is_rebound_without_migration ... ok
+test migration::tests::first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data ... ok
+test migration::tests::f01_invalid_marker_uses_recorded_v2_for_same_account_shortcut ... ok
+test migration::tests::f01_unowned_empty_active_preserves_saved_accounts ... ok
+test migration::tests::f01_unowned_missing_active_preserves_saved_accounts ... ok
+test migration::tests::f01_unowned_active_with_only_saved_b_keeps_b_archive ... ok
+test migration::tests::f01_invalid_current_marker_does_not_skip_saved_account_loading ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 339 filtered out; finished in 4.50s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --lib lifecycle::
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 5 tests
+test lifecycle::tests::first_b_checks_before_selection_and_again_before_open ... ok
+test lifecycle::tests::open_failure_is_reported_without_claiming_launch ... ok
+test lifecycle::tests::selected_account_change_during_check_prevents_wrong_account_launch ... ok
+test lifecycle::tests::ordinary_launch_needs_only_checks_and_system_open ... ok
+test lifecycle::tests::preflight_failure_does_not_quit_switch_or_open ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 346 filtered out; finished in 0.00s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --test checks_cli status_is_readonly_reports_login_unknown_and_rejects_arguments -- --exact
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+     Running tests/checks_cli.rs (target/debug/deps/checks_cli-b0302e329149b9c7)
+
+running 1 test
+test status_is_readonly_reports_login_unknown_and_rejects_arguments ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.41s
+
+
+COMMAND cargo test --offline --locked -p switcher-core --test checks_cli invalid_arguments_and_config_do_not_echo_paths_or_secrets -- --exact
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/checks_cli.rs (target/debug/deps/checks_cli-b0302e329149b9c7)
+
+running 1 test
+test invalid_arguments_and_config_do_not_echo_paths_or_secrets ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.20s
+
+
+COMMAND cargo clippy --offline --locked -p switcher-core --all-targets -- -D warnings
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Checking switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.55s
+
+COMMAND rustfmt --check --edition 2024 crates/switcher-core/src/bin/claude-switcher.rs crates/switcher-core/src/repair_cli.rs crates/switcher-core/src/accounts.rs
+
+COMMAND git diff --check

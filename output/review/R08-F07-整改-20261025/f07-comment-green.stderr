@@ -1,0 +1,29 @@
+test_f07_existing_configuration_never_probes_and_rejects_conflicts (test_local_install.LocalInstallTests.test_f07_existing_configuration_never_probes_and_rejects_conflicts) ... ok
+test_f07_group_collection_keeps_nested_proxy_list_inside_group (test_local_install.LocalInstallTests.test_f07_group_collection_keeps_nested_proxy_list_inside_group) ... ok
+test_f07_group_selection_matrix (test_local_install.LocalInstallTests.test_f07_group_selection_matrix) ... ok
+test_f07_header_comment_preserves_candidate_validation (test_local_install.LocalInstallTests.test_f07_header_comment_preserves_candidate_validation) ... ok
+test_f07_invalid_cli_mode_fails_before_owner_lookup_or_mutation (test_local_install.LocalInstallTests.test_f07_invalid_cli_mode_fails_before_owner_lookup_or_mutation) ... ok
+test_f07_main_commit_does_not_open_gui (test_local_install.LocalInstallTests.test_f07_main_commit_does_not_open_gui) ... ok
+test_f07_main_finalize_uses_committed_public_edition (test_local_install.LocalInstallTests.test_f07_main_finalize_uses_committed_public_edition) ... ok
+test_f07_main_noncommitted_or_recovery_never_opens_gui (test_local_install.LocalInstallTests.test_f07_main_noncommitted_or_recovery_never_opens_gui) ... F07 no GUI receipt recover restored
+F07 no GUI receipt recover committed
+F07 no GUI receipt uninstall uninstalled
+F07 no GUI receipt finalize uninstalled
+F07 no GUI receipt finalize restored
+F07 no GUI receipt finalize backup_aborted
+ok
+test_f07_main_opens_normal_gui_after_component_commit_and_unlock (test_local_install.LocalInstallTests.test_f07_main_opens_normal_gui_after_component_commit_and_unlock) ... ok
+test_f07_main_plan_and_install_bind_selection_digest (test_local_install.LocalInstallTests.test_f07_main_plan_and_install_bind_selection_digest) ... ok
+test_f07_main_replace_opens_normal_gui_once (test_local_install.LocalInstallTests.test_f07_main_replace_opens_normal_gui_once) ... ok
+test_f07_main_spawn_failure_preserves_committed_archive (test_local_install.LocalInstallTests.test_f07_main_spawn_failure_preserves_committed_archive) ... ok
+test_f07_multiple_clients_require_explicit_mode (test_local_install.LocalInstallTests.test_f07_multiple_clients_require_explicit_mode) ... ok
+test_f07_multiple_groups_require_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_multiple_groups_require_selection_before_mutation) ... ok
+test_f07_type_comment_requires_choice_before_mutation (test_local_install.LocalInstallTests.test_f07_type_comment_requires_choice_before_mutation) ... ok
+test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) ... ok
+test_f07_unknown_client_explicit_mode_and_controls (test_local_install.LocalInstallTests.test_f07_unknown_client_explicit_mode_and_controls) ... ok
+test_f07_unknown_client_requires_selection_before_mutation (test_local_install.LocalInstallTests.test_f07_unknown_client_requires_selection_before_mutation) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.477s
+
+OK

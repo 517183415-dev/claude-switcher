@@ -185,9 +185,10 @@ impl MigrationCoordinator {
     fn select(&self, target: AccountId) -> Result<()> {
         // The legacy command simply opens Claude when this account is already selected.
         if self.root.join("current").exists() {
-            let status = AccountStore::inspect(&self.root, &self.active, self.owner)
-                .map_err(|_| MigrationError::Operation("账号状态无法读取"))?;
-            if status.current == Some(target) && !status.recovery_pending {
+            let (status, recorded) =
+                AccountStore::inspect_with_recorded_account(&self.root, &self.active, self.owner)
+                    .map_err(|_| MigrationError::Operation("账号状态无法读取"))?;
+            if recorded == Some(target) && !status.recovery_pending {
                 return Ok(());
             }
         }
@@ -383,6 +384,123 @@ mod tests {
         assert_eq!(fixture.calls.load(Ordering::SeqCst), 3);
         assert!(!c.root.join("v2/migration").exists());
         assert!(c.create_verified_backup().is_err());
+    }
+
+    fn assert_unowned_active_preserves_saved_accounts(
+        missing_active: bool,
+        marker: Option<&[u8]>,
+        saved_a: bool,
+    ) {
+        use std::os::unix::fs::MetadataExt;
+        for target in [AccountId::A, AccountId::B] {
+            for saved_b in [false, true] {
+                if !saved_a && !saved_b {
+                    continue;
+                }
+                let fixture = Fixture::new(false);
+                let c = &fixture.coordinator;
+                fs::remove_file(c.active.join("session")).unwrap();
+                if missing_active {
+                    fs::remove_dir(&c.active).unwrap();
+                }
+                storage::create_private_directory(&c.root).unwrap();
+                if let Some(marker) = marker {
+                    storage::atomic_write(&c.root.join("current"), marker).unwrap();
+                }
+                let archives = c.root.join("accounts");
+                storage::create_private_directory(&archives).unwrap();
+                let mut saved = Vec::new();
+                for (name, present, content) in
+                    [("A", saved_a, b"A-saved"), ("B", saved_b, b"B-saved")]
+                {
+                    if present {
+                        let archive = archives.join(name);
+                        storage::create_private_directory(&archive).unwrap();
+                        storage::atomic_write(&archive.join("session"), content).unwrap();
+                        let metadata = fs::metadata(&archive).unwrap();
+                        saved.push((name, metadata.dev(), metadata.ino(), content));
+                    }
+                }
+                c.select(target).unwrap();
+                for (name, device, inode, content) in saved {
+                    let archive = archives.join(name);
+                    let metadata = fs::metadata(&archive).unwrap();
+                    assert_eq!((metadata.dev(), metadata.ino()), (device, inode));
+                    assert_eq!(fs::read(archive.join("session")).unwrap(), content);
+                }
+                assert_eq!(archives.join("A").exists(), saved_a);
+                assert_eq!(archives.join("B").exists(), saved_b);
+                let expected = match target {
+                    AccountId::A if saved_a => Some(b"A-saved".to_vec()),
+                    AccountId::B if saved_b => Some(b"B-saved".to_vec()),
+                    _ => None,
+                };
+                assert_eq!(
+                    fs::read(c.active.join("session")).ok(),
+                    expected,
+                    "missing_active={missing_active}, marker={marker:?}, target={target:?}, saved_a={saved_a}, saved_b={saved_b}"
+                );
+                if expected.is_none() {
+                    assert_eq!(fs::read_dir(&c.active).unwrap().count(), 0);
+                }
+                let marker = match target {
+                    AccountId::A => b"A\n",
+                    AccountId::B => b"B\n",
+                };
+                assert_eq!(fs::read(c.root.join("current")).unwrap(), marker);
+                assert_eq!(fixture.calls.load(Ordering::SeqCst), 1);
+                assert!(!c.root.join("v2/legacy-account-journal.json").exists());
+            }
+        }
+    }
+
+    #[test]
+    fn f01_invalid_current_marker_does_not_skip_saved_account_loading() {
+        for marker in [b"".as_slice(), b"unknown\n".as_slice()] {
+            for missing_active in [false, true] {
+                assert_unowned_active_preserves_saved_accounts(missing_active, Some(marker), true);
+            }
+        }
+    }
+
+    #[test]
+    fn f01_unowned_active_with_only_saved_b_keeps_b_archive() {
+        for marker in [None, Some(b"".as_slice()), Some(b"unknown\n".as_slice())] {
+            for missing_active in [false, true] {
+                assert_unowned_active_preserves_saved_accounts(missing_active, marker, false);
+            }
+        }
+    }
+
+    #[test]
+    fn f01_invalid_marker_uses_recorded_v2_for_same_account_shortcut() {
+        use std::os::unix::fs::MetadataExt;
+        for account in [AccountId::A, AccountId::B] {
+            for marker in [b"".as_slice(), b"unknown\n".as_slice()] {
+                let fixture = Fixture::new(false);
+                let c = &fixture.coordinator;
+                c.select(account).unwrap();
+                storage::atomic_write(&c.active.join("session"), b"new-live").unwrap();
+                storage::atomic_write(&c.root.join("current"), marker).unwrap();
+                let before = fs::metadata(&c.active).unwrap();
+                c.select(account).unwrap();
+                let after = fs::metadata(&c.active).unwrap();
+                assert_eq!((before.dev(), before.ino()), (after.dev(), after.ino()));
+                assert_eq!(fs::read(c.active.join("session")).unwrap(), b"new-live");
+                assert_eq!(fs::read(c.root.join("current")).unwrap(), marker);
+                assert_eq!(fixture.calls.load(Ordering::SeqCst), 1);
+            }
+        }
+    }
+
+    #[test]
+    fn f01_unowned_empty_active_preserves_saved_accounts() {
+        assert_unowned_active_preserves_saved_accounts(false, None, true);
+    }
+
+    #[test]
+    fn f01_unowned_missing_active_preserves_saved_accounts() {
+        assert_unowned_active_preserves_saved_accounts(true, None, true);
     }
     #[test]
     fn old_current_wins_and_replaced_live_directory_is_rebound_without_migration() {

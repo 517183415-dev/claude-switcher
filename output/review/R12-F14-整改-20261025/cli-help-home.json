@@ -1,0 +1,9 @@
+{
+  "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r12-help-kc1koktd",
+  "entries_before": 0,
+  "entries_after": 0,
+  "product_commands": [
+    "--edition personal --help",
+    "--edition public --help"
+  ]
+}

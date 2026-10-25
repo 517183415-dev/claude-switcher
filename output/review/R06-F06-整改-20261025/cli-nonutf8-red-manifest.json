@@ -1,0 +1,19 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--bin",
+    "claude-switcher",
+    "f06_non_utf8_",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit_code": 101,
+  "source_sha256": "fe2591827a8b6c39145b4b79a8076ac6a7241aa46069748e9b5c82dfb31aa777",
+  "timestamp": "2026-10-25T18:46:36.758502"
+}

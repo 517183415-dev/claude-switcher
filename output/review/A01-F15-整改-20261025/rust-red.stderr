@@ -1,0 +1,18 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.17s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-b93b1429d2e7d305)
+
+thread 'publisher::tests::f15_command_body_restores_valid_33_mib_backup' (27774280) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:841:5:
+valid 33 MiB backup rejected by command body: Err("备份文件超过 32 MiB 上限")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

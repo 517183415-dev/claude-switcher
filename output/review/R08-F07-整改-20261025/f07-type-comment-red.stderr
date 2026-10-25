@@ -1,0 +1,53 @@
+test_f07_type_comment_requires_choice_before_mutation (test_local_install.LocalInstallTests.test_f07_type_comment_requires_choice_before_mutation) ... FAIL
+test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) ... 
+  test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar='select # 用户注释', ending="'\\n'") ... FAIL
+  test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar="'select' # 注释", ending="'\\n'") ... FAIL
+  test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar='"select" # comment', ending="'\\r\\n'") ... FAIL
+
+======================================================================
+FAIL: test_f07_type_comment_requires_choice_before_mutation (test_local_install.LocalInstallTests.test_f07_type_comment_requires_choice_before_mutation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 263, in test_f07_type_comment_requires_choice_before_mutation
+    self.f07_reject_selection_before_mutation(['First','Second'],
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+        'proxy-groups:\n  - name: First\n    type: select\n'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        '  - name: Second\n    type: select # 用户注释\n')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 118, in f07_reject_selection_before_mutation
+    self.assertIsNotNone(failure, 'ambiguous discovery silently accepted without explicit selection')
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None : ambiguous discovery silently accepted without explicit selection
+
+======================================================================
+FAIL: test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar='select # 用户注释', ending="'\\n'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 278, in test_f07_type_comment_scalar_matrix
+    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar="'select' # 注释", ending="'\\n'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 278, in test_f07_type_comment_scalar_matrix
+    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_f07_type_comment_scalar_matrix (test_local_install.LocalInstallTests.test_f07_type_comment_scalar_matrix) (scalar='"select" # comment', ending="'\\r\\n'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/packaging/macos/test_local_install.py", line 278, in test_f07_type_comment_scalar_matrix
+    with self.assertRaisesRegex(ValueError,'candidates: First, Second'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.017s
+
+FAILED (failures=4)

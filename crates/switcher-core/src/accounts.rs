@@ -263,6 +263,16 @@ pub struct AccountStore {
 impl AccountStore {
     /// Reads account metadata without creating directories or trusting the legacy current mirror.
     pub fn inspect(root: &Path, active: &Path, owner: u32) -> io::Result<AccountStatus> {
+        Self::inspect_with_recorded_account(root, active, owner).map(|(status, _)| status)
+    }
+    /// Inspects metadata without creating account markers, directories, or recovery state.
+    /// `AccountStatus.current` may be a display default; the second value is recorded ownership.
+    /// A missing recorded owner must not be inferred from the display default.
+    pub fn inspect_with_recorded_account(
+        root: &Path,
+        active: &Path,
+        owner: u32,
+    ) -> io::Result<(AccountStatus, Option<AccountId>)> {
         if owner != unsafe { libc::geteuid() } {
             return Err(denied("account owner is not the current user"));
         }
@@ -283,12 +293,15 @@ impl AccountStore {
                 root.parent()
                     .ok_or_else(|| invalid("missing root parent"))?,
             )?;
-            return Ok(AccountStatus {
-                current: Some(AccountId::A),
-                a_saved: false,
-                b_saved: false,
-                recovery_pending: false,
-            });
+            return Ok((
+                AccountStatus {
+                    current: Some(AccountId::A),
+                    a_saved: false,
+                    b_saved: false,
+                    recovery_pending: false,
+                },
+                None,
+            ));
         }
         store.check_directory(root)?;
         for directory in [store.v2(), store.transactions()] {
@@ -301,7 +314,7 @@ impl AccountStore {
                 storage::validate_no_symlinks(&store.archive(account))?;
             }
         }
-        store.status()
+        Ok((store.status()?, store.recorded_account()?))
     }
     /// Root and active directory must be explicit, disjoint, real directories.
     pub fn new(root: &Path, active: &Path, owner: u32) -> io::Result<Self> {
@@ -378,6 +391,10 @@ impl AccountStore {
     }
     /// Legacy `current` remains the user-visible account selection. Old v2 state is a fallback.
     fn selected_account(&self) -> io::Result<AccountId> {
+        Ok(self.recorded_account()?.unwrap_or(AccountId::A))
+    }
+    /// A display default is not proof that the live directory belongs to an account.
+    fn recorded_account(&self) -> io::Result<Option<AccountId>> {
         let current = self.root.join("current");
         if current.try_exists()? {
             self.check_directory(&self.root)?;
@@ -390,15 +407,12 @@ impl AccountStore {
                 return Err(denied("unsafe current account marker"));
             }
             match fs::read_to_string(current)?.trim() {
-                "A" => return Ok(AccountId::A),
-                "B" => return Ok(AccountId::B),
+                "A" => return Ok(Some(AccountId::A)),
+                "B" => return Ok(Some(AccountId::B)),
                 _ => {}
             }
         }
-        Ok(self
-            .state()?
-            .map(|state| state.account)
-            .unwrap_or(AccountId::A))
+        Ok(self.state()?.map(|state| state.account))
     }
     pub fn status(&self) -> io::Result<AccountStatus> {
         Ok(AccountStatus {

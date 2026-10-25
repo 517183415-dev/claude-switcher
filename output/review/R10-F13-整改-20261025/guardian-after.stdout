@@ -1,0 +1,9 @@
+
+running 4 tests
+test guardian::legacy_behavior_tests::legacy_path_scope_sends_term_once_per_matching_process_without_signature_gate ... ok
+test guardian::legacy_behavior_tests::only_proxy_or_tun_failure_requests_stop_for_every_event ... ok
+test guardian::legacy_behavior_tests::driver_checks_before_stop_and_events_config_or_heartbeat_cannot_stop ... ok
+test guardian::legacy_behavior_tests::legacy_shell_only_configuration_loads_at_startup_and_refreshes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.22s
+

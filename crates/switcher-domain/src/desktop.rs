@@ -168,6 +168,41 @@ pub struct PublisherView {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(deny_unknown_fields)]
+pub struct PublisherCleanupPreview {
+    pub digest: String,
+    pub retain: u32,
+    pub history_before: u32,
+    pub history_after: u32,
+    pub assets_before: u32,
+    pub assets_after: u32,
+    pub candidate_bytes: u64,
+    pub pending_blocks_commit: bool,
+    pub release_resolution: bool,
+    pub replaces_checkpoint: bool,
+    pub retained_history: Vec<String>,
+    pub removed_history_records: Vec<String>,
+    pub protected_assets: Vec<String>,
+    pub candidate_assets: Vec<String>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(deny_unknown_fields)]
+pub struct PublisherGcPreview {
+    pub batch_id: String,
+    pub digest: String,
+    pub eligible: Vec<String>,
+    pub already_missing: Vec<String>,
+    pub blocked: Vec<String>,
+    pub referenced: Vec<String>,
+    pub eligible_bytes: u64,
+    pub pending_blocks_commit: bool,
+    pub blocked_details: Vec<String>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(deny_unknown_fields)]
 pub struct PublishRecord {
     pub release_id: String,
     pub revision: u64,

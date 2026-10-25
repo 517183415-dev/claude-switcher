@@ -1,0 +1,22 @@
+
+running 17 tests
+test publisher::cleanup_tests::f17_backup_portability_and_active_target_restore_refusal ... ok
+test publisher::cleanup_tests::f17_candidate_identity_is_bounded_no_follow_and_content_bound ... ok
+test publisher::cleanup_tests::f17_cleanup_state_rename_errors_reconcile_memory_and_restart ... ok
+test publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity ... ok
+test publisher::cleanup_tests::f17_current_watermark_authentication_and_stale_preview_binding ... ok
+test publisher::cleanup_tests::f17_current_without_history_does_not_create_verified_history_and_expiry_is_allowed ... ok
+test publisher::cleanup_tests::f17_gc_atomic_boundaries_restart_and_partial_reclaim_are_idempotent ... ok
+test publisher::cleanup_tests::f17_gc_four_classes_finish_without_deleting_blocked_referenced_or_unknown ... ok
+test publisher::cleanup_tests::f17_gc_second_confirmation_reclaims_verified_candidate ... ok
+test publisher::cleanup_tests::f17_index_atomic_boundaries_preserve_old_state_or_durable_batch ... ok
+test publisher::cleanup_tests::f17_local_store_reads_two_currents_under_one_lock_and_batch_survives_save_publish ... ok
+test publisher::cleanup_tests::f17_pending_allows_read_only_preview_and_marks_execution_blocked ... ok
+test publisher::cleanup_tests::f17_quarantine_replacement_is_retained_and_recreated_source_is_never_unlinked ... ok
+test publisher::cleanup_tests::f17_reference_union_resolution_release_and_checkpoint_evidence ... ok
+test publisher::cleanup_tests::f17_restart_with_both_paths_and_unexpected_io_preserves_batch ... ok
+test publisher::cleanup_tests::f17_retention_full_capacity_pins_currents_inside_default_128 ... ok
+test publisher::cleanup_tests::f17_stale_previews_and_pending_cannot_commit ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 14.13s
+

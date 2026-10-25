@@ -1,0 +1,6 @@
+[C2C]
+STATE: INIT
+TASK_ID: c2c_be95
+ITERATION: 0
+WORKSPACE_ID: 5686a1f55261
+Next bounded R07/F09 of approved minimal plan. R01-R06 accepted. Baseline: output/review/R07-F09-整改-20261025/baseline.json. Use MCP current source. Max5 source files: RegionSettings.svelte, App.svelte and existing frontend tests. Ordinary fix: one click, one execution, immediate full check after actual success. Keep region choice/explicit confirmation and transaction recovery. Failure/cancel/stale completion must not falsely complete or restore old check evidence; prevent duplicate operations. Preserve visual style and fixtures. Existing preview/queue/recovery tests use production-script VM plus Svelte compilation. Project dependency imports currently unresolved; inspect existing offline tools only, no install/download. No accounts/product network/apps/services/system/push. Return bounded PLAN with behavior RED-first, call counts, epoch/cancel guards and validation gaps.

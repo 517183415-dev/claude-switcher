@@ -1,0 +1,16 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-core",
+    "--lib",
+    "guardian_repair::legacy_tests",
+    "--",
+    "--nocapture"
+  ],
+  "exit_code": 0,
+  "log": "output/review/R03-F03-\u6574\u6539-20261025/baseline-rust.log"
+}

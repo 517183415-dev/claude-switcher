@@ -1,0 +1,2 @@
+claude-switcher [--edition personal|public] check [--json] | checkdetail [--json] | status | start | switch A|B | recover | update [--auto|check|download|install]
+fix [--preview] | set-region [us|jp|tw|hk|sg|gb|de|fr|kr|au|ca] [--preview]。无国家参数时检测出口国家和时区。默认直接执行；--preview 只显示计划。diagnose-proxy --config <private-json> 保留独立诊断用途。诊断不会授予启动许可。

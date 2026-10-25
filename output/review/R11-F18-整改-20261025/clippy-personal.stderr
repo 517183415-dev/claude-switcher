@@ -1,0 +1,38 @@
+    Blocking waiting for file lock on build directory
+    Checking generic-array v0.14.7
+    Checking rand_core v0.6.4
+    Checking switcher-domain v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-domain)
+    Checking base64ct v1.8.3
+    Checking opaque-debug v0.3.1
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/apps/desktop/src-tauri)
+    Checking password-hash v0.5.0
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking inout v0.1.4
+    Checking universal-hash v0.5.1
+    Checking aead v0.5.2
+    Checking digest v0.10.7
+    Checking cipher v0.4.4
+    Checking poly1305 v0.8.0
+    Checking blake2 v0.10.6
+   Compiling sha2 v0.10.9
+    Checking chacha20 v0.9.1
+    Checking argon2 v0.5.3
+    Checking chacha20poly1305 v0.10.1
+   Compiling tauri-codegen v2.7.4
+   Compiling tauri-macros v2.7.4
+    Checking switcher-helper v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-helper)
+    Checking tauri v2.12.5
+    Checking switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+    Checking tauri-plugin-updater v2.14.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 45s

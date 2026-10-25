@@ -1,0 +1,122 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: DONE TASK_ID: c2c_824e ITERATION: 1 UNIT: R05 / F08+F10 VERDICT: ACCEPTED REMAINING_R05_WORK: NONE WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 REVIEWED_OUTPUTS: 33-45 R01-R04: PRESERVED NEXT_UNIT: R06 — separate bounded PLAN"
+    - paragraph: R05 meets the bounded acceptance criteria. I reviewed both scoped diffs, current source, outputs 33–45, verification.json, iteration1-整改记录.md, yaml-parser-notes.md, and yaml-spec核对.md. No remaining R05 blocker found.
+    - heading "F08 — accepted" [level=3]
+    - paragraph: "The implementation keeps the original generic contract:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: read_command(...) → 2 seconds
+    - paragraph: "and only routes DNS through:"
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: dns_addresses() → fixed /usr/bin/dig → +short +time=3 +tries=1 → 4-second observation deadline
+    - paragraph: So other command observers are not silently relaxed.
+    - paragraph: "The shared timeout implementation still retains the same:"
+    - list:
+      - listitem: 256 KiB stdout bound;
+      - listitem: UTF-8 validation;
+      - listitem: exit-status validation;
+      - listitem: stderr suppression;
+      - listitem: kill_on_drop;
+      - listitem: explicit kill().await followed by wait().await after timeout.
+    - paragraph: "Output 33 is a clean behavioral RED: the synthetic 2.5-second DNS answer was killed at about 2 seconds."
+    - paragraph: "Final F08 proves:"
+    - list:
+      - listitem: synthetic DNS result after ~2.5 s succeeds under the DNS-specific budget;
+      - listitem: the same style of generic child still times out at ~2 s;
+      - listitem: long-running DNS children time out and record both successful kill and successful wait;
+      - listitem: timeout applies both while stdout remains open and when stdout closes early but the child keeps running;
+      - listitem: invalid UTF-8, nonzero exit, oversized output and first-answer semantics remain unchanged;
+      - listitem: exactly 256 KiB remains accepted.
+    - paragraph:
+      - text: The implementation correctly does
+      - strong: not
+      - text: claim the 4-second timeout includes the subsequent kill/wait cleanup duration.
+    - heading "F10 — accepted" [level=3]
+    - paragraph: pinned_routes::propose() now uses one shared top-level line classifier for both recognition and insertion. That closes the earlier detection/insertion mismatch.
+    - paragraph: "Accepted forms include:"
+    - generic: YAML
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "prepend-rules: prepend-rules: prepend-rules: # comment"
+    - paragraph: plus CRLF, a single document header, comments/blanks, nested same-name text and block-scalar content.
+    - paragraph: When no root target exists and a legal --- header exists, insertion happens after the document header instead of before it.
+    - paragraph: "The code remains deliberately conservative rather than becoming a YAML parser. It rejects:"
+    - list:
+      - listitem: inline target values including sequence/map/null/anchor/alias/block forms;
+      - listitem: duplicate root prepend-rules;
+      - listitem: multiple document headers;
+      - listitem: a header after document content;
+      - listitem: document terminator / directives in this unsupported text subset;
+      - listitem: quoted/complex/flow root keys;
+      - listitem: ambiguous or malformed managed markers;
+      - listitem: comments without legal YAML separation such as prepend-rules:#comment.
+    - paragraph: The accepted-path tests compare the output against the exact original bytes plus only the expected insertion, then run an actual second pass and require byte-for-byte idempotence.
+    - paragraph: The legacy managed-block migration also remains supported while preserving the surviving user root key/content.
+    - heading "PyYAML tab discrepancy" [level=3]
+    - paragraph:
+      - text: Output 44 being exit 1 is
+      - strong: not an R05 regression blocker
+      - text: .
+    - paragraph: The two failures are precisely the two inputs whose original root headers already contain preserved tab separation. PyYAML rejects both the original input and the unchanged-header Rust output; the repair did not introduce or normalize those bytes.
+    - paragraph: "The independent Psych run parses the exact two originals and exact two Rust outputs, and validates:"
+    - list:
+      - listitem: one root prepend-rules;
+      - listitem: 13 managed rules;
+      - listitem: managed rules before user rules;
+      - listitem: preserved user bytes/nested semantics;
+      - listitem: changed receipt;
+      - listitem: second-pass idempotence.
+    - paragraph: The evidence explicitly retains the PyYAML failures rather than reclassifying them as PASS. Given this unit's text-preservation contract and the recorded YAML 1.2.2 separation rule, this is an implementation/parser-compatibility difference, not evidence that R05 corrupted the documents. Real Clash loading remains correctly marked NOT_RUN.
+    - heading "Regression and scope" [level=3]
+    - paragraph: "Final runs show:"
+    - list:
+      - text: "F08 targeted:"
+      - strong: 4 PASS
+      - text: "F10 targeted:"
+      - strong: 7 PASS
+      - text: "macos:::"
+      - strong: 11 PASS
+      - text: "pinned_routes:::"
+      - strong: 9 PASS
+      - text: "user_repairs:::"
+      - strong: 41 PASS
+      - text: "regions::legacy:::"
+      - strong: 15 PASS
+    - paragraph:
+      - text: The unique module total is
+      - strong: "67"
+      - text: ; targeted filters overlap those counts.
+    - paragraph: Offline Clippy, exact two-file rustfmt, and git diff --check all pass.
+    - paragraph: All final runs are bracketed by stable hashes for the cumulative 11 modified source files. The accepted R01–R04 nine source hashes remain unchanged.
+    - paragraph: Current Git status shows exactly the expected cumulative 11 tracked modifications, with no staged files or conflicts.
+    - paragraph:
+      - strong: R05/F08+F10 is accepted for source review and isolated testing.
+      - text: No claim is made for real DNS, actual Clash YAML loading, real network/proxy behavior, installation, accounts, apps, services, or system settings.
+    - paragraph: R06 may proceed only under its own bounded PLAN.
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

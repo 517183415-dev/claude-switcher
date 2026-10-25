@@ -1,0 +1,374 @@
+- heading "ChatGPT 说：" [level=4]
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code:
+      - generic: "[C2C] STATE: PLAN TASK_ID: c2c_87c3 ITERATION: 1 UNIT: R06 / F06 VERDICT: REVISED PLAN — preflight blocker resolved by bounded scope expansion WORKSPACE_ID: 5686a1f55261 BRANCH: codex/gpt-audit-fixes BASE_HEAD: 98c42fc6825ab90fe018032ae4243883e988d856 SCOPE_MAX: 5 source files SCOPE: crates/switcher-core/src/accounts.rs crates/switcher-core/src/bin/claude-switcher.rs crates/switcher-core/src/repair_cli.rs packaging/macos/local_install.py packaging/macos/test_local_install.py STOP_AFTER: R06 execution evidence for independent review"
+    - paragraph:
+      - text: 预检结论成立：inspect_with_recorded_account() 是 pub(crate)，而 src/bin/claude-switcher.rs 编译成独立 binary crate，不能调用它。因此允许把 accounts.rs 作为第 5 个文件进入 R06，但只做
+      - strong: 已有只读 helper 的可见性/文档调整
+      - text: ，绝不改变 F01 行为。
+    - heading "1. accounts.rs 只允许 visibility/doc-only 变化" [level=2]
+    - paragraph: 把现有：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: pub(crate) fn inspect_with_recorded_account(...)
+    - paragraph: 提升到 binary 可调用的公开可见性，例如 pub fn，并补充文档说明：
+    - list:
+      - listitem: 返回的 AccountStatus.current 可以是显示默认；
+      - listitem: 第二个 Option<AccountId> 才是“有持久证据的 recorded ownership”；
+      - listitem: None 不得推断为 A；
+      - listitem: 函数保持完全只读，不创建 marker、不初始化账号、不写 recovery state。
+    - heading "F01 preservation gate" [level=3]
+    - paragraph: 必须证明函数体没有语义变化。证据至少包含：
+    - list:
+      - listitem: 修改前/后的函数 body token/AST 等价，允许仅 visibility/doc comment 差异；
+      - listitem: 现有 F01 accounts/legacy/migration 测试全部继续通过；
+      - text: 专门回归：
+      - list:
+        - listitem: empty/unrecorded → display current=A 但 recorded None;
+        - listitem: recorded A/B 保持原行为。
+    - paragraph: 禁止借 R06 顺手改任何 account/recovery 分支。
+    - separator
+    - heading "2. Legacy status 使用真实 recorded ownership" [level=1]
+    - paragraph: claude-switcher.rs legacy status 改用：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: AccountStore::inspect_with_recorded_account(...)
+    - paragraph: 映射：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: recorded Some(A) → current=A recorded Some(B) → current=B recorded None → current=none
+    - paragraph: hasA / hasB 仍只来自 AccountStatus.a_saved/b_saved。
+    - paragraph: 例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: current=none hasA=0 hasB=0 current=A hasA=1 hasB=0 current=B hasA=1 hasB=1
+    - paragraph: 成功 exit 0。
+    - paragraph: Modern direct binary status 继续走当前 JSON，保留现有 display-default 行为。
+    - separator
+    - heading "3. Legacy check：固定 unavailable 占位，不新增任何 IP 数据通路" [level=1]
+    - paragraph:
+      - text: 已确认 CheckReport 没有结构化 IP 字段，因此本轮
+      - strong: 不修改 checks.rs
+      - text: ，也不新增网络请求。
+    - paragraph: Legacy check 成功固定输出：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK:unavailable
+    - paragraph: 如果存在 advisory，则：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: OK:unavailable|<warning text>
+    - paragraph: warning 可以来自已有 CheckResult.status == Warning 的结构化检查行及其 reason，仅作显示；不得：
+    - list:
+      - listitem: 从 reason 中正则/字符串提取 IP；
+      - listitem: 再调用 geo / network / DNS；
+      - listitem: 新增隐藏的网络查询；
+      - listitem: 修改 domain DTO 加明文 IP。
+    - paragraph: blocking 情况：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FAIL:<launch reasons>
+    - paragraph: exit 1。
+    - paragraph: check --json 在 legacy shim 下仍优先走当前 JSON。
+    - paragraph: 这比伪造 OK:<ip> 更安全，也明确记录当前报告无法提供原始 IP 的事实。
+    - separator
+    - heading "4. 输出模式优先级固定" [level=1]
+    - paragraph: 参数解析固定为：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: explicit --json > --legacy-cli > direct-binary existing default
+    - paragraph: 新 shim 注入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition <edition> --legacy-cli \"$@\""
+    - paragraph: 规则：
+    - list:
+      - listitem: "--legacy-cli 只允许固定全局位置；"
+      - listitem: 重复、错位、未知 global flag → 参数错误；
+      - listitem: legacy shim + check --json → JSON；
+      - listitem: direct binary 不加 flag → 当前现代行为不变。
+    - paragraph: 不要统一重写现有裸 check/checkdetail 合同。
+    - separator
+    - heading "5. Legacy switch" [level=1]
+    - paragraph: 只格式化已有 LaunchOutcome，不修改 lifecycle.rs。
+    - paragraph: Legacy：
+    - list:
+      - listitem: completed → 最终 OK, exit 0；
+      - listitem: gate / selection / launch failure → FAIL:<message>, exit 1；
+      - listitem: 非法 switch C → exit 2。
+    - paragraph: 只输出有真实结果证据的 INFO/NOTE；不伪造“账号已收编”等阶段。
+    - paragraph: Modern switch JSON 和 code=2 的当前业务失败语义保持不变。
+    - separator
+    - heading "6. Legacy fix 必须由 repair_cli 自己提供 mode-aware sink" [level=1]
+    - paragraph: repair_cli.rs 增加输出模式/事件 sink，但保留：
+    - generic: Rust
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: run(...)
+    - paragraph: 作为现有 modern 默认，供 GUI 和其他调用者继续使用。
+    - paragraph: Legacy wrapper只输出真实调用顺序对应的事件，例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: FIX:prepare FIX:preview FIX:apply FIX:complete OK
+    - paragraph: 具体名称可调整，但要求：
+    - list:
+      - listitem: preview 失败 → 没有 apply/complete/OK；
+      - listitem: preview-only → 没有 apply；
+      - listitem: execute partial failure → FAIL:<reason>，exit 1；
+      - listitem: partial failure 后绝不能出现 OK；
+      - listitem: modern 仍输出现有 preview JSON + completed JSON；
+      - listitem: modern error 仍维持现有主程序 error JSON/code 2。
+    - paragraph: 不修改 regions.rs 来制造更细粒度进度。
+    - separator
+    - heading "7. Generation-bound shim v1/v2 合同" [level=1]
+    - paragraph: 这是 installer 部分唯一允许的生产合同变化。
+    - paragraph: 定义：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: v1 = historical shim exec ... --edition <edition> "$@" v2 = new shim exec ... --edition <edition> --legacy-cli "$@"
+    - heading "新 plan 必须明确记录版本" [level=3]
+    - paragraph: 在新 install/replace plan 中加入固定字段，例如：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_contract = 2
+    - paragraph: 随后 archive/result 会自然持久化该字段。
+    - heading "旧 archive" [level=3]
+    - paragraph: 历史 archive 没有 cli_contract：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: missing field → v1 only
+    - paragraph: 这是唯一允许的 backward-compatibility fallback。
+    - heading "Renderer 必须显式带 contract" [level=3]
+    - paragraph: 不要让：
+    - generic: Python
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_shim(edition, entry)
+    - paragraph: 自己猜。
+    - paragraph: 改成概念上：
+    - generic: Python
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: cli_shim(edition, entry, contract)
+    - paragraph:
+      - text: 或者两个 renderer，由调用者根据
+      - strong: 对应 generation/plan evidence
+      - text: 选择。
+    - heading "选择规则" [level=3]
+    - list:
+      - listitem: 新 install plan：固定 v2；
+      - listitem: active transaction：使用 j['plan']['cli_contract'];
+      - listitem: completed archive/uninstall ownership：读取 archived plan 的 contract；
+      - listitem: historical missing → v1；
+      - listitem: unsupported type/value → reject。
+    - paragraph: 绝不允许：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: current bytes == v1 OR v2 → accept
+    - paragraph: 也不根据当前磁盘内容反推版本。
+    - separator
+    - heading "8. plan_uninstall / cli_verify / restore 的精确边界" [level=1]
+    - heading "plan_uninstall" [level=3]
+    - paragraph: 从：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: archived['plan']['cli_contract']
+    - paragraph: 选择唯一 expected shim。
+    - paragraph: 旧 archive missing → v1。
+    - paragraph: 然后仍做完整 bytes、owner、mode、generation proof。
+    - heading "cli_verify" [level=3]
+    - paragraph: 必须使用当前 transaction/archived plan 的 contract，而不是当前默认 renderer。
+    - heading "cli_restore" [level=3]
+    - paragraph:
+      - text: “当前文件是否仍属于本安装事务”的允许集合里，只加入该 transaction
+      - strong: 唯一 contract 对应的 generated shim
+      - text: 。
+    - paragraph: 不能同时接受 v1/v2。
+    - paragraph: R02 的：
+    - list:
+      - listitem: backup
+      - listitem: holding
+      - listitem: prepared
+      - listitem: restored
+      - listitem: inode/hash recheck
+    - paragraph: 全部保持原逻辑。
+    - separator
+    - heading "9. RED-first 测试" [level=1]
+    - paragraph: 先补行为 RED，再实现。
+    - heading "A. Accounts visibility/F01" [level=2]
+    - list:
+      - listitem: binary-side test 能调用 public helper；
+      - listitem: unknown → recorded None；
+      - listitem: A/B 正确；
+      - listitem: body-equivalence receipt；
+      - listitem: F01 regression suite GREEN。
+    - heading "B. CLI pure output matrix" [level=2]
+    - paragraph: Synthetic handlers，不跑真实 checks：
+    - list:
+      - listitem: modern status → JSON；
+      - listitem: legacy status None → current=none；
+      - listitem: legacy A/B；
+      - listitem: legacy check allowed/no advisory → OK:unavailable, 0；
+      - listitem: allowed + warning → OK:unavailable|..., 0；
+      - listitem: blocking → FAIL:..., 1；
+      - listitem: legacy + check --json → JSON；
+      - listitem: modern switch → JSON；
+      - listitem: legacy switch success → OK/0；
+      - listitem: legacy switch failure → FAIL/1；
+      - listitem: invalid target → 2。
+    - paragraph: stdout/stderr/code 全部精确断言。
+    - heading "C. repair_cli" [level=2]
+    - paragraph: 用 fake backend 驱动生产 wrapper：
+    - list:
+      - listitem: preview-only；
+      - listitem: complete success；
+      - listitem: preview failure；
+      - listitem: execute partial failure。
+    - paragraph: 重点 RED：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: partial failure currently cannot produce legacy FAIL/code1 without leaking JSON
+    - heading "D. Shim argv" [level=2]
+    - paragraph: 临时 fake executable，运行真实生成的 bash shim。
+    - paragraph: 断言 v2：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "--edition public --legacy-cli check --json"
+    - paragraph: 原样透传特殊参数，stdout/stderr/exit 7 原样。
+    - heading "E. generation matrix" [level=2]
+    - paragraph: 至少：
+    - table:
+      - rowgroup:
+        - row "Archive plan Live shim Result":
+          - columnheader "Archive plan"
+          - columnheader "Live shim"
+          - columnheader "Result"
+      - rowgroup:
+        - row "missing contract (historical v1) v1 accept":
+          - cell "missing contract (historical v1)"
+          - cell "v1"
+          - cell "accept"
+        - row "missing contract v2 reject":
+          - cell "missing contract"
+          - cell "v2"
+          - cell "reject"
+        - row "contract=2 v2 accept":
+          - cell "contract=2"
+          - cell "v2"
+          - cell "accept"
+        - row "contract=2 v1 reject":
+          - cell "contract=2"
+          - cell "v1"
+          - cell "reject"
+        - row "contract=1 if explicitly supported v1 accept":
+          - cell "contract=1 if explicitly supported"
+          - cell "v1"
+          - cell "accept"
+        - row "contract=1 v2 reject":
+          - cell "contract=1"
+          - cell "v2"
+          - cell "reject"
+        - row "contract=999/string/null-invalid any reject":
+          - cell "contract=999/string/null-invalid"
+          - cell "any"
+          - cell "reject"
+    - button "复制表格":
+    - button "展开表格":
+    - paragraph: 同时覆盖 uninstall preview 和 archived verify/cli_verify 路径。
+    - separator
+    - heading "10. Source scope最终冻结" [level=1]
+    - paragraph: R06 允许修改恰好最多 5 个：
+    - list:
+      - listitem: crates/switcher-core/src/accounts.rs
+      - listitem: crates/switcher-core/src/bin/claude-switcher.rs
+      - listitem: crates/switcher-core/src/repair_cli.rs
+      - listitem: packaging/macos/local_install.py
+      - listitem: packaging/macos/test_local_install.py
+    - paragraph: 不修改：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: checks.rs checks_cli.rs lifecycle.rs regions.rs domain DTO
+    - paragraph: 因此 OK:unavailable 是本单元明确接受的兼容降级。
+    - separator
+    - heading "11. Final verification" [level=1]
+    - paragraph: 至少：
+    - generic: Bash
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "cargo test --offline --locked -p switcher-core --bin claude-switcher f06_ -- --nocapture cargo test --offline --locked -p switcher-core --lib repair_cli::tests::f06_ -- --nocapture cargo test --offline --locked -p switcher-core --lib accounts:: python3 -B -m unittest discover \\ -s packaging/macos -p 'test_local_install.py' -k f06 -v python3 -B -m unittest discover \\ -s packaging/macos -p 'test_local_install.py' -v cargo test --offline --locked -p switcher-core --lib lifecycle:: cargo clippy --offline --locked -p switcher-core --all-targets -- -D warnings rustfmt --check --edition 2024 \\ crates/switcher-core/src/accounts.rs \\ crates/switcher-core/src/bin/claude-switcher.rs \\ crates/switcher-core/src/repair_cli.rs git diff --check"
+    - paragraph: 不要运行整个 checks_cli 集成组；若要使用，只跑已确认无 loopback 的两个 exact tests。
+    - separator
+    - heading "12. Evidence要求" [level=1]
+    - paragraph: 写入：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: output/review/R06-F06-整改-20261025/
+    - paragraph: 必须包含：
+    - list:
+      - listitem: PLAN_PREFLIGHT_BLOCKED 原记录；
+      - listitem: accounts helper visibility/body-equivalence receipt；
+      - listitem: CLI RED/GREEN stdout/stderr/code matrix；
+      - listitem: OK:unavailable contract receipt；
+      - listitem: repair partial-failure receipt；
+      - listitem: shim fake argv receipt；
+      - listitem: v1/v2 generation ownership matrix；
+      - listitem: R02/R03 installer regression结果；
+      - listitem: 每个 final command 前后累计 hashes；
+      - listitem: R01-R05 accepted hashes保持不变。
+    - paragraph:
+      - text: R06 成功后，累计 tracked 文件种类预计
+      - strong: 14 个
+      - text: ：
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: 原 accepted 11 + accounts.rs（已在原 11 中，hash 会更新但不新增种类） + claude-switcher.rs + repair_cli.rs = 13 tracked file paths total
+    - paragraph:
+      - text: 准确说是
+      - strong: 13 个 tracked file paths
+      - text: ；installer 两文件和 accounts.rs 都已经在此前累计集合中，因此只新增两个路径。
+    - generic: 纯文本
+    - button "启用自动换行":
+    - button "复制代码":
+    - code: "BOUNDARIES: - no installs/dependencies - no real accounts - no network/DNS/loopback diagnostics - no apps/services/system settings - no push/merge - stop after R06"
+    - button "复制":
+    - button "评价回复":
+    - button "朗读":
+    - button "分享":
+    - button "重新生成回复":
+    - button "更多操作":
+    - generic: ChatGPT 可能会出错。请核查重要信息。
+    - button "滚动到底部":
+    - heading "最新一条回复" [level=4]
+    - status
+    - textbox "询问 ChatGPT":
+      - paragraph: 询问 ChatGPT
+    - button "添加文件等内容":
+    - button "选择 ChatGPT 模型":
+      - generic: 思考强度
+      - generic: 5.6 中
+    - button "听写":
+    - button "开始语音":
+- status
+- status: 回答已完成

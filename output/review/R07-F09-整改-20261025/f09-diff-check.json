@@ -1,0 +1,13 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "apps/desktop/src/components/RegionSettings.svelte",
+    "apps/desktop/src/App.svelte",
+    "apps/desktop/tests/repair-preview.test.mjs"
+  ],
+  "exit_code": 0,
+  "output": ""
+}

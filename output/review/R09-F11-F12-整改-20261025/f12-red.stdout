@@ -1,0 +1,21 @@
+
+running 8 tests
+test policy::tests::f12_pending_allows_sessions_and_readonly_diagnostics ... ok
+test policy::tests::f12_pending_preserves_owner_role_session_and_replay_boundaries ... ok
+test policy::tests::f12_pending_requires_fresh_recovery_grant_then_reopens_after_clear ... ok
+test policy::tests::f12_pending_recovery_rejects_expired_or_apply_scoped_grants ... ok
+test policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization ... FAILED
+test policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt ... FAILED
+test policy::tests::f12_pending_read_error_never_bypasses_gate ... FAILED
+test policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects ... FAILED
+
+failures:
+
+failures:
+    policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects
+    policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt
+    policy::tests::f12_pending_read_error_never_bypasses_gate
+    policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization
+
+test result: FAILED. 4 passed; 4 failed; 0 ignored; 0 measured; 48 filtered out; finished in 0.00s
+

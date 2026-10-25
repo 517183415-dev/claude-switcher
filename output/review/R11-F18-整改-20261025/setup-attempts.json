@@ -1,0 +1,11 @@
+{
+  "not_behavioral_RED": [
+    "preparation-red.json",
+    "preparation-red-config.json"
+  ],
+  "causes": [
+    "missing bundle component resource",
+    "missing frontendDist"
+  ],
+  "recovery": "verification-only TAURI_CONFIG points frontendDist to existing R07 build and removes bundle resources; no product config edits, installation or download"
+}

@@ -1,0 +1,33 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexHome/worktrees/36b7/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.72s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 5 tests
+test repair_cli::tests::f06_legacy_repair_complete_has_real_events_and_ok ... F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"legacy-complete","code":0,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFIX:complete\nOK\n"}
+ok
+test repair_cli::tests::f06_legacy_repair_partial_failure_has_no_complete_or_ok ... F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"legacy-partial-error","code":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n"}
+ok
+test repair_cli::tests::f06_legacy_repair_prepare_failure_has_no_apply_or_ok ... F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-prepare-error","code":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFAIL:synthetic_precondition\n"}
+ok
+test repair_cli::tests::f06_legacy_repair_preview_only_has_no_apply_or_ok ... F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-preview","code":0,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\n"}
+ok
+test repair_cli::tests::f06_modern_repair_and_set_region_keep_json_and_errors ... F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-Fix { apply: true }-Modern","code":0,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Modern","code":0,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Legacy","code":0,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Modern","code":0,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Legacy","code":0,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-partial-error","code":2,"result":{"Err":"synthetic_partial_failure"},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"}
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 346 filtered out; finished in 0.00s
+

@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/opt/homebrew/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "packaging/macos",
+    "-p",
+    "test_local_install.py",
+    "-k",
+    "f07",
+    "-v"
+  ],
+  "exit": 0,
+  "seconds": 0.700388666940853,
+  "hashes": {
+    "packaging/macos/local_install.py": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+    "packaging/macos/test_local_install.py": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0"
+  }
+}

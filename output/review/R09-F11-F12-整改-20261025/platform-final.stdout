@@ -1,0 +1,36 @@
+
+running 31 tests
+test platform::dns_cache::test_io::dns_cache_failure_preserves_changes_and_journal_without_applied_completion ... ok
+test platform::dns_cache::test_io::dns_cache_no_system_change_skips_both_commands ... ok
+test platform::dns_cache::test_io::dns_cache_changed_repair_runs_fixed_commands_and_then_commits ... ok
+test platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read ... ok
+test platform::dns_cache::test_io::dns_cache_failed_refresh_recovers_pending_without_granting_timezone_authority ... ok
+test platform::f12_tests::f12_pending_status_reports_actual_state_or_read_error ... ok
+test platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts ... ok
+test platform::f12_tests::f12_startup_refuses_trust_io_and_unknown_errors ... ok
+test platform::f12_tests::f12_trusted_pending_reader_is_readonly_and_accepts_expired_receipt_plan ... ok
+test platform::f11_test_io::f11_managed_retries_after_each_interrupted_write ... ok
+test platform::no_tun_test_io::no_tun_apply_plan_never_reaches_system_or_journal_writes ... ok
+test platform::no_tun_test_io::no_tun_missing_boundary_fails_closed_and_unwind_resets_scope ... ok
+test platform::no_tun_test_io::no_tun_positive_control_trips_before_root_journal_io ... ok
+test platform::no_tun_test_io::no_tun_scope_is_thread_local_and_denies_unexpected_commands ... ok
+test platform::tests::actual_route_requires_one_real_tunnel_interface ... ok
+test platform::tests::entropy_is_fresh ... ok
+test platform::f11_test_io::f11_component_retries_after_each_interrupted_write ... ok
+test platform::tests::status_requires_matching_plan_and_pending_overrides_completed_receipt ... ok
+test platform::f11_test_io::f11_journal_retries_after_each_interrupted_write ... ok
+test platform::tests::timezone_rejects_injection_and_traversal ... ok
+test platform::timezone_guard::tests::invalid_target_and_failed_readback_do_not_report_success ... ok
+test platform::timezone_guard::tests::unrelated_pending_transaction_does_not_disable_watchdog ... ok
+test platform::timezone_guard::tests::target_reconciles_without_managed_record_or_receipt ... ok
+test platform::f11_test_io::f11_existing_and_racing_final_journals_are_never_overwritten ... ok
+test platform::f11_test_io::f11_replaced_temp_is_neither_published_nor_removed ... ok
+test platform::tests::preview_receipt_survives_client_crash_and_cannot_overwrite_terminal_receipt ... ok
+test platform::f12_tests::f12_present_bad_receipt_never_uses_internal_restore_compatibility ... ok
+test platform::f12_tests::f12_internal_restore_without_receipt_binds_exact_managed_backup ... ok
+test platform::f12_tests::f12_internal_restore_rejects_nonmatching_or_unsafe_backup ... ok
+test platform::f12_tests::f12_trusted_pending_refuses_unsafe_journal_and_receipt_nodes ... ok
+test platform::f11_test_io::f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 40 filtered out; finished in 0.34s
+

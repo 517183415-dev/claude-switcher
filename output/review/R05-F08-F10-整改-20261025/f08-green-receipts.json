@@ -1,0 +1,33 @@
+[
+  {
+    "name": "green",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-core",
+      "--lib",
+      "f08_",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "source_sha256_after": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3"
+  },
+  {
+    "name": "rustfmt",
+    "command": [
+      "rustfmt",
+      "--check",
+      "--edition",
+      "2024",
+      "crates/switcher-core/src/macos.rs"
+    ],
+    "exit_code": 0,
+    "source_sha256_before": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "source_sha256_after": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3"
+  }
+]
