@@ -410,6 +410,18 @@ impl UserRepairCoordinator {
     fn journal(&self) -> PathBuf {
         self.directory().join("journal.json")
     }
+    fn journal_present(&self) -> io::Result<bool> {
+        match storage::validate_no_symlinks(&self.directory()) {
+            Ok(()) => {}
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => return Err(error),
+        }
+        match fs::symlink_metadata(self.journal()) {
+            Ok(_) => Ok(true),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+            Err(error) => Err(error),
+        }
+    }
     fn path(&self, kind: Kind) -> PathBuf {
         {
             let path = self.home.join(kind.relative());
@@ -432,7 +444,7 @@ impl UserRepairCoordinator {
         rules_ok: bool,
     ) -> io::Result<PreparedUserRepair> {
         check_directory(&self.home, self.owner)?;
-        let recovery_pending = self.journal().try_exists()?;
+        let recovery_pending = self.journal_present()?;
         let mut items = Vec::new();
         let mut changes = Vec::new();
         for (kind, value) in [
@@ -694,10 +706,7 @@ impl UserRepairCoordinator {
     ) -> io::Result<UserRepairReceipt> {
         self.check_lock(lock)?;
         stopped()?;
-        if prepared.home != self.home
-            || !prepared.preview.can_execute
-            || self.journal().try_exists()?
-        {
+        if prepared.home != self.home || !prepared.preview.can_execute || self.journal_present()? {
             return Err(fail("修复计划不可执行，或存在待恢复事务"));
         }
         for change in &prepared.changes {
@@ -868,7 +877,7 @@ impl UserRepairCoordinator {
         lock: &LifecycleLock,
     ) -> io::Result<Option<UserRepairReceipt>> {
         self.check_lock(lock)?;
-        if !self.journal().try_exists()? {
+        if !self.journal_present()? {
             return Ok(None);
         }
         Ok(Some(UserRepairReceipt {
@@ -879,7 +888,7 @@ impl UserRepairCoordinator {
         if !valid_receipt_id(&receipt.id) {
             return Err(fail("用户修复收据标识无效"));
         }
-        if self.journal().try_exists()? {
+        if self.journal_present()? {
             let journal = self.read_journal()?;
             if journal.id == receipt.id {
                 return Ok(journal);
@@ -912,7 +921,7 @@ impl UserRepairCoordinator {
     }
     pub fn recover_with_lock(&self, lock: &LifecycleLock) -> io::Result<bool> {
         self.check_lock(lock)?;
-        if !self.journal().try_exists()? {
+        if !self.journal_present()? {
             return Ok(false);
         }
         let journal = self.read_journal()?;
@@ -1018,11 +1027,12 @@ impl UserRepairCoordinator {
         {
             return Err(fail("用户修复提交决议不完整"));
         }
+        let remove_active = self.journal_present()? && self.read_journal()?.id == journal.id;
         storage::atomic_json(
             &self.directory().join(format!("{}.json", journal.id)),
             journal,
         )?;
-        if self.journal().try_exists()? && self.read_journal()?.id == journal.id {
+        if remove_active {
             fs::remove_file(self.journal())?;
         }
         File::open(self.directory())?.sync_all()
@@ -2296,6 +2306,108 @@ pub(crate) mod tests {
         assert_eq!(runtime.events, ["stop", "start"]);
         assert!(!repair_legacy_tun_at(&fixture.root, &mut runtime).unwrap());
     }
+    #[test]
+    fn dangling_user_repair_journal_blocks_recovery_and_execution() {
+        let fixture = Fixture::new();
+        let coordinator = &fixture.coordinator;
+        let prepared = coordinator.preview(Fixture::target()).unwrap();
+        let original = fs::read(coordinator.path(Kind::Locale)).unwrap();
+        storage::create_private_directory(&coordinator.directory()).unwrap();
+        let journal = coordinator.journal();
+        let target = fixture.root.join("missing-journal");
+        std::os::unix::fs::symlink(&target, &journal).unwrap();
+        let lock = fixture.lock();
+
+        assert!(coordinator.pending_receipt_with_lock(&lock).is_err());
+        assert!(coordinator.recover_with_lock(&lock).is_err());
+        let preview = coordinator.preview(Fixture::target()).unwrap();
+        assert!(preview.preview.recovery_pending);
+        assert!(!preview.preview.can_execute);
+        with_test_home(&fixture.root, None, || {
+            assert!(coordinator.execute_with_lock(prepared, &lock).is_err());
+        });
+        assert_eq!(fs::read_link(&journal).unwrap(), target);
+        assert_eq!(fs::read(coordinator.path(Kind::Locale)).unwrap(), original);
+    }
+
+    #[test]
+    fn absent_user_repair_journal_has_no_pending_receipt() {
+        let fixture = Fixture::new();
+        let lock = fixture.lock();
+        assert!(
+            fixture
+                .coordinator
+                .pending_receipt_with_lock(&lock)
+                .unwrap()
+                .is_none()
+        );
+        assert!(!fixture.coordinator.recover_with_lock(&lock).unwrap());
+        assert!(
+            !fixture
+                .coordinator
+                .preview(Fixture::target())
+                .unwrap()
+                .preview
+                .recovery_pending
+        );
+    }
+
+    #[test]
+    fn dangling_journal_blocks_archived_receipt_and_finalization() {
+        let fixture = Fixture::new();
+        let coordinator = &fixture.coordinator;
+        storage::create_private_directory(&coordinator.directory()).unwrap();
+        let lock = fixture.lock();
+        let journal = Journal {
+            schema: 1,
+            id: "repair-1".into(),
+            changes: vec![],
+            attempted: 0,
+            after: vec![],
+            committed: true,
+            rolled_back: false,
+        };
+        let receipt = UserRepairReceipt {
+            id: journal.id.clone(),
+        };
+        let archived = coordinator.directory().join("repair-1.json");
+        storage::atomic_json(&archived, &journal).unwrap();
+        coordinator
+            .verify_receipt_with_lock(&receipt, &lock, false)
+            .unwrap();
+        let original = fs::read(&archived).unwrap();
+        let target = fixture.root.join("missing-journal");
+        std::os::unix::fs::symlink(&target, coordinator.journal()).unwrap();
+        assert!(
+            coordinator
+                .verify_receipt_with_lock(&receipt, &lock, false)
+                .is_err()
+        );
+        assert!(coordinator.finalize_record(&journal, &lock).is_err());
+        assert_eq!(fs::read(&archived).unwrap(), original);
+        assert_eq!(fs::read_link(coordinator.journal()).unwrap(), target);
+    }
+
+    #[test]
+    fn symlinked_user_repair_directory_is_never_absent() {
+        let fixture = Fixture::new();
+        let target = fixture.root.join("missing-directory");
+        std::os::unix::fs::symlink(&target, fixture.coordinator.directory()).unwrap();
+        let lock = fixture.lock();
+        assert!(
+            fixture
+                .coordinator
+                .pending_receipt_with_lock(&lock)
+                .is_err()
+        );
+        assert!(fixture.coordinator.recover_with_lock(&lock).is_err());
+        assert!(fixture.coordinator.preview(Fixture::target()).is_err());
+        assert_eq!(
+            fs::read_link(fixture.coordinator.directory()).unwrap(),
+            target
+        );
+    }
+
     fn enable_routes(fixture: &Fixture) -> PathBuf {
         let parent = fixture
             .coordinator

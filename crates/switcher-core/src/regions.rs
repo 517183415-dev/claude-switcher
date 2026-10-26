@@ -2768,6 +2768,46 @@ mod combined_tests {
     }
 
     #[test]
+    fn user_pending_dangling_receipt_preserves_region_recovery() {
+        let fixture = Fixture::new();
+        let region = coordinator(&fixture);
+        with_test_home(&fixture.root, None, || {
+            pending_fixture(&region, &fixture, true);
+            let mut journal = region.read_journal().unwrap();
+            journal.stage = RepairStage::UserPending;
+            journal.receipt = None;
+            journal.runtime_state = None;
+            region.save_journal(&journal).unwrap();
+            let user_journal = fixture
+                .root
+                .join(".claude-switcher/v2/user-repairs/journal.json");
+            let saved = user_journal.with_extension("saved");
+            fs::rename(&user_journal, &saved).unwrap();
+            std::os::unix::fs::symlink("missing-journal", &user_journal).unwrap();
+            let region_before = fs::read(region.journal_path()).unwrap();
+            let saved_before = fs::read(&saved).unwrap();
+            let files_before = images(&fixture.root);
+            let lock =
+                storage::LifecycleLock::try_acquire(&fixture.root.join(".claude-switcher/v2"))
+                    .unwrap();
+            let mut runtime = FakeRuntime::new(&fixture, false);
+            assert!(
+                region
+                    .recover_runtime_with(&lock, |_| panic!("unexpected root status"), &mut runtime)
+                    .is_err()
+            );
+            assert_eq!(fs::read(region.journal_path()).unwrap(), region_before);
+            assert_eq!(fs::read(&saved).unwrap(), saved_before);
+            assert_eq!(
+                fs::read_link(&user_journal).unwrap(),
+                PathBuf::from("missing-journal")
+            );
+            assert_eq!(images(&fixture.root), files_before);
+            assert_eq!((runtime.stops, runtime.starts), (0, 0));
+        });
+    }
+
+    #[test]
     fn runtime_crash_before_root_dispatch_restores_without_root_status() {
         let fixture = Fixture::new();
         let region = coordinator(&fixture);
