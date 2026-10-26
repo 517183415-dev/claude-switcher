@@ -14,7 +14,13 @@ import { verifyDenial } from './denials.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.preferences) {
+    if (info.persistence) {
+      const input = { ads: { slots_enabled: info.edition === 'personal' ? [true, false, true] : [false, true, false], request_purpose_acknowledged: true }, updates_paused_until: info.edition === 'personal' ? 2000000001 : 2000000002 };
+      await invoke('ipc_business_preferences_snapshot', { label: `persistence-${info.persistence}:before` });
+      const value = info.persistence === 'write' ? await invoke('save_preferences', { preferences: input }) : info.saved;
+      responses.persistence = { action: info.persistence, value };
+      await invoke('ipc_business_preferences_snapshot', { label: `persistence-${info.persistence}:after` });
+    } else if (info.preferences) {
       const pref = (slots, ack, paused = null) => ({ ads: { slots_enabled: slots, request_purpose_acknowledged: ack }, updates_paused_until: paused });
       const off = pref([false, false, false], false);
       const cases = [['all_off_unconfirmed', { preferences: off }, true]];

@@ -12,13 +12,24 @@ use switcher_domain::{Edition, desktop::ActivityEntry};
 struct Fixture {
     preflight: bool,
     preferences: bool,
+    persistence: Option<&'static str>,
 }
 
 #[tauri::command]
-fn ipc_business_info(fixture: tauri::State<'_, Fixture>) -> Value {
-    json!({"fixture": "ipc-business", "preflight": fixture.preflight,
+fn ipc_business_info(
+    fixture: tauri::State<'_, Fixture>,
+    state: tauri::State<'_, Arc<DesktopState>>,
+) -> Result<Value, String> {
+    let saved = if fixture.persistence == Some("read") {
+        Some(state.preferences()?)
+    } else {
+        None
+    };
+    Ok(
+        json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "preferences": fixture.preferences})
+        "ordinary_runtime": false, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
+    )
 }
 
 #[tauri::command]
@@ -119,26 +130,36 @@ pub fn run() {
     if args.len() != 1
         || !matches!(
             args[0].as_str(),
-            "--preflight" | "--business" | "--preferences"
+            "--preflight"
+                | "--business"
+                | "--preferences"
+                | "--persistence-write"
+                | "--persistence-read"
         )
     {
-        eprintln!("ipc-business requires --preflight, --business or --preferences");
+        eprintln!("ipc-business requires one reviewed fixture mode");
         std::process::exit(64);
     }
     let preflight = args[0] == "--preflight";
+    let persistence = match args[0].as_str() {
+        "--persistence-write" => Some("write"),
+        "--persistence-read" => Some("read"),
+        _ => None,
+    };
     let edition = if cfg!(feature = "personal") {
         Edition::Personal
     } else {
         Edition::Public
     };
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
-    if !preflight {
+    if !preflight && persistence.is_none() {
         seed_activity(&state);
     }
     tauri::Builder::default()
         .manage(Arc::new(state))
         .manage(Fixture {
             preflight,
+            persistence,
             preferences: args[0] == "--preferences",
         })
         .invoke_handler(tauri::generate_handler![

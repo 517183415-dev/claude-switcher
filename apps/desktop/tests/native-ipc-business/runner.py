@@ -63,11 +63,15 @@ def environment(folder):
             'PYTHONDONTWRITEBYTECODE': '1'}
 
 
-def execute(argv, folder, timeout=120):
+def execute(argv, folder, timeout=120, label=None):
     profile = folder / 'runtime.sb'
     command = ['/usr/bin/sandbox-exec', '-f', str(profile), *map(str, argv)]
+    if label is not None and re.fullmatch(r'[a-z0-9-]+', label) is None:
+        raise ValueError('invalid process log label')
+    stdout = folder / ((label + '-' if label else '') + 'stdout.log')
+    stderr = folder / ((label + '-' if label else '') + 'stderr.log')
     start = time.monotonic()
-    with (folder / 'stdout.log').open('xb') as out, (folder / 'stderr.log').open('xb') as err:
+    with stdout.open('xb') as out, stderr.open('xb') as err:
         process = subprocess.Popen(command, cwd=folder, env=environment(folder),
                                    stdin=subprocess.DEVNULL, stdout=out, stderr=err,
                                    start_new_session=True)
@@ -80,8 +84,8 @@ def execute(argv, folder, timeout=120):
             code = process.wait(timeout=10)
     return {'command': command, 'exit': code, 'timeout': timed_out,
             'termination_scope': 'fixture process group only; separately managed WebKit processes not proven terminated',
-            'seconds': time.monotonic() - start, 'environment': environment(folder),
-            'stdout_sha256': sha(folder / 'stdout.log'), 'stderr_sha256': sha(folder / 'stderr.log')}
+            'seconds': time.monotonic() - start, 'environment': environment(folder), 'pid': process.pid,
+            'stdout_sha256': sha(stdout), 'stderr_sha256': sha(stderr)}
 
 
 def private(path, mode, directory=False):
@@ -198,7 +202,7 @@ def validate_preferences(stdout, responses, edition, folder, filesystem):
             'rejected_bytes_unchanged': True, 'edition_isolation': True, 'ordinary_startup': 'NOT_RUN'}
 
 
-def validate(stdout, code, edition, mode, folder):
+def envelope(stdout, code, edition, preflight):
     assert code == 0, 'fixture exit must be zero'
     assert len(stdout.encode()) <= 1024 * 1024, 'stdout exceeds bound'
     results = [json.loads(line[len('BUSINESS_IPC_RESULT '):]) for line in stdout.splitlines()
@@ -207,7 +211,7 @@ def validate(stdout, code, edition, mode, folder):
     result = results[0]
     assert set(result) == {'fixture', 'ordinary_runtime', 'edition', 'preflight', 'ok', 'responses', 'denials', 'error'}, 'result schema mismatch'
     assert result['fixture'] == 'ipc-business' and result['ordinary_runtime'] is False
-    assert result['edition'] == edition and result['preflight'] is (mode == 'preflight')
+    assert result['edition'] == edition and result['preflight'] is preflight
     assert result['ok'] is True and result['error'] is None, 'JS failure'
     denials = result['denials']
     assert isinstance(denials, list) and len(denials) == len(DENIALS), 'denial count mismatch'
@@ -216,6 +220,12 @@ def validate(stdout, code, edition, mode, folder):
         assert set(item) == {'command', 'kind'}, 'denial schema mismatch'
         allowed = ['permission'] if item['command'] == 'ipc_business_forbidden' else ['permission', 'missing']
         assert item['kind'] in allowed, 'denial classification mismatch'
+    return result
+
+
+def validate(stdout, code, edition, mode, folder):
+    result = envelope(stdout, code, edition, mode == 'preflight')
+    denials = result['denials']
     root = folder / 'tmp/business-root'
     filesystem = [private(root, 0o700, True)]
     responses = result['responses']
@@ -304,27 +314,36 @@ def prepare():
     return result['status'] == 'PASS'
 
 
+def build_binding(edition, attempt):
+    if edition not in ('personal', 'public'):
+        raise ValueError('unsupported edition')
+    attempt_value(attempt)
+    receipt = OUT / 'build' / (edition + '-' + attempt) / 'result.json'
+    private_directory(OUT / 'build')
+    private_directory(receipt.parent)
+    safe_file(receipt)
+    data = json.loads(bounded_text(receipt))
+    assert data['status'] == 'PASS_BUILD_AND_ADHOC_STATIC_VERIFY' and data['edition'] == edition
+    binary_input = safe_file(Path(data['binary']))
+    assert not binary_input.is_symlink(), 'binary symlink forbidden'
+    binary = binary_input.resolve(strict=True)
+    assert binary.is_file() and binary.is_relative_to(OUT / 'build')
+    assert sha(binary) == data['signed_sha256'], 'binary hash mismatch'
+    assert data['source_before'] == data['source_after'], 'build inputs changed'
+    assert Path(data['sandbox']) == receipt.parent / 'build.sb', 'build sandbox must use fixed receipt path'
+    assert sha(safe_file(Path(data['sandbox']))) == data['profile_sha256'], 'build sandbox changed'
+    current = inputs()
+    assert current == data['source_before'], 'current source differs from successful build inputs'
+    assert data['harness_hashes'] == {name: current[name] for name in current if name.startswith('apps/desktop/tests/native-ipc-business/')}, 'harness differs from build'
+    return receipt, data, binary, current
+
+
 def run(edition, mode, attempt):
     folder = new_run(edition + '-' + mode)
     receipt = OUT / 'build' / (edition + '-' + attempt) / 'result.json'
     evidence = {'edition': edition, 'mode': mode, 'build_attempt': attempt, 'fixture_app_launch': 'NOT_RUN'}
     try:
-        private_directory(OUT / 'build')
-        private_directory(receipt.parent)
-        safe_file(receipt)
-        data = json.loads(bounded_text(receipt))
-        assert data['status'] == 'PASS_BUILD_AND_ADHOC_STATIC_VERIFY' and data['edition'] == edition
-        binary_input = safe_file(Path(data['binary']))
-        assert not binary_input.is_symlink(), 'binary symlink forbidden'
-        binary = binary_input.resolve(strict=True)
-        assert binary.is_file() and binary.is_relative_to(OUT / 'build')
-        assert sha(binary) == data['signed_sha256'], 'binary hash mismatch'
-        assert data['source_before'] == data['source_after'], 'build inputs changed'
-        assert Path(data['sandbox']) == receipt.parent / 'build.sb', 'build sandbox must use fixed receipt path'
-        assert sha(safe_file(Path(data['sandbox']))) == data['profile_sha256'], 'build sandbox changed'
-        current = inputs()
-        assert current == data['source_before'], 'current source differs from successful build inputs'
-        assert data['harness_hashes'] == {name: current[name] for name in current if name.startswith('apps/desktop/tests/native-ipc-business/')}, 'harness differs from build'
+        receipt, data, binary, current = build_binding(edition, attempt)
         evidence.update(source_hashes=current, binary={'path': str(binary), 'sha256': sha(binary)},
                         receipt_sha256=sha(receipt), profile_sha256=sha(folder / 'runtime.sb'), runner_sha256=sha(__file__))
         assert prepare(), 'sandbox controls failed'

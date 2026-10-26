@@ -1,3 +1,4 @@
+use super::test_support::MemoryVault;
 use super::*;
 use protocol::Object;
 use std::collections::HashMap;
@@ -31,33 +32,6 @@ fn open(root: &LocalRoot) -> Publisher {
         1000,
     )
     .unwrap()
-}
-#[derive(Default)]
-struct MemoryVault {
-    items: HashMap<String, Vec<u8>>,
-    fail: bool,
-}
-impl Drop for MemoryVault {
-    fn drop(&mut self) {
-        use zeroize::Zeroize;
-        for value in self.items.values_mut() {
-            value.zeroize();
-        }
-    }
-}
-impl Vault for MemoryVault {
-    fn load(&self, generation: &str) -> Result<Secrets> {
-        let bytes = self.items.get(generation).ok_or(Error::SecretUnavailable)?;
-        signed::strict_json(bytes, security::SECRET_LIMIT).map_err(Error::Invalid)
-    }
-    fn store(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
-        if self.fail {
-            return Err(Error::SecretUnavailable);
-        }
-        self.items
-            .insert(generation.into(), serde_json::to_vec(secrets).unwrap());
-        Ok(())
-    }
 }
 fn vault(publisher: &mut Publisher) -> MemoryVault {
     let mut vault = MemoryVault::default();

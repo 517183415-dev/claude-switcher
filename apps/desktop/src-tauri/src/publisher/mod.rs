@@ -6,6 +6,8 @@ mod cleanup_tests;
 pub mod local_store;
 pub mod protocol;
 pub mod security;
+#[cfg(any(test, feature = "ipc-business"))]
+pub(crate) mod test_support;
 
 use chacha20poly1305::aead::{OsRng, rand_core::RngCore};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};

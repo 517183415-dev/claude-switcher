@@ -21,3 +21,12 @@ Each process receives a whitelist environment and a new synthetic HOME/TMPDIR. R
 The independent parser checks denial classifications, fixed export paths, redaction, raw historical positive control, file contents and 0700/0600 permissions. Success proves this controlled real-command WKWebView path. It does not prove ordinary startup, real accounts, Keychain, installation or system-service behavior. Timeout termination covers only the fixture process group; separate WebKit processes are not claimed terminated.
 
 Build paths reject symlink ancestors. The target must be the project `target` or below the explicit output `target`. The toolchain must be a dedicated `.rustup/toolchains/VERSION/bin`. Cargo HOME must be an isolated cache. Only exact registry/git dependency subtree links may resolve to the account Cargo cache; credentials and config files stay denied. Synthetic credentials/config controls execute before compilation. Real HOME comes from the OS account record, independently of the calling environment HOME. Source manifests, directories and files reject links. Evidence directories require owner-only 0700; receipts and binaries reject symlinks, hardlinks and writable sharing.
+
+For cross-process persistence, first build both editions into one fresh output root using the commands above. Then run:
+
+```sh
+python3 -B apps/desktop/tests/native-ipc-business/test_persistence.py
+python3 -B apps/desktop/tests/native-ipc-business/persistence.py --output /absolute/private/output --build-attempt r1
+```
+
+This creates one new synthetic session and launches four separate fixture processes, waiting for each exit: Personal write, Public write, Personal read, Public read. The two editions persist different nondefault settings. Readers call the real `DesktopState.preferences` method through the existing feature-only info command. Writers invoke the real `save_preferences` command. Each phase preserves the other edition's file bytes. Readers preserve all persistent bytes. This session reuses only its own synthetic HOME/TMPDIR/root. Its unchanged sandbox denies all network and real private locations. Named process logs are created exclusively and cannot overwrite prior evidence.
