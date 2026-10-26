@@ -1927,6 +1927,26 @@ mod transport_tests {
         child: Child,
         port: u16,
     }
+    fn isolated_tls_tool(root: &Path, name: &str) -> Command {
+        use std::os::unix::fs::PermissionsExt;
+        let executable = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+            .filter(|directory| directory.is_absolute())
+            .find_map(|directory| {
+                let path = directory.join(name).canonicalize().ok()?;
+                let metadata = path.metadata().ok()?;
+                let mode = metadata.permissions().mode();
+                (metadata.is_file() && mode & 0o111 != 0 && mode & 0o022 == 0).then_some(path)
+            })
+            .expect("a trusted absolute TLS fixture executable is required");
+        let mut command = Command::new(executable);
+        command
+            .env_clear()
+            .env("HOME", root)
+            .env("TMPDIR", root)
+            .env("LC_ALL", "C")
+            .current_dir(root);
+        command
+    }
     impl TlsFixture {
         fn new() -> Self {
             let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
@@ -1936,7 +1956,7 @@ mod transport_tests {
             ));
             crate::storage::create_private_directory(&root).unwrap();
             std::fs::write(root.join("openssl.cnf"),"[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=ext\n[dn]\nCN=updates.example.com\n[ext]\nsubjectAltName=DNS:updates.example.com,IP:127.0.0.1\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\n").unwrap();
-            let result = Command::new("/usr/bin/openssl")
+            let result = isolated_tls_tool(&root, "openssl")
                 .args([
                     "req",
                     "-x509",
@@ -1959,8 +1979,11 @@ mod transport_tests {
                 .status()
                 .unwrap();
             assert!(result.success());
-            let script = r#"import http.server,ssl,sys,pathlib,json
+            let script = r#"import http.server,ssl,sys,pathlib,json,os
 root=pathlib.Path(sys.argv[1])
+assert sys.flags.isolated == 1
+assert set(os.environ) <= {'HOME','TMPDIR','LC_ALL','LC_CTYPE','__CF_USER_TEXT_ENCODING'}
+assert os.environ['HOME'] == str(root) == os.environ['TMPDIR']
 class H(http.server.BaseHTTPRequestHandler):
  def log_message(self,*args): pass
  def do_GET(self):
@@ -1983,6 +2006,27 @@ class H(http.server.BaseHTTPRequestHandler):
    self.send_response(302); self.send_header('Location','https://updates.example.com/never-follow'); self.end_headers(); return
   name=self.path.rsplit('/',1)[-1]
   if name not in ('metadata.json','app.tar.gz','helper.pkg'): self.send_error(404); return
+  if name == 'app.tar.gz' and (root/'response-mode').exists():
+   mode=(root/'response-mode').read_text()
+   self.close_connection=True
+   with (root/'responses.log').open('a') as f: f.write(mode+'\n')
+   if mode in ('declared-short','close-short'):
+    self.send_response(200)
+    if mode == 'declared-short': self.send_header('Content-Length','4')
+    self.send_header('Connection','close'); self.end_headers()
+    self.wfile.write(b'tes'); self.wfile.flush()
+    # Close TLS cleanly so declared-short isolates HTTP length truncation.
+    try: self.connection.unwrap().close()
+    except (ssl.SSLError,OSError): pass
+    return
+   if mode in ('chunk-exact','chunk-overflow'):
+    self.protocol_version='HTTP/1.1'
+    self.send_response(200); self.send_header('Transfer-Encoding','chunked')
+    self.send_header('Connection','close'); self.end_headers()
+    for chunk in ([b'te',b'st',b'!'] if mode == 'chunk-overflow' else [b'te',b'st']):
+     self.wfile.write(('%x\r\n'%len(chunk)).encode()+chunk+b'\r\n'); self.wfile.flush()
+    self.wfile.write(b'0\r\n\r\n'); self.wfile.flush(); return
+   assert mode == 'full'
   data=(root/name).read_bytes()
   self.send_response(200); self.send_header('Content-Length',str(len(data))); self.end_headers(); self.wfile.write(data)
  do_POST=do_GET
@@ -1992,7 +2036,8 @@ server.socket=ctx.wrap_socket(server.socket,server_side=True)
 print(server.server_port,flush=True)
 server.serve_forever()
 "#;
-            let mut child = Command::new("python3")
+            let mut child = isolated_tls_tool(&root, "python3")
+                .arg("-I")
                 .arg("-u")
                 .arg("-c")
                 .arg(script)
@@ -2020,12 +2065,10 @@ server.serve_forever()
                     std::net::SocketAddr::from(([127, 0, 0, 1], self.port)),
                 );
             if trust {
-                builder = builder.add_root_certificate(
-                    reqwest::Certificate::from_pem(
-                        &std::fs::read(self.root.join("cert.pem")).unwrap(),
-                    )
-                    .unwrap(),
-                );
+                builder = builder.tls_certs_only([reqwest::Certificate::from_pem(
+                    &std::fs::read(self.root.join("cert.pem")).unwrap(),
+                )
+                .unwrap()]);
             }
             builder.build().unwrap()
         }
@@ -2463,6 +2506,78 @@ server.serve_forever()
                 .is_err()
         );
         assert_eq!(state.sequence.highest, 7);
+    }
+    fn download_boundary_fixture() -> (TlsFixture, ReleaseTransport, Candidate) {
+        let fixture = TlsFixture::new();
+        let key = ed25519_dalek::SigningKey::from_bytes(&[17; 32]);
+        std::fs::write(
+            fixture.root.join("metadata.json"),
+            super::tests::sign(&super::tests::metadata(), &key),
+        )
+        .unwrap();
+        std::fs::write(fixture.root.join("app.tar.gz"), b"test").unwrap();
+        let transport = ReleaseTransport {
+            pins: TlsFixture::pins(),
+            client: fixture.client(true),
+        };
+        let installed = Version::new(1, 0, 0);
+        let candidate = transport
+            .check_blocking(
+                &UpdateState::default(),
+                &installed,
+                Some(&installed),
+                200,
+                true,
+            )
+            .unwrap();
+        (fixture, transport, candidate)
+    }
+    #[test]
+    fn controlled_tls_download_rejects_truncated_responses() {
+        let (fixture, transport, candidate) = download_boundary_fixture();
+        for (mode, expected) in [
+            ("full", None),
+            ("declared-short", Some("update_network")),
+            ("close-short", Some("artifact_size")),
+        ] {
+            std::fs::write(fixture.root.join("response-mode"), mode).unwrap();
+            let result = transport.download_blocking(&candidate, ArtifactKind::App, 200);
+            if let Some(error) = expected {
+                assert_eq!(result.unwrap_err(), error, "{mode}");
+            } else {
+                let (bytes, proof) = result.unwrap();
+                assert_eq!(bytes, b"test");
+                assert_eq!(proof.sha256(), signed::digest(b"test"));
+            }
+        }
+        assert_eq!(
+            std::fs::read_to_string(fixture.root.join("responses.log")).unwrap(),
+            "full\ndeclared-short\nclose-short\n"
+        );
+        assert_eq!(fixture.wire().len(), 4);
+    }
+    #[test]
+    fn controlled_tls_download_enforces_unknown_length_stream_limit() {
+        let (fixture, transport, candidate) = download_boundary_fixture();
+        for (mode, expected) in [
+            ("chunk-exact", None),
+            ("chunk-overflow", Some("update_response_too_large")),
+        ] {
+            std::fs::write(fixture.root.join("response-mode"), mode).unwrap();
+            let result = transport.download_blocking(&candidate, ArtifactKind::App, 200);
+            if let Some(error) = expected {
+                assert_eq!(result.unwrap_err(), error, "{mode}");
+            } else {
+                let (bytes, proof) = result.unwrap();
+                assert_eq!(bytes, b"test");
+                assert_eq!(proof.sha256(), signed::digest(b"test"));
+            }
+        }
+        assert_eq!(
+            std::fs::read_to_string(fixture.root.join("responses.log")).unwrap(),
+            "chunk-exact\nchunk-overflow\n"
+        );
+        assert_eq!(fixture.wire().len(), 3);
     }
     #[test]
     fn archive_paths_links_and_expansion_are_bounded_before_apple_assessment() {
