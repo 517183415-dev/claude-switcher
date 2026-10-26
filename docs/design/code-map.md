@@ -1,74 +1,86 @@
-# 现有代码图谱与 UI 概念
+# Claude 切换器当前代码图谱
 
-日期：2026-10-22。阶段：现状梳理完成，视觉方向已确认。[Rust 重写方案](../plans/rust-rewrite-plan.md) 已形成评审稿。
+更新日期：2026-10-27，Asia/Shanghai。项目根目录：`/Users/gua/CodexWorkspaces/claude-switcher`。
 
-## 项目定位
+## 1. 基线与索引范围
 
-- 会话：Claude切换器独立项目。
-- 项目：Claude切换器。
-- 工作目录与 Git 根目录：`/Users/gua/CodexWorkspaces/claude-switcher`。
-- CodeGraph：`.codegraph/`，状态 complete，139 个节点、225 条关系、6 个索引文件；当前待同步文件为 0。
-- 自动索引覆盖 Python、Swift。下图的 Shell 关系来自脚本入口和函数源码补充阅读；自动索引统计仅代表其覆盖范围。
+当前开发分支为 `codex/rust-rewrite`。产品代码基线为 `49c2615beac0e1f7ac7352977d3212229fe9b012`。该提交已包含 `codex/gpt-audit-fixes` 的全部代码。整合交付记录提交为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。本轮只更新索引配置与文档。
 
-## 现有调用关系
+CodeGraph 1.6.0 已完成增量同步。当前索引有 **159 个文件、4,481 个节点、16,974 条关系**。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
 
-```mermaid
-flowchart TD
-    App[SwiftUI SwitcherApp] --> View[ContentView]
-    View --> VM[VM 状态与动作]
-    VM --> Run[run: Bash 子进程与文本结果]
-    Run --> CLI[已安装 claude-switch.sh]
-    CLI --> Detail[checkdetail: 14 项检查]
-    CLI --> Status[status: 当前账号和档案存在状态]
-    CLI --> Switch[switch_to]
-    CLI --> Fix[fix: 环境修复]
-    CLI --> Region[set_region]
-    CLI --> Update[self_update]
-    Switch --> Preflight[launch_preflight]
-    Preflight --> Detail
-    Preflight --> Validate[validate_audit_output]
-    Switch --> Quit[quit_claude]
-    Switch --> Archive[archive_current]
-    Archive --> Accounts[本地账号档案]
-    Switch --> Data[Claude 应用数据目录]
-    Switch --> Open[open Claude]
-    Detail --> STUN[stun-probe.py: UDP 探测]
-    Detail --> OS[网络 / 地区 / 服务状态]
-    Launchd[launchd] --> Guard[claude-bodyguard.sh]
-    Launchd --> TZ[tz-watchdog.sh]
-    Launchd --> Update
-    Guard --> Stop[代理检查异常时关闭 Claude]
-    TZ --> Restore[恢复目标时区]
-    Tests[隔离 Python unittest] -.-> CLI
+根目录 [codegraph.json](../../codegraph.json) 排除 `output/`、`tmp/`、验收证据与审核副本。历史源码和证据原件均保留。`experiments/` 保留索引，但降低查询优先级。这样可避免冻结源码参与当前调用链分析。
+
+自动索引覆盖 Rust、Svelte、TypeScript、JavaScript、Python、Swift 和 Objective-C。Shell、PowerShell、配置和文档仍须按入口单独核对。索引数据库位于本机 `.codegraph/`，不纳入 Git。同步验证见[图谱更新记录](../acceptance/evidence/integration-20261027/codegraph-update.json)。
+
+## 2. 当前入口与调用链
+
+```text
+桌面：src/main.ts → App.svelte／RegionSettings.svelte
+                             │ Personal：Operations.svelte
+                             ↓ Tauri IPC
+       src-tauri/main.rs → commands.rs → bridge.rs／DesktopState
+                             │ Personal：publisher_commands.rs → publisher/
+                             ↓
+CLI：claude-switcher.rs ─→ switcher-core ←─ switcher-guardian.rs
+                             │
+             ┌───────────────┼────────────────┐
+             ↓               ↓                ↓
+      检查与账号生命周期   修复与地区设置     广告与更新规则
+             │               │                │
+             ↓               ↓ 授权 XPC       ↓
+      账号档案与事务日志   switcher-helper    本地状态／受信内容
+                             ↓ 身份与策略校验
+                         固定系统操作
+
+switcher-domain：共享类型与协议 → Rust 模块／生成的 TypeScript 类型
+packaging/macos：候选工件 → 安装计划 → 管理员安装／恢复事务
 ```
 
-## 关键文件
+`main.rs` 用编译特性固定 Personal/Public，禁止同时启用或同时缺失。Public 不注册 Personal 的运营写入命令。`ipc-smoke` 使用独立编译特性；静态包检查不证明原生 IPC 已运行。
 
-| 文件 | 职责 |
+桌面 `DesktopState` 汇集快照、检查会话、账号动作、修复计划、地区预览和广告刷新。CLI 与 guardian 复用核心业务模块。账号切换通过 `lifecycle::switch_checked`，当前账号启动通过 `lifecycle::launch_checked`。检查、退出、交换、复检和启动的规则由核心实现负责。
+
+helper 根据安装记录校验调用身份，再按固定策略执行系统操作。SourceLocal 与 DeveloperId 的更新许可由安装身份和可信发布配置共同决定。Public 的发行标识不能单独证明远端更新可用。
+
+## 3. 模块与职责
+
+| 路径 | 当前职责 |
 | --- | --- |
-| `app/main.swift` | SwiftUI 界面、检查状态、子进程、账号动作 |
-| `core/claude-switch.sh` | 检查、启动门禁、账号档案交换、修复、地区配置、更新、代理诊断 |
-| `core/stun-probe.py` | 并发 STUN 探测 |
-| `daemons/` | 系统守护脚本和 launchd 模板 |
-| `installer/安装.command` | 安装、配置、编译和服务注册 |
-| `tests/test_switch_safety.py` | 隔离启动、检查结果完整性、警告处理等回归 |
-| `tests/test_proxy_diagnose.py` | 独立代理诊断回归 |
-| `windows/`、`linux/` | 平台实现；后续方案阶段明确移植范围 |
+| `apps/desktop/src/` | Svelte 页面、状态呈现、用户动作和生成的类型引用 |
+| `apps/desktop/src-tauri/src/main.rs`、`commands.rs`、`bridge.rs` | 应用入口、IPC 注册、桌面状态与核心调用 |
+| `apps/desktop/src-tauri/src/publisher/`、`publisher_commands.rs` | Personal 草稿、签名发布、备份、历史整理与素材回收 |
+| `apps/desktop/src-tauri/src/update_runtime.rs` | 桌面更新状态、来源约束与更新动作协调 |
+| `crates/switcher-domain/src/` | 检查、账号、发行、广告、系统操作等共享类型；导出 TypeScript 类型 |
+| `crates/switcher-core/src/checks.rs`、`network.rs`、`diagnostics.rs` | 14 项检查、网络证据和独立代理诊断 |
+| `crates/switcher-core/src/accounts.rs`、`migration.rs`、`lifecycle.rs` | A/B 存档、兼容状态、事务恢复、切换与启动门禁 |
+| `crates/switcher-core/src/user_repairs.rs`、`regions.rs`、`guardian.rs` | 修复计划、地区变更和用户级守护；复用各自内部辅助模块 |
+| `crates/switcher-core/src/ads.rs`、`ad_runtime/`、`updates.rs`、`signed.rs`、`time.rs` | 内容校验、广告运行、软件更新协议、签名和时间连续性；`ad_runtime.rs` 为运行入口 |
+| `crates/switcher-core/src/bin/` | CLI、guardian 和 Keychain 元数据探针入口 |
+| `crates/switcher-helper/src/` | 授权、XPC、调用策略、系统操作、安装健康与恢复 |
+| `packaging/macos/` | 候选包、本地安装、取消、卸载和事务恢复工具 |
 
-已核对 UI 状态：checking、ready、failed、switching、done、fixing。当前 GUI 通过已安装脚本执行动作。源码副本与已安装运行文件需要在后续方案中明确管理。
+依赖方向保持“界面与入口 → 核心 → 共享协议”。特权动作经过 helper 的身份与策略边界。维护时优先复用现有规则，不在界面复制账号、检查或更新决策。
 
-## 视觉方向
+## 4. 测试入口与当前证据
 
-概念图：`ui-concept-v1.png`。暖白、墨绿、细分隔线、横向工作台。
+| 入口 | 验证对象 |
+| --- | --- |
+| `crates/switcher-core/src/` 内测试、`crates/switcher-core/tests/` | 业务规则、事务、检查、诊断与隐私回归 |
+| `crates/switcher-helper/src/` 内测试 | 授权策略、系统动作校验与恢复规则 |
+| `apps/desktop/src-tauri/src/publisher/*tests.rs`、其他 Rust 内测试 | 发布、备份、整理、回收及运行状态 |
+| `apps/desktop/src-tauri/tests/` | 桌面接口相关的核心准备、修复与导出回归 |
+| `apps/desktop/tests/`、`apps/desktop/scripts/` | 前端行为、时间转换和既有隔离回归 |
+| `packaging/macos/test_*.py` | 假安装、取消、卸载和恢复；使用隔离文件与替身命令 |
+| `tests/` | 旧版 Shell 的切换安全与独立代理诊断回归 |
 
-- 左侧导航负责页面切换。
-- 中部聚焦当前账号和“检查并启动 Claude”。
-- 右侧呈现检查摘要和待处理项。
-- 底部用网络、地区、后台服务三个入口展开详情。
-- 账号选择与启动设计为两个明确操作；属于拟议交互。
+整合回归已完成 125 个测试方法及 2 组 Node VM 检查。类型检查为零错误、零警告。两版候选包共通过 44 项静态检查。这些结果来自本地整合记录，本轮文档更新未重跑产品测试。
 
-图片中的状态、账号档案、导航页面均为设计示例。后续设计稿需补充首次使用、检查中、检查失败、修复中、切换中、完成等状态。
+当前候选原生 GUI/IPC 仍为 `NOT_RUN`。实际安装、真实账号、实际外发、平台与长期运行按各自验收记录执行。完整隔离条件未满足时，不启动候选来替代隔离验收。详见[本地整合交付](../handoff/本地整合交付-2026-10-27.md)和[37 项当前候选验收](../acceptance/当前候选验收-2026-10-27.md)。
 
-图中文字校对记录：连接说明中的“安全访问·正常连接”应随实际检查结果呈现；ASN 提示应改为“网络运营商信息暂未获取”；代理加密描述应依据实际协议呈现。此轮视觉方向可供用户评审，交互和文案在详细方案阶段定稿。
+## 5. 历史实现与产品依据
 
-设计产物包括本图谱、概念图和视觉评审记录。用户已确认视觉方向；下一步评审 Rust 重写方案。
+`app/main.swift` 是旧版 SwiftUI 入口，通过已安装的 `claude-switch.sh` 调用检查、切换与修复。`core/`、`daemons/`、`installer/` 保留旧版实现。`windows/`、`linux/` 保留各自平台实现，不能据此宣称当前 Rust 候选已通过跨平台验收。
+
+`experiments/p0/` 是早期验证。审核包、冻结源码和验收证据用于历史复现，不能作为当前产品调用入口。
+
+暖白、墨绿和横向工作台的视觉方向保留。页面、发行差异和交互以[产品 PRD v1.2](../plans/PRD-Rust双版本产品-v1.2.md)为准。[概念图](ui-concept-v1.png)仅提供视觉依据，不证明运行状态。

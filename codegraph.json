@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    "/output/",
+    "/tmp/",
+    "/docs/acceptance/evidence/",
+    "/docs/review-pack/",
+    "/docs/review-pack-*/"
+  ],
+  "deprioritize": [
+    "/experiments/"
+  ]
+}

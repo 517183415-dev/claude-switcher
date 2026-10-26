@@ -1,0 +1,60 @@
+{
+  "task": "CS-RUST-INTEGRATE-20261027-document-refresh",
+  "verified_utc": "2026-10-26T17:16:16.824310+00:00",
+  "branch": "codex/rust-rewrite",
+  "product_commit": "49c2615beac0e1f7ac7352977d3212229fe9b012",
+  "integration_document_commit": "84d7bc1b0b0d80630745272361b6aaa41c9259fa",
+  "codegraph": {
+    "version": "1.6.0",
+    "operation": "codegraph sync",
+    "state": "complete",
+    "file_count": 159,
+    "node_count": 4481,
+    "edge_count": 16974,
+    "pending_changes": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    },
+    "pending_refs": 0,
+    "worktree_mismatch": null,
+    "config_sha256": "b580fcb1ead1a94c07757b64e57def6c72851b7eca3790aaa56ff0b52e9bed4e",
+    "indexed_paths_sha256": "5949823c7915a5d3495a4b1bc1bdafe2023b033d0b2f8da303fc52dc056049c9",
+    "excluded_path_matches": [],
+    "required_current_paths_present": [
+      "apps/desktop/src/main.ts",
+      "apps/desktop/src/App.svelte",
+      "apps/desktop/src/pages/Operations.svelte",
+      "apps/desktop/src-tauri/src/main.rs",
+      "apps/desktop/src-tauri/src/commands.rs",
+      "apps/desktop/src-tauri/src/bridge.rs",
+      "apps/desktop/src-tauri/src/publisher/mod.rs",
+      "apps/desktop/src-tauri/src/update_runtime.rs",
+      "crates/switcher-domain/src/lib.rs",
+      "crates/switcher-core/src/lib.rs",
+      "crates/switcher-core/src/bin/claude-switcher.rs",
+      "crates/switcher-core/src/bin/switcher-guardian.rs",
+      "crates/switcher-helper/src/main.rs",
+      "crates/switcher-helper/src/xpc.rs",
+      "packaging/macos/local_install.py",
+      "packaging/macos/test_local_install.py",
+      "apps/desktop/tests/repair-preview.test.mjs",
+      "crates/switcher-core/tests/checks_cli.rs"
+    ],
+    "missing_required_paths": [],
+    "experiments_deprioritized": true,
+    "current_source_queries": [
+      "apps/desktop/src-tauri/src/main.rs",
+      "apps/desktop/src-tauri/src/bridge.rs",
+      "crates/switcher-core/src/lib.rs crates/switcher-helper/src/main.rs"
+    ]
+  },
+  "documentation_checks": {
+    "prd_check_ids_unchanged": 14,
+    "current_acceptance_ids_unchanged": 37,
+    "local_links_exist": true,
+    "product_sources_unchanged_from_product_commit": true,
+    "historical_evidence_preserved": true
+  },
+  "validation_scope": "Index configuration and documentation only; product tests and native acceptance were not rerun."
+}
