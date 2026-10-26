@@ -607,6 +607,19 @@
     "output/no-account-20261027/bundles-final/bundle-public.stdout": "5fc791246208a4894c6f10f14ddf719dc34941aaa6d6f8f2be1ca79d0e4f9667",
     "output/no-account-20261027/bundles-final/bundle-personal.stdout": "85054aa9db1e3a5e7c62b22abcd06eb393ab7913ea955f7e70eef3f771f11d24",
     "output/no-account-20261027/bundles-final/bundle-public.stderr": "39e9d8dcb8736353d71d273fa4ad7db7fb749befec39f1e645e5bcee92f68b2d",
-    "output/no-account-20261027/bundles-final/bundle-personal.stderr": "d5b1e0b64481ff8ff1e5465f55081530fbc4a93258ee00f9c85ed263ef7c0ebb"
+    "output/no-account-20261027/bundles-final/bundle-personal.stderr": "d5b1e0b64481ff8ff1e5465f55081530fbc4a93258ee00f9c85ed263ef7c0ebb",
+    "output/no-account-20261027/review-final.json": "ae1cc420922339d020e886dd836d9fd03d8c064356f8b1704a500bf8e17999d5"
+  },
+  "coverage_review": {
+    "status": "INDEX_COMPLETE; BRANCH_COMPLETENESS_NOT_PROVEN",
+    "ids": 35,
+    "referenced_distinct_rust_test_names": 387,
+    "confirmed_missing_test_claims": 0,
+    "new_tests_run": 0,
+    "files": {
+      "docs/acceptance/evidence/no-account-20261027/coverage-map.json": "2bfa0fe9386249f588d4f4e2b21ffea009f954ba70def43d1c2b296f873329cf",
+      "docs/acceptance/evidence/no-account-20261027/coverage-map.md": "c4fb8e7ca1d1e1700d9f3aece0b64d1ccb44103e7f3225e12081346a20c2fbf0"
+    },
+    "note": "Found existing tests for35 IDs; no blanket acceptance or complete branch coverage claim."
   }
 }
