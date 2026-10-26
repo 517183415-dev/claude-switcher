@@ -618,8 +618,17 @@
     "new_tests_run": 0,
     "files": {
       "docs/acceptance/evidence/no-account-20261027/coverage-map.json": "2bfa0fe9386249f588d4f4e2b21ffea009f954ba70def43d1c2b296f873329cf",
-      "docs/acceptance/evidence/no-account-20261027/coverage-map.md": "c4fb8e7ca1d1e1700d9f3aece0b64d1ccb44103e7f3225e12081346a20c2fbf0"
+      "docs/acceptance/evidence/no-account-20261027/coverage-map.md": "9b1839e97314746241c59c8d3f37b69a1d05fc26a801da9e03af0b7d01b12dee"
     },
-    "note": "Found existing tests for35 IDs; no blanket acceptance or complete branch coverage claim."
+    "note": "Found existing tests for35 IDs; no blanket acceptance or complete branch coverage claim.",
+    "scope": "Historical CNA/v4 index; later bounded review and eight new names are recorded in current_followup."
+  },
+  "historical_scope": "CNA/v4 fields and hashes below remain historical. Current product candidate is CNB; use current_followup. No earlier result is rewritten as a fresh CNB execution.",
+  "current_followup": {
+    "candidate": "CNB",
+    "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
+    "path": "branch-followup.json",
+    "sha256": "5f3e773ff256496bf3b141167e3f69f92786a3bcc1a760ef38f17e87a5f92882",
+    "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE"
   }
 }

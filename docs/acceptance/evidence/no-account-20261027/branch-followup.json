@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "candidate": "CNB",
+  "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE",
+  "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
+  "source_tree": "27d4826b204d079f3a28c48a7f2089d31fe1992e",
+  "previous_candidate": "CNA / 0297efe2da236427b9a95a584aba53c4f30ce634; preserved summary.json fields describe that earlier phase",
+  "source_files": {
+    "crates/switcher-core/src/accounts.rs": "a391d39eb26b6cb5297ff21fd00776e89c67449dc91e2c9c57449b2d20b7f160",
+    "crates/switcher-core/src/accounts/legacy.rs": "cc209df399661f1088b43014742c7bda248015603efe9f592f439baf07e0dadc",
+    "crates/switcher-core/src/checks.rs": "50c90a5ca6225738f09b1f22009285b8d561962e28bf6e15fac58f9c50f727b8",
+    "crates/switcher-core/src/repair_cli.rs": "7dc61ef8a3383b3ec2c4bd5704b6704ad8c1f2d44c240dd64a03101869ae1ec5",
+    "crates/switcher-core/src/guardian.rs": "d08aa26b717066be282c3e904755f3985f39dea1461a4efbc0a9606bfbaf6208",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "623e5cd410050f78bd79ae1f09bd0549a791e1dd62aae23082efe543fddae5dd",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "66226f0726889637b9be16ff1509d791da63d9df70885ae15bd6ed1be0672c94"
+  },
+  "production_fixes": [
+    {
+      "bug": "CLI ordinary fix reported success without a complete check",
+      "repair": "Shared repair runner invokes complete checks exactly once after successful ordinary Fix; failed/blocked checks cannot emit success OK",
+      "regression": "RED preserved; Modern and Legacy, full14 report, blocked and infrastructure errors, preview and apply/prepare failure paths checked"
+    },
+    {
+      "bug": "Dangling current symlink was treated as missing and entered fallback",
+      "repair": "Shared recorded_account checks the directory entry with symlink_metadata; only true NotFound can enter fallback",
+      "regression": "RED preserved; inspect and production select tested for dangling/existing links with/without v2 and both target IDs; absent current fallback remains valid"
+    }
+  ],
+  "assertion_improvements": [
+    "Invalid schema and each summary count independently rejected",
+    "Production ditto roundtrip and seven recovery checkpoints compare synthetic xattr and mode",
+    "Guardian fake stop consumer executes while the lifecycle lock remains held",
+    "Valid exactly1MiB and2000000pixel PNG validates and imports; normalized bytes revalidate; +1 input rejects without writes",
+    "Pending direct GC commit rejects with index/files/candidate identity/reopen state unchanged"
+  ],
+  "rust": {
+    "passed_executions": 679,
+    "distinct_test_names": 575,
+    "duplicate_name_groups": 26,
+    "additional_duplicate_executions": 104,
+    "list_and_pass_names_identical": true,
+    "failed_executions": 0,
+    "new_names_vs_v4": [
+      "accounts::tests::f04_absent_current_keeps_v2_fallback_for_inspection_and_selection",
+      "accounts::tests::f04_dangling_current_link_is_rejected_before_inspection_or_selection",
+      "accounts::tests::f04_existing_current_link_is_rejected_before_inspection_or_selection",
+      "checks::tests::gate_rejects_invalid_schema_and_each_summary_field_independently",
+      "publisher::cleanup_tests::f17_pending_gc_commit_preserves_files_and_index",
+      "publisher::tests::f15_valid_image_accepts_exact_byte_and_pixel_limits",
+      "repair_cli::tests::ordinary_fix_checks_once_and_never_reports_success_for_blocked_or_failed_checks",
+      "repair_cli::tests::ordinary_fix_preview_and_prepare_or_apply_errors_never_recheck"
+    ],
+    "sha256": {
+      "run-v5.log": "dcf8fb97b10498fc4bdc37c0c011aa9320c4e71d20dd18b2b5b74e634f3b1739",
+      "list-v5.log": "650eec8722e68831fd02abedbc0ddf53ce661cdebf35f83e57c010c26103c38f"
+    },
+    "argv": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+      "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "--workspace",
+      "--tests",
+      "--",
+      "--skip",
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "--skip",
+      "time::tests::real_macos_continuous_sample_is_available",
+      "--test-threads=1"
+    ],
+    "seconds": 197.556,
+    "excluded_native_filters": [
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "time::tests::real_macos_continuous_sample_is_available"
+    ]
+  },
+  "static_checks": {
+    "fmt": {
+      "exit": 0,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "duration_seconds": 0.479
+    },
+    "clippy": {
+      "exit": 0,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "duration_seconds": 13.195
+    },
+    "diff_check_exit": 0,
+    "known_output_notice": "Existing ts-rs deny_unknown_fields macro parsing notices remain"
+  },
+  "reused_evidence": {
+    "python_methods": 200,
+    "python_key_inputs_unchanged": [
+      {
+        "path": "core/claude-switch.sh",
+        "sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2"
+      },
+      {
+        "path": "packaging/macos/local_install.py",
+        "sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f"
+      },
+      {
+        "path": "packaging/macos/build_pkg.py",
+        "sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92"
+      },
+      {
+        "path": "packaging/macos/test_local_install.py",
+        "sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0"
+      },
+      {
+        "path": "packaging/macos/test_build_pkg.py",
+        "sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90"
+      },
+      {
+        "path": "tests/test_proxy_diagnose.py",
+        "sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf"
+      },
+      {
+        "path": "tests/test_switch_safety.py",
+        "sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342"
+      }
+    ],
+    "frontend_tests": 60,
+    "vm_groups": 2,
+    "frontend_original_commit": "4d29eaa33de0f36833ef096fb3177d19b20a4750",
+    "boundary": "No Python script/test, frontend source or dependency lock changed in the new seven-file Rust fix. Earlier recorded results are reused; no fresh Python or Node test execution is claimed. Current bundle beforeBuild checks are separate."
+  },
+  "evidence_sha256": {
+    "output/no-account-20261027/branch-audit/checks.json": "613217437b30cc43998feda02cfc9ea15ea613c2dd6ae408e1e7c28c1261fcdc",
+    "output/no-account-20261027/branch-audit/accounts.json": "efb5e0699dde30db1943b1715179da9d85cd1244d0a92ce8f2c8d92f6ca4be2c",
+    "output/no-account-20261027/branch-audit/publisher.json": "3d2857c7ee615974cb09b80463f5aee258c683b831490dd10f8e14ce2f943cd2",
+    "output/no-account-20261027/branch-audit/fix-review.json": "7f699f22fc26c8ad90caff81a2e5a4c5cd6d1bc79bc78b1ac817209b50f4fe37",
+    "output/no-account-20261027/branch-audit/repair-verification.json": "92024f11bee44098e7781e06a7d6cb8a8c0a96fec1d40ac72de8489eef0dd9f8",
+    "output/no-account-20261027/branch-audit/accounts-fix/summary.json": "f2eacda870dc2c56031ac34d68f01e80993f582a521ae24b76bea9d5d9bea913",
+    "output/no-account-20261027/branch-audit/publisher-tests/result.json": "a3bafcf6d65c6ba70aa8b97caec4fbadaf6524dab57801aceaff348b9b18fe85",
+    "output/no-account-20261027/branch-audit/guardian-lock/verification.json": "92cad8d0033039486b1bd711f224af2bfe38e0406107e332ad7a6e33cf7970fb",
+    "output/no-account-20261027/branch-audit/native-preflight.json": "933a18ed527d4195df09e4a27095ef0b98c209f085687ff725b7be2d7583bcbb",
+    "output/no-account-20261027/rust/run-v5.log": "dcf8fb97b10498fc4bdc37c0c011aa9320c4e71d20dd18b2b5b74e634f3b1739",
+    "output/no-account-20261027/rust/run-v5-result.json": "6c3b4fb9590de44458447d73df6357effdc2b173ea4c13b1c85946cf84087d56",
+    "output/no-account-20261027/rust/list-v5.log": "650eec8722e68831fd02abedbc0ddf53ce661cdebf35f83e57c010c26103c38f",
+    "output/no-account-20261027/rust/test-counts-v5.json": "a1463790638b2244fae49371d3694bb95bd18ace32e6c12fdbd18d752ec50da2",
+    "output/no-account-20261027/rust/fmt-v5-result.json": "7291e5083d6a0ec09df2770b835c96391130dcbd65ae0f7f59306593d71d1cc4",
+    "output/no-account-20261027/rust/clippy-v5.log": "bce0c2851cbddc5e6662638a12a7fec1d35198324be626a8d14af55a88f826d6",
+    "output/no-account-20261027/rust/clippy-v5-result.json": "25e6188ce83fdcd85397b2dadb0baabfbef70cdccd7f0ebee18ff4462cd1f040",
+    "output/no-account-20261027/bundles-branch-fixes/final-summary.json": "ba606812289202bd09c8e1f6635707e1791f2e7bc91c4490bf7801eb69930989",
+    "output/no-account-20261027/bundles-branch-fixes/runtime.json": "76a5c6bbfbb33501f53729319ae67192f8cfef3e74cbba4f00d93b7ec185e127",
+    "output/no-account-20261027/bundles-branch-fixes/artifact-personal.json": "cdd77527ef9bb9ad0ce062374c3084887004a11c9e8826e0ec711e91112fbe49",
+    "output/no-account-20261027/bundles-branch-fixes/artifact-public.json": "93364ebd5115fb7490308c709d0171a46ac282eca6c6d116bc82eb506fb6b383",
+    "output/no-account-20261027/bundles-branch-fixes/bundle-personal.json": "542c1d1d44ac70621e3d350d8dbed7ae2cc43be40bee1526e5a7b0a567fab50c",
+    "output/no-account-20261027/bundles-branch-fixes/bundle-public.json": "e7957fcae0c5ffd01295b78d79445b27c714c480c366d44a2d091b590e006615"
+  },
+  "artifacts": {
+    "personal": {
+      "status": "PASS_LOCAL_APP_BUNDLE_STATIC",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/personal/Claude 切换器 Personal.app",
+      "tree_manifest_sha256": "45cfcf3d0ac102946cdac50e5526b41180f8cb8702d703a5d614b4ecb19016b6",
+      "unsigned_main_sha256": "1e3c72614509a3cbd31b15dff97ba07a83bde042c410cff7756daa1e7880c0b7",
+      "signed_main_sha256": "cc7a003110971722fd901307a7dee2213ad1d1ae87303032e0d92095c3b6fa26",
+      "static_command_count": 24,
+      "post_public_rehash": "PASS",
+      "components": {
+        "claude-switcher": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher",
+          "role": "cli",
+          "sha256": "be026e6eaef336dcd2050b74df6e8639bbdc3615ec1ce9524b622bc87b063b35",
+          "bytes": 8205664
+        },
+        "switcher-helper": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper",
+          "role": "helper",
+          "sha256": "5dff729107c79ca2f5babf4edc9f04d12e78442b26f3c08cf900055da71b29fc",
+          "bytes": 1105920
+        },
+        "switcher-guardian": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian",
+          "role": "guardian",
+          "sha256": "853315b7c1ebe8576eeeef5f99d5a6b171aaefac935f8054a16f4112967ace9e",
+          "bytes": 1677216
+        }
+      },
+      "bundle_identifier": "local.claudeswitcher.personal",
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "signature": "adhoc_without_timestamp",
+      "native_gui_ipc": "NOT_RUN",
+      "product_launch": "NOT_RUN",
+      "recorded_static_command_count_note": "Raw receipt labels all24 commands static; actual breakdown is copy+ad-hoc signing(2) and static verification(22). Raw receipt preserved.",
+      "packaging_command_count": 24,
+      "actual_static_check_count": 22,
+      "artifact_mutation_command_count": 2
+    },
+    "public": {
+      "status": "PASS_LOCAL_APP_BUNDLE_STATIC",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/public/Claude 切换器 Public.app",
+      "tree_manifest_sha256": "e4fb364a9c3479f689fbc6a45d00a2001f2df9e3c9e0f2d3ae7c3c9b614d0346",
+      "unsigned_main_sha256": "bdc16bdfb07d6763785b0be8a11af3da70ec02f6cd2cd8fe83767b5b6338bc98",
+      "signed_main_sha256": "d7da3420b13564671db6d0f57883c2d2a3719ebf3fa3a0429337e7c288c04635",
+      "static_command_count": 24,
+      "post_public_rehash": "PASS",
+      "components": {
+        "claude-switcher": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/claude-switcher",
+          "role": "cli",
+          "sha256": "be026e6eaef336dcd2050b74df6e8639bbdc3615ec1ce9524b622bc87b063b35",
+          "bytes": 8205664
+        },
+        "switcher-helper": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/switcher-helper",
+          "role": "helper",
+          "sha256": "1763768c597e87e039ef895493d2eb3b3752c544af1436cad18381409c4f01a9",
+          "bytes": 1105920
+        },
+        "switcher-guardian": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/switcher-guardian",
+          "role": "guardian",
+          "sha256": "6d83ae72cb6200076079d641c4f26f012b41ca49064e3da6a754fbc93945d95c",
+          "bytes": 1677216
+        }
+      },
+      "bundle_identifier": "local.claudeswitcher.public",
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "signature": "adhoc_without_timestamp",
+      "native_gui_ipc": "NOT_RUN",
+      "product_launch": "NOT_RUN",
+      "recorded_static_command_count_note": "Raw receipt labels all24 commands static; actual breakdown is copy+ad-hoc signing(2) and static verification(22). Raw receipt preserved.",
+      "packaging_command_count": 24,
+      "actual_static_check_count": 22,
+      "artifact_mutation_command_count": 2
+    }
+  },
+  "native_ipc_preflight": {
+    "status": "NOT_RUN",
+    "existing_fixture": "ipc-smoke registers runtime_info/forbidden_probe/finish_smoke only",
+    "gap": "A01 image and backup native IPC require a compile-time isolated handler; ordinary backup restoration enters KeychainVault"
+  },
+  "coverage": {
+    "status": "BOUNDED_ASSERTION_REVIEW_ONLY",
+    "audit_lanes": [
+      "checks_and_repair",
+      "accounts",
+      "publisher_A01_A02_A03"
+    ],
+    "new_rust_test_names": [
+      "accounts::tests::f04_absent_current_keeps_v2_fallback_for_inspection_and_selection",
+      "accounts::tests::f04_dangling_current_link_is_rejected_before_inspection_or_selection",
+      "accounts::tests::f04_existing_current_link_is_rejected_before_inspection_or_selection",
+      "checks::tests::gate_rejects_invalid_schema_and_each_summary_field_independently",
+      "publisher::cleanup_tests::f17_pending_gc_commit_preserves_files_and_index",
+      "publisher::tests::f15_valid_image_accepts_exact_byte_and_pixel_limits",
+      "repair_cli::tests::ordinary_fix_checks_once_and_never_reports_success_for_blocked_or_failed_checks",
+      "repair_cli::tests::ordinary_fix_preview_and_prepare_or_apply_errors_never_recheck"
+    ],
+    "exhaustive_branch_coverage": false,
+    "overall_35_ids_pass": false
+  },
+  "remaining": [
+    "Continue per-ID branch and checkpoint review outside these bounded lanes",
+    "Compile-time isolated native IPC and controlled HTTP/dynamic privacy tests",
+    "Authorized actual system/install/proxy recovery (prohibited in current task)",
+    "Actual source-specific ad/update verification using dedicated materials",
+    "Performance/platform and actual observation periods"
+  ],
+  "safety": {
+    "real_accounts": "NOT_ACCESSED",
+    "installed_state_reads": "NOT_RUN",
+    "installation_and_system_settings": "NOT_RUN",
+    "product_launch": "NOT_RUN",
+    "network": "Sandbox denies external connections; Rust permits loopback fixtures only; bundles deny all network.",
+    "dependencies": "Existing caches only, offline/locked; no install/upgrade/download",
+    "signing": "Derived build/test artifacts only, ad-hoc without timestamp; no commercial identity lookup"
+  },
+  "codegraph": {
+    "initialized": true,
+    "version": "1.6.0",
+    "projectPath": "/Users/gua/CodexWorkspaces/claude-switcher",
+    "indexPath": "/Users/gua/CodexWorkspaces/claude-switcher/.codegraph",
+    "lastIndexed": "2026-10-26T18:39:13.194Z",
+    "fileCount": 159,
+    "nodeCount": 4530,
+    "edgeCount": 17725,
+    "dbSizeBytes": 259026944,
+    "walSizeBytes": 0,
+    "backend": "node-sqlite",
+    "journalMode": "wal",
+    "nodesByKind": {
+      "class": 11,
+      "component": 8,
+      "constant": 62,
+      "enum": 57,
+      "enum_member": 254,
+      "field": 18,
+      "file": 159,
+      "function": 1631,
+      "import": 489,
+      "method": 1110,
+      "property": 175,
+      "struct": 254,
+      "trait": 16,
+      "type_alias": 65,
+      "variable": 221
+    },
+    "languages": [
+      "javascript",
+      "objc",
+      "python",
+      "rust",
+      "svelte",
+      "swift",
+      "typescript"
+    ],
+    "pendingChanges": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    },
+    "worktreeMismatch": null,
+    "index": {
+      "builtWithVersion": "1.6.0",
+      "builtWithExtractionVersion": 25,
+      "currentExtractionVersion": 25,
+      "reindexRecommended": false,
+      "state": "complete",
+      "pendingRefs": 0
+    }
+  },
+  "archive_sha256": "22c1e7bcebd5c0a45b5352c81c287d7c265ffc651b152ee88ae3cdb4d702403b",
+  "bundle_seconds": {
+    "preflight": 1.1131826660130173,
+    "personal-build": 105.69038070796523,
+    "personal-verify": 0.5856867500115186,
+    "public-build": 30.74179424997419,
+    "public-verify": 0.5343297090148553
+  },
+  "bundle_verification_boundary": "Each edition:24 packaging commands passed (copy+ad-hoc sign and22 static checks); final files/bytes/modes rechecked. Static arm64/macOS13 metadata and ad-hoc signatures do not establish native execution, actual macOS13/Intel support, installation, account or Gatekeeper acceptance.",
+  "evidence_review": {
+    "status": "PASS_SCOPED",
+    "reviewer": "Independent native Codex child candidate_recheck",
+    "checks": [
+      "Seven source hashes match working tree and CNB git blobs",
+      "22 current evidence hashes and45 historical log hashes match",
+      "Parsed679 Rust executions/575 names/zero failures; list/pass multiplicities identical;8 names added vs v4",
+      "Both app receipts and96 command output hashes match;each app7-file manifests match bytes/modes/hash",
+      "37 IDs and original standards unchanged from b2b79c106ff06bc007c854d4838a5781a739daa7"
+    ],
+    "correction": "24 command count includes copy and signing; clarified as22 static checks plus2 artifact mutations. No test rerun needed."
+  },
+  "next_action_plan": {
+    "path": "output/no-account-20261027/branch-audit/native-isolation-plan.md",
+    "sha256": "23ca16c05b9dc12d80a60109e2041840ed7e1daf611ae9b3b7ce50c9893f0cfb",
+    "status": "PLAN_ONLY_NATIVE_NOT_RUN"
+  }
+}
