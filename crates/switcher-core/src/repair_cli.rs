@@ -87,6 +87,7 @@ trait RepairBackend {
     ) -> Result<Self::Prepared, String>;
     fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview;
     fn apply(&mut self, prepared: Self::Prepared) -> Result<(), String>;
+    async fn check(&mut self) -> Result<switcher_domain::checks::CheckReport, String>;
 }
 
 struct NativeRepair;
@@ -114,6 +115,11 @@ impl RepairBackend for NativeRepair {
     }
     fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview {
         &prepared.1.preview
+    }
+    async fn check(&mut self) -> Result<switcher_domain::checks::CheckReport, String> {
+        let home = crate::config::home_dir()?;
+        let configuration = crate::config::load_read_only(&home)?;
+        Ok(crate::checks::run_checks(configuration).await)
     }
     fn apply(&mut self, (coordinator, prepared): Self::Prepared) -> Result<(), String> {
         coordinator.execute(prepared).map_err(str::to_owned)
@@ -150,6 +156,23 @@ async fn run_with_backend<B: RepairBackend>(
         if matches!(command, RepairCommand::Fix { apply: true } | RepairCommand::SetRegion { apply: true, .. } | RepairCommand::DetectRegion { apply: true }) {
             if legacy { writeln!(output, "FIX:apply").map_err(|_| "output_failed")?; }
             backend.apply(prepared)?;
+            if matches!(command, RepairCommand::Fix { apply: true }) {
+                if legacy { writeln!(output, "FIX:check").map_err(|_| "output_failed")?; }
+                let report = backend.check().await?;
+                let allowed = report.launch.allowed;
+                if legacy {
+                    write_json(output, &report)?;
+                    if !allowed { return Err("修复已执行，但完整环境检查未通过".into()); }
+                } else {
+                    write_json(output, &serde_json::json!({
+                        "completed": allowed,
+                        "message": if allowed { "修复完成，完整环境检查已通过" } else { "修复已执行，但完整环境检查未通过" },
+                        "recovery": if allowed { None } else { Some("修复阻塞项后重新检查") },
+                        "report": report
+                    }))?;
+                    return Ok(if allowed { 0 } else { 1 });
+                }
+            }
             if legacy { writeln!(output, "FIX:complete\nOK").map_err(|_| "output_failed")?; }
             else { write_json(output, &serde_json::json!({"completed":true,"message":"系统修复已完成并保存地区目标；请重新检查环境与地区格式","recovery":null}))?; }
         }
@@ -242,6 +265,7 @@ mod tests {
     struct F06Repair {
         fail_prepare: bool,
         fail_apply: bool,
+        check_status: Option<switcher_domain::checks::CheckStatus>,
         calls: Vec<&'static str>,
     }
     impl RepairBackend for F06Repair {
@@ -267,6 +291,40 @@ mod tests {
                 user_changes: vec![],
             })
         }
+        async fn check(&mut self) -> Result<switcher_domain::checks::CheckReport, String> {
+            use switcher_domain::checks::*;
+            self.calls.push("check");
+            let status = self.check_status.ok_or("synthetic_check_error")?;
+            let checks: Vec<_> = CheckId::ALL
+                .into_iter()
+                .map(|id| CheckResult {
+                    id,
+                    status,
+                    reason: "synthetic".into(),
+                    observed_at: 100,
+                    duration_ms: 1,
+                    valid_until: 130,
+                    network_generation: "synthetic".into(),
+                    evidence: vec![],
+                })
+                .collect();
+            let summary = crate::checks::summarize(&checks);
+            let mut report = CheckReport {
+                schema_version: 1,
+                observed_at: 100,
+                completed_at: 101,
+                duration_ms: 1,
+                network_generation: "synthetic".into(),
+                checks,
+                summary,
+                launch: LaunchDecision {
+                    allowed: false,
+                    reasons: vec![],
+                },
+            };
+            report.launch = crate::checks::evaluate_launch(&report, 101, "synthetic");
+            Ok(report)
+        }
         fn preview(prepared: &Self::Prepared) -> &switcher_domain::desktop::RepairPreview {
             prepared
         }
@@ -289,6 +347,7 @@ mod tests {
         let mut backend = F06Repair {
             fail_prepare,
             fail_apply,
+            check_status: Some(switcher_domain::checks::CheckStatus::Pass),
             calls: vec![],
         };
         let mut output = Vec::new();
@@ -326,11 +385,13 @@ mod tests {
         )
         .await;
         assert_eq!(result, Ok(0));
-        assert_eq!(
-            output,
-            "FIX:prepare\nFIX:preview\nFIX:apply\nFIX:complete\nOK\n"
-        );
-        assert_eq!(calls, ["prepare", "apply"]);
+        assert!(output.starts_with("FIX:prepare\nFIX:preview\nFIX:apply\nFIX:check\n"));
+        assert!(output.ends_with("FIX:complete\nOK\n"));
+        let report: switcher_domain::checks::CheckReport =
+            serde_json::from_str(output.lines().nth(4).unwrap()).unwrap();
+        assert_eq!(report.checks.len(), 14);
+        assert!(report.launch.allowed);
+        assert_eq!(calls, ["prepare", "apply", "check"]);
     }
     #[tokio::test]
     async fn f06_legacy_repair_prepare_failure_has_no_apply_or_ok() {
@@ -386,7 +447,15 @@ mod tests {
                 )
                 .await;
                 assert_eq!(result, Ok(0));
-                assert_eq!(calls, ["prepare", "apply"]);
+                let fix = matches!(command, RepairCommand::Fix { .. });
+                assert_eq!(
+                    calls,
+                    if fix {
+                        vec!["prepare", "apply", "check"]
+                    } else {
+                        vec!["prepare", "apply"]
+                    }
+                );
                 let rows: Vec<serde_json::Value> = output
                     .lines()
                     .map(|line| serde_json::from_str(line).unwrap())
@@ -408,6 +477,94 @@ mod tests {
         assert_eq!(output.lines().count(), 1);
         assert_eq!(calls, ["prepare", "apply"]);
         assert!(!output.contains("completed"));
+    }
+
+    #[tokio::test]
+    async fn ordinary_fix_preview_and_prepare_or_apply_errors_never_recheck() {
+        for mode in [OutputMode::Legacy, OutputMode::Modern] {
+            for (apply, fail_prepare, fail_apply) in [
+                (false, false, false),
+                (true, true, false),
+                (true, false, true),
+            ] {
+                let (_, output, calls) = f06_repair_case(
+                    "no-recheck",
+                    RepairCommand::Fix { apply },
+                    mode,
+                    fail_prepare,
+                    fail_apply,
+                )
+                .await;
+                assert!(!calls.contains(&"check"));
+                assert!(!output.lines().any(|line| line == "OK"));
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn ordinary_fix_checks_once_and_never_reports_success_for_blocked_or_failed_checks() {
+        use switcher_domain::checks::{CheckId, CheckReport, CheckStatus};
+        for mode in [OutputMode::Legacy, OutputMode::Modern] {
+            for status in [
+                Some(CheckStatus::Pass),
+                Some(CheckStatus::Fail),
+                Some(CheckStatus::Unknown),
+                Some(CheckStatus::Timeout),
+                None,
+            ] {
+                let mut backend = F06Repair {
+                    fail_prepare: false,
+                    fail_apply: false,
+                    check_status: status,
+                    calls: vec![],
+                };
+                let mut output = vec![];
+                let result = run_with_backend(
+                    RepairCommand::Fix { apply: true },
+                    Edition::Personal,
+                    mode,
+                    &mut backend,
+                    &mut output,
+                )
+                .await;
+                let output = String::from_utf8(output).unwrap();
+                assert_eq!(backend.calls, ["prepare", "apply", "check"]);
+                let allowed = status == Some(CheckStatus::Pass);
+                if status.is_none() {
+                    assert_eq!(
+                        result,
+                        if mode == OutputMode::Legacy {
+                            Ok(1)
+                        } else {
+                            Err("synthetic_check_error".into())
+                        }
+                    );
+                } else {
+                    assert_eq!(result, Ok(if allowed { 0 } else { 1 }));
+                    let report: CheckReport = if mode == OutputMode::Legacy {
+                        serde_json::from_str(output.lines().nth(4).unwrap()).unwrap()
+                    } else {
+                        let final_row: serde_json::Value =
+                            serde_json::from_str(output.lines().last().unwrap()).unwrap();
+                        assert_eq!(final_row["completed"], allowed);
+                        serde_json::from_value(final_row["report"].clone()).unwrap()
+                    };
+                    assert_eq!(
+                        report.checks.iter().map(|row| row.id).collect::<Vec<_>>(),
+                        CheckId::ALL.to_vec()
+                    );
+                    assert_eq!(report.launch.allowed, allowed);
+                }
+                if !allowed {
+                    assert!(
+                        !output
+                            .lines()
+                            .any(|line| line == "OK" || line == "FIX:complete")
+                    );
+                    assert!(!output.contains("\"completed\":true"));
+                }
+            }
+        }
     }
 
     fn parse(args: &[&str]) -> Result<RepairCommand, String> {

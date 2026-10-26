@@ -387,23 +387,85 @@ mod tests {
         assert!(g.evaluate(ProtectionEvent::Wake, 2, "generation").is_none());
         assert!(Guardian::new(0).is_err());
     }
-    #[test]
-    fn stop_is_independent_of_lifecycle_lock() {
-        let base = std::env::temp_dir()
-            .canonicalize()
-            .unwrap()
-            .join(format!("guardian-lock-{}", std::process::id()));
-        std::fs::create_dir_all(&base).unwrap();
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&base, std::fs::Permissions::from_mode(0o700)).unwrap();
-        let _lock = crate::storage::LifecycleLock::try_acquire(&base).unwrap();
-        let mut g = Guardian::new(501).unwrap();
-        assert!(
-            g.evaluate(ProtectionEvent::NetworkChanged, 1, "new")
-                .is_none()
-        );
-        drop(_lock);
-        std::fs::remove_dir_all(base).unwrap();
+    #[tokio::test]
+    async fn stop_is_independent_of_lifecycle_lock() {
+        use std::sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        };
+        use switcher_domain::checks::*;
+        for failed in [CheckId::ProxyProcess, CheckId::TunRoute] {
+            let fixture = retained_diagnostic_tests::Fixture::new();
+            let base = &fixture.0;
+            let lock = crate::storage::LifecycleLock::try_acquire(base).unwrap();
+            assert!(lock.protects(base));
+            let checks: Vec<_> = CheckId::ALL
+                .into_iter()
+                .map(|id| CheckResult {
+                    id,
+                    status: if id == failed {
+                        CheckStatus::Fail
+                    } else {
+                        CheckStatus::Pass
+                    },
+                    reason: "injected".into(),
+                    observed_at: 0,
+                    duration_ms: 0,
+                    valid_until: 0,
+                    network_generation: "synthetic".into(),
+                    evidence: vec![],
+                })
+                .collect();
+            let mut guardian = Guardian::new(501).unwrap();
+            guardian.update(CheckReport {
+                schema_version: 1,
+                observed_at: 0,
+                completed_at: 0,
+                duration_ms: 0,
+                network_generation: "synthetic".into(),
+                summary: crate::checks::summarize(&checks),
+                checks,
+                launch: LaunchDecision {
+                    allowed: false,
+                    reasons: vec![],
+                },
+            });
+            let requests: Vec<_> = guardian
+                .evaluate(ProtectionEvent::NetworkChanged, 1, "synthetic")
+                .into_iter()
+                .collect();
+            assert_eq!(requests.len(), 1, "{failed:?}");
+            let consumed = Arc::new(AtomicUsize::new(0));
+            let count = consumed.clone();
+            let locked_base = base.clone();
+            let mut supervisor = StopSupervisor::new(
+                move |request| {
+                    assert_eq!(request.owner_uid, 501);
+                    assert_eq!(request.reason, "proxy_or_tun_offline");
+                    assert!(crate::storage::LifecycleLock::try_acquire(&locked_base).is_err());
+                    count.fetch_add(1, Ordering::SeqCst);
+                    Ok(1)
+                },
+                Duration::from_secs(2),
+                Duration::from_millis(40),
+            );
+            supervisor.request(0, requests.into_iter().next().unwrap());
+            supervisor.start_ready();
+            let completion = tokio::time::timeout(Duration::from_secs(2), supervisor.join())
+                .await
+                .unwrap();
+            assert_eq!(completion.result, Ok(1));
+            assert!(supervisor.finish(completion, 0));
+            supervisor.start_ready();
+            assert!(supervisor.job.is_none());
+            assert!(supervisor.pending.is_none());
+            assert_eq!(supervisor.confirmed_epoch, Some(0));
+            assert_eq!(consumed.load(Ordering::SeqCst), 1, "{failed:?}");
+            assert!(lock.protects(base));
+            assert!(crate::storage::LifecycleLock::try_acquire(base).is_err());
+            drop(lock);
+            assert!(crate::storage::LifecycleLock::try_acquire(base).is_ok());
+        }
     }
 }
 

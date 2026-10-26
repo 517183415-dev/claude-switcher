@@ -396,9 +396,14 @@ impl AccountStore {
     /// A display default is not proof that the live directory belongs to an account.
     fn recorded_account(&self) -> io::Result<Option<AccountId>> {
         let current = self.root.join("current");
-        if current.try_exists()? {
+        // Inspect the directory entry itself: a dangling link is unsafe, not absent.
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => Some(metadata),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => None,
+            Err(error) => return Err(error),
+        };
+        if let Some(metadata) = metadata {
             self.check_directory(&self.root)?;
-            let metadata = fs::symlink_metadata(&current)?;
             if !metadata.is_file()
                 || metadata.file_type().is_symlink()
                 || metadata.uid() != self.owner
@@ -2823,5 +2828,104 @@ mod tests {
             std::os::unix::fs::symlink(store.root.join("missing"), &target).unwrap();
             assert!(ensure_no_pending_repairs(&store.root).is_err());
         }
+    }
+
+    fn assert_current_link_is_rejected(target_exists: bool) {
+        for with_v2 in [false, true] {
+            for target in [AccountId::A, AccountId::B] {
+                let fixture = Fixture::new();
+                fixture.initialize();
+                fixture.add_b();
+                let store = &fixture.store;
+                if !with_v2 {
+                    fs::remove_file(store.state_path()).unwrap();
+                }
+                let marker = store.root.join("current");
+                fs::remove_file(&marker).unwrap();
+                let link_target = fixture.base.join("marker-target");
+                if target_exists {
+                    storage::atomic_write(&link_target, b"B\n").unwrap();
+                }
+                std::os::unix::fs::symlink(&link_target, &marker).unwrap();
+                let active = identity(&store.active).unwrap();
+                let a = identity(&store.archive(AccountId::A)).unwrap();
+                let b = identity(&store.archive(AccountId::B)).unwrap();
+                let state = fs::read(store.state_path()).ok();
+                assert_eq!(
+                    AccountStore::inspect(&store.root, &store.active, store.owner)
+                        .unwrap_err()
+                        .kind(),
+                    io::ErrorKind::PermissionDenied
+                );
+                let lock = LifecycleLock::try_acquire(&store.v2()).unwrap();
+                assert_eq!(
+                    store
+                        .select_legacy_checked(target, &lock, &|| Ok(()))
+                        .unwrap_err()
+                        .kind(),
+                    io::ErrorKind::PermissionDenied
+                );
+                assert_eq!(identity(&store.active).unwrap(), active);
+                assert_eq!(identity(&store.archive(AccountId::A)).unwrap(), a);
+                assert_eq!(identity(&store.archive(AccountId::B)).unwrap(), b);
+                assert_eq!(
+                    fs::read(store.active.join("session")).unwrap(),
+                    b"A-original"
+                );
+                assert_eq!(
+                    fs::read(store.archive(AccountId::A).join("session")).unwrap(),
+                    b"A-original"
+                );
+                assert_eq!(
+                    fs::read(store.archive(AccountId::B).join("session")).unwrap(),
+                    b"B-private"
+                );
+                assert_eq!(fs::read(store.state_path()).ok(), state);
+                assert_eq!(fs::read_link(&marker).unwrap(), link_target);
+                assert_eq!(
+                    fs::read(&link_target).ok(),
+                    target_exists.then(|| b"B\n".to_vec())
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn f04_dangling_current_link_is_rejected_before_inspection_or_selection() {
+        assert_current_link_is_rejected(false);
+    }
+
+    #[test]
+    fn f04_existing_current_link_is_rejected_before_inspection_or_selection() {
+        assert_current_link_is_rejected(true);
+    }
+
+    #[test]
+    fn f04_absent_current_keeps_v2_fallback_for_inspection_and_selection() {
+        let fixture = Fixture::new();
+        fixture.initialize();
+        fixture.add_b();
+        let store = &fixture.store;
+        fs::remove_file(store.root.join("current")).unwrap();
+        assert_eq!(
+            AccountStore::inspect(&store.root, &store.active, store.owner)
+                .unwrap()
+                .current,
+            Some(AccountId::A)
+        );
+        assert!(!store.root.join("current").exists());
+        let lock = LifecycleLock::try_acquire(&store.v2()).unwrap();
+        store
+            .select_legacy_checked(AccountId::B, &lock, &|| Ok(()))
+            .unwrap();
+        assert_eq!(store.recorded_account().unwrap(), Some(AccountId::B));
+        assert_eq!(
+            fs::read(store.active.join("session")).unwrap(),
+            b"B-private"
+        );
+        assert_eq!(
+            fs::read(store.archive(AccountId::A).join("session")).unwrap(),
+            b"A-original"
+        );
     }
 }

@@ -1119,3 +1119,44 @@ fn f17_gc_identity_capacity_is_reserved_before_checkpoint_and_ordinary_persist()
     );
     assert_eq!(encode(&publisher.state, STATE_LIMIT).unwrap(), before);
 }
+
+#[test]
+fn f17_pending_gc_commit_preserves_files_and_index() {
+    let (root, mut publisher, mut source, assets) = staged_cleanup(1);
+    publisher.state.pending = Some(Pending {
+        manifest: publisher.state.draft.clone(),
+        wire: cleanup_object(&publisher.state.draft).bytes,
+        expected_etag: None,
+        phase: Phase::Prepared,
+    });
+    publisher.persist(publisher.state.clone()).unwrap();
+    let preview = publisher.gc_preview(&mut source, 1000).unwrap();
+    assert!(preview.pending_blocks_commit);
+    assert_eq!(preview.eligible, vec![assets[0].sha256.clone()]);
+    let before_state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    let before_files = super::tests::local_tree(&root.0);
+    let directory = publisher.directory().join("assets");
+    let before_identity = inspect_candidate(&directory, &assets[0]).unwrap().unwrap();
+    assert!(matches!(
+        publisher.gc_commit(&mut source, &preview.digest, 1000),
+        Err(Error::PendingOperation)
+    ));
+    assert_eq!(encode(&publisher.state, STATE_LIMIT).unwrap(), before_state);
+    assert_eq!(super::tests::local_tree(&root.0), before_files);
+    assert_eq!(
+        inspect_candidate(&directory, &assets[0]).unwrap().unwrap(),
+        before_identity
+    );
+    assert!(!publisher.directory().join("cleanup-gc").exists());
+    drop(publisher);
+    let reopened = cleanup_publisher(&root);
+    assert_eq!(encode(&reopened.state, STATE_LIMIT).unwrap(), before_state);
+    assert!(
+        reopened.state.assets.is_empty(),
+        "index cleanup remains committed"
+    );
+    assert_eq!(
+        reopened.state.cleanup.as_ref().unwrap().phase,
+        CleanupPhase::Indexed
+    );
+}

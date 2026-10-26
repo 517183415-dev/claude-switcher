@@ -1258,6 +1258,38 @@ mod tests {
         assert!(!evaluate_launch(&report, 101, "generation").allowed);
     }
     #[test]
+    fn gate_rejects_invalid_schema_and_each_summary_field_independently() {
+        for schema in [0, 2, u32::MAX] {
+            let mut report = good();
+            report.schema_version = schema;
+            let decision = evaluate_launch(&report, 101, "generation");
+            assert!(!decision.allowed);
+            assert!(
+                decision
+                    .reasons
+                    .iter()
+                    .any(|reason| reason.contains("版本无效"))
+            );
+        }
+        for field in 0..3 {
+            let mut report = good();
+            match field {
+                0 => report.summary.passed -= 1,
+                1 => report.summary.advisory += 1,
+                _ => report.summary.blocking += 1,
+            }
+            let decision = evaluate_launch(&report, 101, "generation");
+            assert!(!decision.allowed, "summary field {field}");
+            assert!(
+                decision
+                    .reasons
+                    .iter()
+                    .any(|reason| reason.contains("摘要与逐项结果不一致"))
+            );
+        }
+    }
+
+    #[test]
     fn only_two_advisory_warnings_can_pass_the_gate() {
         for id in CheckId::ALL {
             for status in [

@@ -573,6 +573,26 @@ mod tests {
         }
     }
 
+    fn mark_session_xattr(path: &Path) -> BTreeMap<Vec<u8>, Vec<u8>> {
+        let path_string = path_cstring(path).unwrap();
+        let name = CString::new("com.claude-switcher.synthetic").unwrap();
+        let value = b"legacy-metadata-proof";
+        assert_eq!(
+            unsafe {
+                libc::setxattr(
+                    path_string.as_ptr(),
+                    name.as_ptr(),
+                    value.as_ptr().cast(),
+                    value.len(),
+                    0,
+                    libc::XATTR_NOFOLLOW,
+                )
+            },
+            0
+        );
+        extended_attributes(path).unwrap()
+    }
+
     fn saved_archives(store: &AccountStore) -> Vec<(AccountId, Identity, String)> {
         [AccountId::A, AccountId::B]
             .into_iter()
@@ -1598,6 +1618,7 @@ mod tests {
         )
         .unwrap();
         fs::set_permissions(&fixture.store.active, fs::Permissions::from_mode(0o777)).unwrap();
+        let expected_xattrs = mark_session_xattr(&fixture.store.active.join("session"));
         fixture.select(AccountId::B);
         storage::atomic_write(&fixture.store.active.join("session"), b"B-live").unwrap();
         fixture.select(AccountId::A);
@@ -1619,6 +1640,14 @@ mod tests {
                 .mode()
                 & 0o777,
             0o666
+        );
+        assert_eq!(
+            extended_attributes(&fixture.store.active.join("session")).unwrap(),
+            expected_xattrs
+        );
+        assert_eq!(
+            fs::metadata(&fixture.store.active).unwrap().mode() & 0o777,
+            0o777
         );
         assert_eq!(
             fs::read(outside.join("do-not-copy")).unwrap(),
@@ -1665,6 +1694,12 @@ mod tests {
             "archive_cleaned",
         ] {
             let fixture = Fixture::new();
+            let expected_xattrs = mark_session_xattr(&fixture.store.active.join("session"));
+            fs::set_permissions(
+                fixture.store.active.join("session"),
+                fs::Permissions::from_mode(0o640),
+            )
+            .unwrap();
             fixture.select(AccountId::A);
             let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
             select_with(
@@ -1693,6 +1728,15 @@ mod tests {
             assert_eq!(
                 fs::read(fixture.store.archive(AccountId::A).join("session")).unwrap(),
                 b"A-latest"
+            );
+            let archived_session = fixture.store.archive(AccountId::A).join("session");
+            assert_eq!(
+                fs::metadata(&archived_session).unwrap().mode() & 0o777,
+                0o640
+            );
+            assert_eq!(
+                extended_attributes(&archived_session).unwrap(),
+                expected_xattrs
             );
             assert_eq!(
                 fs::read(fixture.store.root.join("current")).unwrap(),

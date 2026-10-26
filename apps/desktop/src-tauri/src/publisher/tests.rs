@@ -810,7 +810,7 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
     );
 }
 
-fn local_tree(path: &Path) -> Vec<(PathBuf, String)> {
+pub(super) fn local_tree(path: &Path) -> Vec<(PathBuf, String)> {
     let mut files = Vec::new();
     for entry in fs::read_dir(path).unwrap() {
         let entry = entry.unwrap();
@@ -1605,4 +1605,60 @@ fn f16_clean_publisher_restores_resolution_using_authenticated_backup_key() {
         encode(&reopened.resolution_read(), STATE_LIMIT).unwrap(),
         evidence
     );
+}
+
+#[test]
+fn f15_valid_image_accepts_exact_byte_and_pixel_limits() {
+    use base64::Engine;
+    // Generated locally: 2000x1000 static, one-bit grayscale pixels, no real data.
+    let mut png = base64::engine::general_purpose::STANDARD
+        .decode("iVBORw0KGgoAAAANSUhEUgAAB9AAAAPoAQAAAACuJVgHAAABCklEQVR42u3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwLcB1KUAAeq0Fz8AAAAASUVORK5CYII=")
+        .unwrap();
+    let end = png.split_off(png.len() - 12);
+    // A valid private ancillary PNG chunk fills the source to the inclusive byte limit.
+    let padding_len = ads::MAX_IMAGE_BYTES - png.len() - end.len() - 12;
+    png.extend_from_slice(&(padding_len as u32).to_be_bytes());
+    let checksum_start = png.len();
+    png.extend_from_slice(b"npAD");
+    png.resize(png.len() + padding_len, 0);
+    let mut crc = u32::MAX;
+    for byte in &png[checksum_start..] {
+        crc ^= u32::from(*byte);
+        for _ in 0..8 {
+            crc = (crc >> 1) ^ (0xedb8_8320 & 0u32.wrapping_sub(crc & 1));
+        }
+    }
+    png.extend_from_slice(&(!crc).to_be_bytes());
+    png.extend_from_slice(&end);
+    assert_eq!(png.len(), ads::MAX_IMAGE_BYTES);
+    let source = ImageAsset {
+        sha256: signed::digest(&png),
+        mime: "image/png".into(),
+        bytes: png.len() as u32,
+        width: 2000,
+        height: 1000,
+    };
+    assert_eq!(
+        u64::from(source.width) * u64::from(source.height),
+        ads::MAX_IMAGE_PIXELS
+    );
+    ads::validate_image(&png, &source).unwrap();
+    let root = LocalRoot::new();
+    let mut publisher = open(&root);
+    let imported = publisher.import_image(&png, "image/png").unwrap();
+    assert_eq!(
+        (imported.width, imported.height),
+        (source.width, source.height)
+    );
+    let normalized = publisher.image_bytes(&imported).unwrap();
+    assert_eq!(normalized.len(), imported.bytes as usize);
+    assert!(
+        normalized.len() < png.len(),
+        "normalization removes ancillary padding"
+    );
+    ads::validate_image(&normalized, &imported).unwrap();
+    let before = local_tree(&root.0);
+    png.push(0);
+    assert!(publisher.import_image(&png, "image/png").is_err());
+    assert_eq!(before, local_tree(&root.0));
 }
