@@ -437,6 +437,7 @@ mod tests {
         generations: Mutex<std::collections::VecDeque<Result<&'static str, &'static str>>>,
         times: Mutex<std::collections::VecDeque<u64>>,
         generation_calls: std::sync::atomic::AtomicUsize,
+        failure: Mutex<Option<&'static str>>,
         fail_check: bool,
         account_changes: bool,
         fail_open: bool,
@@ -449,22 +450,35 @@ mod tests {
                 generations: Mutex::new([Ok("0:synthetic")].into()),
                 times: Mutex::new([101].into()),
                 generation_calls: std::sync::atomic::AtomicUsize::new(0),
+                failure: Mutex::new(None),
                 fail_check: false,
                 account_changes: false,
                 fail_open: false,
             }
         }
     }
+    impl Fake {
+        fn fail_at(&self, stage: &'static str) -> Result<(), &'static str> {
+            if *self.failure.lock().unwrap() == Some(stage) {
+                Err(stage)
+            } else {
+                Ok(())
+            }
+        }
+    }
     impl LaunchEnvironment for Fake {
         type Lock = ();
         fn installed(&self, _: Edition) -> Result<PathBuf, &'static str> {
+            self.fail_at("home-unavailable")?;
             Ok(PathBuf::from("/synthetic"))
         }
         fn lock(&self, _: &Path) -> Result<(), &'static str> {
             self.log.lock().unwrap().push("lock");
+            self.fail_at("lock-unavailable")?;
             Ok(())
         }
         fn account_ready(&self, _: &Path, _: &()) -> Result<AccountId, &'static str> {
+            self.fail_at("account-recovery-pending")?;
             Ok(*self.current.lock().unwrap())
         }
         async fn generation(&self) -> Result<String, &'static str> {
@@ -488,6 +502,10 @@ mod tests {
         }
         async fn check(&self, _: &Path) -> Result<CheckReport, &'static str> {
             self.log.lock().unwrap().push("check");
+            self.fail_at("check-unavailable")?;
+            if self.log.lock().unwrap().contains(&"quit-and-select") {
+                self.fail_at("check-after-select")?;
+            }
             if self.account_changes {
                 *self.current.lock().unwrap() = AccountId::B;
             }
@@ -527,6 +545,7 @@ mod tests {
         }
         async fn select(&self, _: Edition, target: AccountId) -> Result<(), &'static str> {
             self.log.lock().unwrap().push("quit-and-select");
+            self.fail_at("selection-interrupted")?;
             *self.current.lock().unwrap() = target;
             Ok(())
         }
@@ -672,6 +691,116 @@ mod tests {
                 fake.generation_calls
                     .load(std::sync::atomic::Ordering::SeqCst),
                 2
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn prerequisite_errors_block_launch_until_explicit_fresh_retry() {
+        for edition in [Edition::Personal, Edition::Public] {
+            for (stage, expected_calls) in [
+                ("home-unavailable", vec![]),
+                ("lock-unavailable", vec!["lock"]),
+                ("account-recovery-pending", vec!["lock"]),
+                ("check-unavailable", vec!["lock", "check"]),
+            ] {
+                let fake = Fake {
+                    failure: Mutex::new(Some(stage)),
+                    ..Default::default()
+                };
+                let blocked = launch_with(&fake, edition).await;
+                assert!(!blocked.outcome.completed);
+                assert!(blocked.outcome.recovery.is_some());
+                assert!(blocked.report.is_none());
+                assert_eq!(*fake.current.lock().unwrap(), AccountId::A);
+                assert_eq!(*fake.log.lock().unwrap(), expected_calls);
+                assert_eq!(
+                    fake.generation_calls
+                        .load(std::sync::atomic::Ordering::SeqCst),
+                    0
+                );
+                // Clearing an external prerequisite cannot replay the blocked request.
+                *fake.failure.lock().unwrap() = None;
+                fake.log.lock().unwrap().clear();
+                let retried = launch_with(&fake, edition).await;
+                assert!(retried.outcome.completed);
+                assert!(retried.report.unwrap().launch.allowed);
+                assert_eq!(*fake.log.lock().unwrap(), vec!["lock", "check", "open"]);
+                assert_eq!(*fake.current.lock().unwrap(), AccountId::A);
+                assert_eq!(
+                    fake.generation_calls
+                        .load(std::sync::atomic::Ordering::SeqCst),
+                    2
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn interrupted_selection_keeps_account_and_requires_explicit_retry() {
+        for edition in [Edition::Personal, Edition::Public] {
+            let fake = Fake {
+                failure: Mutex::new(Some("selection-interrupted")),
+                ..Default::default()
+            };
+            let blocked = switch_with(&fake, edition, AccountId::B).await;
+            assert!(!blocked.outcome.completed);
+            assert_eq!(blocked.outcome.message, "selection-interrupted");
+            assert!(blocked.outcome.recovery.is_some());
+            assert!(blocked.report.unwrap().launch.allowed);
+            assert_eq!(*fake.current.lock().unwrap(), AccountId::A);
+            assert_eq!(*fake.log.lock().unwrap(), vec!["check", "quit-and-select"]);
+            *fake.failure.lock().unwrap() = None;
+            fake.log.lock().unwrap().clear();
+            let retried = switch_with(&fake, edition, AccountId::B).await;
+            assert!(retried.outcome.completed);
+            assert_eq!(*fake.current.lock().unwrap(), AccountId::B);
+            assert_eq!(
+                *fake.log.lock().unwrap(),
+                vec!["check", "quit-and-select", "lock", "check", "open"]
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn check_error_after_selection_preserves_target_until_fresh_launch_check() {
+        for edition in [Edition::Personal, Edition::Public] {
+            let fake = Fake {
+                failure: Mutex::new(Some("check-after-select")),
+                ..Default::default()
+            };
+            let blocked = switch_with(&fake, edition, AccountId::B).await;
+            assert!(!blocked.outcome.completed);
+            assert_eq!(blocked.outcome.message, "check-after-select");
+            assert!(
+                blocked
+                    .outcome
+                    .recovery
+                    .unwrap()
+                    .contains("重新执行完整检查")
+            );
+            assert!(blocked.report.is_none());
+            assert_eq!(*fake.current.lock().unwrap(), AccountId::B);
+            assert_eq!(
+                *fake.log.lock().unwrap(),
+                vec!["check", "quit-and-select", "lock", "check"]
+            );
+            assert_eq!(
+                fake.generation_calls
+                    .load(std::sync::atomic::Ordering::SeqCst),
+                1
+            );
+            *fake.failure.lock().unwrap() = None;
+            fake.log.lock().unwrap().clear();
+            let retried = launch_expected_with(&fake, edition, Some(AccountId::B)).await;
+            assert!(retried.outcome.completed);
+            assert!(retried.report.unwrap().launch.allowed);
+            assert_eq!(*fake.current.lock().unwrap(), AccountId::B);
+            assert_eq!(*fake.log.lock().unwrap(), vec!["lock", "check", "open"]);
+            assert_eq!(
+                fake.generation_calls
+                    .load(std::sync::atomic::Ordering::SeqCst),
+                3
             );
         }
     }

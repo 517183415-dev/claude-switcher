@@ -482,6 +482,87 @@ fn encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_r
 }
 
 #[test]
+fn backup_vault_failure_preserves_active_generation_and_credentials_after_restart() {
+    let root = LocalRoot::new();
+    let mut publisher = open(&root);
+    attach_campaign(&mut publisher, 1001);
+    let mut vault = vault(&mut publisher);
+    let passphrase = b"synthetic restart atomicity passphrase";
+    let backup = publisher.export_backup(passphrase, &vault).unwrap();
+    // Make the active draft differ from the backup, so reopening the backup
+    // accidentally cannot satisfy the assertions about the old generation.
+    publisher.pause(None, 1002).unwrap();
+    let generation = publisher.generation.clone();
+    let state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    let active = fs::read(root.0.join("active.json")).unwrap();
+    let credentials = vault.items.clone();
+    vault.fail = true;
+    assert!(matches!(
+        publisher.restore_backup(&backup, passphrase, &mut vault),
+        Err(Error::SecretUnavailable)
+    ));
+    assert_eq!(publisher.generation, generation);
+    assert_eq!(encode(&publisher.state, STATE_LIMIT).unwrap(), state);
+    assert_eq!(fs::read(root.0.join("active.json")).unwrap(), active);
+    assert_eq!(vault.items, credentials);
+    drop(publisher);
+    let mut reopened = open(&root);
+    assert_eq!(reopened.generation, generation);
+    assert_eq!(encode(&reopened.state, STATE_LIMIT).unwrap(), state);
+    assert!(!reopened.status().recovery_required);
+    // The old credentials remain loadable and can still sign a publication.
+    let mut store = MemoryStore::new(AdChannel::Production);
+    reopened
+        .publish_with(&mut store, &vault, AdChannel::Production, 1003)
+        .unwrap();
+    assert_eq!(store.commits, 1);
+}
+
+#[test]
+fn restored_backup_restart_preserves_recovery_gate_and_authenticated_watermark() {
+    let root = LocalRoot::new();
+    let mut publisher = open(&root);
+    attach_campaign(&mut publisher, 1001);
+    let mut vault = vault(&mut publisher);
+    let passphrase = b"synthetic restored recovery restart passphrase";
+    let backup = publisher.export_backup(passphrase, &vault).unwrap();
+    let mut production = MemoryStore::new(AdChannel::Production);
+    let published = publisher
+        .publish_with(&mut production, &vault, AdChannel::Production, 1002)
+        .unwrap();
+    publisher.pause(None, 1003).unwrap();
+    publisher
+        .restore_backup(&backup, passphrase, &mut vault)
+        .unwrap();
+    let generation = publisher.generation.clone();
+    let state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    assert!(publisher.status().recovery_required);
+    drop(publisher);
+    let mut reopened = open(&root);
+    assert_eq!(reopened.generation, generation);
+    assert_eq!(encode(&reopened.state, STATE_LIMIT).unwrap(), state);
+    assert!(reopened.status().recovery_required);
+    assert!(reopened.draft_read().content_revision > published.revision);
+    let mut preview = MemoryStore::new(AdChannel::Preview);
+    assert!(matches!(
+        reopened.publish_with(&mut preview, &vault, AdChannel::Preview, 1004),
+        Err(Error::RecoveryReadRequired)
+    ));
+    assert_eq!(preview.commits, 0);
+    assert_eq!(preview.immutable_writes, 0);
+    assert!(preview.accesses.is_empty());
+    reopened
+        .reconcile_production(&mut production, 1004)
+        .unwrap();
+    assert!(!reopened.status().recovery_required);
+    let restored = reopened
+        .publish_with(&mut production, &vault, AdChannel::Production, 1005)
+        .unwrap();
+    assert!(restored.revision > published.revision);
+    assert_eq!(production.commits, 2);
+}
+
+#[test]
 fn restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets() {
     let root = LocalRoot::new();
     let mut publisher = open(&root);

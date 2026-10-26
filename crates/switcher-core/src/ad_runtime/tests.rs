@@ -680,7 +680,19 @@ root=pathlib.Path(sys.argv[1])
 class H(http.server.BaseHTTPRequestHandler):
  def log_message(self,*args): pass
  def do_GET(self):
-  with (root/'requests.log').open('a') as f: f.write(json.dumps({'path':self.path,'headers':dict(self.headers)})+'\n')
+  self.connection.settimeout(2)
+  if self.headers.get('Transfer-Encoding') is not None:
+   self.send_error(411);return
+  try: length=int(self.headers.get('Content-Length','0'))
+  except ValueError:
+   self.send_error(400);return
+  if not 0 <= length <= 4096:
+   self.send_error(413);return
+  body=self.rfile.read(length)
+  if len(body) != length:
+   self.send_error(400);return
+  record={'method':self.command,'path':self.path,'headers':dict(self.headers),'header_pairs':list(self.headers.raw_items()),'body':list(body)}
+  with (root/'requests.log').open('a') as f: f.write(json.dumps(record)+'\n')
   if (root/'redirect').exists():
    self.send_response(302);self.send_header('Location','https://ads.example.com/never-follow');self.end_headers();return
   name=self.path.rsplit('/',1)[-1]
@@ -732,6 +744,21 @@ server.serve_forever()
             client: builder.build().unwrap(),
         }
     }
+    fn requests(&self) -> Vec<serde_json::Value> {
+        use std::io::Read;
+        let mut bytes = Vec::new();
+        std::fs::File::open(self.root.0.join("requests.log"))
+            .unwrap()
+            .take(65_537)
+            .read_to_end(&mut bytes)
+            .unwrap();
+        assert!(bytes.len() <= 65_536, "fixture request log exceeded bound");
+        String::from_utf8(bytes)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect()
+    }
     fn source(&self) -> ContentSource {
         ContentSource::fixture(
             Url::parse(&format!("https://ads.example.com:{}/content/", self.port)).unwrap(),
@@ -743,6 +770,153 @@ impl Drop for TlsFixture {
         let _ = self.child.kill();
         let _ = self.child.wait();
     }
+}
+
+#[test]
+fn controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents() {
+    const CHILD: &str = "E11_AD_WIRE_HOME_CHILD";
+    const CANARIES: [&str; 4] = [
+        "E11_AD_ACCOUNT_A_SYNTHETIC_ONLY",
+        "E11_AD_ACCOUNT_B_SYNTHETIC_ONLY",
+        "E11_AD_ACTIVE_PROFILE_SYNTHETIC_ONLY",
+        "E11_AD_PRIVATE_FILE_CONTENT_SYNTHETIC_ONLY",
+    ];
+    if std::env::var_os(CHILD).is_none() {
+        let home = Root::new();
+        storage::create_private_directory(&home.0).unwrap();
+        for (relative, marker) in [
+            (".claude-switcher/accounts/A/session.json", CANARIES[0]),
+            (".claude-switcher/accounts/B/session.json", CANARIES[1]),
+            (
+                "Library/Application Support/Claude/session.json",
+                CANARIES[2],
+            ),
+            (".claude.json", CANARIES[3]),
+        ] {
+            let path = home.0.join(relative);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, marker).unwrap();
+        }
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "ad_runtime::tests::controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents", "--nocapture", "--test-threads=1"])
+            .env("HOME", &home.0).env(CHILD, &home.0).output().unwrap();
+        assert!(
+            output.status.success(),
+            "HOME child failed: stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        print!("{}", String::from_utf8_lossy(&output.stdout));
+        return;
+    }
+    let home = crate::config::home_dir().unwrap();
+    assert_eq!(home, PathBuf::from(std::env::var_os(CHILD).unwrap()));
+    for edition in [Edition::Personal, Edition::Public] {
+        let tls = TlsFixture::new();
+        let root = Root::new();
+        let mut runtime = configured_runtime(&root);
+        runtime.edition = edition;
+        runtime.pins.as_mut().unwrap().source = tls.source();
+        let value = manifest(12);
+        let image = &value.slots[0].campaigns[0].image;
+        std::fs::write(tls.root.0.join("current.json"), wire(&value)).unwrap();
+        std::fs::write(tls.root.0.join(format!("{}.png", image.sha256)), png()).unwrap();
+        let _lock = runtime.lock().unwrap();
+        let mut fetcher = tls.fetcher(true);
+        assert!(
+            runtime
+                .refresh_locked(&prefs(), true, sample(1000), Some(&mut fetcher), Some(0))
+                .unwrap()
+                .refreshed
+        );
+        let requests = tls.requests();
+        let expected = [
+            "/content/production/current.json".to_owned(),
+            format!("/content/production/assets/{}.png", image.sha256),
+        ];
+        assert_eq!(requests.len(), expected.len());
+        for (request, target) in requests.iter().zip(expected) {
+            assert_eq!(request["method"], "GET");
+            assert_eq!(request["path"], target);
+            assert_eq!(request["body"], serde_json::json!([]));
+            let pairs = request["header_pairs"].as_array().unwrap();
+            let mut headers = std::collections::BTreeMap::new();
+            for pair in pairs {
+                let name = pair[0].as_str().unwrap().to_ascii_lowercase();
+                assert!(
+                    matches!(name.as_str(), "host" | "accept"),
+                    "unexpected outbound header: {name}"
+                );
+                assert!(headers.insert(name, pair[1].as_str().unwrap()).is_none());
+            }
+            assert_eq!(headers.len(), 2);
+            assert_eq!(headers["host"], format!("ads.example.com:{}", tls.port));
+            assert_eq!(headers["accept"], "application/json,image/png,image/jpeg");
+            let wire = serde_json::to_string(request).unwrap();
+            for forbidden in CANARIES.into_iter().chain([home.to_str().unwrap()]) {
+                assert!(
+                    !wire.contains(forbidden),
+                    "private HOME data reached ad wire"
+                );
+            }
+        }
+        println!(
+            "ad wire {edition:?}: manifest + one deduplicated asset, exact headers, empty bodies, synthetic HOME canaries absent"
+        );
+    }
+}
+
+#[test]
+fn controlled_https_capture_detects_sensitive_query_headers_and_body_positive_control() {
+    let tls = TlsFixture::new();
+    let url = format!(
+        "https://ads.example.com:{}/capture-control?synthetic=1",
+        tls.port
+    );
+    let response = tls
+        .fetcher(true)
+        .client
+        .get(url)
+        .header("Cookie", "synthetic-cookie")
+        .header("Authorization", "Bearer synthetic-token")
+        .body("synthetic-private-body")
+        .send()
+        .unwrap();
+    assert_eq!(response.status(), reqwest::StatusCode::NOT_FOUND);
+    let requests = tls.requests();
+    assert_eq!(requests.len(), 1);
+    assert_eq!(requests[0]["method"], "GET");
+    assert_eq!(requests[0]["path"], "/capture-control?synthetic=1");
+    assert_eq!(
+        requests[0]["body"],
+        serde_json::json!(b"synthetic-private-body".to_vec())
+    );
+    let pairs = requests[0]["header_pairs"].as_array().unwrap();
+    for (name, value) in [
+        ("cookie", "synthetic-cookie"),
+        ("authorization", "Bearer synthetic-token"),
+    ] {
+        assert!(
+            pairs.iter().any(
+                |pair| pair[0].as_str().unwrap().eq_ignore_ascii_case(name) && pair[1] == value
+            )
+        );
+    }
+}
+
+#[test]
+fn controlled_https_capture_rejects_request_body_over_4096_bytes() {
+    let tls = TlsFixture::new();
+    let url = format!("https://ads.example.com:{}/capture-control", tls.port);
+    let response = tls
+        .fetcher(true)
+        .client
+        .get(url)
+        .body(vec![b'x'; 4097])
+        .send()
+        .unwrap();
+    assert_eq!(response.status(), reqwest::StatusCode::PAYLOAD_TOO_LARGE);
+    assert!(!tls.root.0.join("requests.log").exists());
 }
 
 #[test]
