@@ -1,8 +1,16 @@
 # 本轮独立证据索引：ordinary-next
 
-解析器提交为 `ac1d48b49a72df6d83b7e08c05fc6406b3f7e2b8`，tree：`cbe31f21bd652991ada53c26a7507bec382d32d4`。`tests/evidence_reconciliation/`的25项回归及[独立审核](../../../../output/no-account-20261027/ordinary-next/review-rust-r2/portable-review.json)限定通过；仅支持当前串行libtest/F06三子进程输出格式，不支持任意并发或新嵌套格式。历史回放严格核对704顶层/600名，原失败summary保留；解析器核验证据一致性，不认证回执或重跑Rust。普通包仍绑定产品提交00dbf3c，不改标为解析器提交。最终[图谱状态](../../../../output/no-account-20261027/ordinary-next/codegraph-status-final.json)为175文件/4814节点/18877关系，complete、pending0。
+偏好阶段[双包独立复核](../../../../output/no-account-20261027/preferences-ipc/review-bundles/review.json)已完成：两版现存App的12条目/7文件、日志及精确归档绑定匹配，二进制/resources运行体扫描复现。Public当前dist可独立重扫；Personal原始dist已被覆盖，仅保留历史dist哈希/扫描回执。不能由二进制扫描重建原始压缩前端输入。E01维持REVIEW，普通App启动、动态ACL与安装仍NOT_RUN。
 
-普通双包独立复核结论为PASS_STATIC_ARTIFACTS_WITH_PROOF_LIMITS：每版12个现存条目/7文件及24份命令日志哈希重新核对，commit/tree/archive均匹配。临时frontend dist已清理，本次不能独立重扫，仅保留原构建扫描回执绑定。普通App动态ACL、启动和安装仍未验；解析器已完成限定独立审核。见[普通包独立复核](../../../../output/no-account-20261027/ordinary-next/review-bundles/review.json)。
+偏好阶段普通双包：[交付回执](../../../../output/no-account-20261027/bundles-preferences/delivery-summary.json)与[构建回执](../../../../output/no-account-20261027/bundles-preferences/final-summary.json)精确绑定产品/fixture提交 `d0a2498092f1e6b5cea16b8c30e7b811ead9493b`，不绑定后续文档提交。原构建每版22条静态检查及2条复制/签名变更通过，Public后各12条目重验通过；独立审查已完成限定静态复核。business/limits/偏好快照fixture运行体标记未检出，历史E01保留REVIEW_MARKERS_PRESENT。普通App动态ACL、启动、安装仍NOT_RUN；旧00db包完整保留。
+
+偏好IPC本轮源码/fixture提交：`d0a2498092f1e6b5cea16b8c30e7b811ead9493b`，tree：`7fbc4df5d04708c87d6b44486ae46d06825248e3`。两版各22次真实save_preferences调用，5次成功/17次拒绝，各44份前后快照；所有拒绝均保持两个文件不变。106项输入绑定，53项runner解析回归通过。[原生回执](../../../../output/no-account-20261027/preferences-ipc/native-r1/summary.json)与[独立复核](../../../../output/no-account-20261027/preferences-ipc/review-native/review.json)限定受控独立入口，不运行普通启动；重启后偏好持久化、完整矩阵及普通App仍未验。53项是runner回归，不与证据对账解析器25项混计。
+
+Rust r3四命令exit0；原正则计数失败保留。[仓库严格解析器对账](../../../../output/no-account-20261027/ordinary-next/rust/r3/strict-reconciliation.json)确认704顶层/600名称/3嵌套，按harness清单一致，嵌套不重复计数；它是r3既有执行的对账，不是额外Rust运行。新普通双包已从d0a2498精确归档构建并完成原构建静态检查，独立审查已完成限定静态复核；旧00db包及原哈希保留。当前[图谱](../../../../output/no-account-20261027/preferences-ipc/codegraph-status.json)为175文件/4835节点/18966关系，complete、pending0；旧175/4814/18877为历史快照。
+
+解析器提交为 `ac1d48b49a72df6d83b7e08c05fc6406b3f7e2b8`，tree：`cbe31f21bd652991ada53c26a7507bec382d32d4`。`tests/evidence_reconciliation/`的25项回归及[独立审核](../../../../output/no-account-20261027/ordinary-next/review-rust-r2/portable-review.json)限定通过；仅支持当前串行libtest/F06三子进程输出格式，不支持任意并发或新嵌套格式。历史回放严格核对704顶层/600名，原失败summary保留；解析器核验证据一致性，不认证回执或重跑Rust。解析器交付阶段的历史普通包绑定00dbf3c，不改标为解析器提交。此前[图谱状态](../../../../output/no-account-20261027/ordinary-next/codegraph-status-final.json)为175文件/4814节点/18877关系，complete、pending0。
+
+历史00db普通双包独立复核结论为PASS_STATIC_ARTIFACTS_WITH_PROOF_LIMITS：每版12个现存条目/7文件及24份命令日志哈希重新核对，commit/tree/archive均匹配。该历史轮次的临时frontend dist已清理，该次复核不能独立重扫，仅保留原构建扫描回执绑定。普通App动态ACL、启动和安装仍未验；解析器已完成限定独立审核。见[00db历史普通包独立复核](../../../../output/no-account-20261027/ordinary-next/review-bundles/review.json)。
 
 当前发布命令生产实现仅装配LocalObjectStore，使用本机私有文件；尚无已装配的生产HTTP ObjectStore。广告受控HTTPS客户端及MemoryStore状态机测试不证明发布HTTP CAS已实现或通过；远程对象存储适配与实源验收单列未完成。
 
@@ -28,9 +36,18 @@
 
 源码提交 `00dbf3c486b65aa5840033954485af2262fb85d3`，tree为 `a756309a1e69e6754fd8d40e6ba33770fce226ba`。tests、list、fmt、Clippy四命令均exit0。原summary保留FAIL_RECORD_COUNT_ACCOUNTING，不覆盖或删除。独立分组复核识别3条嵌套恢复子进程结果，并恢复一条分行结束的父测试；最终704个顶层通过记录、600个名称，按(binary,name)与清单多重集合一致。不能通过固定减3或仅凭Cargo退出码推导该结果。
 
-独立审查仅重放既有日志及完整性绑定，没有新执行测试。解析器已提交并通过25项限定回归及独立审核。两项原生测试继续排除。700/596保留为此前r1轮次，不与r2混计。普通双包已从本提交完成构建及限定静态检查，独立包复核已完成限定静态核对。产品提交阶段图谱172文件/4748节点/18696关系，complete，待更新及待解析均0；不表示覆盖率。
+独立审查仅重放既有日志及完整性绑定，没有新执行测试。解析器已提交并通过25项限定回归及独立审核。两项原生测试继续排除。700/596保留为此前r1轮次，不与r2混计。历史00db普通双包已从本提交完成构建及限定静态检查和独立静态复核。产品提交阶段图谱172文件/4748节点/18696关系，complete，待更新及待解析均0；不表示覆盖率。
 
-## 普通双包静态交付
+## 当前偏好阶段普通双包（独立审查已完成限定静态复核）
+
+精确产品提交 `d0a2498092f1e6b5cea16b8c30e7b811ead9493b`，tree：`7fbc4df5d04708c87d6b44486ae46d06825248e3`，archive SHA256：`cba9d48799b48e1245e18338a2187eae3e8e898d87a8bcd70daafc973927fe74`。原构建静态结果与后续限定独立复核均已记录，不外推为普通App运行通过。
+
+| 版本 | App路径 | 签名主程序SHA256 | 清单SHA256 |
+| --- | --- | --- | --- |
+| personal | `/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-preferences/artifacts/personal/Claude 切换器 Personal.app` | `fe23e0c5d3e910991b745121b72798a077fd5b0b7514dc38113bb4f058743bc2` | `3865ef81e87c5c6c7827c5359b54fb7eeb652716243c18cb7e2b008466cb6aa6` |
+| public | `/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-preferences/artifacts/public/Claude 切换器 Public.app` | `d4ca8da611d425228e10cf98ece1ed65e83e37da48b3f7db628792e0801089ad` | `dfe0bcf6526cffabf603de5628551a945e6b5d73d3bb5f3de001a2c5b461f22f` |
+
+## 历史00db普通双包静态交付
 
 绑定00dbf3c精确归档，archive SHA256为 `b8cd16b1166acbbcd2dae62ae7cc2e5eb52ddb86db02a766ec50610381f86172`。两版各22条静态检查及2条复制/签名变更完成；Public后每版12条目重验通过。business/limits运行体标记在dist/resources及四个Mach-O二进制未检出。历史E01权限描述forbidden_probe/finish_smoke各1处，保留REVIEW_MARKERS_PRESENT；静态排除不证明普通App动态ACL，后者仍NOT_RUN。独立包复核已完成限定静态核对；解析器已完成限定独立审核，普通启动、安装、真实账号等限制不变。
 
@@ -41,7 +58,7 @@
 
 ## 仍在推进
 
-稳定runner r9已完成下方限定验证；最终Rust统一全量r2已完成四命令及独立分组复核。普通双包已从00dbf3c精确归档完成构建及限定静态检查。独立包复核已完成限定静态核对；解析器已完成限定独立审核；CNC历史包保留，不把fixture构建视为普通候选包。真实账号、正常App启动、实源、系统、安装和长时验收保持未验。既有33–66小时粗估不因有限推进缩减。
+稳定runner r9已完成下方限定验证；最终Rust统一全量r2已完成四命令及独立分组复核。历史00db普通双包已从00dbf3c精确归档完成构建及限定静态检查。独立包复核已完成限定静态核对；解析器已完成限定独立审核；CNC历史包保留，不把fixture构建视为普通候选包。真实账号、正常App启动、实源、系统、安装和长时验收保持未验。既有33–66小时粗估不因有限推进缩减。
 
 ## 原始回执绑定
 
@@ -61,8 +78,15 @@
 | 当前图谱状态 | [codegraph-status.json](../../../../output/no-account-20261027/ordinary-next/codegraph-status.json) | `7b3087a2e245a19e8d8cb21ed717008425c104244b3f15d880242e73ae3acc59` |
 | 普通包交付 | [delivery-summary.json](../../../../output/no-account-20261027/bundles-ordinary-next/delivery-summary.json) | `4566703c1b580dd603594716a827ee6cdf8418cd90a83ed537b4dbe7d1b0aa87` |
 | 普通包构建 | [final-summary.json](../../../../output/no-account-20261027/bundles-ordinary-next/final-summary.json) | `acac1267781e28d302f15ea0b51c366e4170fc38f5c54783002189f96feca54b` |
-| 普通包独立复核 | [review.json](../../../../output/no-account-20261027/ordinary-next/review-bundles/review.json) | `f36ee5019caad91db144068d798abdc8778515b27aa42a655dff975520c336b7` |
+| 00db历史普通包独立复核 | [review.json](../../../../output/no-account-20261027/ordinary-next/review-bundles/review.json) | `f36ee5019caad91db144068d798abdc8778515b27aa42a655dff975520c336b7` |
 | 解析器限定独立审核 | [portable-review.json](../../../../output/no-account-20261027/ordinary-next/review-rust-r2/portable-review.json) | `aba9b4c07e7e56b701ed7d3691ae390f3d3c052684cd994c87a0ec49bb73f6bb` |
 | 最终图谱状态 | [codegraph-status-final.json](../../../../output/no-account-20261027/ordinary-next/codegraph-status-final.json) | `fc781327f16d2518f3ae993b0a6b43dee460cdd5397e30c0f604c7393adf0e0c` |
+| 偏好IPC原生结果 | [summary.json](../../../../output/no-account-20261027/preferences-ipc/native-r1/summary.json) | `53c36f46ece0dde5dd361b56488df0c965637eef5e06769b54ad3311d31b18ee` |
+| 偏好IPC独立复核 | [review.json](../../../../output/no-account-20261027/preferences-ipc/review-native/review.json) | `b449a9e3c718cf1a9a46ffe20c268e5c7284528bb70131f807765d69e0bb8f8e` |
+| Rust r3严格对账 | [strict-reconciliation.json](../../../../output/no-account-20261027/ordinary-next/rust/r3/strict-reconciliation.json) | `0f44da34068d8a2c39a501d906be19355d6b3c3e70b89be210fa66eef8f07a19` |
+| 偏好阶段图谱 | [codegraph-status.json](../../../../output/no-account-20261027/preferences-ipc/codegraph-status.json) | `11cea91bd2d34ad5cf9eb645953a33211e7e11e0cd8ddb7772136d6d33743d13` |
+| 偏好阶段普通包交付 | [delivery-summary.json](../../../../output/no-account-20261027/bundles-preferences/delivery-summary.json) | `c8b1c44f25ea053fd16a90a5c84c6c937c56f0546de3577ffee8412f3cef90e7` |
+| 偏好阶段普通包构建 | [final-summary.json](../../../../output/no-account-20261027/bundles-preferences/final-summary.json) | `ed634761f41b0936bfff13dc799a6b9498bb665faf6a0c14bc260efcfdb0a8bf` |
+| 偏好阶段双包独立复核 | [review.json](../../../../output/no-account-20261027/preferences-ipc/review-bundles/review.json) | `3d10265da15bf8867367bdfead149586f969a0ce6eea77db3a7345f3a97d1287` |
 
 原生排除：`unregistered_or_wrong_signer_service_never_authenticates`、`time::tests::real_macos_continuous_sample_is_available`。
