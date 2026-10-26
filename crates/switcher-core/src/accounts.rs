@@ -424,21 +424,34 @@ impl AccountStore {
             current: Some(self.selected_account()?),
             a_saved: optional_identity(&self.archive(AccountId::A))?.is_some(),
             b_saved: optional_identity(&self.archive(AccountId::B))?.is_some(),
-            recovery_pending: self.v2().join("legacy-account-journal.json").try_exists()?
-                || self.journal_path().try_exists()?
-                || self
-                    .root
-                    .join("v2/migration/in-place-journal.json")
-                    .try_exists()?,
+            recovery_pending: Self::journal_present(
+                &self.v2().join("legacy-account-journal.json"),
+            )? || Self::journal_present(&self.journal_path())?
+                || self.migration_journal_present()?,
         })
     }
     fn no_journal(&self) -> io::Result<()> {
-        if self.journal_path().try_exists()? {
+        if Self::journal_present(&self.journal_path())? {
             return Err(invalid(
                 "account recovery required before mutation or launch",
             ));
         }
         Ok(())
+    }
+    fn journal_present(path: &Path) -> io::Result<bool> {
+        match fs::symlink_metadata(path) {
+            Ok(_) => Ok(true),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+            Err(error) => Err(error),
+        }
+    }
+    fn migration_journal_present(&self) -> io::Result<bool> {
+        let directory = self.v2().join("migration");
+        match storage::validate_no_symlinks(&directory) {
+            Ok(()) => Self::journal_present(&directory.join("in-place-journal.json")),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+            Err(error) => Err(error),
+        }
     }
     fn mirror(&self, account: AccountId) -> io::Result<()> {
         storage::atomic_write(
@@ -1601,6 +1614,99 @@ mod tests {
         fn drop(&mut self) {
             let _ = fs::remove_dir_all(&self.base);
         }
+    }
+
+    fn assert_dangling_journal_requires_recovery(relative: &str) {
+        let fixture = Fixture::new();
+        fixture.initialize();
+        let journal = fixture.store.v2().join(relative);
+        if relative.starts_with("migration/") {
+            storage::create_private_directory(journal.parent().unwrap()).unwrap();
+        }
+        let inspect = || {
+            AccountStore::inspect(
+                &fixture.store.root,
+                &fixture.store.active,
+                fixture.store.owner,
+            )
+            .unwrap()
+        };
+        assert!(!inspect().recovery_pending);
+        std::os::unix::fs::symlink(fixture.base.join("missing-target"), &journal).unwrap();
+        assert!(!journal.try_exists().unwrap());
+        assert!(inspect().recovery_pending, "journal: {relative}");
+        assert_eq!(
+            fs::read(fixture.store.active.join("session")).unwrap(),
+            b"A-original"
+        );
+        fs::remove_file(&journal).unwrap();
+        assert!(!inspect().recovery_pending);
+        storage::atomic_write(&journal, b"synthetic journal").unwrap();
+        assert!(inspect().recovery_pending);
+    }
+
+    #[test]
+    fn dangling_legacy_journal_requires_recovery() {
+        assert_dangling_journal_requires_recovery("legacy-account-journal.json");
+    }
+
+    #[test]
+    fn dangling_account_journal_requires_recovery() {
+        assert_dangling_journal_requires_recovery("account-journal.json");
+    }
+
+    #[test]
+    fn dangling_migration_journal_requires_recovery() {
+        assert_dangling_journal_requires_recovery("migration/in-place-journal.json");
+    }
+
+    #[test]
+    fn unsafe_migration_directory_blocks_account_inspection() {
+        for target_exists in [false, true] {
+            let fixture = Fixture::new();
+            fixture.initialize();
+            let target = fixture.base.join("migration-target");
+            if target_exists {
+                storage::create_private_directory(&target).unwrap();
+            }
+            let migration = fixture.store.v2().join("migration");
+            std::os::unix::fs::symlink(&target, &migration).unwrap();
+            assert!(
+                AccountStore::inspect(
+                    &fixture.store.root,
+                    &fixture.store.active,
+                    fixture.store.owner,
+                )
+                .is_err()
+            );
+            assert_eq!(
+                fs::read(fixture.store.active.join("session")).unwrap(),
+                b"A-original"
+            );
+        }
+    }
+
+    #[test]
+    fn dangling_account_journal_blocks_switch_before_mutation() {
+        let fixture = Fixture::new();
+        fixture.initialize();
+        fixture.add_b();
+        std::os::unix::fs::symlink(
+            fixture.base.join("missing-target"),
+            fixture.store.journal_path(),
+        )
+        .unwrap();
+        assert!(fixture.store.no_journal().is_err());
+        assert!(fixture.switch(AccountId::B).is_err());
+        assert_eq!(fixture.store.selected_account().unwrap(), AccountId::A);
+        assert_eq!(
+            fs::read(fixture.store.active.join("session")).unwrap(),
+            b"A-original"
+        );
+        assert_eq!(
+            fs::read(fixture.store.archive(AccountId::B).join("session")).unwrap(),
+            b"B-private"
+        );
     }
 
     #[test]

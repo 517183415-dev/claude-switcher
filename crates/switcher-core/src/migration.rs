@@ -364,6 +364,23 @@ mod tests {
         }
     }
     #[test]
+    fn unsafe_migration_directory_blocks_recovery_without_mutation() {
+        for target_exists in [false, true] {
+            let fixture = Fixture::new(false);
+            let c = &fixture.coordinator;
+            c.select_a().unwrap();
+            c.recover().unwrap();
+            let target = fixture.base.join("migration-target");
+            if target_exists {
+                storage::create_private_directory(&target).unwrap();
+            }
+            std::os::unix::fs::symlink(&target, c.root.join("v2/migration")).unwrap();
+            assert!(c.recover().is_err());
+            assert_eq!(fs::read(c.active.join("session")).unwrap(), b"A-live");
+            assert_eq!(fs::read(c.root.join("current")).unwrap(), b"A\n");
+        }
+    }
+    #[test]
     fn first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data() {
         let fixture = Fixture::new(false);
         let c = &fixture.coordinator;
