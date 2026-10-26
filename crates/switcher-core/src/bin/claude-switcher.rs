@@ -119,8 +119,14 @@ impl CliBackend for NativeCli {
     }
     fn save_detail(&mut self, output: &str) -> Result<(), String> {
         let home = config::home_dir()?;
-        std::fs::create_dir_all(home.join(".claude-switcher"))
-            .and_then(|()| std::fs::write(home.join(".claude-switcher/last-check.txt"), output))
+        let directory = home.join(".claude-switcher");
+        switcher_core::storage::prepare_data_root(&directory)
+            .and_then(|()| {
+                switcher_core::storage::atomic_write(
+                    &directory.join("last-check.txt"),
+                    output.as_bytes(),
+                )
+            })
             .map_err(|_| "检查报告保存失败".into())
     }
     async fn switch(&mut self, edition: Edition, target: AccountId) -> lifecycle::LaunchOutcome {
@@ -445,6 +451,149 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    struct DetailFixture(std::path::PathBuf);
+
+    #[cfg(unix)]
+    impl DetailFixture {
+        fn new() -> Self {
+            use std::os::unix::fs::DirBuilderExt;
+            static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+            let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+                "switcher-detail-test-{}-{}",
+                std::process::id(),
+                NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            ));
+            std::fs::DirBuilder::new()
+                .mode(0o700)
+                .create(&root)
+                .unwrap();
+            Self(root)
+        }
+
+        fn run(&self, expected: &str) -> std::process::Output {
+            std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "tests::native_detail_child", "--nocapture"])
+                .env_clear()
+                .env("HOME", &self.0)
+                .env("TMPDIR", self.0.parent().unwrap())
+                .env("SWITCHER_DETAIL_EXPECTED", expected)
+                .output()
+                .unwrap()
+        }
+    }
+
+    #[cfg(unix)]
+    impl Drop for DetailFixture {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn native_detail_child() {
+        use std::os::unix::fs::MetadataExt;
+        let Ok(expected) = std::env::var("SWITCHER_DETAIL_EXPECTED") else {
+            return;
+        };
+        let home = std::path::PathBuf::from(std::env::var_os("HOME").unwrap());
+        let temp = std::path::PathBuf::from(std::env::var_os("TMPDIR").unwrap())
+            .canonicalize()
+            .unwrap();
+        assert_eq!(home.parent(), Some(temp.as_path()));
+        assert!(
+            home.file_name()
+                .unwrap()
+                .to_string_lossy()
+                .starts_with("switcher-detail-test-")
+        );
+        let meta = std::fs::symlink_metadata(&home).unwrap();
+        assert!(meta.is_dir());
+        assert_eq!(meta.uid(), unsafe { libc::geteuid() });
+        assert_eq!(meta.mode() & 0o777, 0o700);
+        let result = NativeCli.save_detail("synthetic detail\n");
+        match expected.as_str() {
+            "write" => assert_eq!(result, Ok(())),
+            "reject" => assert_eq!(result, Err("检查报告保存失败".into())),
+            _ => panic!("invalid fixture expectation"),
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn native_detail_rejects_linked_destinations() {
+        use std::os::unix::fs::symlink;
+        for kind in ["symlink", "hardlink", "parent"] {
+            let fixture = DetailFixture::new();
+            let sentinel = fixture.0.join("sentinel");
+            std::fs::write(&sentinel, "preserve").unwrap();
+            let directory = fixture.0.join(".claude-switcher");
+            if kind == "parent" {
+                let target = fixture.0.join("target");
+                std::fs::create_dir(&target).unwrap();
+                std::fs::hard_link(&sentinel, target.join("last-check.txt")).unwrap();
+                symlink(&target, &directory).unwrap();
+            } else {
+                std::fs::create_dir(&directory).unwrap();
+                let destination = directory.join("last-check.txt");
+                if kind == "symlink" {
+                    symlink(&sentinel, destination).unwrap();
+                } else {
+                    std::fs::hard_link(&sentinel, destination).unwrap();
+                }
+            }
+            let child = fixture.run("reject");
+            assert_eq!(
+                std::fs::read_to_string(&sentinel).unwrap(),
+                "preserve",
+                "{kind} modified sentinel"
+            );
+            assert!(
+                child.status.success(),
+                "{kind}: {}",
+                String::from_utf8_lossy(&child.stdout)
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn native_detail_creates_and_replaces_private_reports() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+        for existing in [false, true] {
+            let fixture = DetailFixture::new();
+            let directory = fixture.0.join(".claude-switcher");
+            if existing {
+                std::fs::create_dir(&directory).unwrap();
+                std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o755))
+                    .unwrap();
+                std::fs::write(directory.join("last-check.txt"), "old report").unwrap();
+            }
+            let child = fixture.run("write");
+            assert!(
+                child.status.success(),
+                "{}",
+                String::from_utf8_lossy(&child.stdout)
+            );
+            assert_eq!(
+                std::fs::read_to_string(directory.join("last-check.txt")).unwrap(),
+                "synthetic detail\n"
+            );
+            assert_eq!(
+                std::fs::metadata(&directory).unwrap().mode() & 0o777,
+                if existing { 0o755 } else { 0o700 }
+            );
+            assert_eq!(
+                std::fs::metadata(directory.join("last-check.txt"))
+                    .unwrap()
+                    .mode()
+                    & 0o777,
+                0o600
+            );
+        }
+    }
     struct F06Cli {
         accounts: AccountStatus,
         recorded: Option<AccountId>,
