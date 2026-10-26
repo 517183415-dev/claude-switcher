@@ -33,7 +33,9 @@
             "allow-ad-draft-read",
             "allow-ad-draft-save",
             "allow-pause-ad",
-            "allow-ipc-business-draft-snapshot"
+            "allow-ipc-business-draft-snapshot",
+            "allow-import-ad-image",
+            "allow-ad-image-preview"
           ]
         }
       ]

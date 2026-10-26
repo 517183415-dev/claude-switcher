@@ -1,5 +1,6 @@
 import { verifyDenial } from './denials.mjs';
 import { runDraft } from './draft.mjs';
+import { runImages } from './images.mjs';
 // This page is embedded only in the compile-time ipc-business fixture.
 (async () => {
   const invoke = window.__TAURI_INTERNALS__.invoke;
@@ -15,7 +16,9 @@ import { runDraft } from './draft.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.draft) {
+    if (info.images) {
+      await runImages(invoke, info.edition, responses);
+    } else if (info.draft) {
       await runDraft(invoke, info.edition, responses);
     } else if (info.backup) {
       if (info.edition === 'public') {

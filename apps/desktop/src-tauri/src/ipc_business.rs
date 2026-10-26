@@ -15,6 +15,7 @@ mod backup;
 struct Fixture {
     backup: bool,
     draft: bool,
+    images: bool,
     preflight: bool,
     preferences: bool,
     persistence: Option<&'static str>,
@@ -33,7 +34,7 @@ fn ipc_business_info(
     Ok(
         json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "draft": fixture.draft, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
+        "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
     )
 }
 
@@ -83,7 +84,7 @@ fn ipc_business_draft_snapshot(
     fixture: tauri::State<'_, Fixture>,
     label: String,
 ) -> Result<Value, String> {
-    if !fixture.draft || label.len() > 80 || !label.is_ascii() {
+    if !(fixture.draft || fixture.images) || label.len() > 80 || !label.is_ascii() {
         return Err("invalid_draft_snapshot".into());
     }
     fn visit(
@@ -195,6 +196,7 @@ pub fn run() {
             "--preflight"
                 | "--backup"
                 | "--draft"
+                | "--images"
                 | "--business"
                 | "--preferences"
                 | "--persistence-write"
@@ -216,7 +218,10 @@ pub fn run() {
         Edition::Public
     };
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
-    if !preflight && persistence.is_none() && !matches!(args[0].as_str(), "--backup" | "--draft") {
+    if !preflight
+        && persistence.is_none()
+        && !matches!(args[0].as_str(), "--backup" | "--draft" | "--images")
+    {
         seed_activity(&state);
     }
     let builder = tauri::Builder::default()
@@ -225,6 +230,7 @@ pub fn run() {
             preflight,
             backup: args[0] == "--backup",
             draft: args[0] == "--draft",
+            images: args[0] == "--images",
             persistence,
             preferences: args[0] == "--preferences",
         });
@@ -237,6 +243,8 @@ pub fn run() {
             ipc_business_preferences_snapshot,
             ipc_business_info,
             ipc_business_finish,
+            crate::publisher_commands::import_ad_image,
+            crate::publisher_commands::ad_image_preview,
             crate::publisher_commands::ad_draft_read,
             crate::publisher_commands::ad_draft_save,
             crate::publisher_commands::pause_ad,

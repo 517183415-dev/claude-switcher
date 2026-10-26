@@ -2,6 +2,8 @@ fn main() {
     let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some() {
         if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
             &[
+                "import_ad_image",
+                "ad_image_preview",
                 "ad_draft_read",
                 "ad_draft_save",
                 "pause_ad",
