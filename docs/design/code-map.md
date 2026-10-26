@@ -4,13 +4,13 @@
 
 ## 1. 基线与索引范围
 
-当前开发分支为 `codex/rust-rewrite`。产品代码基线为 `49c2615beac0e1f7ac7352977d3212229fe9b012`。该提交已包含 `codex/gpt-audit-fixes` 的全部代码。整合交付记录提交为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。本轮只更新索引配置与文档。
+当前开发分支为 `codex/rust-rewrite`。整合基线C49为 `49c2615beac0e1f7ac7352977d3212229fe9b012`，已包含 `codex/gpt-audit-fixes` 的全部代码。整合交付记录为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。最新产品修复CNA为 `0297efe2da236427b9a95a584aba53c4f30ce634`。本轮修改检查、启动门禁、测试时钟与权限回归，并更新文档。
 
-CodeGraph 1.6.0 已完成增量同步。当前索引有 **159 个文件、4,481 个节点、16,974 条关系**。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
+CodeGraph 1.6.0 已完成增量同步。当前索引有 **159 个文件、4,518 个节点、17,287 条关系**。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
 
 根目录 [codegraph.json](../../codegraph.json) 排除 `output/`、`tmp/`、验收证据与审核副本。历史源码和证据原件均保留。`experiments/` 保留索引，但降低查询优先级。这样可避免冻结源码参与当前调用链分析。
 
-自动索引覆盖 Rust、Svelte、TypeScript、JavaScript、Python、Swift 和 Objective-C。Shell、PowerShell、配置和文档仍须按入口单独核对。索引数据库位于本机 `.codegraph/`，不纳入 Git。同步验证见[图谱更新记录](../acceptance/evidence/integration-20261027/codegraph-update.json)。
+自动索引覆盖 Rust、Svelte、TypeScript、JavaScript、Python、Swift 和 Objective-C。Shell、PowerShell、配置和文档仍须按入口单独核对。索引数据库位于本机 `.codegraph/`，不纳入 Git。旧同步记录保留；本轮验证见[本轮摘要](../acceptance/evidence/no-account-20261027/summary.json)。
 
 ## 2. 当前入口与调用链
 
@@ -38,7 +38,9 @@ packaging/macos：候选工件 → 安装计划 → 管理员安装／恢复事�
 
 `main.rs` 用编译特性固定 Personal/Public，禁止同时启用或同时缺失。Public 不注册 Personal 的运营写入命令。`ipc-smoke` 使用独立编译特性；静态包检查不证明原生 IPC 已运行。
 
-桌面 `DesktopState` 汇集快照、检查会话、账号动作、修复计划、地区预览和广告刷新。CLI 与 guardian 复用核心业务模块。账号切换通过 `lifecycle::switch_checked`，当前账号启动通过 `lifecycle::launch_checked`。检查、退出、交换、复检和启动的规则由核心实现负责。
+桌面 `DesktopState` 汇集快照、检查会话、账号动作、修复计划、地区预览和广告刷新。CLI与guardian复用核心业务模块。账号切换通过 `lifecycle::switch_checked`，当前账号启动通过 `lifecycle::launch_checked`。`checks::run_checks` 将前后网络采样和14项检查纳入同一30秒预算。`checks::evaluate_launch` 统一校验报告完整性、有效期和网络代次。`lifecycle` 独立读取当前代次，在账号复核后再次调用统一门禁，再提交系统启动。
+
+广告和更新运行层通过函数指针接收已有 `ClockSample`。生产默认使用 `time::sample`；合成测试不再间接读取真实sysctl。没有新增IPC、环境变量或远程时钟覆盖入口。guardian描述符验证复用原权限谓词，特殊权限位拒绝规则不变。
 
 helper 根据安装记录校验调用身份，再按固定策略执行系统操作。SourceLocal 与 DeveloperId 的更新许可由安装身份和可信发布配置共同决定。Public 的发行标识不能单独证明远端更新可用。
 
@@ -73,9 +75,9 @@ helper 根据安装记录校验调用身份，再按固定策略执行系统操�
 | `packaging/macos/test_*.py` | 假安装、取消、卸载和恢复；使用隔离文件与替身命令 |
 | `tests/` | 旧版 Shell 的切换安全与独立代理诊断回归 |
 
-整合回归已完成 125 个测试方法及 2 组 Node VM 检查。类型检查为零错误、零警告。两版候选包共通过 44 项静态检查。这些结果来自本地整合记录，本轮文档更新未重跑产品测试。
+C49历史整合回归保留125个方法、2组VM和44项包静态检查。本轮CNA新执行Rust适用隔离组671次，包含567个不同测试名称；共享模块重复编入不能计为独立方法。Python200方法、前端60测试及2组VM通过。类型检查为零错误、零警告，fmt与Clippy全部目标通过。原生时钟和已安装XPC连接两项Rust测试单列NOT_RUN；Python三项排除原因见本轮记录。
 
-当前候选原生 GUI/IPC 仍为 `NOT_RUN`。实际安装、真实账号、实际外发、平台与长期运行按各自验收记录执行。完整隔离条件未满足时，不启动候选来替代隔离验收。详见[本地整合交付](../handoff/本地整合交付-2026-10-27.md)和[37 项当前候选验收](../acceptance/当前候选验收-2026-10-27.md)。
+当前候选原生GUI/IPC仍为 `NOT_RUN`。实际安装、真实账号、实际外发、平台与长期运行按各自验收记录执行。完整隔离条件未满足时，不启动普通候选试探。逐项分支映射仍需复核，不报告未经计算的覆盖率。详见[本轮进度](../handoff/无需账号功能进度-2026-10-27.md)和[37项验收](../acceptance/当前候选验收-2026-10-27.md)。
 
 ## 5. 历史实现与产品依据
 

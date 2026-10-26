@@ -1,0 +1,612 @@
+{
+  "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE",
+  "candidate": "CNA",
+  "source_commit": "0297efe2da236427b9a95a584aba53c4f30ce634",
+  "source_tree": "bbf516a48f0e7976b350360ae385cca724fb85ec",
+  "source_files": {
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "07b7e5fa484fc7ea16c4bc8db0c638b2bb6154515155e0d5f6cd3971d7772fca",
+    "apps/desktop/src-tauri/src/update_runtime.rs": "b864ab7c6933fd5da74ad0fb7b81d66a7ccb445a88f9269c2c95f28b370c2987",
+    "apps/desktop/src-tauri/tests/e11_log_privacy.rs": "6108bf022b612961ef457ed021e1d5b3d5eb2b8bddb72cc9a8e44bdbd7e8f08b",
+    "crates/switcher-core/src/ad_runtime.rs": "d923d6cab89b1b23fb9213ed4b9b132c74e60b94e9aa0065bc796f2c0d0447dc",
+    "crates/switcher-core/src/ad_runtime/tests.rs": "63c6e813fa38e28a6160db112c4c87d500beee127c6a00cb53b6fec4fa3b7ce6",
+    "crates/switcher-core/src/checks.rs": "16c9a4276bf011eb9302b9699b112b2848d77f1aed8d2eae8307b9118e09dbca",
+    "crates/switcher-core/src/guardian_repair.rs": "7082c1de685afea53e7a1ccbe6e5b23b10d703feae15209195172f8377cd733e",
+    "crates/switcher-core/src/lifecycle.rs": "6079064d7c1ae4a6a30be6110cf4f99ebbcd67286664571abefd4f0d1b79563a",
+    "crates/switcher-core/tests/e11_privacy.rs": "a92004faae863e2f9f9562f6c218d0d1bd50051b4767aa161e06472e7a4b046f"
+  },
+  "decision": "User chose current PRD: recheck after more than30 seconds or network change; revalidate immediately before launch.",
+  "rust": {
+    "passed_executions": 671,
+    "distinct_test_names": 567,
+    "duplicate_name_groups": 26,
+    "argv": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+      "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "--workspace",
+      "--tests",
+      "--",
+      "--skip",
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "--skip",
+      "time::tests::real_macos_continuous_sample_is_available",
+      "--test-threads=1"
+    ],
+    "seconds": 208.291,
+    "excluded_native_filters": [
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "time::tests::real_macos_continuous_sample_is_available"
+    ],
+    "failures": 0
+  },
+  "python": {
+    "passed_methods": 200,
+    "groups": [
+      {
+        "group": "legacy",
+        "expected": 21,
+        "tests_run": 21,
+        "passed": 21,
+        "success": true,
+        "seconds": 24.15059887501411,
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "group": "installer",
+        "expected": 176,
+        "tests_run": 176,
+        "passed": 176,
+        "success": true,
+        "seconds": 59.13409387494903,
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "group": "packaging",
+        "expected": 3,
+        "tests_run": 3,
+        "passed": 3,
+        "success": true,
+        "seconds": 0.7041123330127448,
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      }
+    ],
+    "original_test_head": "b2b79c106ff06bc007c854d4838a5781a739daa7",
+    "unchanged_inputs_verified_at_current_commit": [
+      {
+        "path": "core/claude-switch.sh",
+        "original_sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+        "tested_copy_sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+        "equal": true
+      },
+      {
+        "path": "packaging/macos/local_install.py",
+        "original_sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+        "tested_copy_sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+        "equal": true
+      },
+      {
+        "path": "packaging/macos/build_pkg.py",
+        "original_sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92",
+        "tested_copy_sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92",
+        "equal": true
+      },
+      {
+        "path": "packaging/macos/test_local_install.py",
+        "original_sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+        "tested_copy_sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+        "equal": true
+      },
+      {
+        "path": "packaging/macos/test_build_pkg.py",
+        "original_sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90",
+        "tested_copy_sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90",
+        "equal": true
+      },
+      {
+        "path": "tests/test_proxy_diagnose.py",
+        "original_sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+        "tested_copy_sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+        "equal": true
+      },
+      {
+        "path": "tests/test_switch_safety.py",
+        "original_sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+        "tested_copy_sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+        "equal": true
+      }
+    ],
+    "excluded": [
+      "test_f03_rust_watchdog_update_passes_real_public_verification",
+      "test_f03_rust_bridge_handles_historical_input_and_same_target_noop",
+      "test_build_pkg.PackagingTests.test_plan_is_read_only_and_owner_bound"
+    ]
+  },
+  "frontend": {
+    "node_tests": 60,
+    "vm_groups": 2,
+    "check_errors": 0,
+    "check_warnings": 0,
+    "records": [
+      {
+        "mode": "test",
+        "exit": 0,
+        "seconds": 1.465,
+        "argv": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles/build.sb",
+          "/opt/homebrew/bin/npm",
+          "run",
+          "test"
+        ],
+        "log_sha256": "6e894922fc607d4d9db758a7f16a33e6b4ae3dadc65676a8ecdf0f03cb62099f",
+        "commit": "4d29eaa33de0f36833ef096fb3177d19b20a4750"
+      },
+      {
+        "mode": "check",
+        "exit": 0,
+        "seconds": 1.343,
+        "argv": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles/build.sb",
+          "/opt/homebrew/bin/npm",
+          "run",
+          "check"
+        ],
+        "log_sha256": "773ee5fcc2411e8bb972a31c1c9794f7ad7b174c8edcab872721badf57258fce",
+        "commit": "4d29eaa33de0f36833ef096fb3177d19b20a4750"
+      }
+    ],
+    "binding": "Executed from intermediate C4D archive; current candidate changes only checks.rs. Frontend and dependency inputs unchanged."
+  },
+  "static_checks": {
+    "clippy": {
+      "exit": 0,
+      "duration_seconds": 13.738,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    "fmt_exit": 0,
+    "diff_check_exit": 0,
+    "known_output_notice": "Existing ts-rs macro deny_unknown_fields parse notices remain."
+  },
+  "regressions": {
+    "checks-deadline": {
+      "scope": [
+        "crates/switcher-core/src/checks.rs"
+      ],
+      "source_sha256": "51b82a3b04a81fb115a20ffe366ee86f0da2f296671202f7d829da709db101f6",
+      "cargo": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+      "cargo_flags": [
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "--exact"
+      ],
+      "red": {
+        "test": "checks::tests::report_deadline_returns_all_ids_for_pending_and_missing_tasks",
+        "exit": 101,
+        "failure": "outer timeout elapsed after 200ms because the shared production report path ignored its 10ms deadline",
+        "log": "red.log"
+      },
+      "green": [
+        {
+          "test": "report_deadline_returns_all_ids_for_pending_and_missing_tasks",
+          "exit": 0
+        },
+        {
+          "test": "report_deadline_preserves_completed_results_and_aborts_pending_tasks",
+          "exit": 0
+        },
+        {
+          "test": "report_join_errors_and_cancellation_preserve_other_results_and_block_launch",
+          "exit": 0
+        },
+        {
+          "test": "report_completed_results_allow_only_a_complete_passing_report",
+          "exit": 0
+        },
+        {
+          "test": "incomplete_check_tasks_keep_all_ids_and_block_without_epoch_gate",
+          "exit": 0
+        }
+      ],
+      "format_exit": 0,
+      "diff_check_exit": 0,
+      "production_observations_run": false,
+      "real_network_or_accounts_used": false,
+      "cache_policy": "temporary CARGO_HOME symlink to existing registry; sandbox denies writes to /Users/gua/.cargo and /Users/gua/.rustup",
+      "limitations": [
+        "Tokio timeout bounds cooperative async observations; it cannot forcibly preempt a synchronous blocked runtime worker.",
+        "TTL/network generation policy conflict found and reported to parent; no TTL/generation behavior changed.",
+        "Existing ts-rs deny_unknown_fields parse warnings remain."
+      ]
+    },
+    "checks-freshness": {
+      "scope": [
+        "crates/switcher-core/src/checks.rs"
+      ],
+      "source_sha256": "73d88545d1a9b23bf4b166f7522c73877ab23148ba8c635a1de8d118a1cce489",
+      "public_interfaces_unchanged": true,
+      "red": [
+        {
+          "log": "red.log",
+          "failed": 2,
+          "exit": 101
+        },
+        {
+          "log": "red-report-revival.log",
+          "failed": 1,
+          "exit": 101
+        },
+        {
+          "log": "red-late-sample.log",
+          "failed": 1,
+          "exit": 101
+        }
+      ],
+      "green": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/rust/account-free.sb",
+          "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "switcher-core",
+          "--lib",
+          "checks::tests::"
+        ],
+        "exit": 0,
+        "log": "green.log",
+        "tests": 24
+      },
+      "format_exit": 0,
+      "diff_check_exit": 0,
+      "account_or_real_system_observations_run": false,
+      "policies": [
+        "evidence age and valid_until accept exactly30 seconds; future/expired/malformed times reject",
+        "current/report/per-item network generations must be nonempty and agree",
+        "native generation sampled independently before and after observations",
+        "all sampling and observations share one total30-second deadline",
+        "sampling error/change/timeout clears report generation so later evaluation cannot revive it",
+        "late synchronous sampling returns a failed report after completion, never permission"
+      ],
+      "remaining_limitations": [
+        "Tokio cannot forcibly preempt synchronous blocking native code; async operations are bounded and late returned sampling is rejected.",
+        "Native event callbacks, real network changes and true wake behavior were not exercised."
+      ]
+    },
+    "guardian-mode": {
+      "classification": "TEST_PLATFORM_PRECONDITION_CORRECTED_NOT_PRODUCT_PERMISSION_VULNERABILITY",
+      "root_cause": "macOS sandbox silently strips setuid and setgid from chmod requests; the old test treated requested 04644 as observed permissions although descriptor metadata was 0644.",
+      "probe": {
+        "plain": "plain.json",
+        "sandbox": "sandbox.json"
+      },
+      "production_change": "Extract the existing unchanged uid==0 && gid==0 && (actual & 07777)==expected predicate; metadata file-kind and single-link checks remain.",
+      "tests_added": [
+        "guardian_repair::legacy_tests::f03_root_file_permissions_reject_special_bits_and_foreign_owners"
+      ],
+      "security_assertions": "All 7 nonempty setuid/setgid/sticky combinations rejected for 0644 and 0755; foreign UID/GID rejected. Real descriptor test validates observed chmod permissions and rejects sticky alongside bad rwx modes; links, bounds, directory rejection and opened-descriptor replacement tests retained.",
+      "red": {
+        "exit": 101,
+        "log": "red.log",
+        "test": "guardian_repair::legacy_tests::f03_checked_descriptor_metadata_links_and_bounds"
+      },
+      "green": [
+        {
+          "name": "special-bits",
+          "filter": "guardian_repair::legacy_tests::f03_root_file_permissions_reject_special_bits_and_foreign_owners",
+          "exit": 0
+        },
+        {
+          "name": "descriptor",
+          "filter": "guardian_repair::legacy_tests::f03_checked_descriptor_metadata_links_and_bounds",
+          "exit": 0
+        },
+        {
+          "name": "module",
+          "filter": "guardian_repair::",
+          "exit": 0
+        }
+      ],
+      "module_passed": 18,
+      "format_exit": 0,
+      "diff_check_exit": 0,
+      "source_sha256": "7082c1de685afea53e7a1ccbe6e5b23b10d703feae15209195172f8377cd733e",
+      "real_system_components_changed": false,
+      "real_accounts_used": false
+    },
+    "stun-unknown": {
+      "base_head": "4d29eaa33de0f36833ef096fb3177d19b20a4750",
+      "scope": [
+        "crates/switcher-core/src/checks.rs"
+      ],
+      "red": {
+        "exit": 101,
+        "log": "red.log",
+        "log_sha256": "d13f93dd3b5c82229b836142ddc181992cf72815d5a60762595fbc1510a81538",
+        "source_sha256": "f3049708f48f5f917af2a4c008a3363626b8cc610ca79882f5f708cf51bb19f5",
+        "failure": "empty STUN results with no HTTPS egress returned Pass instead of Unknown"
+      },
+      "green": {
+        "runs": [
+          {
+            "filter": "checks::tests::stun_",
+            "exit": 0,
+            "log": "green-stun.log"
+          },
+          {
+            "filter": "checks::tests::",
+            "exit": 0,
+            "log": "green-checks.log"
+          }
+        ],
+        "stun_tests_passed": 5,
+        "checks_tests_passed": 25,
+        "log_sha256": {
+          "green-stun.log": "41b3844b78182ee2d182f34ff60692129dd385799f733d3cf431e6b73f1c1377",
+          "green-checks.log": "5b598be52e5a170ecbf6604d952e2544c99da8796b05a5f9301cce5de528831b"
+        },
+        "source_sha256": "16c9a4276bf011eb9302b9699b112b2848d77f1aed8d2eae8307b9118e09dbca"
+      },
+      "format_exit": 0,
+      "diff_check_exit": 0,
+      "contract": "No valid STUN response means Unknown and blocks launch, regardless of HTTPS egress availability. Partial valid responses continue to compare returned addresses to HTTPS egress.",
+      "case_count": 22,
+      "cases": "empty; each of 9 StunError variants repeated4; mixed timeout/DNS/IO/header; each with HTTPS egress present and absent",
+      "integration": "local UDP blackhole with4 timeouts; geo stays pending11s; observed Unknown collected into14 unique check rows,13Pass/1blocking; evaluate_launch rejects",
+      "real_system_or_stun_servers_or_accounts_used": false
+    }
+  },
+  "artifacts": [
+    {
+      "edition": "personal",
+      "commit": "0297efe2da236427b9a95a584aba53c4f30ce634",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/personal/Claude 切换器 Personal.app",
+      "bundle_identifier": "local.claudeswitcher.personal",
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "signature": "adhoc_without_timestamp",
+      "signed_main_sha256": "30bb5784c1afe6ae62d78a137f6ff6dfde042ba182ec530c05973b9b796847ca",
+      "tree_manifest_sha256": "51f2de9d10772bba105603c46785034a9ab91b7747ecdec1e328de812ca2f541",
+      "components": {
+        "claude-switcher": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher",
+          "role": "cli",
+          "sha256": "6604e41e76b1256226b716b21fed5e6e6f8d9f0fd38c2fa7d3fc83fecda573d4",
+          "bytes": 8189760
+        },
+        "switcher-helper": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper",
+          "role": "helper",
+          "sha256": "d214c43f0d20c62e50ede5ed455dc56509254833a3c6b63503030a7bdfd2f055",
+          "bytes": 1105920
+        },
+        "switcher-guardian": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian",
+          "role": "guardian",
+          "sha256": "821f4ad7350f537a05e55717801c2b7d12e24c4bf45bcb46f8e37e20fefaadf0",
+          "bytes": 1677840
+        }
+      },
+      "product_launch": "NOT_RUN",
+      "native_gui_ipc": "NOT_RUN",
+      "installation_services": "NOT_RUN",
+      "real_accounts": "NOT_ACCESSED"
+    },
+    {
+      "edition": "public",
+      "commit": "0297efe2da236427b9a95a584aba53c4f30ce634",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/public/Claude 切换器 Public.app",
+      "bundle_identifier": "local.claudeswitcher.public",
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "signature": "adhoc_without_timestamp",
+      "signed_main_sha256": "a461a75e1a9cc44b057c111f1ec75adad7c53da312908c4cf36e7a89f17b224f",
+      "tree_manifest_sha256": "e8421505525461d8de98fb06afe2ca9e2844b361bb07af66ddc4679f5c3c3db9",
+      "components": {
+        "claude-switcher": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/claude-switcher",
+          "role": "cli",
+          "sha256": "6604e41e76b1256226b716b21fed5e6e6f8d9f0fd38c2fa7d3fc83fecda573d4",
+          "bytes": 8189760
+        },
+        "switcher-helper": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/switcher-helper",
+          "role": "helper",
+          "sha256": "cab8ea60a51b6c1d21177e13b291154a75900e8beaf9ec4206b1e802dc4144a6",
+          "bytes": 1105920
+        },
+        "switcher-guardian": {
+          "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-final/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/switcher-guardian",
+          "role": "guardian",
+          "sha256": "77cbd9976336d9e7151db59f632e41728e9bd46c5c3ee0d091980823154801eb",
+          "bytes": 1677840
+        }
+      },
+      "product_launch": "NOT_RUN",
+      "native_gui_ipc": "NOT_RUN",
+      "installation_services": "NOT_RUN",
+      "real_accounts": "NOT_ACCESSED"
+    }
+  ],
+  "archive_sha256": "33fdc7240a5a15cc1007f76fb2ccea85292cec38af93d26eb0c4a0888bb5a029",
+  "preserved_historical_artifacts": [
+    {
+      "commit": "49c2615beac0e1f7ac7352977d3212229fe9b012",
+      "app": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/packaging-validation-20261026/artifacts/personal/Claude 切换器 Personal.app",
+      "tree_manifest_sha256": "f15f47be199c0c0f9475171fabc49936d1e8a13a112b7a553bf79b7df203eacc",
+      "all_recorded_files_match": true
+    },
+    {
+      "commit": "49c2615beac0e1f7ac7352977d3212229fe9b012",
+      "app": "/Users/gua/CodexHome/worktrees/36b7/claude-switcher/output/packaging-validation-20261026/artifacts/public/Claude 切换器 Public.app",
+      "tree_manifest_sha256": "e1be16aef659d9d191366d2860297e6d90051a1160c1229df971bcd8987a7362",
+      "all_recorded_files_match": true
+    },
+    {
+      "commit": "4d29eaa33de0f36833ef096fb3177d19b20a4750",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles/artifacts/personal/Claude 切换器 Personal.app",
+      "tree_manifest_sha256": "f980245b7ff2e0a2e28e8a5da5bba0f5d7b9ead17d64ed43eff705c9c7d843b5",
+      "all_recorded_files_match": true
+    },
+    {
+      "commit": "4d29eaa33de0f36833ef096fb3177d19b20a4750",
+      "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles/artifacts/public/Claude 切换器 Public.app",
+      "tree_manifest_sha256": "605aef90251df72f1cef172689f95efff33654a73fd0bfbc61a8d4d3764e22fd",
+      "all_recorded_files_match": true
+    }
+  ],
+  "codegraph": {
+    "initialized": true,
+    "version": "1.6.0",
+    "projectPath": "/Users/gua/CodexWorkspaces/claude-switcher",
+    "indexPath": "/Users/gua/CodexWorkspaces/claude-switcher/.codegraph",
+    "lastIndexed": "2026-10-26T18:12:44.978Z",
+    "fileCount": 159,
+    "nodeCount": 4518,
+    "edgeCount": 17287,
+    "dbSizeBytes": 259026944,
+    "walSizeBytes": 0,
+    "backend": "node-sqlite",
+    "journalMode": "wal",
+    "nodesByKind": {
+      "class": 11,
+      "component": 8,
+      "constant": 62,
+      "enum": 57,
+      "enum_member": 254,
+      "field": 18,
+      "file": 159,
+      "function": 1622,
+      "import": 489,
+      "method": 1107,
+      "property": 175,
+      "struct": 254,
+      "trait": 16,
+      "type_alias": 65,
+      "variable": 221
+    },
+    "languages": [
+      "javascript",
+      "objc",
+      "python",
+      "rust",
+      "svelte",
+      "swift",
+      "typescript"
+    ],
+    "pendingChanges": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    },
+    "worktreeMismatch": null,
+    "index": {
+      "builtWithVersion": "1.6.0",
+      "builtWithExtractionVersion": 25,
+      "currentExtractionVersion": 25,
+      "reindexRecommended": false,
+      "state": "complete",
+      "pendingRefs": 0
+    }
+  },
+  "safety": {
+    "real_accounts": "NOT_ACCESSED",
+    "installed_state_reads": "NOT_RUN",
+    "installation_and_system_settings": "NOT_RUN",
+    "product_launch": "NOT_RUN",
+    "network": "Sandbox denies external connections; Rust permits loopback fixtures only; bundles deny all network.",
+    "dependencies": "Existing caches only, offline/locked; no install/upgrade/download",
+    "signing": "Derived build/test artifacts only, ad-hoc without timestamp; no commercial identity lookup"
+  },
+  "remaining": [
+    "Per-ID branch/checkpoint mapping",
+    "Native IPC isolation and dynamic request capture",
+    "Authorized actual system/proxy/installation lifecycle",
+    "Real selected ad storage and trusted DeveloperId update sources",
+    "Current-candidate performance, macOS13/Intel and actual48h then7d observation"
+  ],
+  "limitations": [
+    "No branch coverage percentage computed",
+    "Cooperative async deadline cannot forcibly preempt stuck synchronous native code",
+    "Synthetic generation tests do not prove native network/wake callbacks",
+    "Final network sampling and system launch submission are not atomic",
+    "35 account-free IDs are not all accepted; F08 andF09 real login remain separate"
+  ],
+  "logs_sha256": {
+    "output/no-account-20261027/rust/run-v4.log": "3a39d4f693e5edd0702bd53657836b408327cec8e6b52bd6678b3a32d0434d83",
+    "output/no-account-20261027/rust/run-v4-result.json": "dd5c39630521c4893f9ee623dcfb013bb9873216bcca770630301ef0d4cdde89",
+    "output/no-account-20261027/rust/list-v4.log": "0c5beaaa6014e9e219f773d945e08cb312cdb6117739f0828dfee8257d3bacb1",
+    "output/no-account-20261027/rust/clippy-v4.log": "6b74edb7f3b265dfa0a7f031022eb80413e1f678c1c205ae1d75647ab6b45313",
+    "output/no-account-20261027/rust/clippy-v4-result.json": "9fe1733564417403cf3053fdd2f74c4db5a438b831819d0b4b3b91bb437f9626",
+    "output/no-account-20261027/rust/fmt-v4.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "output/no-account-20261027/rust/run.log": "150ca0840e4dc0746c9444633fd60064009143edad48ebe16ed483e39c162c04",
+    "output/no-account-20261027/rust/run-v2.log": "e6d8a55538ea004cc2bb2b87528b89367f71e86d1e6eff158de9066ef3db3766",
+    "output/no-account-20261027/rust/run-v3.log": "4f3057db4e7443cb1df9aa516b306a31cdcd5d9577878d620faa47beb9450a29",
+    "output/no-account-20261027/rust/account-free.sb": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+    "output/no-account-20261027/rust/preflight.log": "e65517a46fcb9dbe67389e8431a75db3fea26c7fe3a96f03a16a360f02728496",
+    "output/no-account-20261027/rust/run_cargo.py": "497fa1d99913adfc185badd35d9345901764d4ddae084fc9bc2defb51ccedbcc",
+    "output/no-account-20261027/checks-deadline/verification.json": "daf6364d8c007591829c7c763fb8e985025171e61f09a8cf15db9bbd2af45ecb",
+    "output/no-account-20261027/checks-freshness/verification.json": "fc9f93e9a526b4e21e4416a154628fd21ee7c62d08da91885341407232f1830c",
+    "output/no-account-20261027/guardian-mode/verification.json": "b9ada87d78f23e4ecfb3a151c224552fa0ccdbbea6c82a85d8d1b9ff25a03a7f",
+    "output/no-account-20261027/stun-unknown/verification.json": "d21f432cfa71bf025f459fae122107e8412d3c97defa5ea046c2c81447f2332b",
+    "output/no-account-20261027/lifecycle/red.log": "0e506d94badee67c840123c5707bad924a6a412aeda6440037540e03e7b7c18d",
+    "output/no-account-20261027/lifecycle/green.log": "57388912396e50bcbc7520985d551c27495e1071161f12230ebab368b71a0ec8",
+    "output/no-account-20261027/doc-review-notes.json": "0a53c2986dc14c435516b5f445c401180fe6ab3e1a2232816cfb314b05bb35d0",
+    "output/no-account-20261027/update-clock/red.log": "f970d796c61951a066f59568a3da68995021d6fa113796d715832d652e1e3fd0",
+    "output/no-account-20261027/update-clock/update-final.log": "9351ac0861ad428e038c4e17ea417f12ba4eae5a3c01541eaa39a8c7d01a876f",
+    "output/no-account-20261027/update-clock/ad-final.log": "5598e365931d7f5720da3c63a91bbe2944125fe1def426df94a1442d6f5bc774",
+    "output/no-account-20261027/python/run-20261027-014019/summary.json": "c715b157652b7f5a747f7ceb9b57f635fd81c5dc75bcf4ed4d4166db77dc7b59",
+    "output/no-account-20261027/bundles/frontend-test.log": "6e894922fc607d4d9db758a7f16a33e6b4ae3dadc65676a8ecdf0f03cb62099f",
+    "output/no-account-20261027/bundles/frontend-check.log": "773ee5fcc2411e8bb972a31c1c9794f7ad7b174c8edcab872721badf57258fce",
+    "output/no-account-20261027/bundles/frontend-results.json": "b3096fa322eb766e65acd53247841c1706ccfa13495aa95fe08637b2b8829cf5",
+    "output/no-account-20261027/bundles-final/runtime.json": "4c5e6cc0688a98c53dce0a3ef6d4dacbafd42c5f4f5397c197763ac6ca270962",
+    "output/no-account-20261027/bundles-final/run_bundle.py": "61ef291f04042002adc6f3b964de7733950cdcfb57af0c6698a6cd2e3b33a961",
+    "output/no-account-20261027/bundles-final/verify_bundle.py": "864af97ac85e561f12319769350b2429857d84b6c70e0d733aa655a4cdea1e8a",
+    "output/no-account-20261027/bundles-final/build.sb": "88b6424cb506a230678415e12d7f39063c2c1f31a59ad699ba07e760e0cd8ea0",
+    "output/no-account-20261027/bundles-final/artifact-personal.json": "c3a0f1a56c005c7f124abe6de1d584586bf3d3636ac3a4c5c1531692b1949fed",
+    "output/no-account-20261027/bundles-final/artifact-public.json": "2045e532f94b365d72579495b2e2a825312af092c3e667d158111e14bd38d0ee",
+    "output/no-account-20261027/stun-unknown/red.log": "d13f93dd3b5c82229b836142ddc181992cf72815d5a60762595fbc1510a81538",
+    "output/no-account-20261027/stun-unknown/green-stun.log": "41b3844b78182ee2d182f34ff60692129dd385799f733d3cf431e6b73f1c1377",
+    "output/no-account-20261027/stun-unknown/green-checks.log": "5b598be52e5a170ecbf6604d952e2544c99da8796b05a5f9301cce5de528831b",
+    "output/no-account-20261027/checks-freshness/red-late-sample.log": "0d19577fe943545849a6842af1705e26170883fb9c1585c4889e820f30115ab9",
+    "output/no-account-20261027/checks-freshness/red.log": "4aea5c62f9d73af92bdf84d9d6128ddf72aba36d78cf581298c98adbf34fd716",
+    "output/no-account-20261027/checks-freshness/red-report-revival.log": "b11ae60b28a1c558618602cfa822ecb1afe8edac32102e24e1a4d4ac40805ce5",
+    "output/no-account-20261027/bundles-final/bundle-personal.json": "898be0965c2b45e46760de8f8d8e6f82a942365f6b3d8cf089a15ab5a582d63a",
+    "output/no-account-20261027/bundles-final/bundle-public.json": "1afd10db88307125e64a9d19676bc668150520ba614120e8b062f7750420e113",
+    "output/no-account-20261027/bundles-final/bundle-public.stdout": "5fc791246208a4894c6f10f14ddf719dc34941aaa6d6f8f2be1ca79d0e4f9667",
+    "output/no-account-20261027/bundles-final/bundle-personal.stdout": "85054aa9db1e3a5e7c62b22abcd06eb393ab7913ea955f7e70eef3f771f11d24",
+    "output/no-account-20261027/bundles-final/bundle-public.stderr": "39e9d8dcb8736353d71d273fa4ad7db7fb749befec39f1e645e5bcee92f68b2d",
+    "output/no-account-20261027/bundles-final/bundle-personal.stderr": "d5b1e0b64481ff8ff1e5465f55081530fbc4a93258ee00f9c85ed263ef7c0ebb"
+  }
+}
