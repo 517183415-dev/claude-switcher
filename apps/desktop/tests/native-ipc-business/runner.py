@@ -378,7 +378,7 @@ def attempt_value(value):
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'run'])
+    parser.add_argument('action', choices=['prepare', 'run', 'draft-persistence'])
     parser.add_argument('--output', required=True, type=output_root)
     parser.add_argument('--edition', choices=['personal', 'public'])
     parser.add_argument('--mode', choices=['preflight', 'business', 'preferences', 'backup', 'draft', 'images'])
@@ -386,10 +386,15 @@ def parse_args(argv=None):
     args = parser.parse_args(argv)
     if args.action == 'run' and (not args.edition or not args.mode or args.build_attempt is None):
         parser.error('run requires --edition, --mode and --build-attempt')
+    if args.action == 'draft-persistence' and (args.build_attempt is None or args.edition is not None or args.mode is not None):
+        parser.error('draft-persistence requires --build-attempt and determines its own editions/phases')
     return args
 
 
 if __name__ == '__main__':
     args = parse_args()
     OUT = args.output
+    if args.action == 'draft-persistence':
+        import draft_persistence
+        sys.exit(0 if draft_persistence.run(args.build_attempt, output=OUT) else 1)
     sys.exit(0 if (prepare() if args.action == 'prepare' else run(args.edition, args.mode, args.build_attempt)) else 1)

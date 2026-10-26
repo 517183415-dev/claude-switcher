@@ -19,6 +19,7 @@ struct Fixture {
     preflight: bool,
     preferences: bool,
     persistence: Option<&'static str>,
+    draft_persistence: Option<&'static str>,
 }
 
 #[tauri::command]
@@ -34,7 +35,7 @@ fn ipc_business_info(
     Ok(
         json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
+        "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "draft_persistence": fixture.draft_persistence, "saved": saved}),
     )
 }
 
@@ -201,6 +202,11 @@ pub fn run() {
                 | "--preferences"
                 | "--persistence-write"
                 | "--persistence-read"
+                | "--draft-persistence-save"
+                | "--draft-persistence-read"
+                | "--draft-persistence-probe"
+                | "--draft-persistence-pause"
+                | "--draft-persistence-verify"
         )
     {
         eprintln!("ipc-business requires one reviewed fixture mode");
@@ -212,6 +218,14 @@ pub fn run() {
         "--persistence-read" => Some("read"),
         _ => None,
     };
+    let draft_persistence = match args[0].as_str() {
+        "--draft-persistence-save" => Some("save"),
+        "--draft-persistence-read" => Some("read"),
+        "--draft-persistence-probe" => Some("probe"),
+        "--draft-persistence-pause" => Some("pause"),
+        "--draft-persistence-verify" => Some("verify"),
+        _ => None,
+    };
     let edition = if cfg!(feature = "personal") {
         Edition::Personal
     } else {
@@ -220,6 +234,7 @@ pub fn run() {
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
     if !preflight
         && persistence.is_none()
+        && draft_persistence.is_none()
         && !matches!(args[0].as_str(), "--backup" | "--draft" | "--images")
     {
         seed_activity(&state);
@@ -232,6 +247,7 @@ pub fn run() {
             draft: args[0] == "--draft",
             images: args[0] == "--images",
             persistence,
+            draft_persistence,
             preferences: args[0] == "--preferences",
         });
     #[cfg(feature = "personal")]
