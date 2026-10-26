@@ -481,16 +481,18 @@ pub fn read_private_bytes(path: &Path, limit: usize) -> io::Result<Vec<u8>> {
 mod tests {
     use super::*;
 
+    type ComponentHook = Box<dyn FnMut(&std::ffi::OsStr)>;
+
     thread_local! {
         static IDENTITY_FAULT: std::cell::RefCell<Option<io::Error>> =
-            std::cell::RefCell::new(None);
+            const { std::cell::RefCell::new(None) };
         static SYNC_FAULT: std::cell::RefCell<Option<io::Error>> =
-            std::cell::RefCell::new(None);
+            const { std::cell::RefCell::new(None) };
         static RENAME_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
             std::cell::RefCell::new(None);
         static PARENT_CHECK_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
             std::cell::RefCell::new(None);
-        static COMPONENT_HOOK: std::cell::RefCell<Option<Box<dyn FnMut(&std::ffi::OsStr)>>> =
+        static COMPONENT_HOOK: std::cell::RefCell<Option<ComponentHook>> =
             std::cell::RefCell::new(None);
         static COMMIT_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
             std::cell::RefCell::new(None);

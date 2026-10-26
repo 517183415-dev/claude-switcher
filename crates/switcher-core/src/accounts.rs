@@ -1695,10 +1695,12 @@ mod tests {
         std::os::unix::fs::symlink(&target, &journal).unwrap();
         let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
 
-        assert!(fixture
-            .store
-            .recover_legacy_checked(&lock, &|| Ok(()))
-            .is_err());
+        assert!(
+            fixture
+                .store
+                .recover_legacy_checked(&lock, &|| Ok(()))
+                .is_err()
+        );
         assert_eq!(fs::read_link(&journal).unwrap(), target);
         assert_eq!(
             fs::read(fixture.store.active.join("session")).unwrap(),
