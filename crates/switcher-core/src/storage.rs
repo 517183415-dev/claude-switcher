@@ -2,6 +2,8 @@
 use serde::{Serialize, de::DeserializeOwned};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
+use std::os::fd::{AsRawFd, FromRawFd};
+use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -214,44 +216,197 @@ pub fn sync_directory(path: &Path) -> io::Result<()> {
     File::open(path)?.sync_all()
 }
 
-/// The rename is the commit point. The file and its parent are both synchronized.
-pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
+fn path_component(name: &std::ffi::OsStr) -> io::Result<std::ffi::CString> {
+    std::ffi::CString::new(name.as_bytes())
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains NUL"))
+}
+
+// Bind each ancestor to an open directory. A later rename can move that inode;
+// this protects against path redirection, not arbitrary same-user directory edits.
+fn open_parent(path: &Path) -> io::Result<(File, std::ffi::CString)> {
     let parent = path
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?;
-    validate_no_symlinks(parent)?;
-    match fs::symlink_metadata(path) {
-        Ok(metadata) => {
-            if !metadata.is_file()
-                || metadata.file_type().is_symlink()
-                || metadata.nlink() != 1
-                || metadata.uid() != unsafe { libc::geteuid() }
-            {
+    let name = path
+        .file_name()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing filename"))?;
+    if !parent.is_absolute() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "absolute path required",
+        ));
+    }
+    let root = c"/";
+    let fd = unsafe {
+        libc::open(
+            root.as_ptr(),
+            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let mut directory = unsafe { File::from_raw_fd(fd) };
+    for component in parent.components() {
+        match component {
+            Component::RootDir => continue,
+            Component::Normal(name) => {
+                #[cfg(test)]
+                tests::before_component_open(name);
+                let name = path_component(name)?;
+                let fd = unsafe {
+                    libc::openat(
+                        directory.as_raw_fd(),
+                        name.as_ptr(),
+                        libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+                    )
+                };
+                if fd < 0 {
+                    let error = io::Error::last_os_error();
+                    if matches!(error.raw_os_error(), Some(libc::ELOOP | libc::ENOTDIR)) {
+                        return Err(io::Error::new(
+                            io::ErrorKind::PermissionDenied,
+                            "symlink or non-directory ancestor",
+                        ));
+                    }
+                    return Err(error);
+                }
+                directory = unsafe { File::from_raw_fd(fd) };
+            }
+            _ => {
                 return Err(io::Error::new(
-                    io::ErrorKind::PermissionDenied,
-                    "unsafe metadata destination",
+                    io::ErrorKind::InvalidInput,
+                    "non-normal path",
                 ));
             }
         }
-        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-        Err(error) => return Err(error),
+    }
+    #[cfg(test)]
+    tests::after_parent_checked();
+    Ok((directory, path_component(name)?))
+}
+
+// This detects changes observed at the check; a same-user rename can still race it.
+fn verify_parent_identity(path: &Path, parent: &File, committed: bool) -> io::Result<()> {
+    let same = (|| {
+        #[cfg(test)]
+        tests::identity_check_fault()?;
+        let held = parent.metadata()?;
+        let (current, _) = open_parent(path)?;
+        let current = current.metadata()?;
+        Ok::<_, io::Error>(held.dev() == current.dev() && held.ino() == current.ino())
+    })();
+    match same {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            if committed {
+                "parent directory changed after rename; write may have committed"
+            } else {
+                "parent directory changed"
+            },
+        )),
+        Err(error) if committed => {
+            let kind = error.kind();
+            Err(io::Error::new(kind, PostCommitError(error)))
+        }
+        Err(error) => Err(error),
+    }
+}
+
+#[derive(Debug)]
+struct PostCommitError(io::Error);
+
+impl std::fmt::Display for PostCommitError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "write may have committed: {}", self.0)
+    }
+}
+
+impl std::error::Error for PostCommitError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.0)
+    }
+}
+
+/// The rename is the commit point. The file and its parent are both synchronized.
+pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
+    let (parent, name) = open_parent(path)?;
+    verify_parent_identity(path, &parent, false)?;
+    let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
+    let status = unsafe {
+        libc::fstatat(
+            parent.as_raw_fd(),
+            name.as_ptr(),
+            metadata.as_mut_ptr(),
+            libc::AT_SYMLINK_NOFOLLOW,
+        )
+    };
+    if status == 0 {
+        let metadata = unsafe { metadata.assume_init() };
+        if metadata.st_mode & libc::S_IFMT != libc::S_IFREG
+            || metadata.st_nlink != 1
+            || metadata.st_uid != unsafe { libc::geteuid() }
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "unsafe metadata destination",
+            ));
+        }
+    } else {
+        let error = io::Error::last_os_error();
+        if error.kind() != io::ErrorKind::NotFound {
+            return Err(error);
+        }
     }
     let serial = NEXT_FILE.fetch_add(1, Ordering::Relaxed);
-    let temporary = parent.join(format!(".write-{}-{serial}", std::process::id()));
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-        .open(&temporary)?;
+    let temporary =
+        std::ffi::CString::new(format!(".write-{}-{serial}", std::process::id())).unwrap();
+    let fd = unsafe {
+        libc::openat(
+            parent.as_raw_fd(),
+            temporary.as_ptr(),
+            libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+            0o600,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let mut file = unsafe { File::from_raw_fd(fd) };
+    let mut committed = false;
     let result = (|| {
         file.write_all(bytes)?;
         file.sync_all()?;
-        fs::rename(&temporary, path)?;
-        sync_directory(parent)
+        #[cfg(test)]
+        tests::before_rename();
+        verify_parent_identity(path, &parent, false)?;
+        if unsafe {
+            libc::renameat(
+                parent.as_raw_fd(),
+                temporary.as_ptr(),
+                parent.as_raw_fd(),
+                name.as_ptr(),
+            )
+        } != 0
+        {
+            return Err(io::Error::last_os_error());
+        }
+        committed = true;
+        #[cfg(test)]
+        tests::after_commit();
+        #[cfg(test)]
+        tests::directory_sync_fault()
+            .map_err(|error| io::Error::new(error.kind(), PostCommitError(error)))?;
+        parent
+            .sync_all()
+            .map_err(|error| io::Error::new(error.kind(), PostCommitError(error)))?;
+        verify_parent_identity(path, &parent, true)
     })();
-    if result.is_err() {
-        let _ = fs::remove_file(&temporary);
+    if result.is_err() && !committed {
+        unsafe {
+            libc::unlinkat(parent.as_raw_fd(), temporary.as_ptr(), 0);
+        }
     }
     result
 }
@@ -278,14 +433,19 @@ pub fn read_private_bytes(path: &Path, limit: usize) -> io::Result<Vec<u8>> {
         .ok()
         .and_then(|value| value.checked_add(1))
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "invalid private file limit"))?;
-    validate_no_symlinks(
-        path.parent()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?,
-    )?;
-    let file = OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
-        .open(path)?;
+    let (parent, name) = open_parent(path)?;
+    verify_parent_identity(path, &parent, false)?;
+    let fd = unsafe {
+        libc::openat(
+            parent.as_raw_fd(),
+            name.as_ptr(),
+            libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let file = unsafe { File::from_raw_fd(fd) };
     let metadata = file.metadata()?;
     if !metadata.is_file()
         || metadata.nlink() != 1
@@ -311,12 +471,328 @@ pub fn read_private_bytes(path: &Path, limit: usize) -> io::Result<Vec<u8>> {
             "private file too large",
         ));
     }
+    #[cfg(test)]
+    tests::after_read();
+    verify_parent_identity(path, &parent, false)?;
     Ok(bytes)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    thread_local! {
+        static IDENTITY_FAULT: std::cell::RefCell<Option<io::Error>> =
+            std::cell::RefCell::new(None);
+        static SYNC_FAULT: std::cell::RefCell<Option<io::Error>> =
+            std::cell::RefCell::new(None);
+        static RENAME_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+            std::cell::RefCell::new(None);
+        static PARENT_CHECK_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+            std::cell::RefCell::new(None);
+        static COMPONENT_HOOK: std::cell::RefCell<Option<Box<dyn FnMut(&std::ffi::OsStr)>>> =
+            std::cell::RefCell::new(None);
+        static COMMIT_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+            std::cell::RefCell::new(None);
+        static READ_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+            std::cell::RefCell::new(None);
+    }
+
+    pub(super) fn before_rename() {
+        if let Some(hook) = RENAME_HOOK.with(|slot| slot.borrow_mut().take()) {
+            hook();
+        }
+    }
+    pub(super) fn directory_sync_fault() -> io::Result<()> {
+        match SYNC_FAULT.with(|slot| slot.borrow_mut().take()) {
+            Some(error) => Err(error),
+            None => Ok(()),
+        }
+    }
+
+    pub(super) fn identity_check_fault() -> io::Result<()> {
+        match IDENTITY_FAULT.with(|slot| slot.borrow_mut().take()) {
+            Some(error) => Err(error),
+            None => Ok(()),
+        }
+    }
+
+    #[test]
+    fn identity_check_preserves_underlying_system_error() {
+        let root = RaceRoot::new();
+        let path = root.0.join("parent/state");
+        let (parent, _) = open_parent(&path).unwrap();
+        IDENTITY_FAULT
+            .with(|slot| *slot.borrow_mut() = Some(io::Error::from_raw_os_error(libc::EIO)));
+        let error = verify_parent_identity(&path, &parent, false).unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::EIO));
+    }
+
+    #[test]
+    fn identity_check_after_commit_preserves_system_error_source() {
+        let root = RaceRoot::new();
+        let path = root.0.join("parent/state");
+        let (parent, _) = open_parent(&path).unwrap();
+        IDENTITY_FAULT
+            .with(|slot| *slot.borrow_mut() = Some(io::Error::from_raw_os_error(libc::EIO)));
+        let error = verify_parent_identity(&path, &parent, true).unwrap_err();
+        assert!(error.to_string().contains("may have committed"));
+        assert_eq!(error.kind(), io::Error::from_raw_os_error(libc::EIO).kind());
+        assert_eq!(
+            error
+                .get_ref()
+                .and_then(|source| source.downcast_ref::<PostCommitError>())
+                .and_then(|source| source.0.raw_os_error()),
+            Some(libc::EIO)
+        );
+    }
+
+    #[test]
+    fn parent_moved_before_rename_keeps_old_data_and_removes_temporary() {
+        let root = RaceRoot::new();
+        let destination = root.0.join("parent/state");
+        atomic_write(&destination, b"original").unwrap();
+        let base = root.0.clone();
+        RENAME_HOOK.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || {
+                fs::rename(base.join("parent"), base.join("moved")).unwrap();
+                std::os::unix::fs::symlink(base.join("decoy"), base.join("parent")).unwrap();
+            }))
+        });
+        assert!(atomic_write(&destination, b"updated").is_err());
+        assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"original");
+        assert_eq!(fs::read_dir(root.0.join("moved")).unwrap().count(), 1);
+        assert!(!root.0.join("decoy/state").exists());
+    }
+
+    #[test]
+    fn failed_directory_sync_reports_possible_commit_and_retains_data() {
+        let root = RaceRoot::new();
+        let destination = root.0.join("parent/state");
+        atomic_write(&destination, b"original").unwrap();
+        SYNC_FAULT.with(|slot| *slot.borrow_mut() = Some(io::Error::from_raw_os_error(libc::EIO)));
+        let error = atomic_write(&destination, b"updated").unwrap_err();
+        assert!(error.to_string().contains("may have committed"));
+        assert_eq!(
+            error
+                .get_ref()
+                .and_then(|source| source.downcast_ref::<PostCommitError>())
+                .and_then(|source| source.0.raw_os_error()),
+            Some(libc::EIO)
+        );
+        assert_eq!(fs::read(&destination).unwrap(), b"updated");
+    }
+
+    pub(super) fn after_read() {
+        let hook = READ_HOOK.with(|slot| slot.borrow_mut().take());
+        if let Some(hook) = hook {
+            hook();
+        }
+    }
+
+    pub(super) fn after_commit() {
+        let hook = COMMIT_HOOK.with(|slot| slot.borrow_mut().take());
+        if let Some(hook) = hook {
+            hook();
+        }
+    }
+
+    pub(super) fn before_component_open(name: &std::ffi::OsStr) {
+        COMPONENT_HOOK.with(|slot| {
+            if let Some(hook) = slot.borrow_mut().as_mut() {
+                hook(name);
+            }
+        });
+    }
+
+    pub(super) fn after_parent_checked() {
+        let hook = PARENT_CHECK_HOOK.with(|slot| slot.borrow_mut().take());
+        if let Some(hook) = hook {
+            hook();
+        }
+    }
+
+    struct RaceRoot(PathBuf);
+
+    impl RaceRoot {
+        fn new() -> Self {
+            let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+                "switcher-parent-race-{}-{}",
+                std::process::id(),
+                NEXT_FILE.fetch_add(1, Ordering::Relaxed)
+            ));
+            create_private_directory(&root).unwrap();
+            create_private_directory(&root.join("parent")).unwrap();
+            create_private_directory(&root.join("decoy")).unwrap();
+            Self(root)
+        }
+
+        fn swap_after_check(&self) {
+            let root = self.0.clone();
+            PARENT_CHECK_HOOK.with(|slot| {
+                assert!(slot.borrow().is_none());
+                *slot.borrow_mut() = Some(Box::new(move || {
+                    fs::rename(root.join("parent"), root.join("moved")).unwrap();
+                    std::os::unix::fs::symlink(root.join("decoy"), root.join("parent")).unwrap();
+                }));
+            });
+        }
+    }
+
+    impl Drop for RaceRoot {
+        fn drop(&mut self) {
+            PARENT_CHECK_HOOK.with(|slot| {
+                slot.borrow_mut().take();
+            });
+            COMPONENT_HOOK.with(|slot| {
+                slot.borrow_mut().take();
+            });
+            COMMIT_HOOK.with(|slot| {
+                slot.borrow_mut().take();
+            });
+            READ_HOOK.with(|slot| {
+                slot.borrow_mut().take();
+            });
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn atomic_write_stays_in_opened_parent_after_path_is_replaced() {
+        let root = RaceRoot::new();
+        let destination = root.0.join("parent/state");
+        let decoy = root.0.join("decoy/state");
+        atomic_write(&destination, b"original").unwrap();
+        atomic_write(&decoy, b"decoy").unwrap();
+        root.swap_after_check();
+        let result = atomic_write(&destination, b"updated");
+        assert_eq!(fs::read(&decoy).unwrap(), b"decoy");
+        assert!(result.is_err());
+        assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"original");
+    }
+
+    #[test]
+    fn private_read_stays_in_opened_parent_after_path_is_replaced() {
+        let root = RaceRoot::new();
+        let source = root.0.join("parent/state");
+        atomic_write(&source, b"original").unwrap();
+        atomic_write(&root.0.join("decoy/state"), b"decoy").unwrap();
+        root.swap_after_check();
+        assert!(read_private_bytes(&source, 32).is_err());
+    }
+
+    #[test]
+    fn moved_parent_must_not_report_write_success() {
+        let root = RaceRoot::new();
+        let destination = root.0.join("parent/state");
+        atomic_write(&destination, b"original").unwrap();
+        root.swap_after_check();
+        assert!(atomic_write(&destination, b"updated").is_err());
+    }
+
+    #[test]
+    fn moved_parent_must_not_report_read_success() {
+        let root = RaceRoot::new();
+        let source = root.0.join("parent/state");
+        atomic_write(&source, b"original").unwrap();
+        root.swap_after_check();
+        assert!(read_private_bytes(&source, 32).is_err());
+    }
+
+    #[test]
+    fn parent_moved_after_commit_reports_possible_commit() {
+        let root = RaceRoot::new();
+        let destination = root.0.join("parent/state");
+        atomic_write(&destination, b"original").unwrap();
+        let base = root.0.clone();
+        COMMIT_HOOK.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || {
+                fs::rename(base.join("parent"), base.join("moved")).unwrap();
+                std::os::unix::fs::symlink(base.join("decoy"), base.join("parent")).unwrap();
+            }))
+        });
+        let error = atomic_write(&destination, b"updated").unwrap_err();
+        assert!(error.to_string().contains("may have committed"));
+        assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"updated");
+        assert!(!root.0.join("decoy/state").exists());
+    }
+
+    #[test]
+    fn parent_moved_after_read_is_rejected() {
+        let root = RaceRoot::new();
+        let source = root.0.join("parent/state");
+        atomic_write(&source, b"original").unwrap();
+        let base = root.0.clone();
+        READ_HOOK.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || {
+                fs::rename(base.join("parent"), base.join("moved")).unwrap();
+                std::os::unix::fs::symlink(base.join("decoy"), base.join("parent")).unwrap();
+            }))
+        });
+        assert!(read_private_bytes(&source, 32).is_err());
+    }
+
+    #[test]
+    fn opening_an_ancestor_rejects_a_concurrent_symlink_replacement() {
+        let root = RaceRoot::new();
+        let source = root.0.join("parent/state");
+        atomic_write(&source, b"original").unwrap();
+        atomic_write(&root.0.join("decoy/state"), b"decoy").unwrap();
+        let base = root.0.clone();
+        COMPONENT_HOOK.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move |name| {
+                if name == "parent" {
+                    fs::rename(base.join("parent"), base.join("moved")).unwrap();
+                    std::os::unix::fs::symlink(base.join("decoy"), base.join("parent")).unwrap();
+                }
+            }))
+        });
+        assert_eq!(
+            read_private_bytes(&source, 32).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+    }
+
+    #[test]
+    fn anchored_io_preserves_missing_link_and_private_file_checks() {
+        let root = RaceRoot::new();
+        let source = root.0.join("parent/state");
+        assert_eq!(
+            read_private_bytes(&source, 8).unwrap_err().kind(),
+            io::ErrorKind::NotFound
+        );
+        let absent = root.0.join("missing/state");
+        assert_eq!(
+            atomic_write(&absent, b"value").unwrap_err().kind(),
+            io::ErrorKind::NotFound
+        );
+        atomic_write(&source, b"value").unwrap();
+        let hardlink = root.0.join("parent/hardlink");
+        fs::hard_link(&source, &hardlink).unwrap();
+        assert_eq!(
+            atomic_write(&source, b"new").unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            read_private_bytes(&source, 8).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(fs::read(&hardlink).unwrap(), b"value");
+        let link = root.0.join("linked");
+        std::os::unix::fs::symlink(root.0.join("parent"), &link).unwrap();
+        assert_eq!(
+            atomic_write(&link.join("state"), b"new")
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            read_private_bytes(&link.join("state"), 8)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::PermissionDenied
+        );
+    }
     #[test]
     fn legacy_data_root_keeps_modes_and_rejects_unsafe_metadata() {
         let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
