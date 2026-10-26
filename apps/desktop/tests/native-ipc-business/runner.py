@@ -233,6 +233,9 @@ def validate(stdout, code, edition, mode, folder):
         assert responses == {}, 'preflight must not call business commands'
         assert list(root.iterdir()) == [], 'preflight business writes forbidden'
         return {'status': 'PASS', 'edition': edition, 'mode': mode, 'denials': denials, 'filesystem': filesystem}
+    if mode == 'backup':
+        import backup
+        return dict(backup.validate(stdout, responses, edition, folder, filesystem), denials=denials)
     if mode == 'preferences':
         return dict(validate_preferences(stdout, responses, edition, folder, filesystem), denials=denials)
     assert set(responses) == {'preview', 'exported', 'after'}, 'business response schema mismatch'
@@ -372,7 +375,7 @@ def parse_args(argv=None):
     parser.add_argument('action', choices=['prepare', 'run'])
     parser.add_argument('--output', required=True, type=output_root)
     parser.add_argument('--edition', choices=['personal', 'public'])
-    parser.add_argument('--mode', choices=['preflight', 'business', 'preferences'])
+    parser.add_argument('--mode', choices=['preflight', 'business', 'preferences', 'backup'])
     parser.add_argument('--build-attempt', type=attempt_value)
     args = parser.parse_args(argv)
     if args.action == 'run' and (not args.edition or not args.mode or args.build_attempt is None):

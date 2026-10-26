@@ -27,7 +27,9 @@
             "allow-ipc-business-info",
             "allow-ipc-business-finish",
             "allow-save-preferences",
-            "allow-ipc-business-preferences-snapshot"
+            "allow-ipc-business-preferences-snapshot",
+            "allow-ipc-business-backup-export",
+            "allow-ipc-business-backup-restore"
           ]
         }
       ]

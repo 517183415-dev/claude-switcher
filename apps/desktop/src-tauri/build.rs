@@ -1,14 +1,28 @@
 fn main() {
     let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some() {
-        &[
-            "activity_log",
-            "export_activity",
-            "save_preferences",
-            "ipc_business_preferences_snapshot",
-            "ipc_business_info",
-            "ipc_business_finish",
-            "ipc_business_forbidden",
-        ]
+        if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
+            &[
+                "ipc_business_backup_export",
+                "ipc_business_backup_restore",
+                "activity_log",
+                "export_activity",
+                "save_preferences",
+                "ipc_business_preferences_snapshot",
+                "ipc_business_info",
+                "ipc_business_finish",
+                "ipc_business_forbidden",
+            ]
+        } else {
+            &[
+                "activity_log",
+                "export_activity",
+                "save_preferences",
+                "ipc_business_preferences_snapshot",
+                "ipc_business_info",
+                "ipc_business_finish",
+                "ipc_business_forbidden",
+            ]
+        }
     } else if std::env::var_os("CARGO_FEATURE_IPC_LIMITS").is_some() {
         if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
             &[

@@ -9,7 +9,11 @@ use std::{
 use switcher_core::storage;
 use switcher_domain::{Edition, desktop::ActivityEntry};
 
+#[cfg(feature = "personal")]
+mod backup;
+
 struct Fixture {
+    backup: bool,
     preflight: bool,
     preferences: bool,
     persistence: Option<&'static str>,
@@ -28,7 +32,7 @@ fn ipc_business_info(
     Ok(
         json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
+        "ordinary_runtime": false, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
     )
 }
 
@@ -131,6 +135,7 @@ pub fn run() {
         || !matches!(
             args[0].as_str(),
             "--preflight"
+                | "--backup"
                 | "--business"
                 | "--preferences"
                 | "--persistence-write"
@@ -152,16 +157,19 @@ pub fn run() {
         Edition::Public
     };
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
-    if !preflight && persistence.is_none() {
+    if !preflight && persistence.is_none() && args[0] != "--backup" {
         seed_activity(&state);
     }
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .manage(Arc::new(state))
         .manage(Fixture {
             preflight,
+            backup: args[0] == "--backup",
             persistence,
             preferences: args[0] == "--preferences",
-        })
+        });
+    #[cfg(feature = "personal")]
+    let builder = builder
         .invoke_handler(tauri::generate_handler![
             crate::commands::activity_log,
             crate::commands::export_activity,
@@ -169,8 +177,22 @@ pub fn run() {
             ipc_business_preferences_snapshot,
             ipc_business_info,
             ipc_business_finish,
+            backup::ipc_business_backup_export,
+            backup::ipc_business_backup_restore,
             ipc_business_forbidden
         ])
+        .manage(backup::BackupFixture::new());
+    #[cfg(feature = "public")]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        crate::commands::activity_log,
+        crate::commands::export_activity,
+        crate::commands::save_preferences,
+        ipc_business_preferences_snapshot,
+        ipc_business_info,
+        ipc_business_finish,
+        ipc_business_forbidden
+    ]);
+    builder
         .run(tauri::generate_context!())
         .expect("isolated business IPC runtime");
 }

@@ -14,7 +14,32 @@ import { verifyDenial } from './denials.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.persistence) {
+    if (info.backup) {
+      if (info.edition === 'public') {
+        responses.backup = [];
+        for (const command of ['ipc_business_backup_export', 'ipc_business_backup_restore']) {
+          try { await invoke(command, {}); }
+          catch (reason) { responses.backup.push(verifyDenial(command, reason)); continue; }
+          throw new Error('public backup command unexpectedly allowed');
+        }
+      } else {
+        // Synthetic values exist only in this embedded page and native memory, never in receipts.
+        const passphrase = 'synthetic-ipc-backup-passphrase';
+        const encrypted = await invoke('ipc_business_backup_export', { passphrase });
+        if (!Array.isArray(encrypted) || encrypted.length <= 76 || encrypted.length > 65536) throw new Error('backup export bound');
+        responses.backup = [];
+        for (const name of ['wrong_password', 'tampered', 'truncated', 'vault_failure', 'success']) {
+          let bytes = encrypted.slice();
+          if (name === 'tampered') bytes[bytes.length - 1] ^= 1;
+          if (name === 'truncated') bytes = bytes.slice(0, 75);
+          responses.backup.push(await invoke('ipc_business_backup_restore', {
+            case: name, bytes, passphrase: name === 'wrong_password' ? 'synthetic-incorrect-passphrase' : passphrase
+          }));
+          bytes.fill(0);
+        }
+        encrypted.fill(0);
+      }
+    } else if (info.persistence) {
       const input = { ads: { slots_enabled: info.edition === 'personal' ? [true, false, true] : [false, true, false], request_purpose_acknowledged: true }, updates_paused_until: info.edition === 'personal' ? 2000000001 : 2000000002 };
       await invoke('ipc_business_preferences_snapshot', { label: `persistence-${info.persistence}:before` });
       const value = info.persistence === 'write' ? await invoke('save_preferences', { preferences: input }) : info.saved;
