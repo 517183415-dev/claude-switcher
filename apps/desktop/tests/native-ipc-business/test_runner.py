@@ -1,4 +1,5 @@
 import io
+import copy
 import argparse
 import pwd
 from unittest.mock import patch
@@ -45,6 +46,97 @@ class BusinessReceiptTests(unittest.TestCase):
         (directory / 'activity.json').write_text(json.dumps(activity)); (directory / 'activity.json').chmod(0o600)
         self.result.update(preflight=False, responses={'preview': entries, 'exported': [str(path), entries], 'after': entries})
         return directory, path
+
+    def preferences(self, edition='personal'):
+        # Synthetic decoder evidence only. Production IPC must separately reproduce it.
+        directory = self.root / 'v2' / edition
+        directory.mkdir(parents=True, mode=0o700)
+        (self.root / 'v2').chmod(0o700)
+        entries = [{'observed_at': 1700000000, 'level': 'info', 'message': runner.EXPECTED_MESSAGE},
+                   {'observed_at': 1, 'level': 'warning', 'message': runner.RAW_PREFIX + str(self.folder / 'home') + '/synthetic-profile'}]
+        state = {'preferences': None, 'activity': list(json.dumps(entries, ensure_ascii=False).encode())}
+        self.snapshots = []
+        steps = []
+        for index, (name, request, accepted) in enumerate(runner.preference_cases()):
+            self.snapshots.append(dict(copy.deepcopy(state), label=name + ':before'))
+            if accepted:
+                entries[1]['message'] = runner.EXPECTED_MESSAGE
+                entries.append({'observed_at': 1700000000 + index, 'level': 'info',
+                                'message': '已保存本机设置；全部广告关闭时不发送广告请求'})
+                state = {'preferences': list(json.dumps(request['preferences']).encode()),
+                         'activity': list(json.dumps(entries, ensure_ascii=False).encode())}
+            self.snapshots.append(dict(copy.deepcopy(state), label=name + ':after'))
+            steps.append({'id': name, 'input': request, 'accepted': accepted,
+                          'value': copy.deepcopy(request['preferences']) if accepted else None,
+                          'error': None if accepted else ('请先确认广告请求用途，再开启广告位' if name.startswith('unconfirmed_') else 'invalid args for command save_preferences')})
+        for name, value in state.items():
+            path = directory / (name + '.json')
+            path.write_bytes(bytes(value)); path.chmod(0o600)
+        self.result.update(edition=edition, preflight=False, responses={'preferences': steps})
+        self.preference_edition = edition
+        return directory
+
+    def validate_preferences(self):
+        stdout = '\n'.join('BUSINESS_IPC_PREFERENCES ' + json.dumps(item) for item in self.snapshots)
+        stdout += '\nBUSINESS_IPC_RESULT ' + json.dumps(self.result)
+        return runner.validate(stdout, 0, self.preference_edition, 'preferences', self.folder)
+
+    def test_preferences_personal_matrix_accepts_five_and_rejects_seventeen(self):
+        self.preferences()
+        result = self.validate_preferences()
+        self.assertEqual((result['accepted'], result['rejected'], result['snapshot_count']), (5, 17, 44))
+
+    def test_preferences_public_uses_only_public_directory(self):
+        self.preferences('public')
+        self.assertTrue(self.validate_preferences()['edition_isolation'])
+        self.assertFalse((self.root / 'v2/personal').exists())
+
+    def test_preferences_rejected_write_to_preference_bytes_fails(self):
+        self.preferences()
+        self.snapshots[3]['preferences'].append(32)
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_rejected_write_to_activity_bytes_fails(self):
+        self.preferences()
+        self.snapshots[3]['activity'].append(32)
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_return_must_match_saved_request(self):
+        self.preferences()
+        self.result['responses']['preferences'][0]['value']['ads']['slots_enabled'][0] = True
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_missing_snapshot_fails(self):
+        self.preferences(); self.snapshots.pop()
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_missing_required_field_case_fails(self):
+        self.preferences(); self.result['responses']['preferences'].pop(10)
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_unconfirmed_slot_must_return_business_error(self):
+        self.preferences(); self.result['responses']['preferences'][1]['error'] = 'missing command save_preferences'
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_final_disk_must_match_snapshot(self):
+        directory = self.preferences(); (directory / 'preferences.json').write_text('{}')
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_final_file_requires_private_mode(self):
+        directory = self.preferences(); (directory / 'preferences.json').chmod(0o644)
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_rejects_cross_edition_side_effect(self):
+        self.preferences(); (self.root / 'v2/public').mkdir(mode=0o700)
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_snapshot_rejects_bool_as_byte(self):
+        self.preferences(); self.snapshots[0]['activity'][0] = True
+        with self.assertRaises(AssertionError): self.validate_preferences()
+
+    def test_preferences_oracle_distinguishes_boolean_from_number(self):
+        self.preferences(); self.result['responses']['preferences'][0]['value']['ads']['request_purpose_acknowledged'] = 0
+        with self.assertRaises(AssertionError): self.validate_preferences()
 
     def test_preflight_accepts_only_empty_business_responses(self):
         self.assertEqual(self.validate()['status'], 'PASS')

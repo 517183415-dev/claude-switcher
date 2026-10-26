@@ -3,6 +3,8 @@ fn main() {
         &[
             "activity_log",
             "export_activity",
+            "save_preferences",
+            "ipc_business_preferences_snapshot",
             "ipc_business_info",
             "ipc_business_finish",
             "ipc_business_forbidden",

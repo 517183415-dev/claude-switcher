@@ -25,7 +25,9 @@
             "allow-activity-log",
             "allow-export-activity",
             "allow-ipc-business-info",
-            "allow-ipc-business-finish"
+            "allow-ipc-business-finish",
+            "allow-save-preferences",
+            "allow-ipc-business-preferences-snapshot"
           ]
         }
       ]

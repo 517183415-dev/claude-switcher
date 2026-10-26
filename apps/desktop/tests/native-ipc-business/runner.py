@@ -95,6 +95,109 @@ def private(path, mode, directory=False):
     return {'path': str(path), 'mode': oct(mode), 'uid': metadata.st_uid, 'nlink': metadata.st_nlink}
 
 
+def preference_cases():
+    """Independent protocol oracle; do not import the JavaScript matrix."""
+    def pref(slots, ack, paused=None):
+        return {'ads': {'slots_enabled': slots, 'request_purpose_acknowledged': ack}, 'updates_paused_until': paused}
+    off = pref([False, False, False], False)
+    cases = [('all_off_unconfirmed', {'preferences': off}, True)]
+    for slot in range(3):
+        slots = [False, False, False]; slots[slot] = True
+        cases.append(('unconfirmed_' + str(slot), {'preferences': pref(slots, False)}, False))
+    for slot in range(3):
+        slots = [False, False, False]; slots[slot] = True
+        cases.append(('enable_' + str(slot), {'preferences': pref(slots, True)}, True))
+    cases.append(('all_off_again', {'preferences': off}, True))
+    malformed = [
+        ('unknown_outer', dict(off, unknown=True)),
+        ('unknown_ads', dict(off, ads=dict(off['ads'], unknown=True))),
+        ('missing_ads', {'updates_paused_until': None}),
+        ('missing_slots', {'ads': {'request_purpose_acknowledged': False}, 'updates_paused_until': None}),
+        ('missing_ack', {'ads': {'slots_enabled': [False, False, False]}, 'updates_paused_until': None}),
+        ('short_slots', pref([False, False], False)),
+        ('long_slots', pref([False, False, False, False], False)),
+        ('wrong_preferences_type', []), ('wrong_ads_type', dict(off, ads=[])),
+        ('wrong_slots_type', pref('false', False)), ('wrong_slot_type', pref([False, 1, False], False)),
+        ('wrong_ack_type', pref([False, False, False], 'false')),
+        ('wrong_updates_type', pref([False, False, False], False, -1)),
+    ]
+    for index, (name, value) in enumerate(malformed):
+        cases.append((name, {'preferences': value}, False))
+        if index == 1:
+            cases.append(('missing_argument', {}, False))
+    return cases
+
+
+def validate_preferences(stdout, responses, edition, folder, filesystem):
+    cases = preference_cases()
+    assert set(responses) == {'preferences'}, 'preferences response schema mismatch'
+    steps = responses['preferences']
+    assert isinstance(steps, list) and len(steps) == len(cases), 'preferences matrix incomplete'
+    prefix = 'BUSINESS_IPC_PREFERENCES '
+    snapshots = [json.loads(line[len(prefix):]) for line in stdout.splitlines() if line.startswith(prefix)]
+    assert len(snapshots) == 2 * len(cases), 'preferences snapshots incomplete'
+    def decode(snapshot, label):
+        assert set(snapshot) == {'label', 'preferences', 'activity'} and snapshot['label'] == label, 'snapshot schema/order mismatch'
+        result = {}
+        for name in ('preferences', 'activity'):
+            value = snapshot[name]
+            if value is None:
+                result[name] = None
+            else:
+                assert isinstance(value, list) and len(value) <= 65536 and all(type(item) is int and 0 <= item <= 255 for item in value), 'invalid bounded byte snapshot'
+                result[name] = bytes(value)
+        return result
+    same_json = lambda left, right: json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
+    previous = None
+    successes = 0
+    for index, ((name, request, accepted), step) in enumerate(zip(cases, steps)):
+        assert set(step) == {'id', 'input', 'accepted', 'value', 'error'}, 'preference response fields mismatch'
+        assert step['id'] == name and same_json(step['input'], request) and step['accepted'] is accepted, 'independent preference matrix mismatch'
+        before = decode(snapshots[2 * index], name + ':before')
+        after = decode(snapshots[2 * index + 1], name + ':after')
+        if previous is None:
+            assert before['preferences'] is None, 'fixture preferences must begin absent'
+            initial = json.loads(before['activity'])
+            assert len(initial) == 2 and initial[0]['message'] == EXPECTED_MESSAGE, 'initial activity control missing'
+            assert initial[1]['message'] == RAW_PREFIX + str(folder / 'home') + '/synthetic-profile', 'initial raw positive control missing'
+        else:
+            assert before == previous, 'unobserved mutation between preference calls'
+        if accepted:
+            successes += 1
+            assert step['error'] is None and same_json(step['value'], request['preferences']), 'preference return differs from independent request'
+            assert same_json(json.loads(after['preferences']), request['preferences']), 'saved preferences differ from real IPC return'
+            old_log, new_log = json.loads(before['activity']), json.loads(after['activity'])
+            if successes == 1:
+                old_log[1]['message'] = EXPECTED_MESSAGE
+            assert len(new_log) == len(old_log) + 1 and new_log[:-1] == old_log, 'accepted preference activity append mismatch'
+            entry = new_log[-1]
+            assert set(entry) == {'observed_at', 'level', 'message'} and type(entry['observed_at']) is int and entry['observed_at'] > 0
+            assert entry['level'] == 'info' and entry['message'] == '已保存本机设置；全部广告关闭时不发送广告请求', 'preference activity message mismatch'
+        else:
+            assert step['value'] is None and isinstance(step['error'], str) and step['error'], 'rejected preference did not return error'
+            if name.startswith('unconfirmed_'):
+                assert step['error'] == '请先确认广告请求用途，再开启广告位', 'business rejection mismatch'
+            else:
+                assert 'save_preferences' in step['error'], 'invalid DTO did not reach real command decoder'
+            assert before == after, 'rejected preference changed preferences or activity bytes'
+        previous = after
+    directory = folder / 'tmp/business-root/v2' / edition
+    for path in (directory.parent, directory):
+        filesystem.append(private(path, 0o700, True))
+    for name, snapshot in previous.items():
+        path = directory / (name + '.json')
+        filesystem.append(private(path, 0o600))
+        with path.open('rb') as handle:
+            content = handle.read(65537)
+        assert len(content) <= 65536 and content == snapshot, 'final preference snapshot differs from independent disk read'
+    assert set(path.name for path in directory.parent.iterdir()) == {edition}, 'edition directories escaped isolation'
+    assert set(path.name for path in directory.iterdir()) == {'preferences.json', 'activity.json'}, 'unexpected preferences side effects'
+    return {'status': 'PASS', 'edition': edition, 'mode': 'preferences', 'accepted': successes,
+            'rejected': len(cases) - successes, 'snapshot_count': len(snapshots), 'filesystem': filesystem,
+            'preferences_sha256': sha(directory / 'preferences.json'), 'activity_sha256': sha(directory / 'activity.json'),
+            'rejected_bytes_unchanged': True, 'edition_isolation': True, 'ordinary_startup': 'NOT_RUN'}
+
+
 def validate(stdout, code, edition, mode, folder):
     assert code == 0, 'fixture exit must be zero'
     assert len(stdout.encode()) <= 1024 * 1024, 'stdout exceeds bound'
@@ -120,6 +223,8 @@ def validate(stdout, code, edition, mode, folder):
         assert responses == {}, 'preflight must not call business commands'
         assert list(root.iterdir()) == [], 'preflight business writes forbidden'
         return {'status': 'PASS', 'edition': edition, 'mode': mode, 'denials': denials, 'filesystem': filesystem}
+    if mode == 'preferences':
+        return dict(validate_preferences(stdout, responses, edition, folder, filesystem), denials=denials)
     assert set(responses) == {'preview', 'exported', 'after'}, 'business response schema mismatch'
     preview = responses['preview']
     assert isinstance(preview, list) and len(preview) == 2, 'two activity entries required'
@@ -248,7 +353,7 @@ def parse_args(argv=None):
     parser.add_argument('action', choices=['prepare', 'run'])
     parser.add_argument('--output', required=True, type=output_root)
     parser.add_argument('--edition', choices=['personal', 'public'])
-    parser.add_argument('--mode', choices=['preflight', 'business'])
+    parser.add_argument('--mode', choices=['preflight', 'business', 'preferences'])
     parser.add_argument('--build-attempt', type=attempt_value)
     args = parser.parse_args(argv)
     if args.action == 'run' and (not args.edition or not args.mode or args.build_attempt is None):
