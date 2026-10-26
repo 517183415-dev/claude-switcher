@@ -669,7 +669,14 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
     let root = LocalRoot::new();
     storage::create_private_directory(&root.0).unwrap();
     storage::create_private_directory(&root.0.join("v2")).unwrap();
-    let now = switcher_core::checks::unix_now();
+    fn clock() -> std::result::Result<switcher_core::time::ClockSample, &'static str> {
+        Ok(switcher_core::time::ClockSample {
+            utc_secs: 1_700_000_000,
+            continuous_ms: 1_700_000_000_000,
+            boot_id: "test-boot".into(),
+        })
+    }
+    let now = clock().unwrap().utc_secs as u64;
     let mut p = Publisher::open(
         &root.0.join("drafts"),
         "ads-personal-v1",
@@ -705,6 +712,7 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
     let before_reads = local_tree(&switcher_core::ad_runtime::local::directory(&root.0));
     for edition in [Edition::Personal, Edition::Public] {
         let visible = AdRuntime::new(root.0.clone(), edition)
+            .with_clock(clock)
             .snapshot(&preferences)
             .unwrap()
             .unwrap();
@@ -722,6 +730,7 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
     for edition in [Edition::Personal, Edition::Public] {
         assert!(
             AdRuntime::new(root.0.clone(), edition)
+                .with_clock(clock)
                 .snapshot(&preferences)
                 .unwrap()
                 .is_none()
@@ -732,6 +741,7 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
         .unwrap();
     assert!(
         AdRuntime::new(root.0.clone(), Edition::Public)
+            .with_clock(clock)
             .snapshot(&preferences)
             .unwrap()
             .is_some()
@@ -786,12 +796,14 @@ fn local_publication_both_editions_pause_history_backup_and_signature_verificati
     .unwrap();
     assert!(
         AdRuntime::new(root.0.clone(), Edition::Public)
+            .with_clock(clock)
             .snapshot(&preferences)
             .is_err()
     );
     // Failure backoff retains a diagnostic without re-parsing each UI poll.
     assert_eq!(
         AdRuntime::new(root.0.clone(), Edition::Public)
+            .with_clock(clock)
             .snapshot(&preferences)
             .unwrap_err(),
         "local_ad_previous_content_verification_failed"

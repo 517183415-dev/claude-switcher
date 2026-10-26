@@ -87,6 +87,7 @@ pub struct AdRuntime {
     edition: Edition,
     pins: Option<ContentPins>,
     local_error: Option<&'static str>,
+    sample_clock: fn() -> Result<ClockSample>,
 }
 struct Download {
     bytes: Vec<u8>,
@@ -197,7 +198,14 @@ impl AdRuntime {
             edition,
             pins,
             local_error,
+            sample_clock: time::sample,
         }
+    }
+
+    /// Supplies the clock at the Rust composition boundary. Production uses `time::sample`.
+    pub fn with_clock(mut self, sample_clock: fn() -> Result<ClockSample>) -> Self {
+        self.sample_clock = sample_clock;
+        self
     }
 
     fn v2(&self) -> PathBuf {
@@ -333,10 +341,10 @@ impl AdRuntime {
     }
     pub fn snapshot(&self, preferences: &AdPreferences) -> Result<Option<AdManifest>> {
         let _lock = self.lock()?;
-        let mut sample = time::sample()?;
+        let mut sample = (self.sample_clock)()?;
         if self.pins.as_ref().is_some_and(|pins| pins.local) && enabled(preferences) {
             self.refresh_locked(preferences, false, sample.clone(), None, None)?;
-            sample = time::sample()?;
+            sample = (self.sample_clock)()?;
         }
         let (state, clock) = self.load(&sample)?;
         self.save(&state, &clock)?;
@@ -348,7 +356,7 @@ impl AdRuntime {
         manual: bool,
     ) -> Result<RefreshResult> {
         let _lock = self.lock()?;
-        let sample = time::sample()?;
+        let sample = (self.sample_clock)()?;
         self.refresh_locked(preferences, manual, sample, None, None)
     }
     fn refresh_locked(
@@ -491,7 +499,7 @@ impl AdRuntime {
             let final_sample = if supplied_clock {
                 sample.clone()
             } else {
-                time::sample()?
+                (self.sample_clock)()?
             };
             clock.observe(final_sample.clone());
             if !clock.allows_verified_refresh() {
@@ -539,7 +547,7 @@ impl AdRuntime {
             self.refresh_if_due(preferences, false)?;
         }
         let _lock = self.lock()?;
-        let sample = time::sample()?;
+        let sample = (self.sample_clock)()?;
         self.click_locked(slot, confirmed, preferences, &sample)
     }
     fn click_locked(
@@ -609,7 +617,7 @@ impl AdRuntime {
             self.refresh_if_due(preferences, false)?;
         }
         let _lock = self.lock()?;
-        let sample = time::sample()?;
+        let sample = (self.sample_clock)()?;
         let (state, clock) = self.load(&sample)?;
         self.save(&state, &clock)?;
         let Some(visible) = self.visible(&state, &clock, preferences, utc(&sample)?) else {

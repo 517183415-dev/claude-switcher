@@ -11,6 +11,7 @@ use switcher_domain::checks::*;
 use tokio::sync::OnceCell;
 
 pub const EVIDENCE_TTL_SECONDS: u64 = 30;
+const TOTAL_CHECK_TIMEOUT: Duration = Duration::from_secs(30);
 const SERVICE_HOSTS: [&str; 3] = ["claude.ai", "api.anthropic.com", "claudeusercontent.com"];
 pub fn unix_now() -> u64 {
     SystemTime::now()
@@ -19,15 +20,37 @@ pub fn unix_now() -> u64 {
         .as_secs()
 }
 
-pub fn evaluate_launch(report: &CheckReport, _now: u64, _generation: &str) -> LaunchDecision {
+pub fn evaluate_launch(report: &CheckReport, now: u64, generation: &str) -> LaunchDecision {
     let mut reasons = Vec::new();
     if report.schema_version != 1 {
         reasons.push("检查报告版本无效".into());
+    }
+    if report.observed_at > report.completed_at
+        || report.completed_at > now
+        || now.saturating_sub(report.completed_at) > EVIDENCE_TTL_SECONDS
+    {
+        reasons.push("检查报告已过期或时间无效，请重新检查".into());
+    }
+    if generation.trim().is_empty()
+        || report.network_generation.trim().is_empty()
+        || report.network_generation != generation
+    {
+        reasons.push("网络代次无法确认或已变化，请重新检查".into());
     }
     let mut seen = HashSet::new();
     for row in &report.checks {
         if !seen.insert(row.id) {
             reasons.push("检查报告包含重复项".into());
+        }
+        if row.observed_at > now
+            || row.valid_until < row.observed_at
+            || row.valid_until > row.observed_at.saturating_add(EVIDENCE_TTL_SECONDS)
+            || now > row.valid_until
+        {
+            reasons.push(format!("{}证据已过期或时间无效，请重新检查", row.id.name()));
+        }
+        if row.network_generation != report.network_generation {
+            reasons.push(format!("{}证据网络代次不一致，请重新检查", row.id.name()));
         }
         if row.status != CheckStatus::Pass
             && (row.id.required() || row.status != CheckStatus::Warning)
@@ -579,16 +602,13 @@ pub fn summarize(checks: &[CheckResult]) -> CheckSummary {
 
 async fn collect_reports(
     mut tasks: tokio::task::JoinSet<CheckResult>,
-    deadline: Option<tokio::time::Instant>,
+    deadline: tokio::time::Instant,
     observed_at: u64,
     generation: &str,
 ) -> Vec<CheckResult> {
     let mut checks = Vec::new();
     while !tasks.is_empty() {
-        let next = match deadline {
-            Some(deadline) => tokio::time::timeout_at(deadline, tasks.join_next()).await,
-            None => Ok(tasks.join_next().await),
-        };
+        let next = tokio::time::timeout_at(deadline, tasks.join_next()).await;
         match next {
             Ok(Some(Ok(row))) => checks.push(row),
             Ok(Some(Err(_))) => {}
@@ -605,7 +625,7 @@ async fn collect_reports(
                 status: CheckStatus::Timeout,
                 reason: "检查到达总截止时间或任务未完成".into(),
                 observed_at,
-                duration_ms: 30_000,
+                duration_ms: TOTAL_CHECK_TIMEOUT.as_millis() as u64,
                 valid_until: observed_at + EVIDENCE_TTL_SECONDS,
                 network_generation: generation.into(),
                 evidence: vec![],
@@ -617,42 +637,123 @@ async fn collect_reports(
 }
 
 pub async fn run_checks(config: CheckConfig) -> CheckReport {
-    let start = Instant::now();
-    let observed_at = unix_now();
-    let generation = "legacy-check".to_string();
-    let valid = config.validate().is_ok();
-    let context = Arc::new(Context {
-        config,
-        client: network::inherited_client().ok(),
-        geo: OnceCell::new(),
-        geo_details: OnceCell::new(),
-        dns: OnceCell::new(),
-    });
-    let mut tasks = tokio::task::JoinSet::new();
-    for id in CheckId::ALL {
-        let context = context.clone();
-        let generation = generation.clone();
-        tasks.spawn(async move {
-            let start = Instant::now();
-            let observed = unix_now();
-            let (status, reason, evidence) = if valid {
-                observe(id, &context).await
-            } else {
-                result(CheckStatus::Unknown, "保存的检查配置无效")
-            };
-            CheckResult {
-                id,
-                status,
-                reason: reason.into(),
-                observed_at: observed,
-                duration_ms: start.elapsed().as_millis() as u64,
-                valid_until: observed.saturating_add(EVIDENCE_TTL_SECONDS),
-                network_generation: generation,
-                evidence,
+    run_with_generation(
+        macos::network_generation,
+        |generation| {
+            let valid = config.validate().is_ok();
+            let context = Arc::new(Context {
+                config,
+                client: network::inherited_client().ok(),
+                geo: OnceCell::new(),
+                geo_details: OnceCell::new(),
+                dns: OnceCell::new(),
+            });
+            let mut tasks = tokio::task::JoinSet::new();
+            for id in CheckId::ALL {
+                let context = context.clone();
+                let generation = generation.to_owned();
+                tasks.spawn(async move {
+                    let start = Instant::now();
+                    let observed = unix_now();
+                    let (status, reason, evidence) = if valid {
+                        observe(id, &context).await
+                    } else {
+                        result(CheckStatus::Unknown, "保存的检查配置无效")
+                    };
+                    CheckResult {
+                        id,
+                        status,
+                        reason: reason.into(),
+                        observed_at: observed,
+                        duration_ms: start.elapsed().as_millis() as u64,
+                        valid_until: observed.saturating_add(EVIDENCE_TTL_SECONDS),
+                        network_generation: generation,
+                        evidence,
+                    }
+                });
             }
-        });
+            tasks
+        },
+        TOTAL_CHECK_TIMEOUT,
+    )
+    .await
+}
+
+async fn sample_generation<S, F>(
+    sample: &mut S,
+    deadline: tokio::time::Instant,
+) -> Result<String, &'static str>
+where
+    S: FnMut() -> F,
+    F: std::future::Future<Output = Result<String, &'static str>>,
+{
+    if tokio::time::Instant::now() >= deadline {
+        return Err("network_generation_timeout");
     }
-    let checks = collect_reports(tasks, None, observed_at, &generation).await;
+    let generation = tokio::time::timeout_at(deadline, sample())
+        .await
+        .map_err(|_| "network_generation_timeout")??;
+    if tokio::time::Instant::now() > deadline {
+        return Err("network_generation_timeout");
+    }
+    if generation.trim().is_empty() {
+        return Err("network_generation_unavailable");
+    }
+    Ok(generation)
+}
+
+async fn run_with_generation<S, F>(
+    mut sample: S,
+    spawn_checks: impl FnOnce(&str) -> tokio::task::JoinSet<CheckResult>,
+    budget: Duration,
+) -> CheckReport
+where
+    S: FnMut() -> F,
+    F: std::future::Future<Output = Result<String, &'static str>>,
+{
+    let start = Instant::now();
+    let deadline = tokio::time::Instant::now() + budget;
+    let observed_at = unix_now();
+    let initial = sample_generation(&mut sample, deadline).await;
+    let generation = initial.as_deref().unwrap_or_default().to_owned();
+    let tasks = if tokio::time::Instant::now() < deadline {
+        spawn_checks(&generation)
+    } else {
+        tokio::task::JoinSet::new()
+    };
+    let mut report = finish_check_report(tasks, deadline, start, observed_at, generation).await;
+    let current = sample_generation(&mut sample, deadline).await;
+    if !matches!((&initial, &current), (Ok(before), Ok(after)) if before == after) {
+        // A later consumer must not revive evidence collected across an unverified network epoch.
+        report.network_generation.clear();
+    }
+    report.completed_at = unix_now();
+    report.duration_ms = start.elapsed().as_millis() as u64;
+    report.launch = evaluate_launch(
+        &report,
+        report.completed_at,
+        current.as_deref().unwrap_or_default(),
+    );
+    for (stage, sample) in [("检查前", initial), ("检查后", current)] {
+        if let Err(error) = sample {
+            report.launch.allowed = false;
+            report
+                .launch
+                .reasons
+                .push(format!("{stage}无法确认网络代次（{error}），请重新检查"));
+        }
+    }
+    report
+}
+
+async fn finish_check_report(
+    tasks: tokio::task::JoinSet<CheckResult>,
+    deadline: tokio::time::Instant,
+    start: Instant,
+    observed_at: u64,
+    generation: String,
+) -> CheckReport {
+    let checks = collect_reports(tasks, deadline, observed_at, &generation).await;
     let summary = summarize(&checks);
     let mut report = CheckReport {
         schema_version: 1,
@@ -1049,23 +1150,91 @@ mod tests {
             },
         }
     }
+    fn fresh_good() -> CheckReport {
+        let mut report = good();
+        let now = unix_now();
+        report.observed_at = now;
+        report.completed_at = now;
+        for row in &mut report.checks {
+            row.observed_at = now;
+            row.valid_until = now + EVIDENCE_TTL_SECONDS;
+        }
+        report
+    }
+
+    fn synthetic_tasks(generation: &str) -> tokio::task::JoinSet<CheckResult> {
+        let mut tasks = tokio::task::JoinSet::new();
+        for mut row in fresh_good().checks {
+            row.network_generation = generation.into();
+            tasks.spawn(async move { row });
+        }
+        tasks
+    }
+
     #[test]
-    fn gate_requires_complete_unique_results_without_ttl_or_epoch_gate() {
+    fn gate_rejects_expired_future_and_inconsistent_evidence_times() {
+        for now in [99, 131, 1_000_000] {
+            assert!(!evaluate_launch(&good(), now, "generation").allowed);
+        }
+        for change in 0..6 {
+            let mut report = good();
+            match change {
+                0 => report.observed_at = 102,
+                1 => report.completed_at = 102,
+                2 => report.checks[0].observed_at = 102,
+                3 => report.checks[0].valid_until = 100,
+                4 => report.checks[0].valid_until = 99,
+                _ => report.checks[0].valid_until = 200,
+            }
+            assert!(!evaluate_launch(&report, 101, "generation").allowed);
+        }
+        assert!(evaluate_launch(&good(), 130, "generation").allowed);
+        let mut boundary = good();
+        boundary.completed_at = 100;
+        assert!(evaluate_launch(&boundary, 130, "generation").allowed);
+        let mut report = good();
+        for row in &mut report.checks {
+            row.observed_at = 120;
+            row.valid_until = 150;
+        }
+        assert!(!evaluate_launch(&report, 132, "generation").allowed);
+    }
+
+    #[test]
+    fn gate_rejects_changed_empty_or_inconsistent_network_generation() {
+        for current in ["changed", "", " "] {
+            assert!(!evaluate_launch(&good(), 101, current).allowed);
+        }
+        let mut report = good();
+        report.network_generation.clear();
+        assert!(!evaluate_launch(&report, 101, "").allowed);
+        for row_generation in ["old", "", " "] {
+            let mut report = good();
+            report.checks[0].network_generation = row_generation.into();
+            assert!(!evaluate_launch(&report, 101, "generation").allowed);
+        }
+    }
+
+    #[test]
+    fn gate_requires_complete_unique_results_and_fresh_evidence() {
         assert!(evaluate_launch(&good(), 101, "generation").allowed);
+        let mut report = good();
+        report.summary.passed = 13;
+        assert!(!evaluate_launch(&report, 101, "generation").allowed);
         let mut report = good();
         report.checks.pop();
         assert!(!evaluate_launch(&report, 101, "generation").allowed);
         let mut report = good();
         report.checks[1] = report.checks[0].clone();
         assert!(!evaluate_launch(&report, 101, "generation").allowed);
-        for now in [99, 130, 131, 1_000_000] {
+        for now in [101, 129, 130] {
             assert!(evaluate_launch(&good(), now, "generation").allowed);
         }
-        assert!(evaluate_launch(&good(), 101, "changed").allowed);
+        assert!(!evaluate_launch(&good(), 101, "changed").allowed);
         let mut report = good();
         report.checks[0].network_generation = "old".into();
         report.checks[0].valid_until = 200;
-        assert!(evaluate_launch(&report, 101, "generation").allowed);
+        assert!(!evaluate_launch(&report, 101, "generation").allowed);
     }
     #[test]
     fn only_two_advisory_warnings_can_pass_the_gate() {
@@ -1113,7 +1282,306 @@ mod tests {
         assert_eq!(stun_outcome(&[Ok(ip); 4], Some(ip)).0, CheckStatus::Pass);
     }
     #[tokio::test]
-    async fn incomplete_check_tasks_keep_all_ids_and_block_without_epoch_gate() {
+    async fn report_deadline_returns_all_ids_for_pending_and_missing_tasks() {
+        let mut tasks = tokio::task::JoinSet::new();
+        tasks.spawn(std::future::pending::<CheckResult>());
+        let start = Instant::now();
+        let report = tokio::time::timeout(
+            Duration::from_millis(200),
+            finish_check_report(
+                tasks,
+                tokio::time::Instant::now() + Duration::from_millis(10),
+                start,
+                unix_now(),
+                "generation".into(),
+            ),
+        )
+        .await
+        .expect("the total deadline must bound unfinished observations");
+        assert_eq!(report.checks.len(), CheckId::ALL.len());
+        assert_eq!(
+            report.checks.iter().map(|row| row.id).collect::<Vec<_>>(),
+            CheckId::ALL.to_vec()
+        );
+        assert!(
+            report
+                .checks
+                .iter()
+                .all(|row| row.status == CheckStatus::Timeout)
+        );
+        assert_eq!(report.summary.blocking, CheckId::ALL.len() as u32);
+        assert!(!report.launch.allowed);
+    }
+
+    #[tokio::test]
+    async fn report_deadline_preserves_completed_results_and_aborts_pending_tasks() {
+        struct Dropped(std::sync::Arc<std::sync::atomic::AtomicBool>);
+        impl Drop for Dropped {
+            fn drop(&mut self) {
+                self.0.store(true, std::sync::atomic::Ordering::SeqCst);
+            }
+        }
+
+        let dropped = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let mut rows = fresh_good().checks.into_iter();
+        let ready = rows.next().unwrap();
+        let ready_id = ready.id;
+        let mut tasks = tokio::task::JoinSet::new();
+        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+        let pending_guard = Dropped(dropped.clone());
+        tasks.spawn(async move {
+            let _guard = pending_guard;
+            started_tx.send(()).unwrap();
+            std::future::pending::<CheckResult>().await
+        });
+        started_rx.await.unwrap();
+        tasks.spawn(async move { ready });
+        let report = finish_check_report(
+            tasks,
+            tokio::time::Instant::now() + Duration::from_millis(30),
+            Instant::now(),
+            unix_now(),
+            "generation".into(),
+        )
+        .await;
+        tokio::task::yield_now().await;
+
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
+        assert_eq!(report.checks.len(), CheckId::ALL.len());
+        let completed = report.checks.iter().find(|row| row.id == ready_id).unwrap();
+        assert_eq!(completed.status, CheckStatus::Pass);
+        assert_eq!(completed.reason, "test");
+        assert_eq!(report.summary.passed, 1);
+        assert_eq!(report.summary.blocking, 13);
+        assert!(!report.launch.allowed);
+    }
+
+    #[tokio::test]
+    async fn report_join_errors_and_cancellation_preserve_other_results_and_block_launch() {
+        let mut tasks = tokio::task::JoinSet::new();
+        for (index, row) in fresh_good().checks.into_iter().enumerate() {
+            match index {
+                0 => {
+                    tasks.spawn(async { panic!("injected observation task panic") });
+                }
+                1 => {
+                    tasks.spawn(std::future::pending::<CheckResult>()).abort();
+                }
+                _ => {
+                    tasks.spawn(async move { row });
+                }
+            }
+        }
+        let report = finish_check_report(
+            tasks,
+            tokio::time::Instant::now() + Duration::from_secs(1),
+            Instant::now(),
+            unix_now(),
+            "generation".into(),
+        )
+        .await;
+
+        assert_eq!(
+            report.checks.iter().map(|row| row.id).collect::<Vec<_>>(),
+            CheckId::ALL.to_vec()
+        );
+        assert_eq!(report.summary.passed, 12);
+        assert_eq!(report.summary.blocking, 2);
+        assert!(
+            report.checks[..2]
+                .iter()
+                .all(|row| row.status == CheckStatus::Timeout)
+        );
+        assert!(
+            report.checks[2..]
+                .iter()
+                .all(|row| row.status == CheckStatus::Pass)
+        );
+        assert!(!report.launch.allowed);
+    }
+
+    #[tokio::test]
+    async fn report_completed_results_allow_only_a_complete_passing_report() {
+        assert_eq!(TOTAL_CHECK_TIMEOUT, Duration::from_secs(30));
+        for status in [
+            CheckStatus::Pass,
+            CheckStatus::Fail,
+            CheckStatus::Unknown,
+            CheckStatus::Timeout,
+        ] {
+            let mut tasks = tokio::task::JoinSet::new();
+            for (index, mut row) in fresh_good().checks.into_iter().enumerate() {
+                if index == 0 {
+                    row.status = status;
+                }
+                tasks.spawn(async move { row });
+            }
+            let report = finish_check_report(
+                tasks,
+                tokio::time::Instant::now() + Duration::from_secs(1),
+                Instant::now(),
+                unix_now(),
+                "generation".into(),
+            )
+            .await;
+
+            assert_eq!(report.checks.len(), CheckId::ALL.len());
+            assert_eq!(report.checks[0].status, status);
+            assert_eq!(report.launch.allowed, status == CheckStatus::Pass);
+        }
+    }
+
+    #[tokio::test]
+    async fn network_generation_before_and_after_checks_controls_permission() {
+        for (before, after, allowed) in [
+            (Ok("generation"), Ok("generation"), true),
+            (Ok("generation"), Ok("changed"), false),
+            (Err("start_unavailable"), Ok("generation"), false),
+            (Ok("generation"), Err("end_unavailable"), false),
+            (Ok(""), Ok("generation"), false),
+            (Ok("generation"), Ok(" "), false),
+        ] {
+            let mut samples = [before, after].into_iter();
+            let mut calls = 0;
+            let report = run_with_generation(
+                || {
+                    calls += 1;
+                    std::future::ready(samples.next().unwrap().map(str::to_owned))
+                },
+                synthetic_tasks,
+                Duration::from_secs(1),
+            )
+            .await;
+            assert_eq!(
+                calls, 2,
+                "the final generation must be sampled independently"
+            );
+            assert_eq!(report.launch.allowed, allowed);
+            assert_eq!(report.summary.passed, 14);
+            assert_eq!(
+                report.checks.iter().map(|row| row.id).collect::<Vec<_>>(),
+                CheckId::ALL.to_vec()
+            );
+            if !allowed {
+                for later_generation in ["generation", "changed"] {
+                    assert!(
+                        !evaluate_launch(&report, unix_now(), later_generation).allowed,
+                        "later sampling must not revive an invalidated report"
+                    );
+                }
+                assert!(
+                    report
+                        .launch
+                        .reasons
+                        .iter()
+                        .any(|reason| reason.contains("网络代次"))
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn network_generation_sampling_timeout_keeps_complete_reports() {
+        for pending_sample in [0, 1] {
+            let mut calls = 0;
+            let mut observations_started = false;
+            let report = tokio::time::timeout(
+                Duration::from_millis(200),
+                run_with_generation(
+                    || {
+                        let pending = calls == pending_sample;
+                        calls += 1;
+                        async move {
+                            if pending {
+                                std::future::pending::<()>().await;
+                            }
+                            Ok("generation".into())
+                        }
+                    },
+                    |generation| {
+                        observations_started = true;
+                        synthetic_tasks(generation)
+                    },
+                    Duration::from_millis(20),
+                ),
+            )
+            .await
+            .expect("sampling must share the total check deadline");
+            assert!(!report.launch.allowed);
+            assert!(!evaluate_launch(&report, unix_now(), "generation").allowed);
+            assert_eq!(observations_started, pending_sample == 1);
+            assert_eq!(report.checks.len(), CheckId::ALL.len());
+            assert_eq!(
+                report.summary.passed,
+                if pending_sample == 1 { 14 } else { 0 }
+            );
+            if pending_sample == 0 {
+                assert!(
+                    report
+                        .checks
+                        .iter()
+                        .all(|row| row.status == CheckStatus::Timeout)
+                );
+            }
+            assert!(
+                report
+                    .launch
+                    .reasons
+                    .iter()
+                    .any(|reason| reason.contains("network_generation_timeout"))
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn network_generation_late_synchronous_sample_cannot_allow_launch() {
+        let mut calls = 0;
+        let report = run_with_generation(
+            || {
+                calls += 1;
+                let final_sample = calls == 2;
+                async move {
+                    if final_sample {
+                        // Model a native synchronous operation that returns after the deadline.
+                        std::thread::sleep(Duration::from_millis(250));
+                    }
+                    Ok("generation".into())
+                }
+            },
+            synthetic_tasks,
+            Duration::from_millis(200),
+        )
+        .await;
+        assert_eq!(calls, 2);
+        assert_eq!(report.summary.passed, 14);
+        assert!(!report.launch.allowed);
+        assert!(!evaluate_launch(&report, unix_now(), "generation").allowed);
+    }
+
+    #[tokio::test]
+    async fn network_generation_samples_share_one_budget_with_observations() {
+        let report = run_with_generation(
+            || async {
+                tokio::time::sleep(Duration::from_millis(30)).await;
+                Ok("generation".into())
+            },
+            synthetic_tasks,
+            Duration::from_millis(45),
+        )
+        .await;
+        assert_eq!(report.summary.passed, 14);
+        assert!(!report.launch.allowed);
+        assert!(
+            report
+                .launch
+                .reasons
+                .iter()
+                .any(|reason| reason.contains("检查后"))
+        );
+    }
+
+    #[tokio::test]
+    async fn incomplete_check_tasks_keep_all_ids_and_block() {
         for _ in 0..10 {
             for blocked in [false, true] {
                 let mut tasks = tokio::task::JoinSet::new();
@@ -1128,7 +1596,7 @@ mod tests {
                 let start = Instant::now();
                 let checks = collect_reports(
                     tasks,
-                    Some(tokio::time::Instant::now() + Duration::from_millis(5)),
+                    tokio::time::Instant::now() + Duration::from_millis(5),
                     100,
                     "generation",
                 )
@@ -1142,7 +1610,7 @@ mod tests {
                     evaluate_launch(&report, 101, "generation").allowed,
                     !blocked
                 );
-                assert_eq!(evaluate_launch(&report, 101, "changed").allowed, !blocked);
+                assert!(!evaluate_launch(&report, 101, "changed").allowed);
                 if blocked {
                     assert!(
                         report

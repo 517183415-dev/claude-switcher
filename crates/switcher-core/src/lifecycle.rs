@@ -37,6 +37,7 @@ trait LaunchEnvironment {
     fn lock(&self, home: &Path) -> Result<Self::Lock, &'static str>;
     fn account_ready(&self, home: &Path, lock: &Self::Lock) -> Result<AccountId, &'static str>;
     async fn check(&self, home: &Path) -> Result<CheckReport, &'static str>;
+    async fn generation(&self) -> Result<String, &'static str>;
     fn now(&self) -> u64;
     async fn open(&self) -> Result<(), &'static str>;
     async fn select(&self, edition: Edition, target: AccountId) -> Result<(), &'static str>;
@@ -77,6 +78,9 @@ impl LaunchEnvironment for NativeLaunch {
         let configuration = config::load_read_only(home).map_err(|_| "地区目标配置无效")?;
         Ok(checks::run_checks(configuration).await)
     }
+    async fn generation(&self) -> Result<String, &'static str> {
+        macos::network_generation().await
+    }
     fn now(&self) -> u64 {
         checks::unix_now()
     }
@@ -99,7 +103,7 @@ impl LaunchEnvironment for NativeLaunch {
     }
 }
 
-/// Run the fourteen legacy checks while holding the account lifecycle lock.
+/// Check and revalidate environment evidence while holding the account lifecycle lock.
 pub async fn launch_checked(edition: Edition) -> LaunchOutcome {
     launch_with(&NativeLaunch, edition).await
 }
@@ -127,7 +131,7 @@ async fn switch_with<E: LaunchEnvironment>(
         Ok(report) => report,
         Err(message) => return blocked(None, message, "修复地区配置后重试"),
     };
-    report.launch = checks::evaluate_launch(&report, environment.now(), &report.network_generation);
+    refresh_launch_decision(environment, &mut report).await;
     if !report.launch.allowed {
         return blocked(
             Some(report),
@@ -143,6 +147,10 @@ async fn switch_with<E: LaunchEnvironment>(
         );
     }
     launch_expected_with(environment, edition, Some(target)).await
+}
+async fn refresh_launch_decision<E: LaunchEnvironment>(environment: &E, report: &mut CheckReport) {
+    let generation = environment.generation().await.unwrap_or_default();
+    report.launch = checks::evaluate_launch(report, environment.now(), &generation);
 }
 fn verify_account<E: LaunchEnvironment>(
     environment: &E,
@@ -178,8 +186,7 @@ async fn launch_expected_with<E: LaunchEnvironment>(
         Ok(report) => report,
         Err(message) => return blocked(None, message, "修复地区配置后重新执行完整检查"),
     };
-    let generation = report.network_generation.clone();
-    report.launch = checks::evaluate_launch(&report, environment.now(), &generation);
+    refresh_launch_decision(environment, &mut report).await;
     if !report.launch.allowed {
         return blocked(
             Some(report),
@@ -194,6 +201,14 @@ async fn launch_expected_with<E: LaunchEnvironment>(
             Some(report),
             message,
             "重新选择目标账号，再执行完整检查与启动",
+        );
+    }
+    refresh_launch_decision(environment, &mut report).await;
+    if !report.launch.allowed {
+        return blocked(
+            Some(report),
+            "启动前检查证据已失效",
+            "重新执行完整检查后重试",
         );
     }
     match environment.open().await {
@@ -419,6 +434,9 @@ mod tests {
     struct Fake {
         log: Mutex<Vec<&'static str>>,
         current: Mutex<AccountId>,
+        generations: Mutex<std::collections::VecDeque<Result<&'static str, &'static str>>>,
+        times: Mutex<std::collections::VecDeque<u64>>,
+        generation_calls: std::sync::atomic::AtomicUsize,
         fail_check: bool,
         account_changes: bool,
         fail_open: bool,
@@ -428,6 +446,9 @@ mod tests {
             Self {
                 log: Mutex::new(vec![]),
                 current: Mutex::new(AccountId::A),
+                generations: Mutex::new([Ok("0:synthetic")].into()),
+                times: Mutex::new([101].into()),
+                generation_calls: std::sync::atomic::AtomicUsize::new(0),
                 fail_check: false,
                 account_changes: false,
                 fail_open: false,
@@ -446,8 +467,24 @@ mod tests {
         fn account_ready(&self, _: &Path, _: &()) -> Result<AccountId, &'static str> {
             Ok(*self.current.lock().unwrap())
         }
+        async fn generation(&self) -> Result<String, &'static str> {
+            self.generation_calls
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let mut samples = self.generations.lock().unwrap();
+            let sample = if samples.len() > 1 {
+                samples.pop_front().unwrap()
+            } else {
+                *samples.front().unwrap()
+            };
+            sample.map(str::to_owned)
+        }
         fn now(&self) -> u64 {
-            101
+            let mut samples = self.times.lock().unwrap();
+            if samples.len() > 1 {
+                samples.pop_front().unwrap()
+            } else {
+                *samples.front().unwrap()
+            }
         }
         async fn check(&self, _: &Path) -> Result<CheckReport, &'static str> {
             self.log.lock().unwrap().push("check");
@@ -463,7 +500,7 @@ mod tests {
                     observed_at: 100,
                     duration_ms: 1,
                     valid_until: 130,
-                    network_generation: "synthetic".into(),
+                    network_generation: "0:synthetic".into(),
                     evidence: vec![],
                 })
                 .collect();
@@ -475,7 +512,7 @@ mod tests {
                 observed_at: 100,
                 completed_at: 101,
                 duration_ms: 1,
-                network_generation: "synthetic".into(),
+                network_generation: "0:synthetic".into(),
                 checks: rows,
                 summary: CheckSummary {
                     passed: 14,
@@ -569,5 +606,73 @@ mod tests {
                 .outcome
                 .completed
         );
+    }
+
+    #[tokio::test]
+    async fn changed_or_unavailable_network_blocks_switch_before_selection() {
+        for sample in [Ok("1:other-route"), Ok(""), Err("observation_unavailable")] {
+            let fake = Fake {
+                generations: Mutex::new([sample].into()),
+                ..Default::default()
+            };
+            let result = switch_with(&fake, Edition::Personal, AccountId::B).await;
+            assert!(!result.outcome.completed);
+            assert!(!result.report.unwrap().launch.allowed);
+            assert_eq!(*fake.current.lock().unwrap(), AccountId::A);
+            assert_eq!(*fake.log.lock().unwrap(), vec!["check"]);
+        }
+    }
+
+    #[tokio::test]
+    async fn final_network_recheck_blocks_aba_wake_and_sampling_failure() {
+        for sample in [
+            Ok("2:synthetic"),
+            Ok("1:other-route"),
+            Err("observer_stopped"),
+        ] {
+            let fake = Fake {
+                generations: Mutex::new([Ok("0:synthetic"), sample].into()),
+                ..Default::default()
+            };
+            let result = launch_expected_with(&fake, Edition::Personal, Some(AccountId::A)).await;
+            assert!(!result.outcome.completed);
+            assert!(!result.report.unwrap().launch.allowed);
+            assert!(!fake.log.lock().unwrap().contains(&"open"));
+            assert_eq!(
+                fake.generation_calls
+                    .load(std::sync::atomic::Ordering::SeqCst),
+                2
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn evidence_expiring_after_initial_gate_never_reaches_system_open() {
+        let fake = Fake {
+            times: Mutex::new([101, 131].into()),
+            ..Default::default()
+        };
+        let result = launch_with(&fake, Edition::Public).await;
+        assert!(!result.outcome.completed);
+        assert!(!result.report.unwrap().launch.allowed);
+        assert!(!fake.log.lock().unwrap().contains(&"open"));
+    }
+
+    #[tokio::test]
+    async fn stable_network_allows_both_editions_at_the_thirty_second_boundary() {
+        for edition in [Edition::Personal, Edition::Public] {
+            let fake = Fake {
+                times: Mutex::new([130].into()),
+                ..Default::default()
+            };
+            let result = launch_with(&fake, edition).await;
+            assert!(result.outcome.completed);
+            assert!(result.report.unwrap().launch.allowed);
+            assert_eq!(
+                fake.generation_calls
+                    .load(std::sync::atomic::Ordering::SeqCst),
+                2
+            );
+        }
     }
 }

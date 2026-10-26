@@ -339,7 +339,13 @@ fn all_ads_disabled_and_personal_unrequested_updates_produce_no_request_targets(
     }
     assert_eq!(constructed, 0);
     for edition in [Edition::Personal, Edition::Public] {
-        let runtime = AdRuntime::new(root.0.clone(), edition);
+        let runtime = AdRuntime::new(root.0.clone(), edition).with_clock(|| {
+            Ok(switcher_core::time::ClockSample {
+                utc_secs: 1000,
+                continuous_ms: 1_000_000,
+                boot_id: "synthetic-boot".into(),
+            })
+        });
         for manual in [false, true] {
             let outcome = runtime.refresh_if_due(&off, manual).unwrap();
             assert!(!outcome.refreshed);

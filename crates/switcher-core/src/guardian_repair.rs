@@ -372,6 +372,10 @@ fn root_parent_metadata(directory: bool, uid: u32, mode: u32) -> Result<(), &'st
     }
 }
 
+fn root_file_permissions(uid: u32, gid: u32, actual: u32, expected: u32) -> bool {
+    uid == 0 && gid == 0 && actual & 0o7777 == expected
+}
+
 fn root_file_metadata(
     metadata: &std::fs::Metadata,
     uid: u32,
@@ -380,9 +384,7 @@ fn root_file_metadata(
 ) -> Result<(), &'static str> {
     use std::os::unix::fs::MetadataExt;
     if metadata.is_file()
-        && uid == 0
-        && gid == 0
-        && metadata.mode() & 0o7777 == mode
+        && root_file_permissions(uid, gid, metadata.mode(), mode)
         && metadata.nlink() == 1
     {
         Ok(())
@@ -646,6 +648,23 @@ print(json.dumps(dict(values=values,python=sys.executable,source_sha256=hashlib.
     }
 
     #[test]
+    fn f03_root_file_permissions_reject_special_bits_and_foreign_owners() {
+        for expected in [0o644, 0o755] {
+            assert!(root_file_permissions(0, 0, expected, expected));
+            for special_bits in 1..=7 {
+                let actual = expected | (special_bits << 9);
+                assert!(
+                    !root_file_permissions(0, 0, actual, expected),
+                    "special permission bits must be rejected: {actual:o}"
+                );
+            }
+            for (uid, gid) in [(501, 0), (0, 80), (501, 80)] {
+                assert!(!root_file_permissions(uid, gid, expected, expected));
+            }
+        }
+    }
+
+    #[test]
     fn f03_checked_descriptor_metadata_links_and_bounds() {
         use std::os::unix::fs::{PermissionsExt, symlink};
         let directory = std::env::temp_dir().join(format!(
@@ -669,8 +688,14 @@ print(json.dumps(dict(values=values,python=sys.executable,source_sha256=hashlib.
         assert!(root_file_metadata(&metadata, 501, 0, 0o644).is_err());
         assert!(root_file_metadata(&metadata, 0, 80, 0o644).is_err());
         assert!(root_file_metadata(&metadata, 0, 0, 0o755).is_err());
-        for mode in [0o666, 0o664, 0o600, 0o4644] {
+        // macOS sandbox clears setuid/setgid on chmod; the pure test covers those bits.
+        for mode in [0o666, 0o664, 0o600, 0o1644] {
             std::fs::set_permissions(&file, std::fs::Permissions::from_mode(mode)).unwrap();
+            assert_eq!(
+                std::fs::metadata(&file).unwrap().permissions().mode() & 0o7777,
+                mode,
+                "the descriptor test requires the requested permissions to survive chmod"
+            );
             assert!(read(&file, 7).is_err());
         }
         std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();

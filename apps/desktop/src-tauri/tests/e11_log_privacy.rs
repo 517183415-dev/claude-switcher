@@ -70,7 +70,14 @@ fn desktop_personal_background_update_actions_are_denied_before_transport() {
         std::process::id()
     ));
     let runtime =
-        update_runtime::UpdateRuntime::new(root.clone(), switcher_domain::Edition::Personal);
+        update_runtime::UpdateRuntime::new(root.clone(), switcher_domain::Edition::Personal)
+            .with_clock(|| {
+                Ok(switcher_core::time::ClockSample {
+                    utc_secs: 1_700_000_000,
+                    continuous_ms: 1_700_000_000_000,
+                    boot_id: "test-boot".into(),
+                })
+            });
     for action in [
         switcher_core::updates::UpdateAction::Check,
         switcher_core::updates::UpdateAction::Download,

@@ -29,6 +29,9 @@ fn sample(now: i64) -> ClockSample {
         boot_id: "synthetic-boot".into(),
     }
 }
+fn fixture_clock() -> Result<ClockSample> {
+    Ok(sample(1000))
+}
 fn prefs() -> AdPreferences {
     AdPreferences {
         slots_enabled: [true; 3],
@@ -43,6 +46,7 @@ fn configured_runtime(root: &Root) -> AdRuntime {
         root: root.0.clone(),
         edition: Edition::Public,
         local_error: None,
+        sample_clock: fixture_clock,
         pins: Some(ContentPins {
             source: ContentSource::new("https://ads.example.com/content/").unwrap(),
             key: signer().verifying_key(),
@@ -157,7 +161,7 @@ fn refresh(runtime: &AdRuntime, fetcher: &mut MemoryFetch, now: i64) -> Result<R
 #[test]
 fn missing_pins_and_all_off_make_zero_requests() {
     let root = Root::new();
-    let runtime = AdRuntime::new(root.0.clone(), Edition::Public);
+    let runtime = AdRuntime::new(root.0.clone(), Edition::Public).with_clock(fixture_clock);
     let mut fetcher = MemoryFetch::default();
     let _lock = runtime.lock().unwrap();
     assert_eq!(
@@ -719,7 +723,7 @@ fn controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases() {
 #[test]
 fn local_trust_errors_are_explicit_and_public_open_never_creates_publication() {
     let root = Root::new();
-    let runtime = AdRuntime::new(root.0.clone(), Edition::Public);
+    let runtime = AdRuntime::new(root.0.clone(), Edition::Public).with_clock(fixture_clock);
     assert!(!local::directory(&root.0).exists());
     assert!(runtime.snapshot(&prefs()).unwrap().is_none());
     assert!(!local::directory(&root.0).exists());
@@ -727,6 +731,7 @@ fn local_trust_errors_are_explicit_and_public_open_never_creates_publication() {
     storage::atomic_write(&local::directory(&root.0).join("trust.json"), b"{}").unwrap();
     assert!(
         AdRuntime::new(root.0.clone(), Edition::Public)
+            .with_clock(fixture_clock)
             .snapshot(&prefs())
             .is_err()
     );
@@ -747,7 +752,7 @@ fn local_trust_errors_are_explicit_and_public_open_never_creates_publication() {
         slots_enabled: [false; 3],
         request_purpose_acknowledged: true,
     };
-    let runtime = AdRuntime::new(root.0.clone(), Edition::Public);
+    let runtime = AdRuntime::new(root.0.clone(), Edition::Public).with_clock(fixture_clock);
     assert!(!runtime.refresh_if_due(&off, false).unwrap().refreshed);
     assert!(runtime.snapshot(&off).unwrap().is_none());
     assert!(runtime.snapshot(&prefs()).is_err());
@@ -768,7 +773,7 @@ fn passive_file_snapshot(path: &std::path::Path) -> (Vec<u8>, u64, i64, i64) {
 fn passive_snapshots_and_images_preserve_initialized_files_both_editions() {
     for edition in [Edition::Personal, Edition::Public] {
         let root = Root::new();
-        let runtime = AdRuntime::new(root.0.clone(), edition);
+        let runtime = AdRuntime::new(root.0.clone(), edition).with_clock(fixture_clock);
         let disabled = AdPreferences::default();
         runtime.snapshot(&disabled).unwrap();
         let paths = [
@@ -844,7 +849,7 @@ fn passive_disabled_and_missing_materials_preserve_initialized_clock() {
         let runtime = if configured {
             configured_runtime(&root)
         } else {
-            AdRuntime::new(root.0.clone(), Edition::Public)
+            AdRuntime::new(root.0.clone(), Edition::Public).with_clock(fixture_clock)
         };
         let _lock = runtime.lock().unwrap();
         let (state, clock) = runtime.load(&sample(1000)).unwrap();
@@ -872,4 +877,38 @@ fn passive_disabled_and_missing_materials_preserve_initialized_clock() {
         assert!(fetcher.requests.is_empty());
         assert_eq!(before, passive_file_snapshot(&path));
     }
+}
+
+#[test]
+fn failed_clock_preserves_persisted_state_and_denies_all_entrypoints() {
+    let root = Root::new();
+    let runtime = AdRuntime::new(root.0.clone(), Edition::Public).with_clock(fixture_clock);
+    let disabled = AdPreferences::default();
+    assert!(runtime.snapshot(&disabled).unwrap().is_none());
+    let paths = [
+        runtime.directory().join("clock.json"),
+        runtime.ads_directory().join("state.json"),
+    ];
+    let before = paths.each_ref().map(|path| passive_file_snapshot(path));
+    let failed = runtime.with_clock(|| Err("synthetic_clock_unavailable"));
+    assert_eq!(
+        failed.snapshot(&disabled).unwrap_err(),
+        "synthetic_clock_unavailable"
+    );
+    assert_eq!(
+        failed.refresh_if_due(&disabled, false).unwrap_err(),
+        "synthetic_clock_unavailable"
+    );
+    assert_eq!(
+        failed.image_bytes(AdSlot::ALL[0], &disabled).unwrap_err(),
+        "synthetic_clock_unavailable"
+    );
+    assert!(matches!(
+        failed.click_target(AdSlot::ALL[0], false, &disabled),
+        Err("synthetic_clock_unavailable")
+    ));
+    assert_eq!(
+        before,
+        paths.each_ref().map(|path| passive_file_snapshot(path))
+    );
 }

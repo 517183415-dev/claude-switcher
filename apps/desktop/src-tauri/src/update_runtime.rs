@@ -85,6 +85,7 @@ pub struct UpdateRuntime {
     root: PathBuf,
     edition: Edition,
     pins: Option<updates::ValidatedReleasePins>,
+    sample_clock: fn() -> Result<ClockSample, &'static str>,
 }
 impl UpdateRuntime {
     /// `root` is the switcher data root, not an account directory or user-provided URL.
@@ -98,6 +99,7 @@ impl UpdateRuntime {
                 root,
                 edition,
                 pins: None,
+                sample_clock: time::sample,
             }
         }
     }
@@ -112,8 +114,18 @@ impl UpdateRuntime {
             root,
             edition,
             pins: Some(pins),
+            sample_clock: time::sample,
         }
     }
+    #[cfg(test)]
+    pub(crate) fn with_clock(
+        mut self,
+        sample_clock: fn() -> Result<ClockSample, &'static str>,
+    ) -> Self {
+        self.sample_clock = sample_clock;
+        self
+    }
+
     fn v2(&self) -> PathBuf {
         self.root.join("v2")
     }
@@ -186,7 +198,7 @@ impl UpdateRuntime {
     pub fn snapshot(&self) -> UpdateView {
         let result = (|| -> io::Result<UpdateView> {
             let _lock = self.lock()?;
-            let sample = time::sample().map_err(io::Error::other)?;
+            let sample = (self.sample_clock)().map_err(io::Error::other)?;
             let state = self.load(&sample)?;
             self.save(&state)?;
             let mut result = view(&state);
@@ -257,7 +269,7 @@ impl UpdateRuntime {
     pub fn run_task(&self, action: updates::UpdateAction, manual: bool) -> OperationOutcome {
         let result = (|| -> io::Result<OperationOutcome> {
             let lock = self.lock()?;
-            let sample = time::sample().map_err(io::Error::other)?;
+            let sample = (self.sample_clock)().map_err(io::Error::other)?;
             self.run_locked(action, manual, &sample, &lock)
         })();
         result.unwrap_or_else(outcome_error)
@@ -650,7 +662,7 @@ impl UpdateRuntime {
     fn change_schedule(&self, action: UpdateAction) -> OperationOutcome {
         let result = (|| -> io::Result<OperationOutcome> {
             let _lock = self.lock()?;
-            let sample = time::sample().map_err(io::Error::other)?;
+            let sample = (self.sample_clock)().map_err(io::Error::other)?;
             let now = utc(&sample)?;
             let mut state = self.load(&sample)?;
             state.clock.observe(sample.clone());
@@ -799,6 +811,12 @@ mod tests {
             let _ = std::fs::remove_dir_all(&self.0);
         }
     }
+    fn fixture_clock() -> Result<ClockSample, &'static str> {
+        Ok(at(1_700_000_000))
+    }
+    fn fixture_runtime(root: PathBuf, edition: Edition) -> UpdateRuntime {
+        UpdateRuntime::new(root, edition).with_clock(fixture_clock)
+    }
     fn at(utc: u64) -> ClockSample {
         ClockSample {
             utc_secs: utc as i64,
@@ -807,13 +825,35 @@ mod tests {
         }
     }
     #[test]
+    fn failed_clock_preserves_persisted_state_and_denies_all_entrypoints() {
+        let fixture = Fixture::new();
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Personal);
+        assert_eq!(runtime.snapshot().paused, Some(false));
+        let paths = [runtime.state_path(), runtime.directory().join("clock.json")];
+        let before = paths.each_ref().map(|path| std::fs::read(path).unwrap());
+        let failed = runtime.with_clock(|| Err("synthetic_clock_unavailable"));
+        assert_eq!(failed.snapshot().state, "update_storage_error");
+        for result in [
+            failed.run_task(updates::UpdateAction::Check, false),
+            failed.act(UpdateAction::Pause),
+        ] {
+            assert!(!result.completed);
+            assert_eq!(result.recovery.as_deref(), Some("update_storage_error"));
+        }
+        assert_eq!(
+            before,
+            paths.each_ref().map(|path| std::fs::read(path).unwrap())
+        );
+    }
+
+    #[test]
     fn anomalous_snapshot_persists_sticky_recovery_without_clearing_history() {
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+            let runtime = fixture_runtime(fixture.0.clone(), edition);
             let anchor = {
                 let _lock = runtime.lock().unwrap();
-                let mut sample = time::sample().unwrap();
+                let mut sample = fixture_clock().unwrap();
                 sample.utc_secs += 600;
                 let mut state = runtime.load(&sample).unwrap();
                 state.clock.record_verified_success(sample.clone()).unwrap();
@@ -822,11 +862,11 @@ mod tests {
                 sample.utc_secs
             };
             assert_eq!(runtime.snapshot().state, "clock_recovery_required");
-            let restarted = UpdateRuntime::new(fixture.0.clone(), edition);
+            let restarted = fixture_runtime(fixture.0.clone(), edition);
             assert_eq!(restarted.snapshot().state, "clock_recovery_required");
             assert!(restarted.act(UpdateAction::Resume).completed);
             let _lock = restarted.lock().unwrap();
-            let restored = restarted.load(&time::sample().unwrap()).unwrap();
+            let restored = restarted.load(&fixture_clock().unwrap()).unwrap();
             assert_eq!(
                 restored.clock.status,
                 switcher_core::time::ClockStatus::AwaitingVerifiedRefresh
@@ -841,8 +881,9 @@ mod tests {
         use std::os::unix::fs::MetadataExt;
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let updater = UpdateRuntime::new(fixture.0.clone(), edition);
-            let ads = switcher_core::ad_runtime::AdRuntime::new(fixture.0.clone(), edition);
+            let updater = fixture_runtime(fixture.0.clone(), edition);
+            let ads = switcher_core::ad_runtime::AdRuntime::new(fixture.0.clone(), edition)
+                .with_clock(fixture_clock);
             let preferences = switcher_domain::ads::AdPreferences::default();
             assert!(updater.snapshot().paused.is_some());
             ads.snapshot(&preferences).unwrap();
@@ -876,7 +917,7 @@ mod tests {
     fn background_no_work_preserves_clock_and_recovers_in_flight() {
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+            let runtime = fixture_runtime(fixture.0.clone(), edition);
             let lock = runtime.lock().unwrap();
             let mut state = runtime.load(&at(100)).unwrap();
             state.updates.sequence.remember(7, "a".repeat(64)).unwrap();
@@ -922,7 +963,7 @@ mod tests {
         };
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+            let runtime = fixture_runtime(fixture.0.clone(), edition);
             runtime.snapshot();
             let paths = [runtime.state_path(), runtime.directory().join("clock.json")];
             let before = paths.each_ref().map(|p| capture(p));
@@ -938,7 +979,7 @@ mod tests {
     fn source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate() {
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+            let runtime = fixture_runtime(fixture.0.clone(), edition);
             let snapshot = runtime.snapshot();
             assert_eq!(snapshot.state, "source_local_rebuild_required");
             assert!(
@@ -958,7 +999,7 @@ mod tests {
             ] {
                 let lock = runtime.lock().unwrap();
                 let result = runtime
-                    .run_locked(action, true, &time::sample().unwrap(), &lock)
+                    .run_locked(action, true, &fixture_clock().unwrap(), &lock)
                     .unwrap();
                 assert_eq!(
                     result.recovery.as_deref(),
@@ -1003,7 +1044,7 @@ mod tests {
             ("failed_artifacts_suppressed", "failed_artifacts_suppressed"),
         ] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+            let runtime = fixture_runtime(fixture.0.clone(), Edition::Public);
             let lock = runtime.lock().unwrap();
             let mut state = Persistent::new(Edition::Public, 100);
             state.status = status.into();
@@ -1071,7 +1112,7 @@ mod tests {
     #[test]
     fn e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Personal);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Personal);
         {
             let _lock = runtime.lock().unwrap();
             let mut state = runtime.load(&at(100)).unwrap();
@@ -1099,7 +1140,7 @@ mod tests {
         .enumerate()
         {
             let sample = 102 + index as u64 * 10;
-            let restarted = UpdateRuntime::new(fixture.0.clone(), Edition::Personal);
+            let restarted = fixture_runtime(fixture.0.clone(), Edition::Personal);
             let lock = restarted.lock().unwrap();
             let restored = restarted.load(&at(sample)).unwrap();
             assert_eq!(restored.status, "checked");
@@ -1150,13 +1191,13 @@ mod tests {
             request_purpose_acknowledged: true,
         };
         for edition in [Edition::Personal, Edition::Public] {
-            let ads = AdRuntime::new(fixture.0.clone(), edition);
+            let ads = AdRuntime::new(fixture.0.clone(), edition).with_clock(fixture_clock);
             assert_eq!(
                 ads.refresh_if_due(&preferences, false).unwrap().reason,
                 "ads_disabled"
             );
             assert!(ads.snapshot(&preferences).unwrap().is_none());
-            let updates = UpdateRuntime::new(fixture.0.clone(), edition);
+            let updates = fixture_runtime(fixture.0.clone(), edition);
             assert_eq!(updates.snapshot().state, "source_local_rebuild_required");
             assert_eq!(
                 updates
@@ -1205,7 +1246,7 @@ mod tests {
                     .is_err()
             );
             assert_eq!(
-                UpdateRuntime::new(fixture.0.clone(), Edition::Public)
+                fixture_runtime(fixture.0.clone(), Edition::Public)
                     .snapshot()
                     .state,
                 "update_storage_error"
@@ -1221,7 +1262,7 @@ mod tests {
                 .is_err()
         );
         assert_eq!(
-            UpdateRuntime::new(link.clone(), Edition::Public)
+            fixture_runtime(link.clone(), Edition::Public)
                 .snapshot()
                 .state,
             "update_storage_error"
@@ -1236,7 +1277,7 @@ mod tests {
                 .is_err()
         );
         assert_eq!(
-            UpdateRuntime::new(fixture.0.clone(), Edition::Public)
+            fixture_runtime(fixture.0.clone(), Edition::Public)
                 .snapshot()
                 .state,
             "update_storage_error"
@@ -1245,7 +1286,7 @@ mod tests {
     #[test]
     fn pending_repairs_block_install_before_state_changes_but_allow_check() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Personal);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Personal);
         let lock = runtime.lock().unwrap();
         for journal in ["region-repair.json", "user-repairs/journal.json"] {
             let path = runtime.v2().join(journal);
@@ -1306,7 +1347,7 @@ mod tests {
     #[test]
     fn missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart() {
         let fixture = Fixture::new();
-        let personal = UpdateRuntime::new(fixture.0.clone(), Edition::Personal);
+        let personal = fixture_runtime(fixture.0.clone(), Edition::Personal);
         {
             let _lock = personal.lock().unwrap();
             let denied = personal
@@ -1325,7 +1366,7 @@ mod tests {
                 Some("source_local_rebuild_required")
             );
         }
-        let restarted = UpdateRuntime::new(fixture.0.clone(), Edition::Personal);
+        let restarted = fixture_runtime(fixture.0.clone(), Edition::Personal);
         let _lock = restarted.lock().unwrap();
         let state = restarted.load(&at(102)).unwrap();
         assert_eq!(state.updates.sequence.highest, 0);
@@ -1337,7 +1378,7 @@ mod tests {
     #[test]
     fn public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Public);
         let _lock = runtime.lock().unwrap();
         assert_eq!(
             runtime.lock().unwrap_err().kind(),
@@ -1360,7 +1401,7 @@ mod tests {
             Some("source_local_rebuild_required")
         );
         drop(_lock);
-        let restored = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+        let restored = fixture_runtime(fixture.0.clone(), Edition::Public);
         let _lock = restored.lock().unwrap();
         let state = restored.load(&at(101 + updates::CHECK_INTERVAL)).unwrap();
         assert_eq!(
@@ -1376,15 +1417,15 @@ mod tests {
     fn pause_resume_snapshot_survives_restart_for_both_editions() {
         for edition in [Edition::Personal, Edition::Public] {
             let fixture = Fixture::new();
-            let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+            let runtime = fixture_runtime(fixture.0.clone(), edition);
             assert_eq!(runtime.snapshot().paused, Some(false));
             assert!(runtime.act(UpdateAction::Pause).completed);
-            let restarted = UpdateRuntime::new(fixture.0.clone(), edition);
+            let restarted = fixture_runtime(fixture.0.clone(), edition);
             let paused = restarted.snapshot();
             assert_eq!(paused.paused, Some(true));
             assert_eq!(paused.state, "paused");
             assert!(restarted.act(UpdateAction::Resume).completed);
-            let resumed = UpdateRuntime::new(fixture.0.clone(), edition).snapshot();
+            let resumed = fixture_runtime(fixture.0.clone(), edition).snapshot();
             assert_eq!(resumed.paused, Some(false));
             assert_ne!(resumed.state, "paused");
         }
@@ -1401,7 +1442,7 @@ mod tests {
             ] {
                 for paused in [false, true] {
                     let fixture = Fixture::new();
-                    let runtime = UpdateRuntime::new(fixture.0.clone(), edition);
+                    let runtime = fixture_runtime(fixture.0.clone(), edition);
                     {
                         let _lock = runtime.lock().unwrap();
                         let mut state = Persistent::new(edition, 100);
@@ -1414,13 +1455,13 @@ mod tests {
                     assert_eq!(snapshot.paused, Some(paused));
                     assert!(!snapshot.can_install);
                     assert!(runtime.act(UpdateAction::Resume).completed);
-                    let restarted = UpdateRuntime::new(fixture.0.clone(), edition);
+                    let restarted = fixture_runtime(fixture.0.clone(), edition);
                     let resumed = restarted.snapshot();
                     assert_eq!(resumed.paused, Some(false));
                     assert_eq!(resumed.state, "clock_recovery_required");
                     assert!(!resumed.can_install);
                     let _lock = restarted.lock().unwrap();
-                    let state = restarted.load(&time::sample().unwrap()).unwrap();
+                    let state = restarted.load(&fixture_clock().unwrap()).unwrap();
                     assert_eq!(state.clock.status, ClockStatus::AwaitingVerifiedRefresh);
                 }
             }
@@ -1429,7 +1470,7 @@ mod tests {
     #[test]
     fn unreadable_schedule_never_reports_a_known_pause_setting() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Public);
         let _lock = runtime.lock().unwrap();
         let snapshot = runtime.snapshot();
         assert_eq!(snapshot.state, "lifecycle_busy");
@@ -1438,7 +1479,7 @@ mod tests {
     #[test]
     fn corrupted_state_never_resets_the_replay_watermark() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Public);
         let _lock = runtime.lock().unwrap();
         let state = Persistent::new(Edition::Public, 100);
         runtime.save(&state).unwrap();
@@ -1456,7 +1497,7 @@ mod tests {
     #[test]
     fn shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence() {
         let fixture = Fixture::new();
-        let runtime = UpdateRuntime::new(fixture.0.clone(), Edition::Public);
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Public);
         let _lock = runtime.lock().unwrap();
         let mut state = Persistent::new(Edition::Public, 100);
         state.updates.sequence.remember(7, "a".repeat(64)).unwrap();
