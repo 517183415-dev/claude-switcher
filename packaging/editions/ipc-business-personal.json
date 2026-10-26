@@ -1,0 +1,37 @@
+{
+  "identifier": "local.switcher.ipcbusiness.personal",
+  "build": {
+    "frontendDist": "../tests/native-ipc-business"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "ipc-business",
+        "title": "日志业务 IPC 隔离验证",
+        "width": 640,
+        "height": 360,
+        "incognito": true,
+        "url": "index.html"
+      }
+    ],
+    "security": {
+      "capabilities": [
+        {
+          "identifier": "ipc-business",
+          "windows": [
+            "ipc-business"
+          ],
+          "permissions": [
+            "allow-activity-log",
+            "allow-export-activity",
+            "allow-ipc-business-info",
+            "allow-ipc-business-finish"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

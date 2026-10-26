@@ -31,4 +31,5 @@ personal = ["dep:ed25519-dalek", "dep:chacha20poly1305", "dep:argon2", "dep:zero
 public = []
 ipc-smoke = []
 ipc-limits = []
+ipc-business = []
 custom-protocol = ["tauri/custom-protocol"]

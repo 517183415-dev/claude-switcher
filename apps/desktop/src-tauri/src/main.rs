@@ -1,12 +1,21 @@
-#![cfg_attr(feature = "ipc-limits", allow(dead_code))]
+#![cfg_attr(
+    any(feature = "ipc-limits", feature = "ipc-business"),
+    allow(dead_code)
+)]
 
 #[cfg(all(feature = "personal", feature = "public"))]
 compile_error!("Select exactly one edition");
 #[cfg(not(any(feature = "personal", feature = "public")))]
 compile_error!("Select an edition");
-#[cfg(all(feature = "ipc-smoke", feature = "ipc-limits"))]
+#[cfg(any(
+    all(feature = "ipc-smoke", feature = "ipc-limits"),
+    all(feature = "ipc-smoke", feature = "ipc-business"),
+    all(feature = "ipc-limits", feature = "ipc-business")
+))]
 compile_error!("Select exactly one IPC test fixture");
 
+#[cfg(feature = "ipc-business")]
+mod ipc_business;
 #[cfg(feature = "ipc-limits")]
 mod ipc_limits;
 
@@ -44,7 +53,12 @@ fn main() {
     ipc_limits::run();
 }
 
-#[cfg(not(feature = "ipc-limits"))]
+#[cfg(feature = "ipc-business")]
+fn main() {
+    ipc_business::run();
+}
+
+#[cfg(not(any(feature = "ipc-limits", feature = "ipc-business")))]
 fn main() {
     let edition = if cfg!(feature = "public") {
         switcher_domain::Edition::Public

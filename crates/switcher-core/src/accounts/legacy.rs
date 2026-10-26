@@ -1804,6 +1804,197 @@ mod tests {
         .unwrap();
     }
     #[test]
+    fn f06_fresh_recovery_child_fixture() {
+        let Some(base) = std::env::var_os("SWITCHER_F06_RECOVERY_BASE") else {
+            return;
+        };
+        let base = PathBuf::from(base);
+        assert_eq!(
+            base.parent(),
+            Some(std::env::temp_dir().canonicalize().unwrap().as_path())
+        );
+        assert!(
+            base.file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .starts_with("legacy-ditto-")
+        );
+        storage::validate_no_symlinks(&base).unwrap();
+        let metadata = fs::metadata(&base).unwrap();
+        assert_eq!(metadata.uid(), unsafe { libc::geteuid() });
+        assert_eq!(metadata.permissions().mode() & 0o077, 0);
+        let generation: u64 = std::env::var("SWITCHER_F06_GENERATION")
+            .unwrap()
+            .parse()
+            .unwrap();
+        let store = AccountStore::new(&base.join("switcher"), &base.join("Claude"), unsafe {
+            libc::geteuid()
+        })
+        .unwrap();
+        let mut first_state = None;
+        for _ in 0..2 {
+            let lock = LifecycleLock::try_acquire(&store.v2()).unwrap();
+            recover(&store, &lock, &|| Ok(())).unwrap();
+            assert_selected(&store, AccountId::B);
+            let state = store.state().unwrap().unwrap();
+            assert_eq!(state.generation, generation);
+            if let Some(first) = &first_state {
+                assert_eq!(&state, first);
+            } else {
+                first_state = Some(state);
+            }
+            assert!(!store.journal_path().exists());
+            assert_eq!(fs::read_dir(store.transactions()).unwrap().count(), 0);
+            assert_eq!(
+                fs::read(store.active.join("session")).unwrap(),
+                b"B-private"
+            );
+            assert_eq!(
+                fs::read(store.archive(AccountId::A).join("session")).unwrap(),
+                b"A-latest"
+            );
+            let expected_xattrs =
+                extended_attributes(&store.archive(AccountId::B).join("session")).unwrap();
+            assert!(!expected_xattrs.is_empty());
+            for directory in [
+                &store.active,
+                &store.archive(AccountId::A),
+                &store.archive(AccountId::B),
+            ] {
+                assert_eq!(
+                    fs::metadata(directory).unwrap().permissions().mode() & 0o777,
+                    0o750
+                );
+                let session = directory.join("session");
+                assert_eq!(
+                    fs::metadata(&session).unwrap().permissions().mode() & 0o777,
+                    0o640
+                );
+                assert_eq!(extended_attributes(&session).unwrap(), expected_xattrs);
+            }
+        }
+        println!(
+            "F06 fresh recovery pid={} recoveries=2 metadata/stages/journal=ok",
+            std::process::id()
+        );
+    }
+
+    #[test]
+    fn f06_missing_switch_boundaries_recover_in_fresh_process() {
+        use std::os::unix::process::ExitStatusExt;
+        struct ChildGuard(std::process::Child);
+        impl Drop for ChildGuard {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+        for phase in ["journal_written", "active_exchanged", "journal_unlinked"] {
+            let fixture = Fixture::new();
+            fixture.select(AccountId::A);
+            let b_archive = fixture.store.archive(AccountId::B);
+            storage::create_private_directory(&b_archive).unwrap();
+            storage::atomic_write(&b_archive.join("session"), b"B-private").unwrap();
+            for directory in [&fixture.store.active, &b_archive] {
+                fs::set_permissions(directory, fs::Permissions::from_mode(0o750)).unwrap();
+                fs::set_permissions(directory.join("session"), fs::Permissions::from_mode(0o640))
+                    .unwrap();
+                mark_session_xattr(&directory.join("session"));
+            }
+            let a_hash = fingerprint(&fixture.store.active).unwrap();
+            let b_hash = fingerprint(&b_archive).unwrap();
+            let b_identity = identity(&b_archive).unwrap();
+            let generation = fixture.store.state().unwrap().unwrap().generation + 1;
+            let mut child = ChildGuard(
+                Command::new(std::env::current_exe().unwrap())
+                    .args([
+                        "--exact",
+                        "accounts::legacy::tests::legacy_process_crash_child",
+                        "--nocapture",
+                    ])
+                    .env("SWITCHER_LEGACY_CRASH_FIXTURE", &fixture.base)
+                    .env("SWITCHER_LEGACY_CRASH_PHASE", phase)
+                    .stdin(std::process::Stdio::null())
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .spawn()
+                    .unwrap(),
+            );
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+            while !fixture.base.join("child-ready").exists() {
+                assert!(
+                    child.0.try_wait().unwrap().is_none(),
+                    "child exited before {phase}"
+                );
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "child timed out before {phase}"
+                );
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            assert_eq!(
+                LifecycleLock::try_acquire(&fixture.store.v2())
+                    .unwrap_err()
+                    .kind(),
+                io::ErrorKind::WouldBlock
+            );
+            if phase == "journal_unlinked" {
+                assert!(!journal_path(&fixture.store).exists());
+            } else {
+                let journal: LegacyJournal =
+                    storage::read_json(&journal_path(&fixture.store)).unwrap();
+                assert_eq!(journal.target, AccountId::B);
+            }
+            child.0.kill().unwrap();
+            assert_eq!(child.0.wait().unwrap().signal(), Some(libc::SIGKILL));
+            let mut recovery = ChildGuard(
+                Command::new(std::env::current_exe().unwrap())
+                    .args([
+                        "--exact",
+                        "accounts::legacy::tests::f06_fresh_recovery_child_fixture",
+                        "--nocapture",
+                    ])
+                    .env("SWITCHER_F06_RECOVERY_BASE", &fixture.base)
+                    .env("SWITCHER_F06_GENERATION", generation.to_string())
+                    .stdin(std::process::Stdio::null())
+                    .spawn()
+                    .unwrap(),
+            );
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+            let status = loop {
+                if let Some(status) = recovery.0.try_wait().unwrap() {
+                    break status;
+                }
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "recovery timed out after {phase}"
+                );
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            };
+            assert!(
+                status.success(),
+                "fresh recovery failed after {phase}: {status}"
+            );
+            let store = AccountStore::new(
+                &fixture.store.root,
+                &fixture.store.active,
+                fixture.store.owner,
+            )
+            .unwrap();
+            assert_selected(&store, AccountId::B);
+            assert_eq!(store.state().unwrap().unwrap().generation, generation);
+            assert_eq!(fingerprint(&store.active).unwrap(), b_hash);
+            assert_eq!(fingerprint(&store.archive(AccountId::A)).unwrap(), a_hash);
+            assert_eq!(fingerprint(&b_archive).unwrap(), b_hash);
+            assert_eq!(identity(&b_archive).unwrap(), b_identity);
+            println!(
+                "F06 boundary={phase} signal=SIGKILL fresh_recovery_exit=0 recoveries=2 archives/metadata/stages/journal=ok"
+            );
+        }
+    }
+
+    #[test]
     fn sigkill_recovers_destination_local_transactions_at_every_boundary() {
         for phase in [
             "prepared",

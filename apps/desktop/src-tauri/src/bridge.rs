@@ -81,6 +81,17 @@ pub fn account_action_failure(action: AccountAction, error: impl Into<String>) -
 }
 
 impl DesktopState {
+    /// Explicit synthetic root for the compile-time-only native business fixture.
+    #[cfg(feature = "ipc-business")]
+    pub(crate) fn isolated_activity_fixture(root: PathBuf, edition: Edition) -> Self {
+        Self {
+            root,
+            edition,
+            sessions: CheckSessions::default(),
+            repair_plan: Mutex::new(RepairPlanState::default()),
+        }
+    }
+
     pub fn new(edition: Edition) -> Result<Self, String> {
         let root = config::home_dir()
             .map_err(|_| "无法确认本机用户目录")?

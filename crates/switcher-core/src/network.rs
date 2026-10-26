@@ -479,6 +479,166 @@ mod tests {
         );
         worker.join().unwrap();
     }
+    #[test]
+    fn explicit_proxy_isolation_child() {
+        let Some(proxy) = std::env::var_os("SWITCHER_EXPLICIT_PROXY_CHILD") else {
+            return;
+        };
+        let target = std::env::var("SWITCHER_EXPLICIT_PROXY_TARGET").unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        runtime.block_on(async {
+            let context = client(Some(proxy.to_str().unwrap())).unwrap();
+            let probe = transport_probe(&context, "controlled_explicit_proxy", &target).await;
+            assert!(!probe.tls_verified);
+            if std::env::var("SWITCHER_EXPLICIT_PROXY_REPLY").unwrap() == "407" {
+                assert_eq!(probe.transport, TransportState::ProxyAuthentication);
+            } else {
+                assert_ne!(probe.transport, TransportState::Reached);
+                assert_eq!(probe.http_status, None);
+            }
+        });
+    }
+
+    #[test]
+    fn explicit_proxy_ignores_environment_and_never_falls_back_to_direct() {
+        use std::io::{Read, Write};
+        use std::sync::{
+            Arc,
+            atomic::{AtomicBool, Ordering},
+            mpsc,
+        };
+        for reply in ["407", "502"] {
+            let listeners: Vec<_> = (0..3)
+                .map(|_| std::net::TcpListener::bind("127.0.0.1:0").unwrap())
+                .collect();
+            let addresses: Vec<_> = listeners.iter().map(|s| s.local_addr().unwrap()).collect();
+            let stop = Arc::new(AtomicBool::new(false));
+            let (sender, receiver) = mpsc::channel();
+            let workers: Vec<_> = listeners.into_iter().enumerate().map(|(index, listener)| {
+                listener.set_nonblocking(true).unwrap();
+                let stop = stop.clone();
+                let sender = sender.clone();
+                std::thread::spawn(move || {
+                    let deadline = Instant::now() + Duration::from_secs(15);
+                    while !stop.load(Ordering::Relaxed) && Instant::now() < deadline {
+                        let (mut stream, _) = match listener.accept() {
+                            Ok(value) => value,
+                            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                                std::thread::sleep(Duration::from_millis(2));
+                                continue;
+                            }
+                            Err(error) => panic!("controlled listener: {error}"),
+                        };
+                        stream.set_nonblocking(false).unwrap();
+                        stream.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+                        let mut request = Vec::new();
+                        let mut chunk = [0; 1024];
+                        while request.len() < 4096 && !request.windows(4).any(|v| v == b"\r\n\r\n") {
+                            match stream.read(&mut chunk) {
+                                Ok(0) | Err(_) => break,
+                                Ok(count) => request.extend_from_slice(&chunk[..count]),
+                            }
+                        }
+                        sender.send((index, request)).unwrap();
+                        let response = if reply == "407" {
+                            b"HTTP/1.1 407 Proxy Authentication Required\r\nContent-Length: 0\r\n\r\n".as_slice()
+                        } else {
+                            b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n".as_slice()
+                        };
+                        let _ = stream.write_all(response);
+                    }
+                })
+            }).collect();
+            drop(sender);
+            let explicit = format!("http://{}", addresses[0]);
+            let poison = format!("http://{}", addresses[1]);
+            let target = format!("https://{}/controlled", addresses[2]);
+            let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+            command
+                .args([
+                    "--exact",
+                    "network::tests::explicit_proxy_isolation_child",
+                    "--nocapture",
+                ])
+                .env_clear()
+                .env("SWITCHER_EXPLICIT_PROXY_CHILD", explicit)
+                .env("SWITCHER_EXPLICIT_PROXY_TARGET", target)
+                .env("SWITCHER_EXPLICIT_PROXY_REPLY", reply);
+            // Preserve only the already isolated harness directories, never the
+            // caller's proxy environment or real HOME in this child.
+            for name in ["HOME", "TMPDIR"] {
+                if let Some(value) = std::env::var_os(name) {
+                    command.env(name, value);
+                }
+            }
+            for name in [
+                "http_proxy",
+                "HTTP_PROXY",
+                "https_proxy",
+                "HTTPS_PROXY",
+                "all_proxy",
+                "ALL_PROXY",
+            ] {
+                command.env(name, &poison);
+            }
+            command.env("no_proxy", "*").env("NO_PROXY", "*");
+            let output = command.output().unwrap();
+            // Positive controls prove every recorder, including the unused
+            // environment and direct sinks, can observe a real TCP request.
+            for address in &addresses {
+                let mut stream = std::net::TcpStream::connect(address).unwrap();
+                stream
+                    .write_all(b"GET /positive-control HTTP/1.1\r\nHost: fixture\r\n\r\n")
+                    .unwrap();
+            }
+            let mut records = Vec::new();
+            for _ in 0..4 {
+                records.push(receiver.recv_timeout(Duration::from_secs(3)).unwrap());
+            }
+            while let Ok(record) = receiver.recv_timeout(Duration::from_millis(100)) {
+                records.push(record);
+            }
+            stop.store(true, Ordering::Relaxed);
+            for worker in workers {
+                worker.join().unwrap();
+            }
+            assert!(
+                output.status.success(),
+                "{}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            for index in 0..3 {
+                assert_eq!(
+                    records
+                        .iter()
+                        .filter(|(endpoint, bytes)| *endpoint == index
+                            && bytes.starts_with(b"GET /positive-control "))
+                        .count(),
+                    1
+                );
+            }
+            let probes: Vec<_> = records
+                .iter()
+                .filter(|(_, bytes)| !bytes.starts_with(b"GET /positive-control "))
+                .collect();
+            assert_eq!(
+                probes.len(),
+                1,
+                "proxy failure must not cause an extra request"
+            );
+            assert_eq!(
+                probes[0].0, 0,
+                "only the explicit proxy may receive the probe"
+            );
+            assert!(
+                probes[0]
+                    .1
+                    .starts_with(format!("CONNECT {} HTTP/1.1", addresses[2]).as_bytes())
+            );
+        }
+    }
+
     fn response() -> (Vec<u8>, [u8; 12], SocketAddr) {
         let transaction = [4; 12];
         let peer = "127.0.0.1:3478".parse().unwrap();
