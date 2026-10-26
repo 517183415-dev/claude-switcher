@@ -27,6 +27,12 @@ pub const STUN_SERVERS: [(&str, u16); 4] = [
 pub const MAX_RESPONSE_BYTES: usize = 64 * 1024;
 
 pub fn client(proxy: Option<&str>) -> Result<Client, &'static str> {
+    client_builder(proxy)?
+        .build()
+        .map_err(|_| "network_context_unavailable")
+}
+
+fn client_builder(proxy: Option<&str>) -> Result<reqwest::ClientBuilder, &'static str> {
     let mut builder = Client::builder()
         .no_proxy()
         .redirect(Policy::none())
@@ -36,7 +42,7 @@ pub fn client(proxy: Option<&str>) -> Result<Client, &'static str> {
     if let Some(proxy) = proxy {
         builder = builder.proxy(reqwest::Proxy::all(proxy).map_err(|_| "proxy_invalid")?);
     }
-    builder.build().map_err(|_| "network_context_unavailable")
+    Ok(builder)
 }
 
 /// Ordinary legacy checks inherit environment proxies. Explicit diagnostics use client().
@@ -637,6 +643,321 @@ mod tests {
                     .starts_with(format!("CONNECT {} HTTP/1.1", addresses[2]).as_bytes())
             );
         }
+    }
+
+    #[test]
+    fn explicit_proxy_verified_tls_child() {
+        let Ok(case) = std::env::var("SWITCHER_CONNECT_TLS_CASE") else {
+            return;
+        };
+        let root = std::path::PathBuf::from(std::env::var_os("SWITCHER_CONNECT_TLS_ROOT").unwrap());
+        let certificate = std::fs::read(root.join(if case == "wrong_ca" {
+            "other-ca.pem"
+        } else {
+            "ca.pem"
+        }))
+        .unwrap();
+        let certificate = reqwest::Certificate::from_pem(&certificate).unwrap();
+        let proxy = std::env::var("SWITCHER_CONNECT_TLS_PROXY").unwrap();
+        let target = std::env::var("SWITCHER_CONNECT_TLS_TARGET").unwrap();
+        // Reuse every production routing/timeout/redirect setting. The test-only
+        // trust store retains chain and hostname validation without Keychain access.
+        let context = client_builder(Some(&proxy))
+            .unwrap()
+            .tls_certs_only([certificate])
+            .build()
+            .unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let probe = runtime.block_on(transport_probe(&context, "controlled_connect_tls", &target));
+        if case == "valid" {
+            assert_eq!(probe.transport, TransportState::Reached);
+            assert_eq!(probe.http_status, Some(200));
+            assert!(probe.tls_verified);
+        } else {
+            assert_eq!(probe.transport, TransportState::TlsFailure);
+            assert_eq!(probe.http_status, None);
+            assert!(!probe.tls_verified);
+        }
+    }
+
+    #[test]
+    fn explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests() {
+        use std::io::{BufRead, Read, Write};
+        use std::process::{Command, Stdio};
+
+        struct Fixture {
+            root: std::path::PathBuf,
+            server: Option<std::process::Child>,
+        }
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                if let Some(child) = self.server.as_mut() {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                }
+                let _ = std::fs::remove_dir_all(&self.root);
+            }
+        }
+        let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+            "switcher-connect-tls-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        crate::storage::create_private_directory(&root).unwrap();
+        let mut fixture = Fixture { root, server: None };
+        // Resolve trusted test tools from absolute PATH entries before clearing
+        // the child environment. Relative entries and writable executables fail closed.
+        let isolated_tool = |name: &str| {
+            use std::os::unix::fs::PermissionsExt;
+            let executable = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+                .filter(|directory| directory.is_absolute())
+                .find_map(|directory| {
+                    let path = directory.join(name).canonicalize().ok()?;
+                    let metadata = path.metadata().ok()?;
+                    let mode = metadata.permissions().mode();
+                    (metadata.is_file() && mode & 0o111 != 0 && mode & 0o022 == 0).then_some(path)
+                })
+                .expect("a trusted absolute test executable is required");
+            let mut command = Command::new(executable);
+            command
+                .env_clear()
+                .env("HOME", fixture.root.join("home"))
+                .env("TMPDIR", fixture.root.join("tmp"))
+                .env("LC_ALL", "C")
+                .current_dir(&fixture.root);
+            command
+        };
+        for directory in ["home", "tmp"] {
+            crate::storage::create_private_directory(&fixture.root.join(directory)).unwrap();
+        }
+        std::fs::write(fixture.root.join("ca.cnf"), "[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=ext\n[dn]\nCN=synthetic-connect-ca\n[ext]\nbasicConstraints=critical,CA:TRUE\nkeyUsage=critical,keyCertSign,cRLSign\n").unwrap();
+        std::fs::write(fixture.root.join("server.cnf"), "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=IP:127.0.0.1\n").unwrap();
+        for args in [
+            vec![
+                "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-config", "ca.cnf",
+                "-keyout", "ca.key", "-out", "ca.pem",
+            ],
+            vec![
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:2048",
+                "-nodes",
+                "-days",
+                "1",
+                "-config",
+                "ca.cnf",
+                "-keyout",
+                "other-ca.key",
+                "-out",
+                "other-ca.pem",
+            ],
+            vec![
+                "req",
+                "-newkey",
+                "rsa:2048",
+                "-nodes",
+                "-subj",
+                "/CN=synthetic-connect-server",
+                "-keyout",
+                "server.key",
+                "-out",
+                "server.csr",
+            ],
+            vec![
+                "x509",
+                "-req",
+                "-in",
+                "server.csr",
+                "-CA",
+                "ca.pem",
+                "-CAkey",
+                "ca.key",
+                "-CAcreateserial",
+                "-days",
+                "1",
+                "-extfile",
+                "server.cnf",
+                "-out",
+                "server.pem",
+            ],
+        ] {
+            assert!(
+                isolated_tool("openssl")
+                    .args(args)
+                    .output()
+                    .unwrap()
+                    .status
+                    .success(),
+                "synthetic certificate generation failed"
+            );
+        }
+        let mut server = isolated_tool("python3")
+            .args([
+                "-I",
+                "-u",
+                "-c",
+                include_str!("../tests/fixtures/explicit_proxy_tls.py"),
+            ])
+            .arg(&fixture.root)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let stdout = server.stdout.take().unwrap();
+        fixture.server = Some(server);
+        let (sender, receiver) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut ready = String::new();
+            let result = std::io::BufReader::new(stdout).read_line(&mut ready);
+            let _ = sender.send(result.map(|_| ready));
+        });
+        let ready = receiver
+            .recv_timeout(Duration::from_secs(5))
+            .unwrap()
+            .unwrap();
+        let ports: serde_json::Value = serde_json::from_str(&ready).unwrap();
+        let port = |name: &str| u16::try_from(ports[name].as_u64().unwrap()).unwrap();
+        let explicit = format!("http://127.0.0.1:{}", port("explicit"));
+        let poison = format!("http://127.0.0.1:{}", port("environment"));
+        for case in ["valid", "wrong_ca", "wrong_hostname"] {
+            let host = if case == "wrong_hostname" {
+                "localhost"
+            } else {
+                "127.0.0.1"
+            };
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command
+                .args([
+                    "--exact",
+                    "network::tests::explicit_proxy_verified_tls_child",
+                ])
+                .env_clear()
+                .env("SWITCHER_CONNECT_TLS_CASE", case)
+                .env("SWITCHER_CONNECT_TLS_ROOT", &fixture.root)
+                .env("SWITCHER_CONNECT_TLS_PROXY", &explicit)
+                .env(
+                    "SWITCHER_CONNECT_TLS_TARGET",
+                    format!("https://{host}:{}/controlled", port("direct")),
+                );
+            command
+                .env("HOME", fixture.root.join("home"))
+                .env("TMPDIR", fixture.root.join("tmp"));
+            for name in [
+                "http_proxy",
+                "HTTP_PROXY",
+                "https_proxy",
+                "HTTPS_PROXY",
+                "all_proxy",
+                "ALL_PROXY",
+            ] {
+                command.env(name, &poison);
+            }
+            command.env("no_proxy", "*").env("NO_PROXY", "*");
+            let output = command.output().unwrap();
+            assert!(
+                output.status.success(),
+                "controlled TLS child failed for {case}"
+            );
+        }
+        // The client can finish rejecting a certificate before the server has
+        // consumed its TLS alert. Wait for the bounded fixture completion events.
+        let deadline = Instant::now() + Duration::from_secs(3);
+        loop {
+            let wire = std::fs::read_to_string(fixture.root.join("capture.jsonl")).unwrap();
+            let rejected = wire
+                .lines()
+                .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
+                .filter(|row| row["event"] == "handshake_rejected")
+                .count();
+            if rejected == 2 {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "TLS rejection recorder did not complete"
+            );
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        // These are real TCP requests. Their responses prove each otherwise
+        // unused sink is listening and its recorder can see application bytes.
+        for endpoint in ["explicit", "environment", "direct"] {
+            let mut stream = std::net::TcpStream::connect(("127.0.0.1", port(endpoint))).unwrap();
+            stream
+                .set_read_timeout(Some(Duration::from_secs(3)))
+                .unwrap();
+            stream
+                .write_all(b"GET /positive-control HTTP/1.1\r\nHost: fixture\r\n\r\n")
+                .unwrap();
+            let mut response = Vec::new();
+            stream.read_to_end(&mut response).unwrap();
+            assert!(response.starts_with(b"HTTP/1.1 200 OK"));
+        }
+        let wire = std::fs::read_to_string(fixture.root.join("capture.jsonl")).unwrap();
+        let rows: Vec<serde_json::Value> = wire
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect();
+        assert!(!rows.iter().any(|row| row["event"] == "fixture_error"));
+        for endpoint in ["explicit", "environment", "direct"] {
+            assert_eq!(
+                rows.iter()
+                    .filter(|row| row["endpoint"] == endpoint
+                        && row["target"] == "/positive-control"
+                        && row["method"] == "GET")
+                    .count(),
+                1
+            );
+        }
+        let probes: Vec<_> = rows
+            .iter()
+            .filter(|row| row["event"] == "request" && row["target"] != "/positive-control")
+            .collect();
+        assert_eq!(
+            probes.len(),
+            4,
+            "only three CONNECTs and one verified HTTPS request are allowed"
+        );
+        let connects: Vec<_> = probes
+            .iter()
+            .filter(|row| row["endpoint"] == "explicit" && row["method"] == "CONNECT")
+            .collect();
+        assert_eq!(connects.len(), 3);
+        for host in ["127.0.0.1", "localhost"] {
+            assert_eq!(
+                connects
+                    .iter()
+                    .filter(|row| row["target"] == format!("{host}:{}", port("direct")))
+                    .count(),
+                if host == "localhost" { 1 } else { 2 }
+            );
+        }
+        let requests: Vec<_> = probes
+            .iter()
+            .filter(|row| row["endpoint"] == "tls")
+            .collect();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0]["method"], "GET");
+        assert_eq!(requests[0]["target"], "/controlled");
+        assert_eq!(requests[0]["user_agent"], "ClaudeSwitcher/0.2");
+        for endpoint in ["environment", "direct"] {
+            assert!(!probes.iter().any(|row| row["endpoint"] == endpoint));
+        }
+        assert_eq!(
+            rows.iter()
+                .filter(|row| row["endpoint"] == "tls" && row["event"] == "accepted")
+                .count(),
+            3
+        );
+        assert_eq!(
+            rows.iter()
+                .filter(|row| row["endpoint"] == "tls" && row["event"] == "handshake_rejected")
+                .count(),
+            2
+        );
     }
 
     fn response() -> (Vec<u8>, [u8; 12], SocketAddr) {
