@@ -129,6 +129,50 @@ class ReconciliationTests(unittest.TestCase):
     def test_truncated_inventory(self):
         self.rejects(inventory=LIST.rsplit('0 tests, 0 benchmarks', 1)[0])
 
+    def ignored_log(self, status='ignored, requires isolated fixture'):
+        text = 'Running ignored suite (bin)\nrunning 2 tests\ntest ordinary ... ok\ntest isolated ... ' + status + '\n' + 'test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s\n'
+        inventory = 'Running ignored suite (bin)\nordinary: test\nisolated: test\n2 tests, 0 benchmarks\n'
+        return text, inventory
+
+    def test_ignored_with_reason_is_reported_separately_from_passed(self):
+        result = reconcile(*self.ignored_log())
+        self.assertEqual(result['top_level_passed_records'], 1)
+        self.assertEqual(result['top_level_ignored_records'], 1)
+        self.assertEqual(result['top_level_total_records'], 2)
+        self.assertEqual(result['ignored_tests'], [{'harness': 'ignored suite (bin)', 'name': 'isolated', 'reason': 'requires isolated fixture'}])
+
+    def test_bare_ignored_records_absent_reason_without_inventing_one(self):
+        result = reconcile(*self.ignored_log('ignored'))
+        self.assertIsNone(result['ignored_tests'][0]['reason'])
+
+    def test_ignored_reason_can_include_commas(self):
+        result = reconcile(*self.ignored_log('ignored, isolated fixture, no production data'))
+        self.assertEqual(result['ignored_tests'][0]['reason'], 'isolated fixture, no production data')
+
+    def test_ignored_summary_must_match_records(self):
+        text, inventory = self.ignored_log()
+        self.rejects(text.replace('1 passed; 0 failed; 1 ignored', '2 passed; 0 failed; 0 ignored'), inventory)
+
+    def test_ignored_name_must_remain_in_per_harness_inventory(self):
+        text, inventory = self.ignored_log()
+        self.rejects(text, inventory.replace('isolated: test', 'different: test'))
+
+    def test_ignored_does_not_hide_failed_test(self):
+        text, inventory = self.ignored_log()
+        self.rejects(text.replace('ordinary ... ok', 'ordinary ... FAILED'), inventory)
+
+    def test_unknown_or_prefixed_ignored_status_is_rejected(self):
+        for status in ['ignored_extra', 'ignored: reason', 'UNKNOWN', 'ignored,', 'ok, reason', 'FAILED, reason']:
+            with self.subTest(status=status):
+                self.rejects(*self.ignored_log(status))
+
+    def test_duplicate_ignored_names_are_rejected(self):
+        text, inventory = self.ignored_log()
+        self.rejects(text.replace('ordinary ... ok', 'isolated ... ignored'), inventory)
+
+    def test_nested_child_cannot_be_ignored(self):
+        self.rejects(TEXT.replace(BLOCK, BLOCK.replace(f'test {CHILD} ... ok', f'test {CHILD} ... ignored, dedicated fixture'), 1))
+
     def test_receipts_bind_synthetic_inputs(self):
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name)

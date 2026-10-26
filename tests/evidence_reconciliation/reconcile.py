@@ -9,7 +9,7 @@ PARENT = 'accounts::legacy::tests::f06_missing_switch_boundaries_recover_in_fres
 CHILD = 'accounts::legacy::tests::f06_fresh_recovery_child_fixture'
 RUN = re.compile(r'Running (.+ \(.*\))')
 START = re.compile(r'running (\d+) tests?')
-RESULT = re.compile(r'test (\S+) \.\.\. (ok|FAILED|ignored)')
+RESULT = re.compile(r'test (\S+) \.\.\. (ok|FAILED|ignored)(?:, (.+))?')
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out; finished in \d+(?:\.\d+)?s')
 
 
@@ -33,7 +33,7 @@ def parse_tests(text):
         header = RUN.fullmatch(line)
         if header:
             require(active is None and pending is None and child is None, context)
-            active = {'key': header[1], 'count': None, 'names': []}
+            active = {'key': header[1], 'count': None, 'names': [], 'passed': [], 'ignored': []}
             continue
         if active is None:
             require(not line.startswith(('running ', 'test ', 'ok', 'FAILED')), context)
@@ -56,7 +56,7 @@ def parse_tests(text):
                 continue
             result = RESULT.fullmatch(line)
             if result:
-                require(result[1] == CHILD and result[2] == 'ok' and not child['names'], context)
+                require(result[1] == CHILD and result[2] == 'ok' and result[3] is None and not child['names'], context)
                 child['names'].append(result[1])
                 continue
             summary = SUMMARY.fullmatch(line)
@@ -68,12 +68,17 @@ def parse_tests(text):
         if pending:
             require(line == 'ok' and nested == 3, context)
             active['names'].append(pending)
+            active['passed'].append(pending)
             pending = None
             continue
         result = RESULT.fullmatch(line)
         if result:
-            require(result[2] == 'ok', context)
+            require(result[2] in ('ok', 'ignored') and (result[3] is None or result[2] == 'ignored'), context)
             active['names'].append(result[1])
+            if result[2] == 'ok':
+                active['passed'].append(result[1])
+            else:
+                active['ignored'].append({'name': result[1], 'reason': result[3]})
             continue
         if line == f'test {PARENT} ...':
             require(nested == 0 and PARENT not in active['names'], context)
@@ -81,8 +86,9 @@ def parse_tests(text):
             continue
         summary = SUMMARY.fullmatch(line)
         require(summary is not None and summary[1] == 'ok', context)
-        require(tuple(map(int, summary.group(3, 4, 5))) == (0, 0, 0), context)
-        require(int(summary[2]) == active['count'] == len(active['names']), context)
+        require(int(summary[3]) == 0 and int(summary[5]) == 0, context)
+        require(int(summary[2]) == len(active['passed']) and int(summary[4]) == len(active['ignored']), context)
+        require(int(summary[2]) + int(summary[4]) == active['count'] == len(active['names']), context)
         require(len(set(active['names'])) == len(active['names']), context)
         harnesses.append(active)
         active = None
@@ -127,7 +133,11 @@ def reconcile(test_text, list_text):
         require(run['key'] == inventory['key'], 'harness identity mismatch')
         require(Counter(run['names']) == Counter(inventory['names']), 'per-harness list mismatch')
     names = [n for h in actual for n in h['names']]
-    return {'top_level_passed_records': len(names), 'distinct_top_level_names': len(set(names)),
+    passed = [name for harness in actual for name in harness['passed']]
+    ignored = [dict(item, harness=harness['key']) for harness in actual for item in harness['ignored']]
+    return {'top_level_passed_records': len(passed), 'top_level_ignored_records': len(ignored),
+            'top_level_total_records': len(names), 'ignored_tests': ignored,
+            'distinct_top_level_passed_names': len(set(passed)), 'distinct_top_level_names': len(set(names)),
             'harness_count': len(actual), 'nested_child_passed_records': nested,
             'per_harness_multiset_equal': True}
 
