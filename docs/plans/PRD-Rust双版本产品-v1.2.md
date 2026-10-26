@@ -1,5 +1,19 @@
 # Claude 切换器 Rust 重写 PRD
 
+解析器提交为 `ac1d48b49a72df6d83b7e08c05fc6406b3f7e2b8`，tree：`cbe31f21bd652991ada53c26a7507bec382d32d4`。`tests/evidence_reconciliation/`的25项回归及[独立审核](../../output/no-account-20261027/ordinary-next/review-rust-r2/portable-review.json)限定通过；仅支持当前串行libtest/F06三子进程输出格式，不支持任意并发或新嵌套格式。历史回放严格核对704顶层/600名，原失败summary保留；解析器核验证据一致性，不认证回执或重跑Rust。普通包仍绑定产品提交00dbf3c，不改标为解析器提交。最终[图谱状态](../../output/no-account-20261027/ordinary-next/codegraph-status-final.json)为175文件/4814节点/18877关系，complete、pending0。
+
+普通双包独立复核结论为PASS_STATIC_ARTIFACTS_WITH_PROOF_LIMITS：每版12个现存条目/7文件及24份命令日志哈希重新核对，commit/tree/archive均匹配。临时frontend dist已清理，本次不能独立重扫，仅保留原构建扫描回执绑定。普通App动态ACL、启动和安装仍未验；解析器已完成限定独立审核。见[普通包独立复核](../../output/no-account-20261027/ordinary-next/review-bundles/review.json)。
+
+本阶段普通双包已构建：绑定 `00dbf3c` 的精确归档，每版22条静态检查及2条复制/签名变更通过，Public构建后两版各12条目重验通过。business/limits fixture运行体标记未检出；历史E01权限描述字符串保留REVIEW_MARKERS_PRESENT。普通App动态ACL、启动及安装仍NOT_RUN。独立包复核已完成限定静态核对；解析器已完成限定独立审核。[双包交付回执](../../output/no-account-20261027/bundles-ordinary-next/delivery-summary.json)记录准确路径与哈希。
+
+当前发布命令生产实现仅装配LocalObjectStore，使用本机私有文件；尚无已装配的生产HTTP ObjectStore。广告受控HTTPS客户端及MemoryStore状态机测试不证明发布HTTP CAS已实现或通过；远程对象存储适配与实源验收单列未完成。
+
+当前普通包产品源码提交：`00dbf3c486b65aa5840033954485af2262fb85d3`，tree：`a756309a1e69e6754fd8d40e6ba33770fce226ba`。最终Rust r2的tests/list/fmt/Clippy四命令均exit0。原summary计数失败原样保留；独立按执行文件与嵌套harness分组后，为704个顶层通过记录/600个名称，按(binary,name)与清单多重集合一致，3个恢复子进程不重复计数。该复核读取既有执行记录，没有重跑Rust测试；后续解析器提交单独记录。两项原生排除不变。见[计数复核](../../output/no-account-20261027/ordinary-next/rust/r2/reconciled-summary.json)和[独立审查](../../output/no-account-20261027/ordinary-next/review-rust-r2/review.json)。普通双包已从本提交精确归档构建并完成静态检查；CNC及旧包历史绑定保留。
+
+本阶段增量（进行中）：三文件仅测试提交 `30e861aca3c794d521f921d24e1dd112827bddb9` 的统一隔离组700次顶层执行/596名通过，新增8名无删除；list一致，fmt、Clippy通过，同两项原生排除。它与692/588及CNC684/580分轮记录，不包含子进程重复计数。两版已通过受控独立入口调用真实活动记录/导出命令的原生IPC；它直接注入合成DesktopState，不运行普通启动。显式代理407/502合成端点两项新场景及三个普通切换SIGKILL→全新进程恢复定向回归完成。生命周期Fake、注入TLS客户端与合成备份Vault的证据限制继续保留。稳定runner r9已完成限定验证；最终Rust全量r2已完成并经独立分组复核；本阶段普通双包已完成限定静态验证，独立包复核已完成限定静态核对。真实账号、正常App、实源、系统、安装与长时仍未验。详情及原始回执哈希见[本轮独立证据索引](../acceptance/evidence/no-account-20261027/ordinary-next-index.md)。原37项验收行保留，35项完整性未证明，33–66小时粗估保留。
+
+稳定runner r9：两版fixture构建及preflight/business均通过，40项回归通过，106项输入哈希绑定。两版实际沙箱负控均通过；4项合成credentials/config读取被拒绝。路径、HOME、链接及profile相关验证保留早期失败尝试，最终40项包含对应负向回归并通过；早期组合失败含helper缺失errors，不作为四类缺陷各自独立有效RED的证明；失败回执保留，旧PASS只属于旧快照。[r9回执](../../output/no-account-20261027/ordinary-next/business-ipc/stable-r9/summary.json)仍限定真实活动记录命令的受控独立入口；普通发行构建已完成静态检查，独立包复核已完成限定静态核对，最终Rust全量r2已完成并经独立分组复核，不据此标普通App通过。
+
 测试补足轮次：仅测试提交 `e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3`（tree：`ef5a8831e7009b3ec9c76098d76a8a75418200e2`），四文件仅改测试，无新产品bug。Rust本轮692执行/588名/0失败，新增8名无删除，list一致，fmt及全部目标Clippy通过；仍排除原有两项原生测试。它与CNC原轮684/580分开计数。普通产品及双包仍绑定CNC `23c9964`；原生六边界与独立feature测试1PASS未重跑。[本轮输入复核](../../output/no-account-20261027/branch-audit-next/after-test-commit.json)已核对95个稳定构建输入：92个已提交输入逐项匹配git blob，另3个为既有ignored派生组件。Python7、前端73、TypeScript49及commands/bridge静态读取均重新核对哈希，匹配原成功snapshot；Python200与前端63+2按该范围限定复用，未重跑。G1/G2补足未确认、关闭缓存及拒绝持久化矩阵；Publisher补足三槽两期编辑/暂停/失败/重启、历史恢复序号和单侧凭据；G3补足完整wire捕获、正控制及4097拒绝。真实provider与35项完整覆盖仍未证明，33–66小时粗估保留。详见[分轮进度](../handoff/无需账号功能进度-2026-10-27.md)及[测试补足机器摘要](../acceptance/evidence/no-account-20261027/branch-audit-followup.json)。
 
 版本：v1.2。初版日期：2026-10-22，Asia/Taipei。更新日期：2026-10-27，Asia/Shanghai。
@@ -8,7 +22,7 @@
 
 `codex/gpt-audit-fixes` 的产品代码已全部整合到 `codex/rust-rewrite`。整合基线C49为 `49c2615beac0e1f7ac7352977d3212229fe9b012`，交付记录提交为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。历史产品修复CNA为 `0297efe2da236427b9a95a584aba53c4f30ce634`，包含检查截止、证据有效期、启动前网络复核和测试时钟隔离。历史产品CNB为 `7851ce10bd00a040bf8c209fd6e763baf63546ff`，tree为 `27d4826b204d079f3a28c48a7f2089d31fe1992e`。CNB修复CLI普通Fix成功apply后恰好一次完整14项复检，以及悬空current符号链接拒绝。C49/C4D/CNA旧包及历史证据全部保留。
 
-当前产品CNC：`23c9964403e904ab44c2cc334d40992454193221`，tree：`920c47bf92fc69ce8916266f61327b3766c8fada`。CNC增加仅编译期启用的ipc-limits独立main/page/config，并提取共用import_ad_image_body，保留生产先限长、再识别MIME、再导入的顺序。
+历史已打包产品CNC：`23c9964403e904ab44c2cc334d40992454193221`，tree：`920c47bf92fc69ce8916266f61327b3766c8fada`。CNC增加仅编译期启用的ipc-limits独立main/page/config，并提取共用import_ad_image_body，保留生产先限长、再识别MIME、再导入的顺序。
 
 2026-10-27 用户明确选择本PRD的启动合同：证据超过30秒或网络变化后重新检查，启动前再次复核。该决定覆盖旧版恢复计划的对应条款。真实原生网络事件、系统启动和长期运行仍需各自取证。
 

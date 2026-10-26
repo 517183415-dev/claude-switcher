@@ -1,5 +1,17 @@
 # Claude 切换器当前代码图谱
 
+解析器提交为 `ac1d48b49a72df6d83b7e08c05fc6406b3f7e2b8`，tree：`cbe31f21bd652991ada53c26a7507bec382d32d4`。`tests/evidence_reconciliation/`的25项回归及[独立审核](../../output/no-account-20261027/ordinary-next/review-rust-r2/portable-review.json)限定通过；仅支持当前串行libtest/F06三子进程输出格式，不支持任意并发或新嵌套格式。历史回放严格核对704顶层/600名，原失败summary保留；解析器核验证据一致性，不认证回执或重跑Rust。普通包仍绑定产品提交00dbf3c，不改标为解析器提交。最终[图谱状态](../../output/no-account-20261027/ordinary-next/codegraph-status-final.json)为175文件/4814节点/18877关系，complete、pending0。
+
+普通双包独立复核结论为PASS_STATIC_ARTIFACTS_WITH_PROOF_LIMITS：每版12个现存条目/7文件及24份命令日志哈希重新核对，commit/tree/archive均匹配。临时frontend dist已清理，本次不能独立重扫，仅保留原构建扫描回执绑定。普通App动态ACL、启动和安装仍未验；解析器已完成限定独立审核。见[普通包独立复核](../../output/no-account-20261027/ordinary-next/review-bundles/review.json)。
+
+本阶段普通双包已构建：绑定 `00dbf3c` 的精确归档，每版22条静态检查及2条复制/签名变更通过，Public构建后两版各12条目重验通过。business/limits fixture运行体标记未检出；历史E01权限描述字符串保留REVIEW_MARKERS_PRESENT。普通App动态ACL、启动及安装仍NOT_RUN。独立包复核已完成限定静态核对；解析器已完成限定独立审核。[双包交付回执](../../output/no-account-20261027/bundles-ordinary-next/delivery-summary.json)记录准确路径与哈希。
+
+当前发布命令生产实现仅装配LocalObjectStore，使用本机私有文件；尚无已装配的生产HTTP ObjectStore。广告受控HTTPS客户端及MemoryStore状态机测试不证明发布HTTP CAS已实现或通过；远程对象存储适配与实源验收单列未完成。
+
+当前普通包产品源码提交为 `00dbf3c486b65aa5840033954485af2262fb85d3`，tree：`a756309a1e69e6754fd8d40e6ba33770fce226ba`。普通双包已从该提交精确归档构建并完成静态检查；CNC普通包保留为历史已验证包。此前[CodeGraph状态](../../output/no-account-20261027/ordinary-next/codegraph-status.json)为172文件/4748节点/18696关系，complete、pending0，统计不是覆盖率。
+
+新增受控业务入口通过编译特性ipc-business隔离，直接注入合成DesktopState，经WKWebView IPC调用真实activity_log/export_activity；不执行普通DesktopState::new或后台启动。稳定runner r9两版构建及preflight/business限定通过，40回归及实际沙箱负控通过。最终Rust r2四命令exit0；原summary计数失败保留，[独立分组复核](../../output/no-account-20261027/ordinary-next/review-rust-r2/review.json)确认704顶层/600名称，按(binary,name)清单一致，3子进程不重复计数。它与700/596、692/588、CNC684/580分轮记录，原两项原生排除不变。真实账号、普通启动、系统、实源、安装及长时仍未验，详见[独立证据索引](../acceptance/evidence/no-account-20261027/ordinary-next-index.md)。
+
 更新日期：2026-10-27，Asia/Shanghai。项目根目录：`/Users/gua/CodexWorkspaces/claude-switcher`。
 
 ## 1. 基线与索引范围
@@ -12,7 +24,7 @@ CodeGraph 1.6.0已增量同步，结果为Already up to date。CNC候选时索�
 
 仅测试补足提交为 `e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3`，tree：`ef5a8831e7009b3ec9c76098d76a8a75418200e2`；普通产品与App包仍为CNC。四文件仅改测试：`ad_runtime/tests.rs`、`publisher/tests.rs`、`tests/e11_log_privacy.rs`及`updates.rs`测试区。新增8个测试名，无删除；Rust新轮692执行/588名/0失败，list一致，fmt与全部目标Clippy通过，仍排除原有两项原生测试。它不替代CNC原轮684/580、原生六边界及feature1的原证据。[本轮输入复核](../../output/no-account-20261027/branch-audit-next/after-test-commit.json)已核对95个稳定构建输入：92个已提交输入逐项匹配git blob，另3个为既有ignored派生组件。Python7、前端73、TypeScript49及commands/bridge静态读取均重新核对哈希，匹配原成功snapshot；Python200与前端63+2按该范围限定复用，未重跑。
 
-[测试补足图谱回执](../../output/no-account-20261027/branch-audit-next/codegraph-verification.json)记录当前165文件、4586节点、18090关系，complete、pending0。新测试覆盖G1/G2广告门禁与持久化拒绝、Publisher三槽两期/恢复序号/单侧凭据及G3 wire捕获正控制/4097拒绝；无新产品bug，真实provider与完整35项仍未证明。[本轮机器摘要](../acceptance/evidence/no-account-20261027/branch-audit-followup.json)单列测试证据；33–66小时粗估保留。
+[测试补足图谱回执](../../output/no-account-20261027/branch-audit-next/codegraph-verification.json)记录该轮165文件、4586节点、18090关系，complete、pending0。新测试覆盖G1/G2广告门禁与持久化拒绝、Publisher三槽两期/恢复序号/单侧凭据及G3 wire捕获正控制/4097拒绝；无新产品bug，真实provider与完整35项仍未证明。[本轮机器摘要](../acceptance/evidence/no-account-20261027/branch-audit-followup.json)单列测试证据；33–66小时粗估保留。
 
 根目录 [codegraph.json](../../codegraph.json) 排除 `output/`、`tmp/`、验收证据与审核副本。历史源码和证据原件均保留。`experiments/` 保留索引，但降低查询优先级。这样可避免冻结源码参与当前调用链分析。
 
