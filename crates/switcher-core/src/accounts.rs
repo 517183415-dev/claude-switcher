@@ -654,7 +654,7 @@ impl AccountStore {
         stopped: &dyn Fn() -> io::Result<()>,
     ) -> io::Result<()> {
         legacy::recover(self, lock, stopped)?;
-        if self.journal_path().try_exists()? {
+        if Self::journal_present(&self.journal_path())? {
             self.recover_checked(lock, stopped)?;
         }
         Ok(())
@@ -1684,6 +1684,43 @@ mod tests {
                 b"A-original"
             );
         }
+    }
+
+    #[test]
+    fn legacy_recovery_rejects_dangling_account_journal_without_mutation() {
+        let fixture = Fixture::new();
+        fixture.initialize();
+        let journal = fixture.store.journal_path();
+        let target = fixture.base.join("missing-target");
+        std::os::unix::fs::symlink(&target, &journal).unwrap();
+        let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+
+        assert!(fixture
+            .store
+            .recover_legacy_checked(&lock, &|| Ok(()))
+            .is_err());
+        assert_eq!(fs::read_link(&journal).unwrap(), target);
+        assert_eq!(
+            fs::read(fixture.store.active.join("session")).unwrap(),
+            b"A-original"
+        );
+    }
+
+    #[test]
+    fn legacy_recovery_accepts_absent_account_journal() {
+        let fixture = Fixture::new();
+        fixture.initialize();
+        let lock = LifecycleLock::try_acquire(&fixture.store.v2()).unwrap();
+
+        fixture
+            .store
+            .recover_legacy_checked(&lock, &|| Ok(()))
+            .unwrap();
+        assert_eq!(
+            fs::read(fixture.store.active.join("session")).unwrap(),
+            b"A-original"
+        );
+        assert!(!fixture.store.journal_path().exists());
     }
 
     #[test]
