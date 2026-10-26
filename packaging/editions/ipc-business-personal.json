@@ -29,7 +29,11 @@
             "allow-save-preferences",
             "allow-ipc-business-preferences-snapshot",
             "allow-ipc-business-backup-export",
-            "allow-ipc-business-backup-restore"
+            "allow-ipc-business-backup-restore",
+            "allow-ad-draft-read",
+            "allow-ad-draft-save",
+            "allow-pause-ad",
+            "allow-ipc-business-draft-snapshot"
           ]
         }
       ]

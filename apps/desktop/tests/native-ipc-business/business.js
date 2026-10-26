@@ -1,4 +1,5 @@
 import { verifyDenial } from './denials.mjs';
+import { runDraft } from './draft.mjs';
 // This page is embedded only in the compile-time ipc-business fixture.
 (async () => {
   const invoke = window.__TAURI_INTERNALS__.invoke;
@@ -14,7 +15,9 @@ import { verifyDenial } from './denials.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.backup) {
+    if (info.draft) {
+      await runDraft(invoke, info.edition, responses);
+    } else if (info.backup) {
       if (info.edition === 'public') {
         responses.backup = [];
         for (const command of ['ipc_business_backup_export', 'ipc_business_backup_restore']) {

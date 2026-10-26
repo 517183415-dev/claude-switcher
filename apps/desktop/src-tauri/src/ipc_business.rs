@@ -14,6 +14,7 @@ mod backup;
 
 struct Fixture {
     backup: bool,
+    draft: bool,
     preflight: bool,
     preferences: bool,
     persistence: Option<&'static str>,
@@ -32,7 +33,7 @@ fn ipc_business_info(
     Ok(
         json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
+        "ordinary_runtime": false, "draft": fixture.draft, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "saved": saved}),
     )
 }
 
@@ -72,6 +73,63 @@ fn ipc_business_preferences_snapshot(
     );
     std::io::stdout().flush().map_err(|_| "snapshot_stdout")?;
     Ok(())
+}
+
+// Fixed synthetic publisher tree only. No arbitrary path is accepted.
+#[cfg(feature = "personal")]
+#[tauri::command]
+fn ipc_business_draft_snapshot(
+    state: tauri::State<'_, Arc<DesktopState>>,
+    fixture: tauri::State<'_, Fixture>,
+    label: String,
+) -> Result<Value, String> {
+    if !fixture.draft || label.len() > 80 || !label.is_ascii() {
+        return Err("invalid_draft_snapshot".into());
+    }
+    fn visit(
+        root: &std::path::Path,
+        path: &std::path::Path,
+        depth: usize,
+        files: &mut std::collections::BTreeMap<String, String>,
+    ) -> Result<(), String> {
+        if depth > 3 || files.len() > 32 {
+            return Err("draft_snapshot_bound".into());
+        }
+        storage::validate_no_symlinks(path).map_err(|_| "draft_snapshot_link")?;
+        for item in std::fs::read_dir(path).map_err(|_| "draft_snapshot_directory")? {
+            let path = item.map_err(|_| "draft_snapshot_entry")?.path();
+            let metadata =
+                std::fs::symlink_metadata(&path).map_err(|_| "draft_snapshot_metadata")?;
+            if metadata.is_dir() {
+                visit(root, &path, depth + 1, files)?;
+            } else if metadata.is_file() {
+                let bytes =
+                    storage::read_private_bytes(&path, 65536).map_err(|_| "draft_snapshot_read")?;
+                files.insert(
+                    path.strip_prefix(root)
+                        .map_err(|_| "draft_snapshot_path")?
+                        .to_string_lossy()
+                        .into_owned(),
+                    switcher_core::signed::digest(&bytes),
+                );
+            } else {
+                return Err("draft_snapshot_kind".into());
+            }
+        }
+        if files.len() > 32 {
+            return Err("draft_snapshot_bound".into());
+        }
+        Ok(())
+    }
+    let root = state.directory().join("publisher");
+    let mut files = std::collections::BTreeMap::new();
+    visit(&root, &root, 0, &mut files)?;
+    let value = json!({"label": label, "files": files});
+    println!("BUSINESS_IPC_DRAFT {value}");
+    std::io::stdout()
+        .flush()
+        .map_err(|_| "draft_snapshot_stdout")?;
+    Ok(value)
 }
 
 #[tauri::command]
@@ -136,6 +194,7 @@ pub fn run() {
             args[0].as_str(),
             "--preflight"
                 | "--backup"
+                | "--draft"
                 | "--business"
                 | "--preferences"
                 | "--persistence-write"
@@ -157,7 +216,7 @@ pub fn run() {
         Edition::Public
     };
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
-    if !preflight && persistence.is_none() && args[0] != "--backup" {
+    if !preflight && persistence.is_none() && !matches!(args[0].as_str(), "--backup" | "--draft") {
         seed_activity(&state);
     }
     let builder = tauri::Builder::default()
@@ -165,6 +224,7 @@ pub fn run() {
         .manage(Fixture {
             preflight,
             backup: args[0] == "--backup",
+            draft: args[0] == "--draft",
             persistence,
             preferences: args[0] == "--preferences",
         });
@@ -177,6 +237,10 @@ pub fn run() {
             ipc_business_preferences_snapshot,
             ipc_business_info,
             ipc_business_finish,
+            crate::publisher_commands::ad_draft_read,
+            crate::publisher_commands::ad_draft_save,
+            crate::publisher_commands::pause_ad,
+            ipc_business_draft_snapshot,
             backup::ipc_business_backup_export,
             backup::ipc_business_backup_restore,
             ipc_business_forbidden

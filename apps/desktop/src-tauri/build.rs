@@ -2,6 +2,10 @@ fn main() {
     let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some() {
         if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
             &[
+                "ad_draft_read",
+                "ad_draft_save",
+                "pause_ad",
+                "ipc_business_draft_snapshot",
                 "ipc_business_backup_export",
                 "ipc_business_backup_restore",
                 "activity_log",
