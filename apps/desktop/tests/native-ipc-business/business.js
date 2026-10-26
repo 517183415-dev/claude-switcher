@@ -17,7 +17,13 @@ import { runImages } from './images.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.draft_persistence) {
+    if (info.backup_persistence === 'read') {
+      const draft = await invoke('ad_draft_read');
+      const campaigns = draft.slots.flatMap(slot => slot.campaigns);
+      if (campaigns.length !== 1) throw new Error('restored image reference missing');
+      const preview = await invoke('ad_image_preview', { sha256: campaigns[0].image.sha256 });
+      responses.backup_persistence = { draft, preview };
+    } else if (info.draft_persistence) {
       await runDraftPersistence(invoke, info.edition, info.draft_persistence, responses);
     } else if (info.images) {
       await runImages(invoke, info.edition, responses);

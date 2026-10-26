@@ -14,6 +14,7 @@ mod backup;
 
 struct Fixture {
     backup: bool,
+    backup_persistence: Option<&'static str>,
     draft: bool,
     images: bool,
     preflight: bool,
@@ -35,7 +36,7 @@ fn ipc_business_info(
     Ok(
         json!({"fixture": "ipc-business", "preflight": fixture.preflight,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
-        "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "preferences": fixture.preferences, "persistence": fixture.persistence, "draft_persistence": fixture.draft_persistence, "saved": saved}),
+        "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "backup_persistence": fixture.backup_persistence, "preferences": fixture.preferences, "persistence": fixture.persistence, "draft_persistence": fixture.draft_persistence, "saved": saved}),
     )
 }
 
@@ -196,6 +197,8 @@ pub fn run() {
             args[0].as_str(),
             "--preflight"
                 | "--backup"
+                | "--backup-persistence-restore"
+                | "--backup-persistence-read"
                 | "--draft"
                 | "--images"
                 | "--business"
@@ -226,6 +229,11 @@ pub fn run() {
         "--draft-persistence-verify" => Some("verify"),
         _ => None,
     };
+    let backup_persistence = match args[0].as_str() {
+        "--backup-persistence-restore" => Some("restore"),
+        "--backup-persistence-read" => Some("read"),
+        _ => None,
+    };
     let edition = if cfg!(feature = "personal") {
         Edition::Personal
     } else {
@@ -235,6 +243,7 @@ pub fn run() {
     if !preflight
         && persistence.is_none()
         && draft_persistence.is_none()
+        && backup_persistence.is_none()
         && !matches!(args[0].as_str(), "--backup" | "--draft" | "--images")
     {
         seed_activity(&state);
@@ -243,7 +252,8 @@ pub fn run() {
         .manage(Arc::new(state))
         .manage(Fixture {
             preflight,
-            backup: args[0] == "--backup",
+            backup: args[0] == "--backup" || backup_persistence == Some("restore"),
+            backup_persistence,
             draft: args[0] == "--draft",
             images: args[0] == "--images",
             persistence,
@@ -269,7 +279,7 @@ pub fn run() {
             backup::ipc_business_backup_restore,
             ipc_business_forbidden
         ])
-        .manage(backup::BackupFixture::new());
+        .manage(backup::BackupFixture::new(backup_persistence.is_some()));
     #[cfg(feature = "public")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         crate::commands::activity_log,

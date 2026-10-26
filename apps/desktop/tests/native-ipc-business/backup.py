@@ -37,7 +37,7 @@ def validate_public(rows):
     assert rows == [{'command': name, 'kind': 'permission'} for name in COMMANDS], 'Public backup commands must be permission denied'
 
 
-def validate(stdout, responses, edition, folder, filesystem):
+def validate(stdout, responses, edition, folder, filesystem, persistent=False):
     import runner
     assert set(responses) == {'backup'}, 'backup response schema mismatch'
     prefix = 'BUSINESS_IPC_BACKUP '
@@ -52,8 +52,8 @@ def validate(stdout, responses, edition, folder, filesystem):
     base = root / 'v2/personal/backup-fixture'
     assert set(path.name for path in root.iterdir()) == {'v2'}
     assert set(path.name for path in (root / 'v2').iterdir()) == {'personal'}, 'edition isolation failure'
-    assert set(path.name for path in base.iterdir()) == {'source', 'target'}, 'unexpected backup artifacts'
-    assert set(path.name for path in base.parent.iterdir()) == {'backup-fixture'}, 'unexpected business writes'
+    assert set(path.name for path in base.iterdir()) == ({'source'} if persistent else {'source', 'target'}), 'unexpected backup artifacts'
+    assert set(path.name for path in base.parent.iterdir()) == ({'backup-fixture', 'publisher'} if persistent else {'backup-fixture'}), 'unexpected business writes'
     for directory in [root / 'v2', base.parent, base]: filesystem.append(runner.private(directory, 0o700, True))
     # Do not follow any directory or file links. Bounded traversal rejects a runaway fixture tree.
     count = 0
@@ -69,8 +69,8 @@ def validate(stdout, responses, edition, folder, filesystem):
                 filesystem.append(runner.private(path, 0o600))
                 assert path.stat().st_size <= 65536, 'backup file bound'
                 assert path.suffix != '.csbackup', 'encrypted backup persisted unexpectedly'
-    walk(base / 'source'); walk(base / 'target')
-    target = base / 'target'
+    target = base.parent / 'publisher' if persistent else base / 'target'
+    walk(base / 'source'); walk(target)
     active = json.loads(runner.bounded_text(target / 'active.json', 4096))
     assert active == {'schema': 1, 'generation': proof['new_generation']}, 'independent active generation mismatch'
     state = json.loads(runner.bounded_text(target / active['generation'] / 'state.json', 65536))

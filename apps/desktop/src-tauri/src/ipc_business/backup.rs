@@ -15,10 +15,11 @@ use switcher_core::storage;
 use switcher_domain::ads::{Campaign, ImageAsset};
 
 const NOW: u64 = 1_700_000_000;
-const KEY_ID: &str = "ipc-synthetic-backup";
-pub(super) struct BackupFixture(Mutex<Option<Harness>>);
+const KEY_ID: &str = "ads-personal-v1";
+pub(super) struct BackupFixture(Mutex<Option<Harness>>, bool);
 struct Harness {
     root: PathBuf,
+    target: PathBuf,
     vault: MemoryVault,
     source_vault: MemoryVault,
     source_generation: String,
@@ -29,8 +30,8 @@ struct Harness {
     index: usize,
 }
 impl BackupFixture {
-    pub(super) fn new() -> Self {
-        Self(Mutex::new(None))
+    pub(super) fn new(persistent: bool) -> Self {
+        Self(Mutex::new(None), persistent)
     }
 }
 fn open(path: &Path) -> Result<Publisher, String> {
@@ -147,7 +148,12 @@ pub(super) fn ipc_business_backup_export(
     let source_assets = assets(&source_root, &source_generation)?;
     let source_trust = read(&source_root.join("trust.json"))?;
     let source_state = read(&source_root.join(&source_generation).join("state.json"))?;
-    let mut target = open(&root.join("target"))?;
+    let target_root = if fixture.1 {
+        state.directory().join("publisher")
+    } else {
+        root.join("target")
+    };
+    let mut target = open(&target_root)?;
     let vault = credentials(&mut target, 0x72)?;
     let old_image = target
         .import_image(
@@ -165,6 +171,7 @@ pub(super) fn ipc_business_backup_export(
         .map_err(|_| "fixture_old_draft")?;
     *locked = Some(Harness {
         root,
+        target: target_root,
         vault,
         source_vault,
         source_generation,
@@ -195,7 +202,7 @@ pub(super) fn ipc_business_backup_restore(
     if expected.get(harness.index).copied() != Some(case.as_str()) {
         return Err("fixture_case_order".into());
     }
-    let root = harness.root.join("target");
+    let root = harness.target.clone();
     let source_root = harness.root.join("source");
     let mut target = open(&root)?;
     let old_generation = generation(&root)?;
