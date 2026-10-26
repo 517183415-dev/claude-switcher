@@ -168,3 +168,122 @@ fn unacknowledged_ad_preferences_are_rejected_without_persistence() {
         String::from_utf8_lossy(&output.stderr)
     );
 }
+
+fn activity_snapshot(path: &std::path::Path) -> (Vec<u8>, u64, i64, i64) {
+    use std::os::unix::fs::MetadataExt;
+    let metadata = std::fs::symlink_metadata(path).unwrap();
+    (
+        std::fs::read(path).unwrap(),
+        metadata.ino(),
+        metadata.mtime(),
+        metadata.mtime_nsec(),
+    )
+}
+
+fn preference_fault_child(test: &str, mode: &str, root: &std::path::Path) -> std::process::Command {
+    let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+    command
+        .args(["--exact", test, "--nocapture"])
+        .env("SWITCHER_E11_PREF_FAULT", mode)
+        .env("HOME", root);
+    command
+}
+
+fn assert_fault_child(output: std::process::Output) {
+    assert!(
+        output.status.success(),
+        "isolated preference fault test failed: {}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
+fn blocked_preferences_destination_preserves_existing_activity_both_editions() {
+    const TEST: &str = "blocked_preferences_destination_preserves_existing_activity_both_editions";
+    if std::env::var_os("SWITCHER_E11_PREF_FAULT").is_some() {
+        use std::os::unix::fs::MetadataExt;
+        for edition in [
+            switcher_domain::Edition::Personal,
+            switcher_domain::Edition::Public,
+        ] {
+            let state = bridge::DesktopState::new(edition).unwrap();
+            state.log("info", "synthetic existing activity").unwrap();
+            let activity = state.directory().join("activity.json");
+            let before = activity_snapshot(&activity);
+            let preferences = state.directory().join("preferences.json");
+            switcher_core::storage::create_private_directory(&preferences).unwrap();
+            let inode = std::fs::symlink_metadata(&preferences).unwrap().ino();
+            assert_eq!(
+                state
+                    .save_preferences(switcher_domain::desktop::Preferences::default())
+                    .unwrap_err(),
+                "设置保存失败"
+            );
+            assert_eq!(activity_snapshot(&activity), before);
+            assert!(preferences.is_dir());
+            assert_eq!(
+                std::fs::symlink_metadata(&preferences).unwrap().ino(),
+                inode
+            );
+            assert_eq!(std::fs::read_dir(&preferences).unwrap().count(), 0);
+        }
+        return;
+    }
+    let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+        "switcher-e11-blocked-preferences-{}",
+        std::process::id()
+    ));
+    switcher_core::storage::create_private_directory(&root).unwrap();
+    let output = preference_fault_child(TEST, "blocked", &root)
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_dir_all(root);
+    assert_fault_child(output);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+#[ignore = "requires the dedicated single-layer account-free Seatbelt runner"]
+fn activity_write_denial_returns_error_after_preferences_commit_both_editions() {
+    const TEST: &str = "activity_write_denial_returns_error_after_preferences_commit_both_editions";
+    if let Ok(mode) = std::env::var("SWITCHER_E11_PREF_FAULT") {
+        for edition in [
+            switcher_domain::Edition::Personal,
+            switcher_domain::Edition::Public,
+        ] {
+            let state = bridge::DesktopState::new(edition).unwrap();
+            let changed = switcher_domain::desktop::Preferences {
+                updates_paused_until: Some(1_800_000_123),
+                ..Default::default()
+            };
+            if mode == "prepare" {
+                state
+                    .save_preferences(switcher_domain::desktop::Preferences::default())
+                    .unwrap();
+            } else if mode == "denied" {
+                let activity = state.directory().join("activity.json");
+                let before = activity_snapshot(&activity);
+                assert_eq!(
+                    state.save_preferences(changed.clone()).unwrap_err(),
+                    "活动记录保存失败"
+                );
+                assert_eq!(activity_snapshot(&activity), before);
+                let reopened = bridge::DesktopState::new(edition).unwrap();
+                assert_eq!(
+                    serde_json::to_value(reopened.preferences().unwrap()).unwrap(),
+                    serde_json::to_value(changed).unwrap()
+                );
+            } else {
+                assert_eq!(mode, "reopen");
+                assert_eq!(
+                    serde_json::to_value(state.preferences().unwrap()).unwrap(),
+                    serde_json::to_value(changed).unwrap()
+                );
+                assert_eq!(state.activity().unwrap().len(), 1);
+            }
+        }
+        return;
+    }
+    panic!("run via the dedicated single-layer account-free Seatbelt runner");
+}
