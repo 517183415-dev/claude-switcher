@@ -422,7 +422,7 @@ async fn observe(id: CheckId, context: &Context) -> Outcome {
             Err(_) => result(CheckStatus::Fail, "无法取得 claude.ai 首个解析结果"),
         },
         StunPath => {
-            // STUN has its own bounded probes. No exposed address needs no geo comparison.
+            // No valid STUN response remains unknown; HTTPS cannot establish UDP path safety.
             let results = network::stun_all().await;
             if results.iter().all(Result::is_err) {
                 stun_outcome(&results, None)
@@ -566,7 +566,10 @@ pub fn stun_outcome(
         (status, reason, evidence)
     };
     if successful.is_empty() {
-        return finish(CheckStatus::Pass, "STUN 未返回出口地址，UDP 无暴露");
+        return finish(
+            CheckStatus::Unknown,
+            "STUN 未收到有效响应，无法确认 UDP 路径",
+        );
     }
     let Some(egress) = egress else {
         return finish(
@@ -971,7 +974,7 @@ mod tests {
         assert_eq!(history.entries.len(), 1);
     }
     #[tokio::test]
-    async fn stun_no_response_passes_without_waiting_for_slow_geo() {
+    async fn stun_no_response_is_unknown_without_waiting_for_slow_geo() {
         let fixture = network::test_support::Fixture::new([None; 4]).await;
         let blackhole = tokio::net::UdpSocket::bind("127.0.0.1:0").await.unwrap();
         let mut settings = fixture.settings.clone();
@@ -995,10 +998,28 @@ mod tests {
                 outcome = observe(CheckId::StunPath, &context) => outcome,
                 _ = tokio::time::sleep(Duration::from_secs(5)) => panic!("no-response STUN must not wait for geo"),
             };
-            assert_eq!(outcome.0, CheckStatus::Pass);
+            assert_eq!(outcome.0, CheckStatus::Unknown);
             assert!(outcome.2.iter().any(|value| value == "有效 STUN 响应：0"));
             assert!(outcome.2.iter().any(|value| value == "STUN 超时：4"));
-            println!("no-response STUN passed in {}ms while geo remained pending for 11s", start.elapsed().as_millis());
+            let mut tasks = tokio::task::JoinSet::new();
+            for mut row in fresh_good().checks {
+                if row.id == CheckId::StunPath {
+                    row.status = outcome.0;
+                    row.reason = outcome.1.into();
+                    row.evidence = outcome.2.clone();
+                }
+                tasks.spawn(async move { row });
+            }
+            let report = finish_check_report(
+                tasks, tokio::time::Instant::now() + Duration::from_secs(1),
+                Instant::now(), unix_now(), "generation".into(),
+            ).await;
+            assert_eq!(report.checks.iter().map(|row| row.id).collect::<Vec<_>>(), CheckId::ALL.to_vec());
+            assert_eq!(report.summary.passed, 13);
+            assert_eq!(report.summary.blocking, 1);
+            assert!(!report.launch.allowed);
+            assert!(!evaluate_launch(&report, unix_now(), "generation").allowed);
+            println!("no-response STUN remained unknown in {}ms while geo remained pending for 11s", start.elapsed().as_millis());
         }).await;
     }
     #[tokio::test]
@@ -1261,15 +1282,64 @@ mod tests {
         }
     }
     #[test]
-    fn legacy_stun_no_response_and_partial_response_pass_but_mismatch_blocks() {
+    fn stun_without_valid_responses_is_unknown_with_or_without_https_egress() {
+        use network::StunError;
         let ip = "203.0.113.8".parse().unwrap();
+        let mut cases = vec![vec![]];
+        for error in [
+            StunError::Timeout,
+            StunError::Dns,
+            StunError::Io,
+            StunError::WrongSource,
+            StunError::Header,
+            StunError::Transaction,
+            StunError::Length,
+            StunError::AddressFamily,
+            StunError::MissingAddress,
+        ] {
+            cases.push(vec![Err(error); 4]);
+        }
+        cases.push(vec![
+            Err(StunError::Timeout),
+            Err(StunError::Dns),
+            Err(StunError::Io),
+            Err(StunError::Header),
+        ]);
+        for results in cases {
+            for egress in [None, Some(ip)] {
+                let outcome = stun_outcome(&results, egress);
+                assert_eq!(outcome.0, CheckStatus::Unknown, "{results:?}, {egress:?}");
+                assert!(outcome.1.contains("无法确认"));
+                assert!(outcome.2.iter().any(|item| item == "有效 STUN 响应：0"));
+                let mut report = good();
+                let row = report
+                    .checks
+                    .iter_mut()
+                    .find(|row| row.id == CheckId::StunPath)
+                    .unwrap();
+                row.status = outcome.0;
+                row.reason = outcome.1.into();
+                row.evidence = outcome.2;
+                report.summary = summarize(&report.checks);
+                assert_eq!(report.checks.len(), 14);
+                assert_eq!(report.summary.passed, 13);
+                assert_eq!(report.summary.blocking, 1);
+                assert!(!evaluate_launch(&report, 101, "generation").allowed);
+            }
+        }
+    }
+
+    #[test]
+    fn stun_partial_response_matches_egress_but_mismatch_blocks() {
+        let ip = "203.0.113.8".parse().unwrap();
+        // Current PRD rejects no-response evidence; valid partial responses retain comparison rules.
         assert_eq!(
             stun_outcome(
                 &std::array::from_fn::<_, 4, _>(|_| Err(network::StunError::Timeout)),
                 Some(ip)
             )
             .0,
-            CheckStatus::Pass
+            CheckStatus::Unknown
         );
         assert_eq!(
             stun_outcome(&[Ok(ip), Err(network::StunError::Timeout)], Some(ip)).0,
@@ -1280,6 +1350,10 @@ mod tests {
             CheckStatus::Fail
         );
         assert_eq!(stun_outcome(&[Ok(ip); 4], Some(ip)).0, CheckStatus::Pass);
+        assert_eq!(
+            stun_outcome(&[Ok(ip), Err(network::StunError::Io)], None).0,
+            CheckStatus::Unknown
+        );
     }
     #[tokio::test]
     async fn report_deadline_returns_all_ids_for_pending_and_missing_tasks() {
