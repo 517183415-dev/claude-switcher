@@ -623,12 +623,21 @@
     "note": "Found existing tests for35 IDs; no blanket acceptance or complete branch coverage claim.",
     "scope": "Historical CNA/v4 index; later bounded review and eight new names are recorded in current_followup."
   },
-  "historical_scope": "CNA/v4 fields and hashes below remain historical. Current product candidate is CNB; use current_followup. No earlier result is rewritten as a fresh CNB execution.",
+  "historical_scope": "CNA/v4 fields and hashes below remain historical. Current product candidate is CNC; use current_followup. No earlier result is rewritten as a fresh CNB execution.",
   "current_followup": {
-    "candidate": "CNB",
-    "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
-    "path": "branch-followup.json",
-    "sha256": "5f3e773ff256496bf3b141167e3f69f92786a3bcc1a760ef38f17e87a5f92882",
-    "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE"
-  }
+    "candidate": "CNC",
+    "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
+    "path": "native-followup.json",
+    "sha256": "74fe58a0178069cb0513a26b2974385c0d9c52c81ae7f6e13eeb394aaa4feb4c",
+    "status": "PASS_SCOPED_NATIVE_INPUT_BOUNDARIES; OVERALL_ACCEPTANCE_INCOMPLETE"
+  },
+  "prior_followups": [
+    {
+      "candidate": "CNB",
+      "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
+      "path": "branch-followup.json",
+      "sha256": "5f3e773ff256496bf3b141167e3f69f92786a3bcc1a760ef38f17e87a5f92882",
+      "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE"
+    }
+  ]
 }

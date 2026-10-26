@@ -4,9 +4,11 @@
 
 ## 1. 基线与索引范围
 
-当前开发分支为 `codex/rust-rewrite`。整合基线C49为 `49c2615beac0e1f7ac7352977d3212229fe9b012`，已包含 `codex/gpt-audit-fixes` 的全部代码。整合交付记录为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。历史产品修复CNA为 `0297efe2da236427b9a95a584aba53c4f30ce634`。当前产品CNB为 `7851ce10bd00a040bf8c209fd6e763baf63546ff`，tree为 `27d4826b204d079f3a28c48a7f2089d31fe1992e`。CNB补足CLI普通Fix复检和current悬空链接拒绝，保留既有检查、门禁与测试时钟成果。
+当前开发分支为 `codex/rust-rewrite`。整合基线C49为 `49c2615beac0e1f7ac7352977d3212229fe9b012`，已包含 `codex/gpt-audit-fixes` 的全部代码。整合交付记录为 `84d7bc1b0b0d80630745272361b6aaa41c9259fa`。历史产品修复CNA为 `0297efe2da236427b9a95a584aba53c4f30ce634`。历史产品CNB为 `7851ce10bd00a040bf8c209fd6e763baf63546ff`，tree为 `27d4826b204d079f3a28c48a7f2089d31fe1992e`。CNB补足CLI普通Fix复检和current悬空链接拒绝，保留既有检查、门禁与测试时钟成果。
 
-CodeGraph 1.6.0 已完成增量同步。当前索引有 **159 个文件、4,530 个节点、17,725 条关系**。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
+CNC产品为 `23c9964403e904ab44c2cc334d40992454193221`，tree为 `920c47bf92fc69ce8916266f61327b3766c8fada`。
+
+CodeGraph 1.6.0已增量同步，结果为Already up to date。CNC当前索引有 **165个文件、4,574个节点、17,868条关系**。历史CNB索引159文件/4,530节点/17,725关系保留为历史；[CNC图谱回执](../../output/no-account-20261027/native-ipc/codegraph-verification.json)绑定当前提交。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
 
 根目录 [codegraph.json](../../codegraph.json) 排除 `output/`、`tmp/`、验收证据与审核副本。历史源码和证据原件均保留。`experiments/` 保留索引，但降低查询优先级。这样可避免冻结源码参与当前调用链分析。
 
@@ -36,7 +38,7 @@ switcher-domain：共享类型与协议 → Rust 模块／生成的 TypeScript �
 packaging/macos：候选工件 → 安装计划 → 管理员安装／恢复事务
 ```
 
-`main.rs` 用编译特性固定 Personal/Public，禁止同时启用或同时缺失。Public 不注册 Personal 的运营写入命令。`ipc-smoke`使用独立编译特性，只注册runtime_info、forbidden_probe、finish_smoke三个命令。A01真实IPC仍NOT_RUN；静态包检查不证明原生IPC已运行。
+`main.rs` 用编译特性固定 Personal/Public，禁止同时启用或同时缺失。Public 不注册 Personal 的运营写入命令。`ipc-smoke`使用独立编译特性，只注册runtime_info、forbidden_probe、finish_smoke三个命令。该旧入口不承载A01载荷。CNC新增独立ipc-limits入口，Personal六边界限定通过，普通业务IPC仍未验。
 
 桌面 `DesktopState` 汇集快照、检查会话、账号动作、修复计划、地区预览和广告刷新。CLI与guardian复用核心业务模块。账号切换通过 `lifecycle::switch_checked`，当前账号启动通过 `lifecycle::launch_checked`。`checks::run_checks` 将前后网络采样和14项检查纳入同一30秒预算。`checks::evaluate_launch` 统一校验报告完整性、有效期和网络代次。`lifecycle` 独立读取当前代次，在账号复核后再次调用统一门禁，再提交系统启动。
 
@@ -46,10 +48,24 @@ packaging/macos：候选工件 → 安装计划 → 管理员安装／恢复事�
 
 helper 根据安装记录校验调用身份，再按固定策略执行系统操作。SourceLocal 与 DeveloperId 的更新许可由安装身份和可信发布配置共同决定。Public 的发行标识不能单独证明远端更新可用。
 
+CNC编译期隔离调用链（普通main不运行）：
+
+```text
+feature ipc-limits → main → ipc_limits::run → 独立native-ipc/index.html与limits.js
+  image invoke → ipc_limits_image → import_ad_image_body → Publisher::import_image/preview
+  backup invoke → ipc_limits_backup → restore_publisher_backup_body → 合成closure计数
+  preflight → 已注册禁止命令的permission拒绝；Public拒绝Personal载荷命令
+```
+
+生产import_ad_image也调用同一import_ad_image_body，顺序仍为限长→MIME→生产publisher。生产备份路径仍进入KeychainVault；fixture替换为无解密closure，不证明生产恢复通过。独立模块不装配DesktopState或后台任务。ipc-smoke与ipc-limits同时启用的互斥编译预期失败已验证。
+
 ## 3. 模块与职责
 
 | 路径 | 当前职责 |
 | --- | --- |
+| `apps/desktop/src-tauri/src/ipc_limits.rs` | 仅ipc-limits特性启用的独立main装配、临时私有Publisher、边界与ACL回执 |
+| `packaging/editions/ipc-limits-personal.json`、`ipc-limits-public.json` | 两版测试页/窗口/能力配置；正式包排除fixture |
+| `apps/desktop/tests/native-ipc/`、`native-ipc-payload.test.mjs`、`native-ipc-denials.test.mjs` | 独立HTML/limits.js、payload构造及permission分类回归 |
 | `apps/desktop/src/` | Svelte 页面、状态呈现、用户动作和生成的类型引用 |
 | `apps/desktop/src-tauri/src/main.rs`、`commands.rs`、`bridge.rs` | 应用入口、IPC 注册、桌面状态与核心调用 |
 | `apps/desktop/src-tauri/src/publisher/`、`publisher_commands.rs` | Personal 草稿、签名发布、备份、历史整理与素材回收 |
@@ -77,9 +93,9 @@ helper 根据安装记录校验调用身份，再按固定策略执行系统操�
 | `packaging/macos/test_*.py` | 假安装、取消、卸载和恢复；使用隔离文件与替身命令 |
 | `tests/` | 旧版 Shell 的切换安全与独立代理诊断回归 |
 
-C49历史整合回归保留125个方法、2组VM和44项包静态检查。历史CNA/v4执行Rust671次、567个不同名称，完整保留。当前CNB的v5本轮新执行679次、575个不同名称、0失败，新增8个方法；共享模块重复编入不能计为独立方法。Python200方法、前端60测试及2组VM和类型检查结果复用，未新跑；7个Python输入哈希未变。当前fmt与Clippy通过。原生时钟和已安装XPC连接两项Rust测试单列NOT_RUN；Python三项排除原因见本轮记录。
+C49历史整合回归保留125个方法、2组VM和44项包静态检查。历史CNA/v4执行Rust671次、567个不同名称，完整保留。历史CNB的v5本轮新执行679次、575个不同名称、0失败，新增8个方法；共享模块重复编入不能计为独立方法。Python200方法、前端60测试及2组VM和类型检查结果复用，未新跑；7个Python输入哈希未变。当前fmt与Clippy通过。原生时钟和已安装XPC连接两项Rust测试单列NOT_RUN；Python三项排除原因见本轮记录。
 
-当前候选原生GUI/IPC仍为 `NOT_RUN`。实际安装、真实账号、实际外发、平台与长期运行按各自验收记录执行。完整隔离条件未满足时，不启动普通候选试探。后续有限范围审查仅有限推进，未证明35项完整分支覆盖，不报告未经计算的覆盖率。详见[本轮进度](../handoff/无需账号功能进度-2026-10-27.md)和[37项验收](../acceptance/当前候选验收-2026-10-27.md)。
+CNC Rust本轮684执行/580名/0失败，另列feature目录测试1PASS；fmt、全部目标及两版fixture Clippy通过。前端63+2及Svelte0/0按73前端/49TS输入不变复用；Python200本阶段按7输入未变限定复用，未新跑。旧CNB/v5保持历史。Personal/Public隔离preflight及Personal六边界限定通过；备份无解密/Vault。普通CNC App与完整业务GUI/IPC仍为 `NOT_RUN`；普通双包已独立构建，每版22条静态检查与2条复制/签名变更完成；Public构建后两版各12条目重验PASS。路径与哈希见[当前CNC候选绑定](../handoff/无需账号功能进度-2026-10-27.md#0-当前cnc阶段)。新A01标记均无；旧E01权限描述字符串各1处，普通handler无注册/capability无grant，原始扫描保留REVIEW_MARKERS_PRESENT。这只提供静态解释，普通App动态IPC仍为NOT_RUN。实际安装、真实账号、实际外发、平台与长期运行按各自验收记录执行。完整隔离条件未满足时，不启动普通候选试探。后续有限范围审查仅有限推进，未证明35项完整分支覆盖，不报告未经计算的覆盖率。详见[本轮进度](../handoff/无需账号功能进度-2026-10-27.md)和[37项验收](../acceptance/当前候选验收-2026-10-27.md)。
 
 ## 5. 历史实现与产品依据
 

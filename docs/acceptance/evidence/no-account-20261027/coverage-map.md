@@ -1,10 +1,12 @@
 # 无真实账号功能覆盖审查索引
 
-当前候选已推进至CNB `7851ce10bd00a040bf8c209fd6e763baf63546ff`。下方索引仍是CNA/v4历史快照，不代表CNB的最新测试总数。CNB新增8个不同Rust测试名；新跑679次执行、575个不同名称。有限分支复核修复CLI修复后漏复检、current悬空链接误回退，并增强元数据、守护停止和广告边界断言。准确新增名称及RED/GREEN回执见[branch-followup.json](branch-followup.json)。其他ID仍需逐分支核对。
+当前候选已推进至CNC `23c9964403e904ab44c2cc334d40992454193221`。Rust新跑684次执行、580个不同名称，另列fixture目录测试1次。Personal/Public隔离测试版preflight及Personal六个原生大小边界限定通过。图片使用生产共享body与合成Publisher；备份仅进入合成计数closure，未解密或访问Vault。A01整项和35项全部通过仍未证明，详见[native-followup.json](native-followup.json)。下表仍是CNA/v4的历史测试索引，不能称为CNC最新计数。
+
+历史CNB新增8个不同Rust测试名及有限分支复核保留在[branch-followup.json](branch-followup.json)。CNC新增5个不同Rust测试名，不把多个程序的重复执行相加为独立用例。
 
 结论：35 个 ID 均找到相关现有测试。该结论不代表 35 项验收通过。
 
-本索引核对 v4 的 671 个执行实例、567 个不同 Rust 测试名称，以及此前 200 个 Python 方法。此任务没有重跑测试。共享测试在不同程序重复执行，不能称为 671 个独立用例。
+历史索引核对 v4 的 671 个执行实例、567 个不同 Rust 测试名称，以及此前 200 个 Python 方法。索引编制本身没有重跑测试；CNC执行证据另列。共享测试在不同程序重复执行，不能称为 671 个独立用例。
 
 ```text
 需求 ID -> 现有测试与回执 -> 逐分支审查 -> 原生/系统/实源/时长证据

@@ -1,0 +1,757 @@
+{
+  "schema_version": 1,
+  "candidate": "CNC",
+  "status": "PASS_SCOPED_NATIVE_INPUT_BOUNDARIES; OVERALL_ACCEPTANCE_INCOMPLETE",
+  "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
+  "source_tree": "920c47bf92fc69ce8916266f61327b3766c8fada",
+  "previous_candidate": {
+    "candidate": "CNB",
+    "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
+    "evidence": "branch-followup.json",
+    "preserved": true
+  },
+  "source_files": {
+    "apps/desktop/src-tauri/Cargo.toml": "c6fa72975a4c2105313a666a04f6c72b1e0fe7ad4666382eb721d46c9de347a6",
+    "apps/desktop/src-tauri/build.rs": "829e56f38cff3ff68ac953726fc956ec0680dd972b068079bb00dab9a147ff61",
+    "apps/desktop/src-tauri/src/ipc_limits.rs": "0d7d6331b358708a5dd83f24a599ab65a48ce3ef04d0df8b50072b79a5c79b17",
+    "apps/desktop/src-tauri/src/main.rs": "802b5e5e33431501c599fe938052681fc336343769e4a4f256e2498267c8885d",
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "1c090273cee7dcb620c311cc6ba49cb1981012d13fb868e901734f09f6f25e96",
+    "apps/desktop/tests/native-ipc-denials.test.mjs": "0a2d04c419bb4b40b6efbeb93d3c2529a0c1b0274ed7d2d2c1331ff307a0c185",
+    "apps/desktop/tests/native-ipc-payload.test.mjs": "26c4a9d025bc8e585bbc00ee1ab5a0c89a0e03a882f4dbc47b85d7bc806f2cd3",
+    "apps/desktop/tests/native-ipc/denials.mjs": "21b0c9e1e910c46d16b406812e523527f2e0e4257fe268f77c5c3aa7e93cff1e",
+    "apps/desktop/tests/native-ipc/index.html": "0b7e51a5a1e15e07093b30786ae9d829e4027c76c22a708615125f627cb1e8df",
+    "apps/desktop/tests/native-ipc/limits.js": "938d908f27e2d07507e02c2748f1675f6ff1d0ea2787889a2ac74f3591fcc50a",
+    "apps/desktop/tests/native-ipc/payloads.mjs": "63d965f85b0ca7a6babccc0b69577f2f0bc66cdcb7002fedad3a671f9e6d38e9",
+    "crates/switcher-core/src/regions/legacy.rs": "7cca69562a60434a33f9b4601b1200d970d35fd1e2e466f0044c3fdc38250e00",
+    "packaging/editions/ipc-limits-personal.json": "d7465b6561a0642b76cabd93a1289282292dbc1c74ddf47364e48972a39bacd1",
+    "packaging/editions/ipc-limits-public.json": "5c15bdb9db2879db3b32578d27c385d2f20f586e5b41205b39440b8858a8b8a7"
+  },
+  "implementation": [
+    "Production image command reuses import_ad_image_body without changing size/magic/import/preview order",
+    "ipc-limits is compile-time only with a separate main, local page, identifier, incognito window and capabilities; ordinary initialization is not invoked",
+    "Public fixture does not register the Personal data handlers"
+  ],
+  "test_facility_regressions": [
+    "PNG IDAT CRC: independent parser RED then corrected payload GREEN",
+    "Registered forbidden command: missing is no longer accepted as permission denial; RED/GREEN",
+    "Private fixture root: atomic mode0700 create, existing-directory refusal; RED/GREEN",
+    "macOS test proxy socket: explicit blocking accepted stream with deterministic delayed request; RED/GREEN; cfg(test) only"
+  ],
+  "rust": {
+    "fresh": true,
+    "executions": 684,
+    "distinct_names": 580,
+    "failures": 0,
+    "list_multiset_matches": true,
+    "new_names_vs_v5": 5,
+    "separate_fixture_directory_test": 1,
+    "checks": [
+      {
+        "label": "tests",
+        "exit": 0,
+        "passed": true,
+        "seconds": 245.97640254197177,
+        "log_sha256": "b8b7d05e9fb8fdf8fd931445f858333e0064267fde5cdf74646f0ed3474e727d"
+      },
+      {
+        "label": "list",
+        "exit": 0,
+        "passed": true,
+        "seconds": 0.5577807500958443,
+        "log_sha256": "44449e06ee1c769c6968405b8f2c9bdf684fe4f84bcf634953bbf3896d6660c0"
+      },
+      {
+        "label": "fmt",
+        "exit": 0,
+        "passed": true,
+        "seconds": 0.481765208998695,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "clippy",
+        "exit": 0,
+        "passed": true,
+        "seconds": 25.81443649996072,
+        "log_sha256": "19f8222d0fa960294c4a28ba7330dbcba0301a61c43f9ec3d55ca698a2ab80a6"
+      },
+      {
+        "label": "clippy-personal",
+        "exit": 0,
+        "passed": true,
+        "seconds": 4.891211208072491,
+        "log_sha256": "7e059ef5f2cc47b5ce0a1069d80f56ddf2a14fc4c4fc0500df4343f5b03a35b9"
+      },
+      {
+        "label": "clippy-public",
+        "exit": 0,
+        "passed": true,
+        "seconds": 4.955547749996185,
+        "log_sha256": "7cd38fbd071650dac0ad6af92b5ec476f9e6e4042ece62a290a701e91a105d7b"
+      },
+      {
+        "label": "fixture-conflict",
+        "exit": 101,
+        "passed": true,
+        "seconds": 3.2476367499912158,
+        "log_sha256": "d85c4a6af55fb7b106176f72b0bb7bfc0488a018ec502ff436c5ea60d29f5711"
+      }
+    ],
+    "native_exclusions": [
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "time::tests::real_macos_continuous_sample_is_available"
+    ],
+    "loopback_scope": "Retained solely for existing local HTTP/TLS transport fixtures (updates.rs); all public network remains denied. No product launch.",
+    "notice": "Existing ts-rs attribute parse notices remain"
+  },
+  "frontend": {
+    "fresh_node_tests": 63,
+    "vm_groups": 2,
+    "svelte_errors": 0,
+    "svelte_warnings": 0,
+    "currentness": "73 relevant frontend inputs including49 TypeScript inputs unchanged;3 later changes are unrelated Rust files",
+    "proof": "output/no-account-20261027/native-ipc/frontend/current-input-check.json"
+  },
+  "python": {
+    "methods": 200,
+    "fresh_run": false,
+    "seven_inputs": [
+      {
+        "path": "core/claude-switch.sh",
+        "sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+        "actual_sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+        "unchanged": true
+      },
+      {
+        "path": "packaging/macos/local_install.py",
+        "sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+        "actual_sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+        "unchanged": true
+      },
+      {
+        "path": "packaging/macos/build_pkg.py",
+        "sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92",
+        "actual_sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92",
+        "unchanged": true
+      },
+      {
+        "path": "packaging/macos/test_local_install.py",
+        "sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+        "actual_sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+        "unchanged": true
+      },
+      {
+        "path": "packaging/macos/test_build_pkg.py",
+        "sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90",
+        "actual_sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90",
+        "unchanged": true
+      },
+      {
+        "path": "tests/test_proxy_diagnose.py",
+        "sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+        "actual_sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+        "unchanged": true
+      },
+      {
+        "path": "tests/test_switch_safety.py",
+        "sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+        "actual_sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+        "unchanged": true
+      }
+    ],
+    "all_unchanged": true
+  },
+  "native_ipc": {
+    "runs": [
+      {
+        "receipt": "output/no-account-20261027/native-ipc/runtime/run-20261027-031638-personal-preflight-e4de6a4e/result.json",
+        "sha256": "64e495a9ae67e667449315723a19d7f6561d150a83185243c4704c82865a6bc3",
+        "seconds": 2.5529053340433165,
+        "validation": {
+          "status": "PASS",
+          "edition": "personal",
+          "mode": "preflight",
+          "events": [],
+          "denials": [
+            {
+              "command": "ipc_limits_forbidden",
+              "kind": "permission"
+            },
+            {
+              "command": "workspace_snapshot",
+              "kind": "permission"
+            }
+          ]
+        }
+      },
+      {
+        "receipt": "output/no-account-20261027/native-ipc/runtime/run-20261027-031649-public-preflight-e9971433/result.json",
+        "sha256": "0590bfeccec49bce8f52808697c72b24cf3160b5bf6c1b3559514b0943790124",
+        "seconds": 1.600667166057974,
+        "validation": {
+          "status": "PASS",
+          "edition": "public",
+          "mode": "preflight",
+          "events": [],
+          "denials": [
+            {
+              "command": "ipc_limits_forbidden",
+              "kind": "permission"
+            },
+            {
+              "command": "workspace_snapshot",
+              "kind": "permission"
+            },
+            {
+              "command": "ipc_limits_image",
+              "kind": "permission"
+            },
+            {
+              "command": "ipc_limits_backup",
+              "kind": "permission"
+            }
+          ]
+        }
+      },
+      {
+        "receipt": "output/no-account-20261027/native-ipc/runtime/run-20261027-031711-personal-bounds-1a02cbbf/result.json",
+        "sha256": "ec6d8f0e83cd4521a65f8a486a8d811538a911fcf7a8348fb664e1c061cde02f",
+        "seconds": 29.235548458062112,
+        "validation": {
+          "status": "PASS",
+          "edition": "personal",
+          "mode": "bounds",
+          "events": [
+            {
+              "asset": {
+                "bytes": 73,
+                "height": 1,
+                "mime": "image/png",
+                "sha256": "eacb1a012fc0820bb358ea06380857fd97d62a420932142014ac89bcc4afbbc3",
+                "width": 1
+              },
+              "entered": 1,
+              "error": null,
+              "input_len": 1048575,
+              "kind": "image"
+            },
+            {
+              "asset": {
+                "bytes": 73,
+                "height": 1,
+                "mime": "image/png",
+                "sha256": "eacb1a012fc0820bb358ea06380857fd97d62a420932142014ac89bcc4afbbc3",
+                "width": 1
+              },
+              "entered": 1,
+              "error": null,
+              "input_len": 1048576,
+              "kind": "image"
+            },
+            {
+              "asset": null,
+              "entered": 0,
+              "error": "图片超过 1 MiB 上限",
+              "input_len": 1048577,
+              "kind": "image"
+            },
+            {
+              "decryption_or_vault": false,
+              "entered": 1,
+              "error": "acceptance_restore_entered",
+              "input_len": 67108863,
+              "kind": "backup"
+            },
+            {
+              "decryption_or_vault": false,
+              "entered": 1,
+              "error": "acceptance_restore_entered",
+              "input_len": 67108864,
+              "kind": "backup"
+            },
+            {
+              "decryption_or_vault": false,
+              "entered": 0,
+              "error": "备份文件超过 64 MiB 上限",
+              "input_len": 67108865,
+              "kind": "backup"
+            }
+          ],
+          "denials": [
+            {
+              "command": "ipc_limits_forbidden",
+              "kind": "permission"
+            },
+            {
+              "command": "workspace_snapshot",
+              "kind": "permission"
+            }
+          ]
+        }
+      }
+    ],
+    "proven": {
+      "native_ipc_acl": "PASS; both preflights deny every listed command as permission, zero data receipts",
+      "native_ipc_personal_size_limits": "PASS; 1048575/1048576 real synthetic image import; 1048577 rejected before body; 67108863/67108864 enter synthetic backup boundary; 67108865 rejected before body",
+      "sandbox_controls": "PASS; private directory open/exec/public network/localhost denied; fixture write allowed"
+    },
+    "not_proven": {
+      "backup_decryption": "NOT_RUN; dedicated synthetic closure returns acceptance_restore_entered",
+      "keychain": "NOT_ACCESSED",
+      "ordinary_application": "NOT_RUN; ordinary_runtime=false",
+      "real_accounts": "NOT_ACCESSED",
+      "installation_and_services": "NOT_RUN",
+      "public_bounds": "NOT_RUN; public preflight already verifies personal commands denied",
+      "all_webkit_helpers_terminated": "NOT_PROVEN; recorded termination scope covers fixture process group only"
+    },
+    "binding": {
+      "build_inputs": 95,
+      "committed_inputs": 92,
+      "untracked_derived_components": 3,
+      "all_committed_inputs_match_git": true,
+      "note": "Raw receipts call all95 inputs sources; three are existing generated component binaries, not committed source"
+    },
+    "counter_definition": "Raw receipt body_entered counts the downstream import/restore closure. Size guards execute inside the shared production command body; an over-limit payload does not enter that closure."
+  },
+  "codegraph": {
+    "state": "complete",
+    "files": 165,
+    "nodes": 4574,
+    "edges": 17868,
+    "pending": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    }
+  },
+  "coverage": {
+    "original_acceptance_rows": 37,
+    "account_free_ids": 35,
+    "all_35_pass": false,
+    "complete_branch_coverage": "NOT_PROVEN",
+    "A01": "Only scoped native image/backup input boundaries and fixture ACL proven; whole A01 not declared PASS",
+    "F08": "NOT_RUN_REAL_LOGIN",
+    "F09": "WAIT_B",
+    "remaining": "Controlled transport/privacy, test-system installation/services/proxy/recovery, trusted remote sources, native platforms/performance and real durations"
+  },
+  "safety": {
+    "ordinary_app_launch": "NOT_RUN",
+    "real_accounts": "NOT_ACCESSED",
+    "keychain": "NOT_ACCESSED",
+    "installed_services": "NOT_ACCESSED",
+    "installation_and_system_changes": "NOT_RUN",
+    "push": "NOT_RUN",
+    "main": "2cf108596a7bb382acbc62c2d1dd9b89e17e1d71"
+  },
+  "evidence_sha256": {
+    "output/no-account-20261027/native-ipc/after-product-commit.json": "54dacb7d7661408b54949bab32925906f9eccbf09912b87e9894f037ab94e137",
+    "output/no-account-20261027/native-ipc/rust/r2/final-verification.json": "ac3b1a89b42649674d4ab447fd9c69b95a94e7c3d90fc67d9a2926bf3c0eb41f",
+    "output/no-account-20261027/native-ipc/rust/r2/summary.json": "e626ca67f2f0fb2537a98848ffb482af71e98eff52040cdfe88e3e6f144e3eaf",
+    "output/no-account-20261027/native-ipc/rust/r2/tests.log": "b8b7d05e9fb8fdf8fd931445f858333e0064267fde5cdf74646f0ed3474e727d",
+    "output/no-account-20261027/native-ipc/rust/r2/list.log": "44449e06ee1c769c6968405b8f2c9bdf684fe4f84bcf634953bbf3896d6660c0",
+    "output/no-account-20261027/native-ipc/runtime/final-verification.json": "1cc3fed851127233d72e78f2897228255e41d98fa2488503f37684d7ef32d0ab",
+    "output/no-account-20261027/native-ipc/runtime/runtime.sb": "1062f99ea5c54e341f2077031a94ab03c763c3046a497d5126e38f2b2deb7977",
+    "output/no-account-20261027/native-ipc/frontend/current-input-check.json": "dbc1e140d29a8a5587dab313e81ea9e06884365b82b9bb80ffd3310ec3fe7925",
+    "output/no-account-20261027/native-ipc/codegraph-verification.json": "276b4130c6784e3d3875e338a7279a74020dff694e384be034cfc1f9bb4d410a",
+    "output/no-account-20261027/native-ipc/payload-regression/red-result.json": "dedbd11aa01053373d0a16d0a2670bc710a2389e59c9f319057682b287201302",
+    "output/no-account-20261027/native-ipc/payload-regression/green-result.json": "7a48889decf620ecb8a953324d2b28dab5ef87c811fcd073e315a214e72d5200",
+    "output/no-account-20261027/native-ipc/acl-regression/red-result.json": "3571a4c41e4829c7efefb66feb09eaab1eddc28e505230cd8c2b8bacc4166e3b",
+    "output/no-account-20261027/native-ipc/acl-regression/green-result.json": "7fec759455a8b2bda7d67359fdb0302a350e8d7e1352b21fa5344766b71c7d26",
+    "output/no-account-20261027/native-ipc/private-directory-regression/red-result.json": "11bd3751204e4f083e375bdb6ed2804102be5e488efd313e59113ad72a1f631c",
+    "output/no-account-20261027/native-ipc/private-directory-regression/green-result.json": "8522db78d4045e27b53ff46ffdddd3a04e535f0fdfb99fa9af08673f7edc7b34",
+    "output/no-account-20261027/native-ipc/proxy-fixture-regression/summary.json": "24a617094cd53ae5f94b127746d41f967bef37a1558316223428da579c608ef6",
+    "output/no-account-20261027/native-ipc/runtime/run-20261027-031638-personal-preflight-e4de6a4e/result.json": "64e495a9ae67e667449315723a19d7f6561d150a83185243c4704c82865a6bc3",
+    "output/no-account-20261027/native-ipc/runtime/run-20261027-031649-public-preflight-e9971433/result.json": "0590bfeccec49bce8f52808697c72b24cf3160b5bf6c1b3559514b0943790124",
+    "output/no-account-20261027/native-ipc/runtime/run-20261027-031711-personal-bounds-1a02cbbf/result.json": "ec6d8f0e83cd4521a65f8a486a8d811538a911fcf7a8348fb664e1c061cde02f",
+    "output/no-account-20261027/native-ipc/ordinary-e01-metadata-review.json": "645298542121cb4d5a2f47a5eea54e58397fd0ccdebe920e60db7e2a46e16ee7",
+    "output/no-account-20261027/bundles-native-ipc/delivery-summary.json": "2c2208d1bab53d90be39eb12536025886721af239027e6cc847ea5d3de41e603",
+    "output/no-account-20261027/bundles-native-ipc/final-summary.json": "3c07ece3a83e126b52b5a72f775e24ac4175b31e8a3d3ab54bf382bbb362485d"
+  },
+  "ordinary_bundles": {
+    "commit": "23c9964403e904ab44c2cc334d40992454193221",
+    "commit_tree": "920c47bf92fc69ce8916266f61327b3766c8fada",
+    "archive_sha256": "e626ec15f37f1834cc48f45d5fc6ffd8455d3ef8b34b3ae0a94df6c4c48bb323",
+    "stages": {
+      "preflight": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/run_bundle.py",
+          "preflight",
+          "23c9964403e904ab44c2cc334d40992454193221"
+        ],
+        "exit": 0,
+        "seconds": 0.9552822500700131
+      },
+      "personal-build": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/run_bundle.py",
+          "personal"
+        ],
+        "exit": 0,
+        "seconds": 108.5426464159973
+      },
+      "personal-verify": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/verify_bundle.py",
+          "personal"
+        ],
+        "exit": 0,
+        "seconds": 0.5923747080378234
+      },
+      "personal-fixture-exclusion": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/check_fixture_exclusion.py",
+          "personal"
+        ],
+        "exit": 0,
+        "seconds": 0.13435075001325458
+      },
+      "public-build": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/run_bundle.py",
+          "public"
+        ],
+        "exit": 0,
+        "seconds": 29.541236999910325
+      },
+      "public-verify": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/verify_bundle.py",
+          "public"
+        ],
+        "exit": 0,
+        "seconds": 0.6096770419972017
+      },
+      "public-fixture-exclusion": {
+        "argv": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/check_fixture_exclusion.py",
+          "public"
+        ],
+        "exit": 0,
+        "seconds": 0.1069679589709267
+      }
+    },
+    "artifacts": {
+      "personal": {
+        "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/artifacts/personal/Claude 切换器 Personal.app",
+        "all_entries_rehashed": 12,
+        "post_public_bytes_modes_hashes": "PASS",
+        "static_check_commands": 22,
+        "mutation_commands": 2,
+        "tree_manifest_sha256": "9d615fdec93971b562e7cebacb51a68a0fa8d4de21b8c8daf086911ac255d520"
+      },
+      "public": {
+        "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/artifacts/public/Claude 切换器 Public.app",
+        "all_entries_rehashed": 12,
+        "post_public_bytes_modes_hashes": "PASS",
+        "static_check_commands": 22,
+        "mutation_commands": 2,
+        "tree_manifest_sha256": "e6e191ceb14c32fda9c4d7198ee19806aa6d2f0cbf5302338d737e089c924c84"
+      }
+    },
+    "static_command_count_note": "Per edition: 22 inspection/check commands and 2 mutations (copy/sign), not 24 checks.",
+    "product_launch": "NOT_RUN",
+    "installation": "NOT_RUN",
+    "real_accounts": "NOT_ACCESSED",
+    "fixture_exclusion": {
+      "personal": {
+        "active_source_configs_capabilities_and_build_features": "PASS",
+        "ordinary_dist_and_resources_fixture_markers": "NONE",
+        "a01_ipc_limits_markers": "NONE",
+        "old_e01_binary_permission_markers": {
+          "Contents/MacOS/switcher-desktop": [
+            {
+              "token": "forbidden_probe",
+              "count": 1,
+              "contexts": [
+                "llow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeimport_ad_imageallow-launch-checkedlaunch_checkedallow-migration-preparationmigr"
+              ]
+            },
+            {
+              "token": "finish_smoke",
+              "count": 1,
+              "contexts": [
+                "_activityexport_publisher_backupallow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeimport_ad_imageallow-launch-checkedlaunch_ch"
+              ]
+            }
+          ]
+        },
+        "raw_binary_scan_status": "REVIEW_MARKERS_PRESENT",
+        "native_runtime_acl": "NOT_RUN"
+      },
+      "public": {
+        "active_source_configs_capabilities_and_build_features": "PASS",
+        "ordinary_dist_and_resources_fixture_markers": "NONE",
+        "a01_ipc_limits_markers": "NONE",
+        "old_e01_binary_permission_markers": {
+          "Contents/MacOS/switcher-desktop": [
+            {
+              "token": "forbidden_probe",
+              "count": 1,
+              "contexts": [
+                "llow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeallow-import-ad-imageimport_ad_imageallow-launch-checkedlaunch_checkedallow-migr"
+              ]
+            },
+            {
+              "token": "finish_smoke",
+              "count": 1,
+              "contexts": [
+                "er-backupexport_publisher_backupallow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeallow-import-ad-imageimport_ad_imageallow-la"
+              ]
+            }
+          ]
+        },
+        "raw_binary_scan_status": "REVIEW_MARKERS_PRESENT",
+        "native_runtime_acl": "NOT_RUN"
+      }
+    },
+    "artifact_main_sha256": {
+      "personal": {
+        "unsigned": "36b6b2275d22e6380103c4052095385c3eda5960e357a1c3bf2c8c8a38d4f496",
+        "signed": "3babf9432b83a31a35437d0ec6223b237f77bc2e74723e0dd05de59a6a849e56"
+      },
+      "public": {
+        "unsigned": "7802594ad00f4064fed74df45bef161690615e11d2e4eca0f1bd51695194575b",
+        "signed": "e37405d0ea8882670487e35ea5ea413b5e7458a142941747ada9c09715f59429"
+      }
+    },
+    "scope_note": "Full ordinary App bundles created and statically verified. Neither App was launched. Old E01 generated permission descriptions remain in main binaries; this does not by itself establish active command registration."
+  },
+  "ordinary_e01_metadata_review": {
+    "schema_version": 1,
+    "scope": "Read-only static review of pre-existing E01 marker metadata in ordinary Personal builds; no App execution or scanner modification.",
+    "verdict": "NO_SECURITY_BLOCKER_FOUND_STATIC; PRE_EXISTING_PERMISSION_METADATA_RESIDUE",
+    "candidates": {
+      "CNB": {
+        "source_commit": "7851ce10bd00a040bf8c209fd6e763baf63546ff",
+        "artifact_receipt": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifact-personal.json",
+        "signed_main": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop",
+        "signed_main_sha256": "cc7a003110971722fd901307a7dee2213ad1d1ae87303032e0d92095c3b6fa26",
+        "matches_artifact_receipt": true,
+        "marker_offsets_zero_based_bytes": {
+          "forbidden_probe": [
+            12958417
+          ],
+          "finish_smoke": [
+            12958384
+          ]
+        },
+        "context": {
+          "offset_zero_based_bytes": 12958366,
+          "ascii": "allow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probe",
+          "byte_length": 66,
+          "sha256": "b8c68f725d483004e25e1fc490baf803301b2bed7de25695129a109a5e3b3d9f"
+        },
+        "helper_literal_counts": {
+          "ACL failure: forbidden command reached Rust": 0,
+          "E01_WEBVIEW_RESULT": 0
+        },
+        "ordinary_build_argv": [
+          "/opt/homebrew/bin/node",
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules/@tauri-apps/cli/tauri.js",
+          "build",
+          "--target",
+          "aarch64-apple-darwin",
+          "--features",
+          "personal",
+          "--config",
+          "../../packaging/editions/personal.json",
+          "--no-sign",
+          "--",
+          "--no-default-features",
+          "--offline",
+          "--locked"
+        ],
+        "generated_capability_identifiers": [
+          "main"
+        ],
+        "old_markers_in_generated_acl": {
+          "forbidden_probe": 4,
+          "finish_smoke": 4
+        },
+        "old_permissions_granted": false,
+        "evidence_files": {
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/artifact-personal.json": {
+            "sha256": "cdd77527ef9bb9ad0ce062374c3084887004a11c9e8826e0ec711e91112fbe49"
+          },
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/runtime.json": {
+            "sha256": "76a5c6bbfbb33501f53729319ae67192f8cfef3e74cbba4f00d93b7ec185e127"
+          },
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-branch-fixes/bundle-personal.json": {
+            "sha256": "542c1d1d44ac70621e3d350d8dbed7ae2cc43be40bee1526e5a7b0a567fab50c"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/gen/schemas/acl-manifests.json": {
+            "sha256": "af14048a03626f30a3df11318fe636ffbb99c866ecadb13b6e416e01b9754dde"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/gen/schemas/capabilities.json": {
+            "sha256": "d0723b1bd235e5bb2af8165c39098829247f1ad099c5d166f290b19ea2094d9c"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/capabilities/main.json": {
+            "sha256": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/packaging/editions/personal.json": {
+            "sha256": "76a96b880c0828a5e0aee1da902857aec37a8a4a7f69a7c5446df1846db3590c"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/packaging/editions/public.json": {
+            "sha256": "a251da0cc3cd495c85dc1f608cec5c6a68f6904066e09ee82511dba60cab57ac"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/src/main.rs": {
+            "sha256": "5a0c4b218bd3f425231431e6805a3293efb05a03d87a2ec2f05ac172354311f0"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/build.rs": {
+            "sha256": "33f92d6763de81c1c7368d51b6726f9117501305a41e07cbfb39905f4036df2f"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/permissions/autogenerated/finish_smoke.toml": {
+            "sha256": "412ed7503038b36a11003fa36054e2334612f6e499cc3244bd58616ec75e7b12"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-xhec1tm2/workspace/apps/desktop/src-tauri/permissions/autogenerated/forbidden_probe.toml": {
+            "sha256": "c59bf08f562abee19ee6de27dca7b7d7fcd978f87ef08ce7393d2a0d77db5992"
+          }
+        }
+      },
+      "CNC": {
+        "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
+        "artifact_receipt": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/artifact-personal.json",
+        "signed_main": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop",
+        "signed_main_sha256": "3babf9432b83a31a35437d0ec6223b237f77bc2e74723e0dd05de59a6a849e56",
+        "matches_artifact_receipt": true,
+        "marker_offsets_zero_based_bytes": {
+          "forbidden_probe": [
+            12958417
+          ],
+          "finish_smoke": [
+            12958384
+          ]
+        },
+        "context": {
+          "offset_zero_based_bytes": 12958366,
+          "ascii": "allow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probe",
+          "byte_length": 66,
+          "sha256": "b8c68f725d483004e25e1fc490baf803301b2bed7de25695129a109a5e3b3d9f"
+        },
+        "helper_literal_counts": {
+          "ACL failure: forbidden command reached Rust": 0,
+          "E01_WEBVIEW_RESULT": 0
+        },
+        "ordinary_build_argv": [
+          "/opt/homebrew/bin/node",
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules/@tauri-apps/cli/tauri.js",
+          "build",
+          "--target",
+          "aarch64-apple-darwin",
+          "--features",
+          "personal",
+          "--config",
+          "../../packaging/editions/personal.json",
+          "--no-sign",
+          "--",
+          "--no-default-features",
+          "--offline",
+          "--locked"
+        ],
+        "generated_capability_identifiers": [
+          "main"
+        ],
+        "old_markers_in_generated_acl": {
+          "forbidden_probe": 4,
+          "finish_smoke": 4
+        },
+        "old_permissions_granted": false,
+        "evidence_files": {
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/artifact-personal.json": {
+            "sha256": "37e29aeca91836806cdc8fc4d2a7221f8ec28a394e51e833c431c719036328c0"
+          },
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/runtime.json": {
+            "sha256": "261045482833df252f2ab40ce058cdaeb05d18bf8902138eaa6539afb65a2239"
+          },
+          "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/bundles-native-ipc/bundle-personal.json": {
+            "sha256": "05ee17c94d543e3c5015b8da3b18ba554e282f8e6f2588026b99866a32a44463"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/gen/schemas/acl-manifests.json": {
+            "sha256": "af14048a03626f30a3df11318fe636ffbb99c866ecadb13b6e416e01b9754dde"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/gen/schemas/capabilities.json": {
+            "sha256": "d0723b1bd235e5bb2af8165c39098829247f1ad099c5d166f290b19ea2094d9c"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/capabilities/main.json": {
+            "sha256": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/packaging/editions/personal.json": {
+            "sha256": "76a96b880c0828a5e0aee1da902857aec37a8a4a7f69a7c5446df1846db3590c"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/packaging/editions/public.json": {
+            "sha256": "a251da0cc3cd495c85dc1f608cec5c6a68f6904066e09ee82511dba60cab57ac"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/src/main.rs": {
+            "sha256": "802b5e5e33431501c599fe938052681fc336343769e4a4f256e2498267c8885d"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/build.rs": {
+            "sha256": "829e56f38cff3ff68ac953726fc956ec0680dd972b068079bb00dab9a147ff61"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/permissions/autogenerated/finish_smoke.toml": {
+            "sha256": "412ed7503038b36a11003fa36054e2334612f6e499cc3244bd58616ec75e7b12"
+          },
+          "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-wtoir1az/workspace/apps/desktop/src-tauri/permissions/autogenerated/forbidden_probe.toml": {
+            "sha256": "c59bf08f562abee19ee6de27dca7b7d7fcd978f87ef08ce7393d2a0d77db5992"
+          }
+        }
+      }
+    },
+    "metadata_context_identical": true,
+    "tracked_permission_and_capability_comparison": [
+      {
+        "path": "apps/desktop/src-tauri/permissions/autogenerated/finish_smoke.toml",
+        "sha256": "412ed7503038b36a11003fa36054e2334612f6e499cc3244bd58616ec75e7b12",
+        "identical_to_CNB": true
+      },
+      {
+        "path": "apps/desktop/src-tauri/permissions/autogenerated/forbidden_probe.toml",
+        "sha256": "c59bf08f562abee19ee6de27dca7b7d7fcd978f87ef08ce7393d2a0d77db5992",
+        "identical_to_CNB": true
+      },
+      {
+        "path": "apps/desktop/src-tauri/capabilities/main.json",
+        "sha256": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7",
+        "identical_to_CNB": true
+      }
+    ],
+    "source_findings": [
+      {
+        "path": "apps/desktop/src-tauri/src/main.rs",
+        "function_lines": {
+          "forbidden_probe": 24,
+          "finish_smoke": 30
+        },
+        "function_compile_guard": "cfg(feature = \"ipc-smoke\")",
+        "smoke_handler_guard_line": 128,
+        "smoke_handler_guard": "cfg(feature = \"ipc-smoke\")",
+        "ordinary_public_handler_line": 134,
+        "ordinary_personal_handler_line": 160,
+        "ordinary_handlers_register_either_E01_command": false
+      },
+      {
+        "path": "apps/desktop/src-tauri/build.rs",
+        "smoke_manifest_line": 18,
+        "ordinary_manifest_registers_either_E01_command": false
+      }
+    ],
+    "conclusions": {
+      "E01_permission_declarations_preexisting": true,
+      "E01_handlers_registered_in_ordinary_Personal_or_Public": false,
+      "E01_capability_grants_in_reviewed_ordinary_configs": false,
+      "strings_alone_prove_handler_registration": false,
+      "scanner_original_review_preserved": true
+    },
+    "limitations": [
+      "Static source, build arguments, generated ACL/capability and signed binary metadata were checked.",
+      "No dynamic IPC request or rejection was performed; this evidence does not prove runtime denial.",
+      "Absence of panic/result strings is supporting evidence only; handler exclusion follows compile guards and ordinary handler lists.",
+      "Signed binary byte comparison covers the two recorded Personal artifacts; it does not claim complete binary equality or a separate Public binary scan."
+    ]
+  }
+}
