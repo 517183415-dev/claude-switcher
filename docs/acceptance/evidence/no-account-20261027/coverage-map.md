@@ -2,6 +2,8 @@
 
 当前候选已推进至CNC `23c9964403e904ab44c2cc334d40992454193221`。Rust新跑684次执行、580个不同名称，另列fixture目录测试1次。Personal/Public隔离测试版preflight及Personal六个原生大小边界限定通过。图片使用生产共享body与合成Publisher；备份仅进入合成计数closure，未解密或访问Vault。A01整项和35项全部通过仍未证明，详见[native-followup.json](native-followup.json)。下表仍是CNA/v4的历史测试索引，不能称为CNC最新计数。
 
+最新测试补足提交 `e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3` 新跑692次、588个不同名称，0失败；比CNC新增8个名称，无删除。确定缺少的用途确认/全关缓存请求、完整更新wire捕获断言，以及三槽各两期和凭据/历史恢复组合已补。该范围有独立源码审查及整组执行证据，详见[branch-audit-followup.json](branch-audit-followup.json)。完整分支覆盖和普通业务IPC仍未证明。
+
 历史CNB新增8个不同Rust测试名及有限分支复核保留在[branch-followup.json](branch-followup.json)。CNC新增5个不同Rust测试名，不把多个程序的重复执行相加为独立用例。
 
 结论：35 个 ID 均找到相关现有测试。该结论不代表 35 项验收通过。

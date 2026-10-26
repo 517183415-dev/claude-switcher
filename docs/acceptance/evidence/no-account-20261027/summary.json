@@ -627,9 +627,10 @@
   "current_followup": {
     "candidate": "CNC",
     "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
-    "path": "native-followup.json",
-    "sha256": "74fe58a0178069cb0513a26b2974385c0d9c52c81ae7f6e13eeb394aaa4feb4c",
-    "status": "PASS_SCOPED_NATIVE_INPUT_BOUNDARIES; OVERALL_ACCEPTANCE_INCOMPLETE"
+    "tests_commit": "e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3",
+    "path": "branch-audit-followup.json",
+    "sha256": "99488d1276c742454a0bcb8c6dd82342e6cf0ea9fce8afaa7708ebd18fb900ef",
+    "status": "PASS_SCOPED_BRANCH_TESTS; OVERALL_ACCEPTANCE_INCOMPLETE"
   },
   "prior_followups": [
     {
@@ -638,6 +639,13 @@
       "path": "branch-followup.json",
       "sha256": "5f3e773ff256496bf3b141167e3f69f92786a3bcc1a760ef38f17e87a5f92882",
       "status": "PASS_SCOPED_CORE_AND_STATIC_BUNDLES; OVERALL_ACCEPTANCE_INCOMPLETE"
+    },
+    {
+      "candidate": "CNC",
+      "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
+      "path": "native-followup.json",
+      "sha256": "74fe58a0178069cb0513a26b2974385c0d9c52c81ae7f6e13eeb394aaa4feb4c",
+      "status": "PASS_SCOPED_NATIVE_INPUT_BOUNDARIES; OVERALL_ACCEPTANCE_INCOMPLETE"
     }
   ]
 }

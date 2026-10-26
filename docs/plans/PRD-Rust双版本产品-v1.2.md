@@ -1,5 +1,7 @@
 # Claude 切换器 Rust 重写 PRD
 
+测试补足轮次：仅测试提交 `e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3`（tree：`ef5a8831e7009b3ec9c76098d76a8a75418200e2`），四文件仅改测试，无新产品bug。Rust本轮692执行/588名/0失败，新增8名无删除，list一致，fmt及全部目标Clippy通过；仍排除原有两项原生测试。它与CNC原轮684/580分开计数。普通产品及双包仍绑定CNC `23c9964`；原生六边界与独立feature测试1PASS未重跑。[本轮输入复核](../../output/no-account-20261027/branch-audit-next/after-test-commit.json)已核对95个稳定构建输入：92个已提交输入逐项匹配git blob，另3个为既有ignored派生组件。Python7、前端73、TypeScript49及commands/bridge静态读取均重新核对哈希，匹配原成功snapshot；Python200与前端63+2按该范围限定复用，未重跑。G1/G2补足未确认、关闭缓存及拒绝持久化矩阵；Publisher补足三槽两期编辑/暂停/失败/重启、历史恢复序号和单侧凭据；G3补足完整wire捕获、正控制及4097拒绝。真实provider与35项完整覆盖仍未证明，33–66小时粗估保留。详见[分轮进度](../handoff/无需账号功能进度-2026-10-27.md)及[测试补足机器摘要](../acceptance/evidence/no-account-20261027/branch-audit-followup.json)。
+
 版本：v1.2。初版日期：2026-10-22，Asia/Taipei。更新日期：2026-10-27，Asia/Shanghai。
 原交接：CS-RUST-20261022-R4。本地整合：CS-RUST-INTEGRATE-20261027。
 状态：本地代码整合完成，产品实施与验收继续进行。交付方式为 GitHub 源码与本地构建／安装脚本。

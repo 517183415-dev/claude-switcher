@@ -8,11 +8,15 @@
 
 CNC产品为 `23c9964403e904ab44c2cc334d40992454193221`，tree为 `920c47bf92fc69ce8916266f61327b3766c8fada`。
 
-CodeGraph 1.6.0已增量同步，结果为Already up to date。CNC当前索引有 **165个文件、4,574个节点、17,868条关系**。历史CNB索引159文件/4,530节点/17,725关系保留为历史；[CNC图谱回执](../../output/no-account-20261027/native-ipc/codegraph-verification.json)绑定当前提交。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
+CodeGraph 1.6.0已增量同步，结果为Already up to date。CNC候选时索引有 **165个文件、4,574个节点、17,868条关系**。历史CNB索引159文件/4,530节点/17,725关系保留为历史；[CNC图谱回执](../../output/no-account-20261027/native-ipc/codegraph-verification.json)绑定当前提交。状态为 `complete`，待同步文件与待解析引用均为零。统计表示自动索引范围，不表示产品测试覆盖率。
+
+仅测试补足提交为 `e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3`，tree：`ef5a8831e7009b3ec9c76098d76a8a75418200e2`；普通产品与App包仍为CNC。四文件仅改测试：`ad_runtime/tests.rs`、`publisher/tests.rs`、`tests/e11_log_privacy.rs`及`updates.rs`测试区。新增8个测试名，无删除；Rust新轮692执行/588名/0失败，list一致，fmt与全部目标Clippy通过，仍排除原有两项原生测试。它不替代CNC原轮684/580、原生六边界及feature1的原证据。[本轮输入复核](../../output/no-account-20261027/branch-audit-next/after-test-commit.json)已核对95个稳定构建输入：92个已提交输入逐项匹配git blob，另3个为既有ignored派生组件。Python7、前端73、TypeScript49及commands/bridge静态读取均重新核对哈希，匹配原成功snapshot；Python200与前端63+2按该范围限定复用，未重跑。
+
+[测试补足图谱回执](../../output/no-account-20261027/branch-audit-next/codegraph-verification.json)记录当前165文件、4586节点、18090关系，complete、pending0。新测试覆盖G1/G2广告门禁与持久化拒绝、Publisher三槽两期/恢复序号/单侧凭据及G3 wire捕获正控制/4097拒绝；无新产品bug，真实provider与完整35项仍未证明。[本轮机器摘要](../acceptance/evidence/no-account-20261027/branch-audit-followup.json)单列测试证据；33–66小时粗估保留。
 
 根目录 [codegraph.json](../../codegraph.json) 排除 `output/`、`tmp/`、验收证据与审核副本。历史源码和证据原件均保留。`experiments/` 保留索引，但降低查询优先级。这样可避免冻结源码参与当前调用链分析。
 
-自动索引覆盖 Rust、Svelte、TypeScript、JavaScript、Python、Swift 和 Objective-C。Shell、PowerShell、配置和文档仍须按入口单独核对。索引数据库位于本机 `.codegraph/`，不纳入 Git。旧同步记录保留；当前验证见[CNB后续摘要](../acceptance/evidence/no-account-20261027/branch-followup.json)，[CNA/v4摘要](../acceptance/evidence/no-account-20261027/summary.json)保留历史。
+自动索引覆盖 Rust、Svelte、TypeScript、JavaScript、Python、Swift 和 Objective-C。Shell、PowerShell、配置和文档仍须按入口单独核对。索引数据库位于本机 `.codegraph/`，不纳入 Git。旧同步记录保留；历史CNB验证见[CNB后续摘要](../acceptance/evidence/no-account-20261027/branch-followup.json)，[CNA/v4摘要](../acceptance/evidence/no-account-20261027/summary.json)保留历史。
 
 ## 2. 当前入口与调用链
 

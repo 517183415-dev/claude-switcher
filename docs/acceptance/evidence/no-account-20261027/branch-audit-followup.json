@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "candidate": "CNC",
+  "status": "PASS_SCOPED_BRANCH_TESTS; OVERALL_ACCEPTANCE_INCOMPLETE",
+  "source_commit": "23c9964403e904ab44c2cc334d40992454193221",
+  "source_tree": "920c47bf92fc69ce8916266f61327b3766c8fada",
+  "tests_commit": "e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3",
+  "tests_tree": "ef5a8831e7009b3ec9c76098d76a8a75418200e2",
+  "runtime_product": "CNC runtime implementation and ordinary bundles remain bound to23c9964; this commit changes only tests",
+  "source_files": {
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "f76eb283cb2093c89f818f20eeeb9994536ef604dcaad6f18e2a8d795f3441d4",
+    "apps/desktop/src-tauri/tests/e11_log_privacy.rs": "4986b6e7d2355c1a386d16e349ee844544d086e39b1d6c1a15a4564c928f6c05",
+    "crates/switcher-core/src/ad_runtime/tests.rs": "3053d85b3831f8d8c94f544a123301883a4e3b948330cddb4e7a2a12741737b4",
+    "crates/switcher-core/src/updates.rs": "9d2d91f04be832bddd00005a222a0af929f577f6dbdf0121454b5658a0240e49"
+  },
+  "rust": {
+    "fresh": true,
+    "executions": 692,
+    "distinct_names": 588,
+    "failures": 0,
+    "list_multiset_matches": true,
+    "new_names": [
+      "ad_runtime::tests::disabled_cached_ads_stay_request_free_after_due_expiry_and_restart",
+      "ad_runtime::tests::unacknowledged_enabled_slots_never_request_content",
+      "publisher::tests::branch_audit_history_restore_restart_and_republish_keep_strict_sequence",
+      "publisher::tests::branch_audit_single_channel_credentials_deny_only_other_channel_without_writes",
+      "publisher::tests::branch_audit_six_campaign_edits_pauses_and_failed_save_survive_restart",
+      "unacknowledged_ad_preferences_are_rejected_without_persistence",
+      "updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control",
+      "updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit"
+    ],
+    "removed_names": [],
+    "checks": [
+      {
+        "label": "tests",
+        "exit": 0,
+        "passed": true,
+        "seconds": 198.90499808301684,
+        "log_sha256": "8f5c686679e190cc07eaa0784fc6040cf1b2a93ef7c0d5ad10e7d29aaa32f38a"
+      },
+      {
+        "label": "list",
+        "exit": 0,
+        "passed": true,
+        "seconds": 0.5729289579903707,
+        "log_sha256": "57803448b997291b8cb4fcde660041ff0d5b05d5b0de670b25e72b70f9d839e1"
+      },
+      {
+        "label": "fmt",
+        "exit": 0,
+        "passed": true,
+        "seconds": 0.4081995830638334,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "clippy",
+        "exit": 0,
+        "passed": true,
+        "seconds": 3.299876624951139,
+        "log_sha256": "37112b677d88d115db42a869264840c4d513d50e9d2292b65beaa0c0f8b60a03"
+      }
+    ],
+    "excluded_native_tests": [
+      "unregistered_or_wrong_signer_service_never_authenticates",
+      "time::tests::real_macos_continuous_sample_is_available"
+    ],
+    "loopback_scope": "Retained solely for existing local HTTP/TLS transport fixtures (updates.rs); all public network remains denied. No product launch.",
+    "child_process_note": "Controlled update test repeats its matrix in a dedicated HOME subprocess; not an additional unique test name",
+    "feature_unit": "Prior CNC scoped1 retained; not rerun",
+    "execution_count_scope": "692 top-level Rust harness ok records across the workspace; subprocess repetitions are not added to this count or counted as additional unique names."
+  },
+  "bounded_assertions": {
+    "G1": "Two editions x3 enabled slots x manual/auto:12 denied refreshes,zero Fetcher calls and unchanged runtime state/clock. Desktop two editions x3 slots x absent/existing preferences:12 rejects without creation or bytes/inode/mtime mutation.",
+    "G2": "Positive cached content baseline; two editions x original/reopened runtime x4 due/expiry times x manual/auto:32 disabled refreshes,zero extra manifest/asset requests; hidden snapshot/image/click and authenticated watermark retained.",
+    "AD01": "Three slots each with two periods; per-slot edit/pause preserves other slots; rejected save preserves complete state; reopen reads same six-campaign state.",
+    "AD03": "Preview-only/production-only credential matrix through credential-requiring ObjectStore composition; opposite channel rejects before immutable/CAS writes; state,objects and Vault unchanged; diagnostics omit synthetic secrets.",
+    "AD07": "Historical content restore followed by reopen and publish strictly increases signed revision; idempotent repeat causes no extra CAS.",
+    "G3": "Production ReleaseTransport check/app/optional helper matrix:2/3 exact GET requests,only Host/User-Agent/Accept,empty bodies,no synthetic account markers or HOME path. Independent POST positive control proves query/headers/body capture.4097-byte body rejects; reads bounded."
+  },
+  "product_bugs_found": 0,
+  "test_facility_history": "Intermediate type/build/harness attempts retained in targeted directories; no product fix inferred",
+  "reuse": {
+    "status": "PASS",
+    "tests_commit": "e4f8cb0c87e27ce0e95758aec5abab57c76d4aa3",
+    "build_inputs": 95,
+    "committed_inputs_match_git": 92,
+    "existing_ignored_derived_components": [
+      "apps/desktop/src-tauri/components/claude-switcher",
+      "apps/desktop/src-tauri/components/switcher-guardian",
+      "apps/desktop/src-tauri/components/switcher-helper"
+    ],
+    "source_map_sha256": "8ebb320fe9aabec7bbd82913a47554d02bd281e92fbc4393dc9e927c73a8d361",
+    "python": {
+      "methods": 200,
+      "fresh_run": false,
+      "current_input_checks": [
+        {
+          "path": "core/claude-switch.sh",
+          "sha256": "d3edd6ab0409dbf4cf7a9c6426ff1649095b57d70ee8227bc845f713cad835e2",
+          "unchanged": true
+        },
+        {
+          "path": "packaging/macos/local_install.py",
+          "sha256": "9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f",
+          "unchanged": true
+        },
+        {
+          "path": "packaging/macos/build_pkg.py",
+          "sha256": "d76587fce8fccc8065737dd495f3dbe1ea2f4a8f8e01b61e9dcceb53779ccd92",
+          "unchanged": true
+        },
+        {
+          "path": "packaging/macos/test_local_install.py",
+          "sha256": "c468148ac433b4054c66f71f8ae24b4b9a83ee25674f0e3c408c3162a63b5bd0",
+          "unchanged": true
+        },
+        {
+          "path": "packaging/macos/test_build_pkg.py",
+          "sha256": "0c379d04594e3a622df7698348ab5d632bf4741c6a4ab819d121b3d153e0ca90",
+          "unchanged": true
+        },
+        {
+          "path": "tests/test_proxy_diagnose.py",
+          "sha256": "9cefb02e85100ea1d40b06dba3f2a06a23af14d1af5aa056a2d8953db5b03fdf",
+          "unchanged": true
+        },
+        {
+          "path": "tests/test_switch_safety.py",
+          "sha256": "2d639f8ffcc63369bebe0a0c4b0db4658ed95371972fdab1a6d640295c65a342",
+          "unchanged": true
+        }
+      ]
+    },
+    "frontend": {
+      "node_tests": 63,
+      "vm_groups": 2,
+      "svelte_errors": 0,
+      "svelte_warnings": 0,
+      "fresh_run": false,
+      "current_relevant_inputs_unchanged": 73,
+      "typescript_inputs_unchanged": 49,
+      "static_rust_reads_unchanged": [
+        "apps/desktop/src-tauri/src/commands.rs",
+        "apps/desktop/src-tauri/src/bridge.rs"
+      ]
+    }
+  },
+  "prior_native_evidence": {
+    "path": "native-followup.json",
+    "ordinary_bundles": "CNC exact archive and hashes retained; not rebuilt or relabeled after test-only commit",
+    "native_ipc": "Prior Personal/Public preflights and Personal six size boundaries; not rerun",
+    "backup_decryption": "NOT_RUN; prior closure counter only"
+  },
+  "coverage": {
+    "original_acceptance_ids": 37,
+    "account_free_ids": 35,
+    "all35_pass": false,
+    "complete_branch_coverage": "NOT_PROVEN",
+    "F08": "NOT_RUN_REAL_LOGIN",
+    "F09": "WAIT_B",
+    "remaining": [
+      "Further bounded branch and ordinary business IPC coverage",
+      "Controlled native transport/privacy across ordinary flows",
+      "Authorized test-system installation/services/proxy/recovery",
+      "Actual trusted advertisement/update sources and native platforms",
+      "Performance and true12h/20min/48h/7d observations"
+    ]
+  },
+  "safety": {
+    "real_accounts": "NOT_ACCESSED",
+    "real_keychain": "NOT_ACCESSED",
+    "ordinary_app_launch": "NOT_RUN",
+    "installation_system_proxy_mutation": "NOT_RUN",
+    "push": "NOT_RUN",
+    "main": "2cf108596a7bb382acbc62c2d1dd9b89e17e1d71"
+  },
+  "evidence_sha256": {
+    "output/no-account-20261027/branch-audit-next/after-test-commit.json": "09c1b2f76426897e5041b44c0921c8f0e1e930f79e1754865bf6914ad7559094",
+    "output/no-account-20261027/branch-audit-next/privacy-request-review.json": "4f55cf172cb556ee630d8504ba2a662cfdedf21275062451ba6cd48282063657",
+    "output/no-account-20261027/branch-audit-next/publisher-branches-review.json": "9af20ca169ad6729b3db569c71b581990e21ca588fa04da96a32fbc7df165945",
+    "output/no-account-20261027/branch-audit-next/review.json": "385e235e037ae77ca7581ff7b53974954b37d257f6bf8c1b099b5c35cf59baf8",
+    "output/no-account-20261027/branch-audit-next/publisher/verification.json": "5c8fb306751bb82769d75d50e205bafd6256f65d5fc02bf67dd62085ae917c50",
+    "output/no-account-20261027/branch-audit-next/ad-runtime/report.json": "870f60709b951e58f6fe751d94611cc10b3ed8fe24c3187a0a40d04e7bb45444",
+    "output/no-account-20261027/branch-audit-next/ad-runtime/receipt.json": "83005f58d009c6e5f28a76f34584b9fe732038ee879d38d5497f52932d1cd988",
+    "output/no-account-20261027/branch-audit-next/update-wire/result.json": "91c919c0a71b142027b23e867c7989b884e227e86cddf6cc3058cc6cd28ea9fb",
+    "output/no-account-20261027/branch-audit-next/rust/r1/summary.json": "28ce7e72679b319ee4505c758d7de649d4c89f274dd43b65f82bff7ca96d7293",
+    "output/no-account-20261027/branch-audit-next/rust/r1/final-verification.json": "02fcb7f5ceb51c881a605be31077d9e8f7387942475b3f97f490fe5768029e3e",
+    "output/no-account-20261027/branch-audit-next/rust/r1/tests.log": "8f5c686679e190cc07eaa0784fc6040cf1b2a93ef7c0d5ad10e7d29aaa32f38a",
+    "output/no-account-20261027/branch-audit-next/rust/r1/list.log": "57803448b997291b8cb4fcde660041ff0d5b05d5b0de670b25e72b70f9d839e1",
+    "output/no-account-20261027/branch-audit-next/codegraph-verification.json": "00e361ca83b0a92a44d6210eb76a757cf5eb2eb36f28d179c9405657bfe9f3bb"
+  }
+}
