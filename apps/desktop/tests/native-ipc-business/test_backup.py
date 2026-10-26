@@ -17,7 +17,8 @@ class BackupReceiptTests(unittest.TestCase):
                                active_unchanged=not success, old_generation_preserved=True,
                                trust_unchanged=True, old_vault_preserved=True, vault_items=2 if success else 1,
                                reopened_credentials_match=True, reopened_slots=[True, False, True] if success else [False] * 3,
-                               recovery_required=success, source_unchanged=True))
+                               recovery_required=success, source_unchanged=True, old_assets_preserved=True, source_assets_unchanged=True,
+                               reopened_asset_bytes_match=True, reopened_asset_reference_matches=True, reopened_asset_validated=True))
         return result
 
     def verify(self, rows=None, events=None):
@@ -67,6 +68,12 @@ class BackupReceiptTests(unittest.TestCase):
     def test_rejects_different_native_and_webview_receipts(self):
         events = copy.deepcopy(self.rows()); events[0]['entered'] = 0
         with self.assertRaises(AssertionError): self.verify(events=events)
+
+    def test_rejects_old_asset_damage(self): self.rejected(lambda rows: rows[0].update(old_assets_preserved=False))
+    def test_rejects_source_asset_damage(self): self.rejected(lambda rows: rows[1].update(source_assets_unchanged=False))
+    def test_rejects_wrong_reopened_asset_bytes(self): self.rejected(lambda rows: rows[4].update(reopened_asset_bytes_match=False))
+    def test_rejects_missing_reopened_asset_reference(self): self.rejected(lambda rows: rows[4].update(reopened_asset_reference_matches=False))
+    def test_rejects_unvalidated_reopened_asset(self): self.rejected(lambda rows: rows[4].update(reopened_asset_validated=False))
 
     def test_rejects_missing_native_receipt(self):
         with self.assertRaises(AssertionError): self.verify(events=self.rows()[:-1])

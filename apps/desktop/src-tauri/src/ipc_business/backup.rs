@@ -5,12 +5,14 @@ use crate::publisher::{
     test_support::MemoryVault,
 };
 use serde_json::{Value, json};
+use std::collections::BTreeMap;
 use std::{
     fs,
     path::{Path, PathBuf},
     sync::Mutex,
 };
 use switcher_core::storage;
+use switcher_domain::ads::{Campaign, ImageAsset};
 
 const NOW: u64 = 1_700_000_000;
 const KEY_ID: &str = "ipc-synthetic-backup";
@@ -22,6 +24,8 @@ struct Harness {
     source_generation: String,
     source_active: Vec<u8>,
     source_state: Vec<u8>,
+    source_trust: Vec<u8>,
+    source_assets: BTreeMap<String, Vec<u8>>,
     index: usize,
 }
 impl BackupFixture {
@@ -68,6 +72,37 @@ fn credentials(publisher: &mut Publisher, marker: u8) -> Result<MemoryVault, Str
         .map_err(|_| "fixture_credentials")?;
     Ok(vault)
 }
+fn assets(root: &Path, generation: &str) -> Result<BTreeMap<String, Vec<u8>>, String> {
+    let directory = root.join(generation).join("assets");
+    let mut files = BTreeMap::new();
+    for entry in fs::read_dir(directory).map_err(|_| "fixture_assets")? {
+        let path = entry.map_err(|_| "fixture_asset_entry")?.path();
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or("fixture_asset_name")?;
+        if name.len() != 64 || !name.bytes().all(|b| b.is_ascii_hexdigit()) || files.len() >= 4 {
+            return Err("fixture_asset_bound".into());
+        }
+        files.insert(name.into(), read(&path)?);
+    }
+    Ok(files)
+}
+fn campaign(image: ImageAsset) -> Campaign {
+    Campaign {
+        campaign_id: "synthetic-backup-image".into(),
+        merchant_id: "synthetic-merchant".into(),
+        merchant_name: "Synthetic merchant".into(),
+        title: "Synthetic backup image".into(),
+        description: "Synthetic local asset only".into(),
+        image,
+        button_text: "View".into(),
+        target_url: "https://synthetic.example.com/".into(),
+        starts_at: NOW,
+        ends_at: NOW + 1000,
+        enabled: true,
+    }
+}
 fn prepare_directory(edition: &Path) -> Result<PathBuf, String> {
     storage::create_private_directory(edition.parent().ok_or("fixture_parent")?)
         .map_err(|_| "fixture_directory")?;
@@ -92,7 +127,14 @@ pub(super) fn ipc_business_backup_export(
     let source_root = root.join("source");
     let mut source = open(&source_root)?;
     let source_vault = credentials(&mut source, 0x62)?;
+    let source_image = source
+        .import_image(
+            include_bytes!("../../../tests/native-ipc-business/backup-source.png"),
+            "image/png",
+        )
+        .map_err(|_| "fixture_source_image")?;
     let mut draft = source.draft_read();
+    draft.slots[0].campaigns.push(campaign(source_image));
     for (slot, enabled) in draft.slots.iter_mut().zip([true, false, true]) {
         slot.enabled = enabled;
     }
@@ -102,10 +144,25 @@ pub(super) fn ipc_business_backup_export(
         .map_err(|_| "fixture_export")?;
     let source_generation = generation(&source_root)?;
     let source_active = read(&source_root.join("active.json"))?;
+    let source_assets = assets(&source_root, &source_generation)?;
+    let source_trust = read(&source_root.join("trust.json"))?;
     let source_state = read(&source_root.join(&source_generation).join("state.json"))?;
     let mut target = open(&root.join("target"))?;
     let vault = credentials(&mut target, 0x72)?;
-    target.pause(None, NOW).map_err(|_| "fixture_pause")?;
+    let old_image = target
+        .import_image(
+            include_bytes!("../../../tests/native-ipc-business/backup-old.png"),
+            "image/png",
+        )
+        .map_err(|_| "fixture_old_image")?;
+    let mut old_draft = target.draft_read();
+    old_draft.slots[0].campaigns.push(campaign(old_image));
+    for slot in &mut old_draft.slots {
+        slot.enabled = false;
+    }
+    target
+        .draft_save(old_draft, NOW)
+        .map_err(|_| "fixture_old_draft")?;
     *locked = Some(Harness {
         root,
         vault,
@@ -113,6 +170,8 @@ pub(super) fn ipc_business_backup_export(
         source_generation,
         source_active,
         source_state,
+        source_trust,
+        source_assets,
         index: 0,
     });
     Ok(bytes)
@@ -143,6 +202,8 @@ pub(super) fn ipc_business_backup_restore(
     let old_active = read(&root.join("active.json"))?;
     let old_state = read(&root.join(&old_generation).join("state.json"))?;
     let old_trust = read(&root.join("trust.json"))?;
+    let old_assets = assets(&root, &old_generation)?;
+    let source_vault_before = harness.source_vault.items.clone();
     let old_vault = MemoryVault {
         items: harness.vault.items.clone(),
         fail: false,
@@ -179,7 +240,9 @@ pub(super) fn ipc_business_backup_restore(
             &source_root
                 .join(&harness.source_generation)
                 .join("state.json"),
-        )? == harness.source_state;
+        )? == harness.source_state
+        && read(&source_root.join("trust.json"))? == harness.source_trust
+        && harness.source_vault.items == source_vault_before;
     let source_secrets = harness
         .source_vault
         .load(&harness.source_generation)
@@ -201,7 +264,28 @@ pub(super) fn ipc_business_backup_restore(
     } else {
         &old_secrets
     };
+    let expected_assets = if case == "success" {
+        &harness.source_assets
+    } else {
+        &old_assets
+    };
+    let reopened_assets = assets(&root, &new_generation)?;
+    let draft = reopened.draft_read();
+    let references: Vec<_> = draft
+        .slots
+        .iter()
+        .flat_map(|slot| &slot.campaigns)
+        .collect();
+    let reference_matches = references.len() == 1
+        && expected_assets.len() == 1
+        && expected_assets.contains_key(&references[0].image.sha256);
+    let asset_validated =
+        reference_matches && reopened.image_preview(&references[0].image.sha256).is_ok();
     let receipt = json!({
+        "old_assets_preserved": assets(&root, &old_generation)? == old_assets,
+        "source_assets_unchanged": assets(&source_root, &harness.source_generation)? == harness.source_assets,
+        "reopened_asset_bytes_match": &reopened_assets == expected_assets,
+        "reopened_asset_reference_matches": reference_matches, "reopened_asset_validated": asset_validated,
         "case": case, "entered": entered, "accepted": result.is_ok(), "error_code": error_code,
         "old_generation": old_generation, "new_generation": new_generation,
         "active_unchanged": read(&root.join("active.json"))? == old_active,

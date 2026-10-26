@@ -5,7 +5,7 @@ import re
 CASES = ['wrong_password', 'tampered', 'truncated', 'vault_failure', 'success']
 COMMANDS = ['ipc_business_backup_export', 'ipc_business_backup_restore']
 ERRORS = ['password_or_integrity', 'password_or_integrity', 'header', 'vault_unavailable', None]
-FLAGS = ['old_generation_preserved', 'trust_unchanged', 'old_vault_preserved', 'reopened_credentials_match', 'source_unchanged']
+FLAGS = ['old_generation_preserved', 'trust_unchanged', 'old_vault_preserved', 'reopened_credentials_match', 'source_unchanged', 'old_assets_preserved', 'source_assets_unchanged', 'reopened_asset_bytes_match', 'reopened_asset_reference_matches', 'reopened_asset_validated']
 FIELDS = {'case', 'entered', 'accepted', 'error_code', 'old_generation', 'new_generation', 'active_unchanged',
           'vault_items', 'reopened_slots', 'recovery_required', *FLAGS}
 
@@ -78,5 +78,21 @@ def validate(stdout, responses, edition, folder, filesystem):
     assert state['recovery_required'] is True, 'independent recovery gate missing'
     old = json.loads(runner.bounded_text(target / proof['old_generation'] / 'state.json', 65536))
     assert [slot['enabled'] for slot in old['draft']['slots']] == [False] * 3, 'old generation damaged'
-    return dict(proof, status='PASS', edition=edition, mode='backup', filesystem=filesystem,
+    from backup_assets import validate_generation, SOURCE_PIXEL, OLD_PIXEL
+    source = base / 'source'
+    source_active = json.loads(runner.bounded_text(source / 'active.json', 4096))
+    assert re.fullmatch('[0-9a-f]{32}', source_active['generation'])
+    source_directory = source / source_active['generation']
+    source_state = json.loads(runner.bounded_text(source_directory / 'state.json', 65536))
+    source_asset = validate_generation(source_directory, source_state, SOURCE_PIXEL, filesystem)
+    restored_asset = validate_generation(target / active['generation'], state, SOURCE_PIXEL, filesystem)
+    old_asset = validate_generation(target / proof['old_generation'], old, OLD_PIXEL, filesystem)
+    assert source_asset == restored_asset and old_asset['sha256'] != restored_asset['sha256'], 'restored asset provenance mismatch'
+    with (source_directory / 'assets' / source_asset['sha256']).open('rb') as handle: source_bytes = handle.read(65537)
+    with (target / active['generation'] / 'assets' / restored_asset['sha256']).open('rb') as handle: restored_bytes = handle.read(65537)
+    assert source_bytes == restored_bytes, 'normalized source/restored bytes differ'
+    proof.update(asset_restored=True, asset_sha256=restored_asset['sha256'], old_asset_sha256=old_asset['sha256'],
+                 asset=restored_asset, actual_png_pixels_checked=True, ancillary_metadata_removed=True,
+                 orphan_generations='not asserted absent; failed Vault store can leave unreachable generation')
+    return dict(proof, status='PASS' , edition=edition, mode='backup', filesystem=filesystem,
                 memory_vault_only=True, original_handler='NOT_RUN', real_keychain='NOT_ACCESSED')
