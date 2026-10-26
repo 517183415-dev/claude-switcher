@@ -1920,3 +1920,212 @@ fn branch_audit_single_channel_credentials_deny_only_other_channel_without_write
         assert_eq!(open(&root).draft_read(), draft);
     }
 }
+
+// Exercise process exit around the real local CAS, without production fault hooks.
+struct ExitingLocalStore {
+    inner: local_store::LocalObjectStore,
+    exit_at: Option<String>,
+    receipt: PathBuf,
+    commits: usize,
+    allowed_commits: usize,
+}
+impl ObjectStore for ExitingLocalStore {
+    fn channel(&self) -> AdChannel {
+        self.inner.channel()
+    }
+    fn requires_credentials(&self) -> bool {
+        self.inner.requires_credentials()
+    }
+    fn current(&mut self) -> std::result::Result<Option<Object>, StoreError> {
+        self.inner.current()
+    }
+    fn public_read(
+        &mut self,
+        key: &str,
+        limit: usize,
+    ) -> std::result::Result<Option<Object>, StoreError> {
+        self.inner.public_read(key, limit)
+    }
+    fn put_immutable(&mut self, key: &str, bytes: &[u8]) -> std::result::Result<(), StoreError> {
+        self.inner.put_immutable(key, bytes)
+    }
+    fn commit_current(
+        &mut self,
+        etag: Option<&str>,
+        bytes: &[u8],
+    ) -> std::result::Result<(), StoreError> {
+        if self.exit_at.as_deref() == Some("before") {
+            storage::atomic_write(&self.receipt, b"before:0").unwrap();
+            std::process::exit(73);
+        }
+        assert!(
+            self.commits < self.allowed_commits,
+            "unexpected repeated local CAS"
+        );
+        self.inner.commit_current(etag, bytes)?;
+        self.commits += 1;
+        if self.exit_at.as_deref() == Some("after") {
+            storage::atomic_write(&self.receipt, b"after:1").unwrap();
+            std::process::exit(73);
+        }
+        Ok(())
+    }
+}
+fn exit_test_publisher(root: &Path) -> Publisher {
+    Publisher::open(
+        root,
+        "ads-personal-v1",
+        Some(signer().verifying_key()),
+        1000,
+    )
+    .unwrap()
+}
+fn exit_test_trust() -> switcher_core::ad_runtime::local::LocalTrust {
+    switcher_core::ad_runtime::local::LocalTrust {
+        schema: 1,
+        key_id: "ads-personal-v1".into(),
+        public_key: signer().verifying_key().to_bytes(),
+    }
+}
+#[test]
+fn local_store_cas_exit_child() {
+    let Some(path) = std::env::var_os("SWITCHER_LOCAL_CAS_EXIT_ROOT") else {
+        return;
+    };
+    let root = PathBuf::from(path);
+    assert!(root.is_absolute());
+    let cut = std::env::var("SWITCHER_LOCAL_CAS_EXIT_AT").unwrap();
+    assert!(matches!(cut.as_str(), "before" | "after"));
+    let drafts = LocalRoot(root.join("drafts"));
+    let mut publisher = exit_test_publisher(&drafts.0);
+    attach_campaign(&mut publisher, 1001);
+    let vault = vault(&mut publisher);
+    let mut source = ExitingLocalStore {
+        inner: local_store::LocalObjectStore::open(
+            &root,
+            AdChannel::Production,
+            &exit_test_trust(),
+        )
+        .unwrap(),
+        exit_at: Some(cut),
+        receipt: root.join("exit-receipt"),
+        commits: 0,
+        allowed_commits: 1,
+    };
+    let _ = publisher.publish_with(&mut source, &vault, AdChannel::Production, 1002);
+    panic!("local CAS exit point was not reached");
+}
+#[test]
+fn local_store_cas_process_exit_recovers_same_release_before_and_after_commit() {
+    use std::process::{Command, Stdio};
+    use std::time::{Duration, Instant};
+    for cut in ["before", "after"] {
+        let root = LocalRoot::new();
+        storage::create_private_directory(&root.0).unwrap();
+        for directory in ["home", "tmp", "v2"] {
+            storage::create_private_directory(&root.0.join(directory)).unwrap();
+        }
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "publisher::tests::local_store_cas_exit_child"])
+            .env_clear()
+            .env("HOME", root.0.join("home"))
+            .env("TMPDIR", root.0.join("tmp"))
+            .env("SWITCHER_LOCAL_CAS_EXIT_ROOT", &root.0)
+            .env("SWITCHER_LOCAL_CAS_EXIT_AT", cut)
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while child.try_wait().unwrap().is_none() {
+            if Instant::now() >= deadline {
+                let _ = child.kill();
+                let _ = child.wait();
+                panic!("controlled local CAS child exceeded deadline");
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        let output = child.wait_with_output().unwrap();
+        assert_eq!(
+            output.status.code(),
+            Some(73),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(
+            fs::read(root.0.join("exit-receipt")).unwrap(),
+            format!("{cut}:{}", usize::from(cut == "after")).as_bytes()
+        );
+        // Both real OS locks must be available after exit, without Rust Drop.
+        let drafts = LocalRoot(root.0.join("drafts"));
+        let mut publisher = exit_test_publisher(&drafts.0);
+        assert_eq!(publisher.status().phase, Some(Phase::CommitUnknown));
+        assert!(publisher.status().history.is_empty());
+        let pending = publisher.state.pending.clone().unwrap();
+        let mut source = ExitingLocalStore {
+            inner: local_store::LocalObjectStore::open(
+                &root.0,
+                AdChannel::Production,
+                &exit_test_trust(),
+            )
+            .unwrap(),
+            exit_at: None,
+            receipt: root.0.join("unused-receipt"),
+            commits: 0,
+            allowed_commits: usize::from(cut == "before"),
+        };
+        let initial = source.current().unwrap();
+        if cut == "after" {
+            assert_eq!(initial.as_ref().unwrap().bytes, pending.wire);
+        } else {
+            assert!(initial.is_none());
+        }
+        // Recovery must not need signing secrets, even before the CAS.
+        let vault = MemoryVault::default();
+        let recovered = publisher
+            .publish_with(&mut source, &vault, AdChannel::Production, 1003)
+            .unwrap();
+        assert_eq!(recovered.release_id, pending.manifest.release_id);
+        assert_eq!(recovered.revision, pending.manifest.content_revision);
+        assert_eq!(source.commits, usize::from(cut == "before"));
+        let current = source.current().unwrap().unwrap();
+        assert_eq!(current.bytes, pending.wire);
+        if let Some(initial) = initial {
+            assert_eq!(current.etag, initial.etag);
+        }
+        let (manifest, _): (AdManifest, String) = signed::verify(
+            &current.bytes,
+            &signer().verifying_key(),
+            ads::MAX_MANIFEST_BYTES,
+        )
+        .unwrap();
+        assert_eq!(manifest, pending.manifest);
+        assert_eq!(
+            source
+                .public_read(&protocol::version_key(&manifest), ads::MAX_MANIFEST_BYTES)
+                .unwrap()
+                .unwrap()
+                .bytes,
+            current.bytes
+        );
+        for campaign in manifest.slots.iter().flat_map(|slot| &slot.campaigns) {
+            let image = source
+                .public_read(
+                    &protocol::asset_key(AdChannel::Production, &campaign.image),
+                    ads::MAX_IMAGE_BYTES,
+                )
+                .unwrap()
+                .unwrap();
+            ads::validate_image(&image.bytes, &campaign.image).unwrap();
+        }
+        assert!(publisher.status().phase.is_none());
+        assert_eq!(publisher.status().history.len(), 1);
+        assert_eq!(publisher.status().history[0].manifest, manifest);
+        drop(source);
+        drop(publisher);
+        let reopened = exit_test_publisher(&drafts.0);
+        assert!(reopened.status().phase.is_none());
+        assert_eq!(reopened.status().history.len(), 1);
+        assert_eq!(reopened.status().history[0].manifest, manifest);
+    }
+}
