@@ -1917,7 +1917,7 @@ pub fn stage_app_archive(
 mod transport_tests {
     use super::*;
     use std::{
-        io::{BufRead, BufReader, Write},
+        io::{BufRead, BufReader, Read, Write},
         process::{Child, Command, Stdio},
         sync::atomic::{AtomicU64, Ordering},
     };
@@ -1959,11 +1959,24 @@ mod transport_tests {
                 .status()
                 .unwrap();
             assert!(result.success());
-            let script = r#"import http.server,ssl,sys,pathlib
+            let script = r#"import http.server,ssl,sys,pathlib,json
 root=pathlib.Path(sys.argv[1])
 class H(http.server.BaseHTTPRequestHandler):
  def log_message(self,*args): pass
  def do_GET(self):
+  self.connection.settimeout(2)
+  if self.headers.get('Transfer-Encoding') is not None:
+   self.send_error(411); return
+  try: length=int(self.headers.get('Content-Length','0'))
+  except ValueError:
+   self.send_error(400); return
+  if not 0 <= length <= 4096:
+   self.send_error(413); return
+  body=self.rfile.read(length)
+  if len(body) != length:
+   self.send_error(400); return
+  record={'method':self.command,'target':self.path,'headers':list(self.headers.raw_items()),'body':list(body)}
+  with (root/'wire.jsonl').open('a') as f: f.write(json.dumps(record)+'\n')
   with (root/'requests.log').open('a') as f: f.write(self.path+'\n')
   with (root/'user-agents.log').open('a') as f: f.write(self.headers.get('User-Agent','')+'\n')
   if (root/'redirect').exists():
@@ -1972,6 +1985,7 @@ class H(http.server.BaseHTTPRequestHandler):
   if name not in ('metadata.json','app.tar.gz','helper.pkg'): self.send_error(404); return
   data=(root/name).read_bytes()
   self.send_response(200); self.send_header('Content-Length',str(len(data))); self.end_headers(); self.wfile.write(data)
+ do_POST=do_GET
 server=http.server.HTTPServer(('127.0.0.1',0),H)
 ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);ctx.load_cert_chain(str(root/'cert.pem'),str(root/'key.pem'))
 server.socket=ctx.wrap_socket(server.socket,server_side=True)
@@ -2014,6 +2028,20 @@ server.serve_forever()
                 );
             }
             builder.build().unwrap()
+        }
+        fn wire(&self) -> Vec<serde_json::Value> {
+            let mut bytes = Vec::new();
+            std::fs::File::open(self.root.join("wire.jsonl"))
+                .unwrap()
+                .take(65_537)
+                .read_to_end(&mut bytes)
+                .unwrap();
+            assert!(bytes.len() <= 65_536, "fixture wire log exceeded bound");
+            String::from_utf8(bytes)
+                .unwrap()
+                .lines()
+                .map(|line| serde_json::from_str(line).unwrap())
+                .collect()
         }
         fn pins() -> ValidatedReleasePins {
             ValidatedReleasePins::validate(ReleasePinSpec {
@@ -2153,6 +2181,53 @@ server.serve_forever()
     }
     #[test]
     fn e11_consent_tls_check_and_download_have_distinct_exact_request_targets() {
+        const CHILD: &str = "E11_UPDATE_WIRE_HOME_CHILD";
+        const CANARIES: [&str; 4] = [
+            "E11_ACCOUNT_A_MARKER_SYNTHETIC_ONLY",
+            "E11_ACCOUNT_B_MARKER_SYNTHETIC_ONLY",
+            "E11_ACTIVE_CLAUDE_MARKER_SYNTHETIC_ONLY",
+            "E11_PRIVATE_FILE_CONTENT_SYNTHETIC_ONLY",
+        ];
+        if std::env::var_os(CHILD).is_none() {
+            let home = TlsFixture::new();
+            for (relative, marker) in [
+                (".claude-switcher/accounts/A/session.json", CANARIES[0]),
+                (".claude-switcher/accounts/B/session.json", CANARIES[1]),
+                (
+                    "Library/Application Support/Claude/session.json",
+                    CANARIES[2],
+                ),
+                (".claude.json", CANARIES[3]),
+            ] {
+                let path = home.root.join(relative);
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(path, marker).unwrap();
+            }
+            let output = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets",
+                    "--nocapture",
+                    "--test-threads=1",
+                ])
+                .env("HOME", &home.root)
+                .env(CHILD, &home.root)
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "HOME child failed: stdout={} stderr={}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            print!("{}", String::from_utf8_lossy(&output.stdout));
+            return;
+        }
+        let home = crate::config::home_dir().unwrap();
+        assert_eq!(
+            home,
+            std::path::PathBuf::from(std::env::var_os(CHILD).unwrap())
+        );
         for include_helper in [false, true] {
             let fixture = TlsFixture::new();
             let key = ed25519_dalek::SigningKey::from_bytes(&[17; 32]);
@@ -2215,11 +2290,102 @@ server.serve_forever()
                 }
             );
             assert_eq!(log(), expected);
+            let requests = fixture.wire();
+            let targets: Vec<_> = expected.lines().collect();
+            assert_eq!(requests.len(), targets.len());
+            for (request, target) in requests.iter().zip(targets) {
+                assert_eq!(request["method"], "GET");
+                assert_eq!(request["target"], target);
+                assert_eq!(request["body"], serde_json::json!([]));
+                let headers = request["headers"].as_array().unwrap();
+                let mut observed = std::collections::BTreeMap::new();
+                for pair in headers {
+                    let name = pair[0].as_str().unwrap().to_ascii_lowercase();
+                    assert!(
+                        matches!(name.as_str(), "host" | "user-agent" | "accept"),
+                        "unexpected outbound header: {name}"
+                    );
+                    assert!(observed.insert(name, pair[1].as_str().unwrap()).is_none());
+                }
+                assert_eq!(observed.len(), 3);
+                assert_eq!(observed["host"], "updates.example.com");
+                assert_eq!(observed["user-agent"], "ClaudeSwitcher/0.2 update");
+                assert_eq!(observed["accept"], "*/*");
+                let serialized = serde_json::to_string(request).unwrap();
+                for forbidden in CANARIES.into_iter().chain([home.to_str().unwrap()]) {
+                    assert!(
+                        !serialized.contains(forbidden),
+                        "private data reached update wire"
+                    );
+                }
+            }
+            println!(
+                "update wire helper_present={include_helper}: {} exact GET requests, empty bodies, fixed headers, synthetic HOME canaries absent",
+                requests.len()
+            );
             assert_eq!(
                 state.candidate.as_ref().unwrap().stage,
                 InstallStage::Downloaded
             );
         }
+    }
+    #[test]
+    fn e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control() {
+        let fixture = TlsFixture::new();
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let response = runtime
+            .block_on(async {
+                fixture
+                    .client(true)
+                    .post("https://updates.example.com/capture-control?synthetic=1")
+                    .header("Cookie", "synthetic-cookie")
+                    .header("Authorization", "Bearer synthetic-token")
+                    .body("synthetic-private-body")
+                    .send()
+                    .await
+            })
+            .unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::NOT_FOUND);
+        let requests = fixture.wire();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0]["method"], "POST");
+        assert_eq!(requests[0]["target"], "/capture-control?synthetic=1");
+        assert_eq!(
+            requests[0]["body"],
+            serde_json::json!(b"synthetic-private-body".to_vec())
+        );
+        let headers = requests[0]["headers"].as_array().unwrap();
+        for (name, value) in [
+            ("cookie", "synthetic-cookie"),
+            ("authorization", "Bearer synthetic-token"),
+        ] {
+            assert!(headers.iter().any(
+                |pair| pair[0].as_str().unwrap().eq_ignore_ascii_case(name) && pair[1] == value
+            ));
+        }
+    }
+    #[test]
+    fn e11_update_wire_capture_rejects_body_above_4096_byte_limit() {
+        let fixture = TlsFixture::new();
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let response = runtime
+            .block_on(async {
+                fixture
+                    .client(true)
+                    .post("https://updates.example.com/capture-control")
+                    .body(vec![b'x'; 4097])
+                    .send()
+                    .await
+            })
+            .unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::PAYLOAD_TOO_LARGE);
+        assert!(!fixture.root.join("wire.jsonl").exists());
     }
     #[test]
     fn controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize() {

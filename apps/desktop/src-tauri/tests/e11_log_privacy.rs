@@ -92,3 +92,79 @@ fn desktop_personal_background_update_actions_are_denied_before_transport() {
     }
     let _ = std::fs::remove_dir_all(root);
 }
+
+#[test]
+fn unacknowledged_ad_preferences_are_rejected_without_persistence() {
+    if std::env::var_os("SWITCHER_E11_AD_PREFS_CHILD").is_some() {
+        use std::os::unix::fs::MetadataExt;
+        for edition in [
+            switcher_domain::Edition::Personal,
+            switcher_domain::Edition::Public,
+        ] {
+            let state = bridge::DesktopState::new(edition).unwrap();
+            let path = state.directory().join("preferences.json");
+            for existing in [false, true] {
+                let before = if existing {
+                    state
+                        .save_preferences(switcher_domain::desktop::Preferences::default())
+                        .unwrap();
+                    let metadata = std::fs::symlink_metadata(&path).unwrap();
+                    Some((
+                        std::fs::read(&path).unwrap(),
+                        metadata.ino(),
+                        metadata.mtime(),
+                        metadata.mtime_nsec(),
+                    ))
+                } else {
+                    None
+                };
+                for slot in 0..3 {
+                    let mut preferences = switcher_domain::desktop::Preferences::default();
+                    preferences.ads.slots_enabled[slot] = true;
+                    assert_eq!(
+                        state.save_preferences(preferences).unwrap_err(),
+                        "请先确认广告请求用途，再开启广告位"
+                    );
+                    if let Some(expected) = &before {
+                        let metadata = std::fs::symlink_metadata(&path).unwrap();
+                        assert_eq!(
+                            &(
+                                std::fs::read(&path).unwrap(),
+                                metadata.ino(),
+                                metadata.mtime(),
+                                metadata.mtime_nsec()
+                            ),
+                            expected
+                        );
+                    } else {
+                        assert!(!path.exists());
+                        assert!(!state.directory().exists());
+                    }
+                }
+            }
+        }
+        return;
+    }
+    let root = std::env::temp_dir().canonicalize().unwrap().join(format!(
+        "switcher-e11-ad-preferences-{}",
+        std::process::id()
+    ));
+    switcher_core::storage::create_private_directory(&root).unwrap();
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "unacknowledged_ad_preferences_are_rejected_without_persistence",
+            "--nocapture",
+        ])
+        .env("SWITCHER_E11_AD_PREFS_CHILD", "1")
+        .env("HOME", &root)
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_dir_all(&root);
+    assert!(
+        output.status.success(),
+        "isolated preferences test failed: {}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}

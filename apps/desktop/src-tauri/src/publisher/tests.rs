@@ -78,6 +78,7 @@ struct MemoryStore {
     channel: AdChannel,
     objects: HashMap<String, Object>,
     commits: usize,
+    immutable_writes: usize,
     conflict: bool,
     unknown_after_commit: bool,
     unknown_before_commit: bool,
@@ -92,6 +93,7 @@ impl MemoryStore {
             channel,
             objects: HashMap::new(),
             commits: 0,
+            immutable_writes: 0,
             conflict: false,
             unknown_after_commit: false,
             unknown_before_commit: false,
@@ -137,6 +139,7 @@ impl ObjectStore for MemoryStore {
         Ok(object)
     }
     fn put_immutable(&mut self, key: &str, bytes: &[u8]) -> std::result::Result<(), StoreError> {
+        self.immutable_writes += 1;
         if !key.starts_with(&format!("{}/", protocol::prefix(self.channel))) {
             return Err(StoreError::Permission);
         }
@@ -1661,4 +1664,204 @@ fn f15_valid_image_accepts_exact_byte_and_pixel_limits() {
     png.push(0);
     assert!(publisher.import_image(&png, "image/png").is_err());
     assert_eq!(before, local_tree(&root.0));
+}
+
+fn six_campaign_draft(publisher: &mut Publisher) -> AdManifest {
+    attach_campaign(publisher, 1001);
+    let mut draft = publisher.draft_read();
+    let template = draft.slots[0].campaigns[0].clone();
+    for (slot_index, slot) in draft.slots.iter_mut().enumerate() {
+        slot.campaigns = (0..2)
+            .map(|period| {
+                let mut campaign = template.clone();
+                campaign.campaign_id = format!("synthetic-slot-{slot_index}-period-{period}");
+                campaign.title = format!("合成广告 {slot_index}/{period}");
+                campaign.starts_at = 1000 + period * 1000;
+                campaign.ends_at = campaign.starts_at + 1000;
+                campaign
+            })
+            .collect();
+    }
+    publisher.draft_save(draft, 1002).unwrap()
+}
+
+#[test]
+fn branch_audit_six_campaign_edits_pauses_and_failed_save_survive_restart() {
+    let root = LocalRoot::new();
+    let mut publisher = open(&root);
+    let complete = six_campaign_draft(&mut publisher);
+    assert_eq!(complete.slots.len(), 3);
+    assert!(complete.slots.iter().all(|slot| slot.campaigns.len() == 2));
+    drop(publisher);
+    let mut publisher = open(&root);
+    assert_eq!(publisher.draft_read(), complete);
+
+    for index in 0..3 {
+        let before = publisher.draft_read();
+        let mut edited = before.clone();
+        edited.slots[index].campaigns[1].title = format!("已编辑的合成广告 {index}");
+        let saved = publisher.draft_save(edited.clone(), 1010).unwrap();
+        assert_eq!(saved.slots, edited.slots);
+        for other in (0..3).filter(|other| *other != index) {
+            assert_eq!(saved.slots[other], before.slots[other]);
+        }
+        let paused = publisher
+            .pause(Some(saved.slots[index].slot), 1011)
+            .unwrap();
+        let mut expected = saved.slots.clone();
+        expected[index].enabled = false;
+        assert_eq!(paused.slots, expected);
+        assert!(paused.content_revision > saved.content_revision);
+        drop(publisher);
+        publisher = open(&root);
+        assert_eq!(publisher.draft_read(), paused);
+
+        let state = encode(&publisher.state, STATE_LIMIT).unwrap();
+        let files = local_tree(&root.0);
+        let mut invalid = paused.clone();
+        invalid.slots[index].campaigns[1].starts_at = invalid.slots[index].campaigns[0].starts_at;
+        assert!(publisher.draft_save(invalid, 1012).is_err());
+        assert_eq!(publisher.draft_read(), paused);
+        assert_eq!(encode(&publisher.state, STATE_LIMIT).unwrap(), state);
+        assert_eq!(local_tree(&root.0), files);
+        drop(publisher);
+        publisher = open(&root);
+        assert_eq!(publisher.draft_read(), paused);
+    }
+}
+
+#[test]
+fn branch_audit_history_restore_restart_and_republish_keep_strict_sequence() {
+    let root = LocalRoot::new();
+    let mut publisher = open(&root);
+    let complete = six_campaign_draft(&mut publisher);
+    let vault = vault(&mut publisher);
+    let mut store = MemoryStore::new(AdChannel::Production);
+    let first = publisher
+        .publish_with(&mut store, &vault, AdChannel::Production, 1003)
+        .unwrap();
+    publisher.pause(Some(complete.slots[1].slot), 1004).unwrap();
+    let second = publisher
+        .publish_with(&mut store, &vault, AdChannel::Production, 1005)
+        .unwrap();
+    assert!(second.revision > first.revision);
+    let restored = publisher.restore_history(&first.release_id, 1006).unwrap();
+    assert_eq!(restored.slots, complete.slots);
+    assert!(restored.content_revision > second.revision);
+    assert_ne!(restored.release_id, first.release_id);
+    drop(publisher);
+    let mut publisher = open(&root);
+    assert_eq!(publisher.draft_read(), restored);
+    let third = publisher
+        .publish_with(&mut store, &vault, AdChannel::Production, 1007)
+        .unwrap();
+    assert_eq!(third.revision, restored.content_revision);
+    assert!(third.revision > second.revision);
+    assert_eq!(third.release_id, restored.release_id);
+    let (remote, _): (AdManifest, String) = signed::verify(
+        &store.objects[&store.key()].bytes,
+        &signer().verifying_key(),
+        ads::MAX_MANIFEST_BYTES,
+    )
+    .unwrap();
+    assert_eq!(remote, publisher.draft_read());
+    assert_eq!(remote.slots, complete.slots);
+    drop(publisher);
+    let mut publisher = open(&root);
+    let history = publisher.status().history;
+    assert_eq!(history.len(), 3);
+    assert_eq!(
+        history
+            .iter()
+            .map(|record| record.manifest.content_revision)
+            .collect::<Vec<_>>(),
+        vec![first.revision, second.revision, third.revision]
+    );
+    assert_eq!(
+        publisher
+            .publish_with(&mut store, &vault, AdChannel::Production, 1008)
+            .unwrap(),
+        third
+    );
+    assert_eq!(store.commits, 3);
+}
+
+fn memory_store_state(store: &MemoryStore) -> Vec<(String, Vec<u8>, String)> {
+    let mut objects: Vec<_> = store
+        .objects
+        .iter()
+        .map(|(key, object)| (key.clone(), object.bytes.clone(), object.etag.clone()))
+        .collect();
+    objects.sort();
+    objects
+}
+
+#[test]
+fn branch_audit_single_channel_credentials_deny_only_other_channel_without_writes() {
+    // This is the credential-requiring ObjectStore composition contract. The
+    // current local filesystem adapter requires no provider credential.
+    for available in [AdChannel::Preview, AdChannel::Production] {
+        let root = LocalRoot::new();
+        let mut publisher = open(&root);
+        six_campaign_draft(&mut publisher);
+        let mut vault = vault(&mut publisher);
+        let mut preview = MemoryStore::new(AdChannel::Preview);
+        let mut production = MemoryStore::new(AdChannel::Production);
+        publisher
+            .publish_with(&mut preview, &vault, AdChannel::Preview, 1003)
+            .unwrap();
+        publisher
+            .publish_with(&mut production, &vault, AdChannel::Production, 1004)
+            .unwrap();
+        let mut draft = publisher.draft_read();
+        draft.slots[0].campaigns[0].title = "凭据矩阵的新合成版本".into();
+        publisher.draft_save(draft, 1005).unwrap();
+        let mut secrets = vault.load(&publisher.generation).unwrap();
+        if available == AdChannel::Preview {
+            secrets.production_credential.clear();
+        } else {
+            secrets.preview_credential.clear();
+        }
+        publisher.credentials_save(&mut vault, &secrets).unwrap();
+        let vault_before = vault.items.clone();
+        let (allowed, denied) = if available == AdChannel::Preview {
+            (&mut preview, &mut production)
+        } else {
+            (&mut production, &mut preview)
+        };
+        let denied_objects = memory_store_state(denied);
+        let denied_writes = denied.immutable_writes;
+        let denied_commits = denied.commits;
+        let allowed_commits = allowed.commits;
+        publisher
+            .publish_with(allowed, &vault, available, 1006)
+            .unwrap();
+        assert_eq!(allowed.commits, allowed_commits + 1);
+        let allowed_objects = memory_store_state(allowed);
+        let allowed_writes = allowed.immutable_writes;
+        let files = local_tree(&root.0);
+        let draft = publisher.draft_read();
+        let history = encode(&publisher.state, STATE_LIMIT).unwrap();
+        let denied_channel = denied.channel;
+        let error = publisher
+            .publish_with(denied, &vault, denied_channel, 1007)
+            .unwrap_err();
+        assert!(matches!(error, Error::SecretUnavailable));
+        let diagnostic = format!("{error} {error:?}");
+        for marker in ["synthetic-preview-only", "synthetic-production-only"] {
+            assert!(!diagnostic.contains(marker));
+        }
+        assert_eq!(memory_store_state(denied), denied_objects);
+        assert_eq!(denied.immutable_writes, denied_writes);
+        assert_eq!(denied.commits, denied_commits);
+        assert_eq!(memory_store_state(allowed), allowed_objects);
+        assert_eq!(allowed.immutable_writes, allowed_writes);
+        assert_eq!(allowed.commits, allowed_commits + 1);
+        assert_eq!(publisher.draft_read(), draft);
+        assert_eq!(encode(&publisher.state, STATE_LIMIT).unwrap(), history);
+        assert_eq!(local_tree(&root.0), files);
+        assert_eq!(vault.items, vault_before);
+        drop(publisher);
+        assert_eq!(open(&root).draft_read(), draft);
+    }
 }

@@ -215,6 +215,145 @@ fn configured_pins_with_all_slots_off_make_zero_requests() {
 }
 
 #[test]
+fn unacknowledged_enabled_slots_never_request_content() {
+    for edition in [Edition::Personal, Edition::Public] {
+        for slot in 0..3 {
+            for manual in [false, true] {
+                let root = Root::new();
+                let mut runtime = configured_runtime(&root);
+                runtime.edition = edition;
+                let mut fetcher = MemoryFetch::default();
+                fetcher.set(&runtime, &manifest(7));
+                let mut preferences = AdPreferences::default();
+                preferences.slots_enabled[slot] = true;
+                let _lock = runtime.lock().unwrap();
+                let (state, clock) = runtime.load(&sample(1000)).unwrap();
+                runtime.save(&state, &clock).unwrap();
+                let state_path = runtime.ads_directory().join("state.json");
+                let clock_path = runtime.directory().join("clock.json");
+                let before = (
+                    passive_file_snapshot(&state_path),
+                    passive_file_snapshot(&clock_path),
+                );
+                let result = runtime
+                    .refresh_locked(
+                        &preferences,
+                        manual,
+                        sample(1001),
+                        Some(&mut fetcher),
+                        Some(17),
+                    )
+                    .unwrap();
+                assert!(!result.refreshed);
+                assert_eq!(result.reason, "ads_disabled");
+                assert!(fetcher.requests.is_empty());
+                assert_eq!(passive_file_snapshot(&state_path), before.0);
+                assert_eq!(passive_file_snapshot(&clock_path), before.1);
+            }
+        }
+    }
+}
+
+#[test]
+fn disabled_cached_ads_stay_request_free_after_due_expiry_and_restart() {
+    fn expired_clock() -> Result<ClockSample> {
+        Ok(sample(200001))
+    }
+    for edition in [Edition::Personal, Edition::Public] {
+        let root = Root::new();
+        let mut runtime = configured_runtime(&root);
+        runtime.edition = edition;
+        let mut fetcher = MemoryFetch::default();
+        fetcher.set(&runtime, &manifest(7));
+        assert!(refresh(&runtime, &mut fetcher, 1000).unwrap().refreshed);
+        assert_eq!(
+            fetcher.requests.len(),
+            2,
+            "manifest plus deduplicated asset"
+        );
+        let requests = fetcher.requests.clone();
+        let (baseline, _) = runtime.load(&sample(1000)).unwrap();
+        let watermark = serde_json::to_value(&baseline.sequence).unwrap();
+        let preferences = AdPreferences {
+            slots_enabled: [false; 3],
+            request_purpose_acknowledged: true,
+        };
+        assert!(runtime.snapshot(&prefs()).unwrap().is_some());
+        assert!(runtime.snapshot(&preferences).unwrap().is_none());
+        assert!(
+            runtime
+                .image_bytes(AdSlot::ResidentialBroadband, &preferences)
+                .unwrap()
+                .is_none()
+        );
+        assert!(matches!(
+            runtime.click_locked(
+                AdSlot::ResidentialBroadband,
+                true,
+                &preferences,
+                &sample(1000)
+            ),
+            Err("ad_not_current")
+        ));
+        // Immediate manual refresh, scheduled refresh, 24h cache expiry and
+        // signed-manifest expiry must all preserve the disabled request gate.
+        for restart in [false, true] {
+            if restart {
+                runtime = configured_runtime(&root);
+                runtime.edition = edition;
+            }
+            for now in [1001, 1917, 87401, 200001] {
+                for manual in [false, true] {
+                    let _lock = runtime.lock().unwrap();
+                    let result = runtime
+                        .refresh_locked(
+                            &preferences,
+                            manual,
+                            sample(now),
+                            Some(&mut fetcher),
+                            Some(17),
+                        )
+                        .unwrap();
+                    assert!(!result.refreshed);
+                    assert_eq!(result.reason, "ads_disabled");
+                    assert_eq!(fetcher.requests, requests);
+                    let (state, clock) = runtime.load(&sample(now)).unwrap();
+                    assert!(
+                        runtime
+                            .visible(&state, &clock, &preferences, now as u64)
+                            .is_none()
+                    );
+                    assert_eq!(serde_json::to_value(&state.sequence).unwrap(), watermark);
+                    assert_eq!(state.cache.highest_revision, 7);
+                    assert_eq!(clock.last_success_utc, Some(1000));
+                }
+            }
+        }
+        runtime.sample_clock = expired_clock;
+        assert!(runtime.snapshot(&preferences).unwrap().is_none());
+        assert!(
+            runtime
+                .image_bytes(AdSlot::ResidentialBroadband, &preferences)
+                .unwrap()
+                .is_none()
+        );
+        assert!(matches!(
+            runtime.click_locked(
+                AdSlot::ResidentialBroadband,
+                true,
+                &preferences,
+                &sample(200001)
+            ),
+            Err("ad_not_current")
+        ));
+        assert_eq!(fetcher.requests, requests);
+        let (state, _) = runtime.load(&sample(200001)).unwrap();
+        assert_eq!(serde_json::to_value(&state.sequence).unwrap(), watermark);
+        assert_eq!(state.cache.highest_revision, 7);
+    }
+}
+
+#[test]
 fn successful_refresh_persists_deadline_filters_slots_and_confirms_clicks() {
     let root = Root::new();
     let runtime = configured_runtime(&root);
