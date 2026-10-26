@@ -1,5 +1,23 @@
 # R4 Rust 实施与验收状态
 
+## 当前整合状态（2026-10-27）
+
+任务：CS-RUST-INTEGRATE-20261027。唯一开发入口为 `/Users/gua/CodexWorkspaces/claude-switcher`，分支为 `codex/rust-rewrite`。
+
+已从 `98c42fc6825ab90fe018032ae4243883e988d856` 快进到整改提交 `49c2615beac0e1f7ac7352977d3212229fe9b012`。`codex/gpt-audit-fixes` 及来源工作树保留。`main` 保持 `2cf108596a7bb382acbc62c2d1dd9b89e17e1d71`。两边原未跟踪文件均保留；本轮文档提交另行记录。
+
+R01–R12、A01–A03 已有源码、隔离回归和限定复核。V-01/V-02 已有后续实现与验证，不再从旧 main 重做 E01。两版完整 App 已基于 `49c2615` 构建，静态结果为 arm64、最低部署元数据 macOS 13、ad-hoc 签名通过。该结果不代表当前候选已开窗、已安装或通过真实账号验收。
+
+当前候选的 GUI/IPC、安装与 root XPC、真实账号、真实代理时序及 48h/7d 保持 NOT_RUN 或对应 WAIT。F-08 不依赖 B，仍需真实 A 保存、重启、恢复和登录证据；F-09 保持 WAIT_B。无障碍专项为 SKIPPED_BY_USER_DIRECTIVE；普通键盘和中文输入仍需适用的当前候选证据。
+
+SourceLocal 的 Personal/Public 均通过源码重建和显式本地安装升级，不自动检查、下载或安装远端更新。DeveloperId Public 的可信远程更新能力单列，继续等待对应身份与发布源证据。
+
+当前交付和候选哈希以[本地整合交付](本地整合交付-2026-10-27.md)及[当前候选验收](../acceptance/当前候选验收-2026-10-27.md)为入口。原始检查点与旧候选证据保留原路径、原哈希和原状态，不跨候选升级。
+
+本次仅授权本地整合、必要修复、合成隔离验证和本地提交。不安装依赖，不操作真实账号、Keychain、Claude、代理或系统服务，不推送或更新 main。下方为历史实施记录；其中暂停、等待报告、未提交、安装及继续开发指令均不构成本次授权。
+
+## 历史实施记录（截至 2026-10-24）
+
 > 2026-10-24 用户要求暂停：**已保存 Gemini 审核前检查点，等待报告，不继续开发或安装。** 已完成、未完成、R01–R05 剩余工作及后续 worktree／整改版本／合并方案见[暂停检查点](Gemini审核前暂停检查点-2026-10-24.md)。当前 main 仍指向旧 HEAD，Rust 重写大多尚未提交；报告返回后先核对并建立基线提交，再创建整改 worktree。本段覆盖下方历史“继续实施／等待安装”的指令。
 
 > 2026-10-24 UTC 旧版核心恢复最新状态：**统一安装已 committed，只读核对 components_verified。** root 服务属组错误已修复，journal/barrier 已清除，原组件备份保留。已安装 20261023 候选的四个二进制匹配冻结工件。真实 Personal 开窗自动完成 14 项检查，首次为 12 通过／2 提示／0 阻止；从当前 A 启动后，Claude 登录窗口出现，切换器自动退出。用户说明旧账号已封禁；参考会话「卸载并清理Claude Code」确认当时清理 CLI、保留 Desktop，不能把登录页归因于本次重写，也不标真实登录通过。未创建真实 B，A→B→A 仍未运行。随后时区变回 Shanghai，CLI 与两版新候选窗口均为 12 通过／1 提示／1 时区阻止，保留旧版每小时纠正周期。
@@ -16,7 +34,7 @@
 现行规格仅为 PRD v1.2 和工程执行文档 v1.2。
 本记录保留实施历史，并标记当前交接状态。适用功能与交付条件以[37 项验收记录](../acceptance/验收记录.md)为准。当前局部原生 PASS 不代表完整验收项 PASS。
 
-## 当前交接状态
+## 历史交接状态（2026-10-23）
 
 2026-10-23 20:38 UTC：**Personal r16 本机管理员替换 committed。** 已安装 App/helper/Guardian SHA 均匹配冻结工件，真实窗口重启成功。真实检查首次因时区漂移为 12 通过／1 提示／1 阻止；应用地区修复后为 **13 通过／1 提示／0 阻止**，修复与安装 pending 已清除。自动纠偏的触发和漂移来源尚未证明。见[本机记录](../acceptance/evidence/e07/legacy-r16-native-install.json)、[复检窗口](../acceptance/evidence/e07/legacy-r16-native-checks-after-repair-ax.txt)。
 
@@ -124,9 +142,9 @@ Public 暂停恢复曾有状态来源不一致缺陷。三个新回归覆盖暂�
 
 当前补充：Personal 反馈候选 `2436e514806c45eed5616e4b3728bedfa4390704ab5863b2bac9f8b9fffe5eb2` 的限定范围原生验证已完成，证据见 [E10 原生观测](../acceptance/evidence/e10/native-backup-feedback.json)和[视觉复核](../acceptance/evidence/e10/native-backup-feedback-visual-verdict.json)。仅广告候选 promote 暂缓；VoiceOver 未运行，c7c 的恢复和资源结果不归属于该候选。
 
-## 构建与使用入口
+## 历史构建与使用入口
 
-在项目根分别运行 `bash scripts/build-rust.sh personal` 与 `bash scripts/build-rust.sh public`。
+常规构建入口为 `bash scripts/build-rust.sh personal` 与 `bash scripts/build-rust.sh public`。脚本含 `npm ci`；本次现有依赖验证禁止直接执行，应按当前整合交付中的离线流程复用证据或构建。
 不要使用 `--all-features`，两个发行特性互斥。
 当前适用环境为 macOS 27.0.1、Apple Silicon；macOS 13 和 Intel 尚无真机结论。
 
@@ -134,7 +152,7 @@ Public 暂停恢复曾有状态来源不一致缺陷。三个新回归覆盖暂�
 恢复说明：[Rust 恢复说明](../usage/Rust恢复说明.md)。
 运营说明：[广告运营说明](../usage/广告运营说明.md)。
 
-## 尚未完成的门槛
+## 历史候选尚未完成的门槛
 
 P1 网络事件覆盖缺口当前为 SOURCE_FIXED_SCOPED_LOCAL_INTEGRATION_PASS_WITH_RUNTIME_LIMITS。此前 GUI/CLI 未注册进程内原生网络回调，网络 A→B→A 可复用旧报告的源码缺口，已完成源码修复、隔离回归、独立复审和 r8 本地构建集成。重叠过滤器共有 26 个不同通过测试；r8 重跑 network_epoch 8 项，不增加上述唯一测试数。生产只读原生订阅检查入口成功，但真实网络 A→B→A 与 wake 回调未诱发，运行时验收仍 NOT_RUN。最终代次采样与 LaunchServices 提交非原子，保留调度/提交边界限制，不保证零竞态或零泄漏。[修复](../acceptance/evidence/e02/core-network-generation-fix.json)、[最终复审](../acceptance/evidence/e02/core-network-generation-review.json)、[集成裁决](../acceptance/evidence/e02/core-network-generation-integration-decision.json)。复审 findings=[]、状态 COMMENT_SCOPED_STATIC，非 approval；裁决仅为 PROCEED_SCOPED_LOCAL_INTEGRATION。初始复审 macos SHA 抄写不全已由最终复审纠正，原始记录保留。核心系统尚未全部完成。
 
@@ -153,7 +171,7 @@ r5 资源采样已完成但证据完整性失败：两版各 213 个样本，固
 13项上游版权通知缺口仍 OPEN。Rust 与 npm 精确版本有界研究均未发现可机械补入的版权归属材料；详见[Rust研究](../acceptance/evidence/e12/core-rust-upstream-notice-sources.md)、[npm研究](../acceptance/evidence/e12/core-npm-upstream-notice-sources.md)和[汇总记录](../acceptance/evidence/e12/core-r5-notice-gap-fix.md)，均非法律审查。法律审查及最终链接 SBOM 为 NOT_RUN。
 本轮不把开发工件、合成账号或受控测试通过计为正式发布验收。r5 日志导出仅证明两版各自本轮 N2 记录的界面/持久化/导出一致，不证明未来所有日志来源或完整脱敏范围。[r5 日志导出证据](../acceptance/evidence/e11/core-r5-native-log-export.md)。
 
-## 工作区保护
+## 历史工作区保护（原接手时点）
 
 Git HEAD 保持 `2cf108596a7bb382acbc62c2d1dd9b89e17e1d71`，没有提交或推送。
 接手时 45/45 保护文件一致；之后仅三处计划内 P0 修复发生变化。

@@ -1,16 +1,21 @@
-$project-handoff $ponytail
+请接续 /Users/gua/CodexWorkspaces/claude-switcher 的当前工程任务，保留现有成果。
 
-请接手 /Users/gua/CodexWorkspaces/claude-switcher 的 Rust 重写，直接开始实现和必要验证。
+任务 ID：CS-RUST-INTEGRATE-20261027。原工程交接 ID：CS-RUST-20261022-R4。
+当前分支为 codex/rust-rewrite，产品源码已快进包含整改提交 49c2615beac0e1f7ac7352977d3212229fe9b012。
+main 保持 2cf108596a7bb382acbc62c2d1dd9b89e17e1d71；来源分支和工作树保留。
 
-交接 ID：CS-RUST-20261022-R4。
-先读取 docs/handoff/项目交接记录.md，再完整执行 docs/handoff/整套项目工程执行提示词.md。
+先读 docs/handoff/本地整合交付-2026-10-27.md 和 docs/acceptance/当前候选验收-2026-10-27.md，再读 docs/handoff/整套项目工程执行提示词.md。
+现行规格只有 docs/plans/PRD-Rust双版本产品-v1.2.md 与 docs/plans/工程执行文档-Rust重写-v1.2.md。
 
-现行规格只有：
-- docs/plans/PRD-Rust双版本产品-v1.2.md
-- docs/plans/工程执行文档-Rust重写-v1.2.md
+R01–R12、A01–A03 已有实现和隔离证据，不从旧 main 重做 E01、V-01/V-02 或整套重写。
+两版完整 App 构建于49c2615；静态验证通过不代表当前候选 GUI/IPC、安装、真实账号或长期验收通过。
+SourceLocal 两发行靠源码重建和显式本地安装升级，不自动检查、下载或安装远端更新。DeveloperId Public 可信更新另列。
 
-采用四个 Rust 包、12 项任务、37 项验收。先执行 E01，修复现有 P0 构建错误并验证真实窗口/IPC。保留 Personal 手动更新、Public 自动更新、暖白墨绿 UI、三个广告位及完整广告运营。
+仅执行当次明确授权任务。本次范围限本地整合、最小修复、合成隔离验证、现有依赖离线构建和本地提交。
+不安装依赖，不运行 sudo/真实安装器，不操作真实账号、Keychain、Claude、代理或系统服务，不推送、发布或更新 main。
+不调用 codex-with-chatgpt 或外部 ChatGPT，不发消息给其他会话，不新建会话或自动化。
+不直接运行含 npm ci 的构建脚本，不运行未审查的全量 cargo test --workspace。
 
-历史 v1.1 合同和旧主方案用于追溯。已移除的双发行并行接管、专用时间服务、额外试用发行、点击统计及预建多云架构保持退出本次范围。
-
-保留现有工作区修改。先核对基线并完成 CodeGraph 预检。普通实现、修复与验证持续推进；证书、托管或第二账号缺失时，仅等待依赖该材料的任务。
+保留四包、两发行、37 项验收、暖白墨绿 UI 和三个固定广告位。核心优先，远程广告托管后置。
+无障碍专项为 SKIPPED_BY_USER_DIRECTIVE；保留支持，普通键盘和中文输入按当前候选分别验收。
+先核对根目录、Git 和 CodeGraph，再按当前交付中的具体下一步继续。历史记录不恢复旧授权。

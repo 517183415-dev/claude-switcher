@@ -1,9 +1,16 @@
 # Rust 本地构建与系统组件安装
 
+当前候选（2026-10-27）：`49c2615` 的 Personal/Public 完整 App 已完成离线构建和静态验收，已复制到原开发目录。路径、哈希及当前未验项目见 [本地整合交付](../../docs/handoff/本地整合交付-2026-10-27.md)。以下安装命令是后续操作说明，本次整合没有执行。
+
+| 安装信任模式 | 构建与升级 | 验收边界 |
+| --- | --- | --- |
+| SourceLocal：Personal/Public | 源码重建、ad-hoc 签名、管理员显式本地安装；重建或换版重新登记代码指纹 | 均不自动远程检查、下载或安装；不要求商业证书 |
+| DeveloperId：可信发布源 | 固定 Team、签名元数据与 PKG；Public 可按设置自动更新 | 身份、正式安装、远程更新及恢复另验；本次 NOT_RUN |
+
 
 ## 从源码构建
 
-在 macOS 普通用户会话中准备 Xcode Command Line Tools、Rust、Node/npm 和 Python 3。Rust 版本由仓库 `rust-toolchain.toml` 指定。构建时不使用 sudo。
+在 macOS 普通用户会话中准备 Xcode Command Line Tools、Rust、Node/npm 和 Python 3。Rust 版本由仓库 `rust-toolchain.toml` 指定。构建时不使用 sudo。下方常规脚本包含 `npm ci`，会安装依赖；禁止安装或升级依赖的验证任务不能直接运行它。
 
 ```bash
 bash scripts/build-rust.sh personal
@@ -11,11 +18,13 @@ bash scripts/build-rust.sh personal
 bash scripts/build-rust.sh public
 ```
 
+本次现有依赖验证采用已存在的直接 Rust 工具链、Node/npm 与缓存，使用提交快照、隔离 HOME、沙箱拒绝网络和真实资料访问。Cargo 固定 `--offline --locked`，npm 离线且不安装；正常执行 beforeBuild、原生组件准备与资源打包。Tauri 使用 `--no-sign`，每版复制固定后仅做本地 ad-hoc 签名。原始 [run_bundle.py](../../output/packaging-validation-20261026/run_bundle.py) 保存当时真实路径与提交，不能直接视为新环境的可运行脚本。重建前须重新绑定提交、ROOT、临时目录、现有工具与依赖路径；缺项报告，禁止临时下载。仅文档变化且输入哈希一致时可复用已核验候选。
+
 Apple Silicon 产物位于 `target/aarch64-apple-darwin/release/bundle/macos/`；Intel 路径为 `target/x86_64-apple-darwin/release/bundle/macos/`。构建脚本只生成本机原生架构。实际 Intel 支持须另行验收。
 
-每个 App 内含已签名 helper、guardian 和 Rust CLI。工件启用 Hardened Runtime。未配置商业签名身份时使用 ad-hoc。本地组件安装需要管理员权限；普通源码核心操作不要求重新登记 GUI 指纹。helper 内部 XPC 仍保留精确身份验证。
+每个 App 内含已签名 helper、guardian 和 Rust CLI。工件启用 Hardened Runtime。未配置商业签名身份时使用 ad-hoc。本地组件安装需要管理员权限；普通操作沿用已登记的代码指纹；重建或发行替换重新走完整 SourceLocal 安装事务。helper 内部 XPC 保留精确身份验证。
 
-## 安装、重装与换版
+## SourceLocal 安装、重装与换版
 
 从仓库根目录运行。以下示例适用于 Apple Silicon 的 Personal 构建：
 
@@ -25,7 +34,7 @@ sudo python3 packaging/macos/local_install.py install --edition personal \
 python3 packaging/macos/local_install.py verify --edition personal
 ```
 
-`install` 默认替换已有组件。`replace` 保留为兼容命令。安装器先退出当前 owner 的 Claude 和切换器，再获取事务锁。它自动生成并校验内部计划摘要。普通 `verify` 无需 sudo，不退出应用，也不修改系统。
+`install` 默认替换已有组件。`replace` 保留为兼容命令。安装器先退出当前 owner 的 Claude 和切换器，再获取事务锁。它自动生成并校验内部计划摘要。普通 `verify` 无需 sudo，不退出应用，也不修改系统，但会读取真实安装状态；受限整合任务不能在默认用户环境执行。
 
 需要先审阅计划时，可选运行 `plan`：
 
@@ -33,6 +42,8 @@ python3 packaging/macos/local_install.py verify --edition personal
 python3 packaging/macos/local_install.py plan --edition personal \
   --app "target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app"
 ```
+
+`plan` 可能读取真实资料或联网发现地区。本次仅验证假系统后端，不运行默认环境的 `plan/verify`。
 
 计划包含固定目标、owner、工件 SHA256、代码指纹和摘要。将输出摘要作为可选 `--digest` 传入安装命令后，安装器会拒绝已经变化的计划。省略此参数时，安装器自动绑定当前计划。
 
@@ -59,7 +70,7 @@ python3 packaging/macos/local_install.py plan --edition personal \
 
 ## 可信签名发布分支与恢复合同
 
-以下保留 DeveloperId 的 PKG 和远程更新合同。它们不要求源码用户购买商业证书。
+以下保留 DeveloperId 的 PKG 和远程更新合同。它们不要求源码用户购买商业证书。本节的签名 PKG、ReplaceEdition 预览及 GUI/guardian 健康提交握手属于 DeveloperId 路径，不能替代上节 SourceLocal 安装器的组件验证与提交规则。
 
 固定服务：`local.claudeswitcher.helper`（root LaunchDaemon/XPC）和
 `local.claudeswitcher.guardian`（owner_uid 的 LaunchAgent）。
