@@ -1,7 +1,14 @@
+#![cfg_attr(feature = "ipc-limits", allow(dead_code))]
+
 #[cfg(all(feature = "personal", feature = "public"))]
 compile_error!("Select exactly one edition");
 #[cfg(not(any(feature = "personal", feature = "public")))]
 compile_error!("Select an edition");
+#[cfg(all(feature = "ipc-smoke", feature = "ipc-limits"))]
+compile_error!("Select exactly one IPC test fixture");
+
+#[cfg(feature = "ipc-limits")]
+mod ipc_limits;
 
 mod bridge;
 mod commands;
@@ -32,6 +39,12 @@ fn finish_smoke(window: tauri::WebviewWindow, ok: bool, denied: bool, rendered: 
     );
 }
 
+#[cfg(feature = "ipc-limits")]
+fn main() {
+    ipc_limits::run();
+}
+
+#[cfg(not(feature = "ipc-limits"))]
 fn main() {
     let edition = if cfg!(feature = "public") {
         switcher_domain::Edition::Public

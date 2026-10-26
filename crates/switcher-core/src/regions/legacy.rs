@@ -739,32 +739,63 @@ mod tests {
             assert_eq!(response.status().as_u16(), 407);
         });
     }
+    fn accept_proxy_fixture_stream(listener: &std::net::TcpListener) -> std::net::TcpStream {
+        use std::time::{Duration, Instant};
+        let deadline = Instant::now() + Duration::from_secs(10);
+        let stream = loop {
+            match listener.accept() {
+                Ok((stream, _)) => break stream,
+                Err(error)
+                    if error.kind() == std::io::ErrorKind::WouldBlock
+                        && Instant::now() < deadline =>
+                {
+                    std::thread::sleep(Duration::from_millis(10))
+                }
+                Err(error) => panic!("fixture proxy was not contacted: {error}"),
+            }
+        };
+        // macOS can inherit the listener's nonblocking mode on accepted sockets.
+        stream.set_nonblocking(false).unwrap();
+        stream
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
+        stream
+    }
+
+    #[test]
+    fn proxy_fixture_accepted_stream_waits_for_delayed_request() {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let address = listener.local_addr().unwrap();
+        let (accepted, wait_for_accept) = std::sync::mpsc::channel();
+        let client = std::thread::spawn(move || {
+            let mut stream = std::net::TcpStream::connect(address).unwrap();
+            wait_for_accept.recv().unwrap();
+            std::thread::sleep(std::time::Duration::from_millis(30));
+            stream.write_all(b"GET /fixture HTTP/1.1\r\n\r\n").unwrap();
+        });
+        let mut stream = accept_proxy_fixture_stream(&listener);
+        accepted.send(()).unwrap();
+        let mut byte = [0];
+        let result = stream.read(&mut byte);
+        client.join().unwrap();
+        assert_eq!(
+            result.unwrap(),
+            1,
+            "accepted stream must wait for the request"
+        );
+        assert_eq!(byte, [b'G']);
+    }
+
     #[test]
     fn fix_egress_production_client_inherits_proxy_in_isolated_child() {
-        use std::{
-            io::{Read, Write},
-            time::{Duration, Instant},
-        };
+        use std::io::{Read, Write};
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         listener.set_nonblocking(true).unwrap();
         let proxy = format!("http://{}", listener.local_addr().unwrap());
         let worker = std::thread::spawn(move || {
-            let deadline = Instant::now() + Duration::from_secs(10);
-            let mut stream = loop {
-                match listener.accept() {
-                    Ok((stream, _)) => break stream,
-                    Err(error)
-                        if error.kind() == std::io::ErrorKind::WouldBlock
-                            && Instant::now() < deadline =>
-                    {
-                        std::thread::sleep(Duration::from_millis(10))
-                    }
-                    Err(error) => panic!("fixture proxy was not contacted: {error}"),
-                }
-            };
-            stream
-                .set_read_timeout(Some(Duration::from_secs(5)))
-                .unwrap();
+            let mut stream = accept_proxy_fixture_stream(&listener);
             let mut request = [0; 4096];
             let count = stream.read(&mut request).unwrap();
             assert!(

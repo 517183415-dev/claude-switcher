@@ -43,6 +43,22 @@ pub fn ad_draft_save(state: Desktop<'_>, manifest: AdManifest) -> Result<AdManif
 }
 #[tauri::command]
 pub fn import_ad_image(state: Desktop<'_>, bytes: Vec<u8>) -> Result<ImportedImage, String> {
+    import_ad_image_body(bytes, |bytes, mime| {
+        with_publisher(&state, |p| {
+            let asset = p.import_image(bytes, mime)?;
+            let preview_data_url = p.image_preview(&asset.sha256)?;
+            Ok(ImportedImage {
+                asset,
+                preview_data_url,
+            })
+        })
+    })
+}
+
+pub(crate) fn import_ad_image_body(
+    bytes: Vec<u8>,
+    import: impl FnOnce(&[u8], &str) -> Result<ImportedImage, String>,
+) -> Result<ImportedImage, String> {
     if bytes.len() > switcher_core::ads::MAX_IMAGE_BYTES {
         return Err("图片超过 1 MiB 上限".into());
     }
@@ -53,14 +69,85 @@ pub fn import_ad_image(state: Desktop<'_>, bytes: Vec<u8>) -> Result<ImportedIma
     } else {
         return Err("请选择静态 PNG 或 JPEG 图片".into());
     };
-    with_publisher(&state, |p| {
-        let asset = p.import_image(&bytes, mime)?;
-        let preview_data_url = p.image_preview(&asset.sha256)?;
-        Ok(ImportedImage {
-            asset,
-            preview_data_url,
-        })
-    })
+    import(&bytes, mime)
+}
+
+#[cfg(test)]
+mod image_command_body_tests {
+    use super::*;
+    use std::cell::Cell;
+    use switcher_domain::ads::ImageAsset;
+
+    fn imported(mime: &str, bytes: usize) -> ImportedImage {
+        ImportedImage {
+            asset: ImageAsset {
+                sha256: "fixture".into(),
+                mime: mime.into(),
+                bytes: bytes as u32,
+                width: 1,
+                height: 1,
+            },
+            preview_data_url: "fixture-preview".into(),
+        }
+    }
+
+    #[test]
+    fn inclusive_image_limit_forwards_original_bytes_and_detected_mime_once() {
+        let limit = switcher_core::ads::MAX_IMAGE_BYTES;
+        for (magic, mime) in [
+            (b"\x89PNG\r\n\x1a\n".as_slice(), "image/png"),
+            (b"\xff\xd8\xff".as_slice(), "image/jpeg"),
+        ] {
+            for len in [limit - 1, limit] {
+                let mut bytes = vec![0x42; len];
+                bytes[..magic.len()].copy_from_slice(magic);
+                let expected = bytes.clone();
+                let calls = Cell::new(0);
+                let result = import_ad_image_body(bytes, |actual, actual_mime| {
+                    calls.set(calls.get() + 1);
+                    assert_eq!(actual, expected);
+                    assert_eq!(actual_mime, mime);
+                    Ok(imported(actual_mime, actual.len()))
+                })
+                .unwrap();
+                assert_eq!(calls.get(), 1);
+                assert_eq!(result.asset.mime, mime);
+                assert_eq!(result.asset.bytes as usize, len);
+                assert_eq!(result.preview_data_url, "fixture-preview");
+            }
+        }
+    }
+
+    #[test]
+    fn oversized_images_are_rejected_before_mime_or_import() {
+        for magic in [b"\x89PNG\r\n\x1a\n".as_slice(), b"\xff\xd8\xff", b"invalid"] {
+            let mut bytes = vec![0; switcher_core::ads::MAX_IMAGE_BYTES + 1];
+            bytes[..magic.len()].copy_from_slice(magic);
+            let result = import_ad_image_body(bytes, |_, _| panic!("import must not run"));
+            assert_eq!(result.unwrap_err(), "图片超过 1 MiB 上限");
+        }
+    }
+
+    #[test]
+    fn empty_and_unsupported_images_are_rejected_before_import() {
+        for bytes in [vec![], b"GIF89a".to_vec(), b"\x89PNG".to_vec()] {
+            let result = import_ad_image_body(bytes, |_, _| panic!("import must not run"));
+            assert_eq!(result.unwrap_err(), "请选择静态 PNG 或 JPEG 图片");
+        }
+    }
+
+    #[test]
+    fn import_error_is_returned_without_replacement() {
+        let calls = Cell::new(0);
+        let result = import_ad_image_body(b"\xff\xd8\xff".to_vec(), |bytes, mime| {
+            calls.set(calls.get() + 1);
+            assert_eq!(bytes, b"\xff\xd8\xff");
+            assert_eq!(mime, "image/jpeg");
+            Err("fixture import error".into())
+        });
+        assert_eq!(calls.get(), 1);
+        assert_eq!(result.unwrap_err(), "fixture import error");
+    }
 }
 #[tauri::command]
 pub fn ad_image_preview(state: Desktop<'_>, sha256: String) -> Result<String, String> {

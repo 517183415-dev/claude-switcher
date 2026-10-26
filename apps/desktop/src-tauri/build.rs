@@ -1,6 +1,21 @@
 fn main() {
-    let commands: &'static [&'static str] = if std::env::var_os("CARGO_FEATURE_IPC_SMOKE").is_some()
-    {
+    let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_LIMITS").is_some() {
+        if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
+            &[
+                "ipc_limits_info",
+                "ipc_limits_image",
+                "ipc_limits_backup",
+                "ipc_limits_forbidden",
+                "ipc_limits_finish",
+            ]
+        } else {
+            &[
+                "ipc_limits_info",
+                "ipc_limits_forbidden",
+                "ipc_limits_finish",
+            ]
+        }
+    } else if std::env::var_os("CARGO_FEATURE_IPC_SMOKE").is_some() {
         &["runtime_info", "forbidden_probe", "finish_smoke"]
     } else if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
         &[

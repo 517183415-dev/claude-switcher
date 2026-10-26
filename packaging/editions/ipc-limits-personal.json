@@ -1,0 +1,9 @@
+{
+  "identifier": "local.switcher.ipclimits.personal",
+  "build": { "frontendDist": "../tests/native-ipc" },
+  "app": {
+    "windows": [{ "label": "ipc-limits", "title": "IPC 隔离验证", "width": 640, "height": 360, "incognito": true, "url": "index.html" }],
+    "security": { "capabilities": [{ "identifier": "ipc-limits", "windows": ["ipc-limits"], "permissions": ["allow-ipc-limits-info", "allow-ipc-limits-image", "allow-ipc-limits-backup", "allow-ipc-limits-finish"] }] }
+  },
+  "bundle": { "active": false }
+}
