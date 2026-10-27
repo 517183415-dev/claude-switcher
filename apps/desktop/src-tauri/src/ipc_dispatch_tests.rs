@@ -322,6 +322,161 @@ fn ad_refresh_guidance_matches_disabled_and_missing_source() {
     }
 }
 
+fn ad_fixture_clock() -> Result<switcher_core::time::ClockSample, &'static str> {
+    let now = switcher_core::checks::unix_now();
+    Ok(switcher_core::time::ClockSample {
+        utc_secs: i64::try_from(now).map_err(|_| "synthetic_clock")?,
+        continuous_ms: now.checked_mul(1000).ok_or("synthetic_clock")?,
+        boot_id: "synthetic-ad-refresh".into(),
+    })
+}
+
+fn no_release_ad_source() {
+    assert!(
+        [
+            option_env!("SWITCHER_AD_SOURCE"),
+            option_env!("SWITCHER_AD_PUBLIC_KEY_HEX"),
+            option_env!("SWITCHER_AD_KEY_ID"),
+            option_env!("SWITCHER_AD_CHANNEL"),
+        ]
+        .iter()
+        .all(Option::is_none),
+        "this isolated refresh test requires an unconfigured release source"
+    );
+}
+
+fn ad_app(
+    root: &SyntheticRoot,
+    edition: switcher_domain::Edition,
+) -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
+    let state = DesktopState::isolated_activity_fixture(root.0.clone(), edition)
+        .with_ad_clock(ad_fixture_clock);
+    root.build_app(
+        state,
+        #[cfg(feature = "personal")]
+        Arc::new(crate::publisher::security::ManagedVault::synthetic(
+            crate::publisher::test_support::MemoryVault::default(),
+        )),
+    )
+}
+
+fn enable_one_ad_slot(window: &tauri::WebviewWindow<MockRuntime>) {
+    let mut preferences =
+        serde_json::to_value(switcher_domain::desktop::Preferences::default()).unwrap();
+    preferences["ads"]["slots_enabled"] = json!([true, false, false]);
+    preferences["ads"]["request_purpose_acknowledged"] = json!(true);
+    assert_eq!(
+        invoke(
+            window,
+            "save_preferences",
+            json!({"preferences": preferences})
+        )
+        .unwrap(),
+        preferences
+    );
+}
+
+#[test]
+fn ad_refresh_dispatch_reports_disabled_and_missing_source() {
+    use switcher_domain::Edition;
+    no_release_ad_source();
+    for edition in [Edition::Personal, Edition::Public] {
+        let root = SyntheticRoot::new();
+        let (_app, window) = ad_app(&root, edition);
+        let disabled = invoke(&window, "refresh_ad_content", json!({})).unwrap();
+        assert_eq!(disabled["completed"], false);
+        assert!(
+            disabled["message"]
+                .as_str()
+                .unwrap()
+                .contains("广告位已关闭")
+        );
+        assert!(disabled["recovery"].as_str().unwrap().contains("设置"));
+        enable_one_ad_slot(&window);
+        let missing = invoke(&window, "refresh_ad_content", json!({})).unwrap();
+        assert_eq!(missing["completed"], false);
+        assert!(
+            missing["message"]
+                .as_str()
+                .unwrap()
+                .contains("来源尚未配置")
+        );
+        assert!(
+            missing["recovery"]
+                .as_str()
+                .unwrap()
+                .contains(match edition {
+                    Edition::Personal => "本机",
+                    Edition::Public => "发布方",
+                })
+        );
+    }
+}
+
+#[test]
+#[cfg(feature = "personal")]
+fn ad_refresh_dispatch_verifies_local_publication_and_rejects_tampering() {
+    use switcher_core::{ad_runtime::AdRuntime, storage};
+    use switcher_domain::{Edition, ads::AdPreferences};
+    no_release_ad_source();
+    let root = SyntheticRoot::new();
+    let (publisher_app, publisher) = ad_app(&root, Edition::Personal);
+    assert_eq!(
+        invoke(&publisher, "create_ad_signing_key", json!({})).unwrap()["completed"],
+        true
+    );
+    let initial = read(&publisher);
+    let image = invoke(
+        &publisher,
+        "import_ad_image",
+        json!({"bytes": include_bytes!("../../tests/native-ipc-business/backup-source.png").as_slice()}),
+    )
+    .unwrap();
+    let draft = six_campaigns(initial, &image["asset"]);
+    invoke(&publisher, "ad_draft_save", json!({"manifest":draft})).unwrap();
+    assert_eq!(
+        invoke(&publisher, "publish_ad", json!({"channel":"production"})).unwrap()["completed"],
+        true
+    );
+    drop(publisher);
+    drop(publisher_app);
+
+    let current = root.0.join("v2/local-ads/production/current.json");
+    let valid_wire = fs::read(&current).unwrap();
+    let mut invalid_wire: Value = serde_json::from_slice(&valid_wire).unwrap();
+    invalid_wire["signature"][0] = json!(invalid_wire["signature"][0].as_u64().unwrap() ^ 1);
+    let preferences = AdPreferences {
+        slots_enabled: [true, false, false],
+        request_purpose_acknowledged: true,
+    };
+    for edition in [Edition::Personal, Edition::Public] {
+        let (_app, window) = ad_app(&root, edition);
+        enable_one_ad_slot(&window);
+        let refreshed = invoke(&window, "refresh_ad_content", json!({})).unwrap();
+        assert_eq!(refreshed["completed"], true);
+        assert!(refreshed["message"].as_str().unwrap().contains("已验证"));
+        let manifest = AdRuntime::new(root.0.clone(), edition)
+            .with_clock(ad_fixture_clock)
+            .snapshot(&preferences)
+            .unwrap()
+            .expect("verified local content must be visible");
+        assert_eq!(manifest.slots[0].campaigns.len(), 1);
+        assert_eq!(
+            manifest.slots[0].campaigns[0].image.sha256,
+            image["asset"]["sha256"]
+        );
+
+        storage::atomic_json(&current, &invalid_wire).unwrap();
+        assert_eq!(
+            invoke(&window, "refresh_ad_content", json!({})).unwrap_err(),
+            json!("signature")
+        );
+        storage::atomic_write(&current, &valid_wire).unwrap();
+        let recovered = invoke(&window, "refresh_ad_content", json!({})).unwrap();
+        assert_eq!(recovered["completed"], true);
+    }
+}
+
 #[test]
 fn ordinary_registry_preferences_and_redacted_export_persist_on_reopen() {
     use switcher_core::storage;

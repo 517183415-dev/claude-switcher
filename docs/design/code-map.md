@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：广告手动刷新命令链
+
+`refresh_ad_content → DesktopState::refresh_ads → AdRuntime::refresh_if_due → 签名校验与缓存`。桌面命令测试使用 Tauri MockRuntime、合成资料和测试专用时钟。生产代码继续读取系统时钟。两版构建验证关闭与缺少来源；签名成功、篡改拒绝及恢复在 Personal 测试程序的两版状态中验证。[证据和边界](../acceptance/evidence/no-account-20261027/ad-refresh-dispatch-20261028.md)。
+
+CodeGraph 状态 complete，待处理变更为 0：306 文件、7,550 节点、30,111 条关系。静态图不代表运行验证。
+
 ## 2026-10-28：广告内容来源状态
 
 `DesktopState::snapshot → AdRuntime::new → select_pins → content_source_configured`。状态使用同一个已选来源；`AdRuntime::snapshot` 单独负责可见缓存和错误。`DesktopState::refresh_ads → ad_refresh_waiting` 按等待原因生成恢复提示。来源已配置不代表已发布或已验签。[回归与边界](../acceptance/evidence/no-account-20261027/ad-source-status-20261028.md)。

@@ -13,6 +13,8 @@ pub struct DesktopState {
     pub edition: Edition,
     sessions: CheckSessions,
     repair_plan: Mutex<RepairPlanState>,
+    #[cfg(test)]
+    ad_clock: fn() -> Result<time::ClockSample, &'static str>,
 }
 
 /// One pending UI confirmation. The request ID is not an authorization credential.
@@ -122,7 +124,18 @@ impl DesktopState {
             edition,
             sessions: CheckSessions::default(),
             repair_plan: Mutex::new(RepairPlanState::default()),
+            #[cfg(test)]
+            ad_clock: time::sample,
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_ad_clock(
+        mut self,
+        clock: fn() -> Result<time::ClockSample, &'static str>,
+    ) -> Self {
+        self.ad_clock = clock;
+        self
     }
 
     pub fn new(edition: Edition) -> Result<Self, String> {
@@ -134,6 +147,8 @@ impl DesktopState {
             edition,
             sessions: CheckSessions::default(),
             repair_plan: Mutex::new(RepairPlanState::default()),
+            #[cfg(test)]
+            ad_clock: time::sample,
         })
     }
 
@@ -464,7 +479,10 @@ impl DesktopState {
     }
     pub fn refresh_ads(&self, manual: bool) -> Result<OperationOutcome, String> {
         let preferences = self.preferences()?;
-        let result = AdRuntime::new(self.root.clone(), self.edition)
+        let runtime = AdRuntime::new(self.root.clone(), self.edition);
+        #[cfg(test)]
+        let runtime = runtime.with_clock(self.ad_clock);
+        let result = runtime
             .refresh_if_due(&preferences.ads, manual)
             .map_err(str::to_owned)?;
         if result.refreshed {
@@ -626,12 +644,10 @@ mod migration_compatibility_tests {
     #[test]
     fn unsupported_backup_returns_without_opening_workspace() {
         for edition in [Edition::Personal, Edition::Public] {
-            let state = DesktopState {
-                root: PathBuf::from("/synthetic/unopened-workspace"),
+            let state = DesktopState::isolated_activity_fixture(
+                PathBuf::from("/synthetic/unopened-workspace"),
                 edition,
-                sessions: CheckSessions::default(),
-                repair_plan: Mutex::new(RepairPlanState::default()),
-            };
+            );
             let outcome = state.create_migration_backup();
             assert!(!outcome.completed);
             assert!(outcome.message.contains("无需迁移备份"));
