@@ -1,5 +1,9 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：发布反馈的目标范围修正
+
+`publisher_status → publisher_view` 的未完成发布提示改为所选发布目标；`restore_publisher_backup → restore_publisher_backup_body` 明确本地恢复尚未发布。调用链与上传/恢复事务不变。新增两项反馈回归，发布命令单元集合 10 项通过；[证据](../../output/no-account-20261027/publication-feedback/README.md)。CodeGraph complete、pending 0：240 文件、6347 节点、26460 条边。
+
 ## 2026-10-27：普通产品与测试共用 IPC 注册表
 
 新增 `src-tauri/src/ipc.rs`：公共命令只声明一次，Personal 运营命令只声明一次。普通 main 与 MockRuntime 共用 `ipc::handler`，移除六命令测试路由及权限测试对 main 文本的脆弱解析。迁移前后有序注册保持 Public 23 / Personal 48；现行 ACL 独立核对一致。两个 AppHandle 命令及共用退出函数改为泛型 Runtime，业务、成功条件和退出时序不变。

@@ -1,0 +1,43 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.91s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 6 tests
+test publisher_commands::f16_feedback_tests::only_verified_publication_is_completed ... ok
+test publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors ... ok
+test publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target ... FAILED
+test publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication ... ok
+test publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target ... FAILED
+test publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history ... ok
+
+failures:
+
+---- publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target stdout ----
+
+thread 'publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target' (34225368) panicked at apps/desktop/src-tauri/src/publisher_commands.rs:294:9:
+assertion failed: view.message.contains("先核对所选发布目标的结果")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target stdout ----
+
+thread 'publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target' (34225370) panicked at apps/desktop/src-tauri/src/publisher_commands.rs:280:9:
+assertion failed: result.message.contains("尚未发布")
+
+
+failures:
+    publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target
+    publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

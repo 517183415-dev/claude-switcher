@@ -183,7 +183,7 @@ fn publisher_view(
         .pending_release_id
         .as_ref()
         .map_or_else(String::new, |id| {
-            format!(" 未完成发布：{id}；重新发布时先核对本机结果。")
+            format!(" 未完成发布：{id}；重新发布时先核对所选发布目标的结果。")
         });
     let resolution_status = status
         .last_resolution
@@ -265,6 +265,48 @@ fn resolution_message(summary: &publisher::ResolutionSummary) -> String {
 mod f16_feedback_tests {
     use super::*;
     use publisher::{ResolutionKind, ResolutionSummary};
+
+    #[test]
+    fn restored_backup_feedback_requires_explicit_publication_to_selected_target() {
+        let calls = std::cell::Cell::new(0);
+        let result = restore_publisher_backup_body(
+            b"synthetic-backup",
+            "synthetic-passphrase".into(),
+            |bytes, passphrase| {
+                calls.set(calls.get() + 1);
+                assert_eq!(bytes, b"synthetic-backup");
+                assert_eq!(passphrase, b"synthetic-passphrase");
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(calls.get(), 1);
+        assert!(!result.completed);
+        assert!(result.message.contains("尚未发布"));
+        let recovery = result.recovery.unwrap();
+        assert!(recovery.contains("所选发布目标"));
+        assert!(!recovery.contains("本机正式目录"));
+        assert_eq!(
+            restore_publisher_backup_body(
+                b"synthetic-backup",
+                "synthetic-passphrase".into(),
+                |_, _| Err("synthetic restore rejected".into())
+            )
+            .unwrap_err(),
+            "synthetic restore rejected"
+        );
+    }
+
+    #[test]
+    fn pending_publication_feedback_rechecks_selected_target() {
+        let mut pending = status();
+        pending.phase = Some(publisher::protocol::Phase::CommitUnknown);
+        pending.pending_release_id = Some("synthetic-pending".into());
+        let view = publisher_view(pending, true, false);
+        assert_eq!(view.status, "pending");
+        assert!(view.message.contains("先核对所选发布目标的结果"));
+        assert!(!view.message.contains("先核对本机结果"));
+    }
 
     fn resolution(kind: ResolutionKind) -> ResolutionSummary {
         ResolutionSummary {
@@ -658,8 +700,8 @@ pub(crate) fn restore_publisher_backup_body(
     let passphrase = zeroize::Zeroizing::new(passphrase);
     restore(bytes, passphrase.as_bytes())?;
     Ok(bridge::waiting(
-        "已恢复加密备份中的本地资料",
-        "再次发布到本机正式目录时，将先回读最高序号，并补齐缺失素材",
+        "已恢复加密备份中的本地资料，尚未发布",
+        "请核对草稿后明确发布；软件将先回读所选发布目标的最高序号，并补齐缺失素材",
     ))
 }
 #[tauri::command]

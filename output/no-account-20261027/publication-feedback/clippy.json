@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "personal",
+    "--bin",
+    "switcher-desktop",
+    "--all-targets"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 3.32,
+  "source_sha256": "0b4f0b34de4ae6c15bcd3e5a9d159d13a134028c2d823b9712d5227f3e632c19",
+  "log_sha256": "f06e126ca222d7a1d142cd35e5a65c219bb78cb3ce123ebc4c98429d4296436b"
+}

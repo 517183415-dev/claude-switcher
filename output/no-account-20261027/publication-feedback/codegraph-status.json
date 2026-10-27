@@ -1,0 +1,54 @@
+{
+  "initialized": true,
+  "version": "1.6.0",
+  "projectPath": "/Users/gua/CodexWorkspaces/claude-switcher",
+  "indexPath": "/Users/gua/CodexWorkspaces/claude-switcher/.codegraph",
+  "lastIndexed": "2026-10-27T07:08:10.291Z",
+  "fileCount": 240,
+  "nodeCount": 6347,
+  "edgeCount": 26460,
+  "dbSizeBytes": 259026944,
+  "walSizeBytes": 2060032,
+  "backend": "node-sqlite",
+  "journalMode": "wal",
+  "nodesByKind": {
+    "class": 37,
+    "component": 10,
+    "constant": 70,
+    "enum": 59,
+    "enum_member": 258,
+    "field": 18,
+    "file": 240,
+    "function": 2204,
+    "import": 887,
+    "method": 1618,
+    "property": 194,
+    "struct": 320,
+    "trait": 16,
+    "type_alias": 75,
+    "variable": 341
+  },
+  "languages": [
+    "javascript",
+    "objc",
+    "python",
+    "rust",
+    "svelte",
+    "swift",
+    "typescript"
+  ],
+  "pendingChanges": {
+    "added": 0,
+    "modified": 0,
+    "removed": 0
+  },
+  "worktreeMismatch": null,
+  "index": {
+    "builtWithVersion": "1.6.0",
+    "builtWithExtractionVersion": 25,
+    "currentExtractionVersion": 25,
+    "reindexRecommended": false,
+    "state": "complete",
+    "pendingRefs": 0
+  }
+}

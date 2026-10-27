@@ -1,0 +1,36 @@
+{
+  "status": "FEEDBACK_REGRESSION_VERIFIED_NOT_PUBLICATION_E2E",
+  "base_commit": "1b559a6542ceeb00cd0c1f0bfc38df738c32a723",
+  "source": "apps/desktop/src-tauri/src/publisher_commands.rs",
+  "source_sha256": "0b4f0b34de4ae6c15bcd3e5a9d159d13a134028c2d823b9712d5227f3e632c19",
+  "baseline_binding": "../ordinary-registry/final-inputs.json",
+  "baseline_inputs": 293,
+  "changed_inputs": [
+    "apps/desktop/src-tauri/src/publisher_commands.rs"
+  ],
+  "red": {
+    "passed": 4,
+    "failed": 2
+  },
+  "green": {
+    "passed": 10,
+    "failed": 0,
+    "new_test_names": 2
+  },
+  "validation": "All publisher_commands unit tests, Personal all-target Clippy, changed-file rustfmt; unchanged Public/frontend checks not rerun. No new full-workspace test claim.",
+  "isolation": {
+    "sandbox": "../storage-directory-race/account-free.sb",
+    "home": "../ordinary-registry/home",
+    "tmp": "../ordinary-registry/tmp",
+    "cargo_offline": true,
+    "tauri_config": {
+      "identifier": "local.claudeswitcher.personal"
+    }
+  },
+  "not_tested": [
+    "Native WKWebView",
+    "Native Keychain",
+    "Real R2 publication and client propagation"
+  ],
+  "registration_deployment_payment": "PAUSED"
+}

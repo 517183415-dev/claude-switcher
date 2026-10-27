@@ -1,0 +1,28 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.05s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 10 tests
+test publisher_commands::f16_feedback_tests::only_verified_publication_is_completed ... ok
+test publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors ... ok
+test publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target ... ok
+test publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication ... ok
+test publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target ... ok
+test publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history ... ok
+test publisher_commands::image_command_body_tests::empty_and_unsupported_images_are_rejected_before_import ... ok
+test publisher_commands::image_command_body_tests::import_error_is_returned_without_replacement ... ok
+test publisher_commands::image_command_body_tests::inclusive_image_limit_forwards_original_bytes_and_detected_mime_once ... ok
+test publisher_commands::image_command_body_tests::oversized_images_are_rejected_before_mime_or_import ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 222 filtered out; finished in 0.00s
+
