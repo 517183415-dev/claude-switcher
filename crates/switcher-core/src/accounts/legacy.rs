@@ -1880,8 +1880,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn f06_missing_switch_boundaries_recover_in_fresh_process() {
+    fn assert_f06_fresh_process_recovery(phases: &[&str]) {
         use std::os::unix::process::ExitStatusExt;
         struct ChildGuard(std::process::Child);
         impl Drop for ChildGuard {
@@ -1890,7 +1889,7 @@ mod tests {
                 let _ = self.0.wait();
             }
         }
-        for phase in ["journal_written", "active_exchanged", "journal_unlinked"] {
+        for &phase in phases {
             let fixture = Fixture::new();
             fixture.select(AccountId::A);
             let b_archive = fixture.store.archive(AccountId::B);
@@ -1992,6 +1991,28 @@ mod tests {
                 "F06 boundary={phase} signal=SIGKILL fresh_recovery_exit=0 recoveries=2 archives/metadata/stages/journal=ok"
             );
         }
+    }
+
+    #[test]
+    fn f06_missing_switch_boundaries_recover_in_fresh_process() {
+        assert_f06_fresh_process_recovery(&[
+            "journal_written",
+            "active_exchanged",
+            "journal_unlinked",
+        ]);
+    }
+
+    #[test]
+    fn f06_other_switch_boundaries_recover_in_fresh_process() {
+        assert_f06_fresh_process_recovery(&[
+            "prepared",
+            "swapped",
+            "archived",
+            "committed",
+            "mirrored",
+            "active_cleaned",
+            "archive_cleaned",
+        ]);
     }
 
     #[test]
