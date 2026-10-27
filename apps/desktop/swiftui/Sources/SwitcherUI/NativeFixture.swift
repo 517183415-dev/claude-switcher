@@ -31,6 +31,39 @@ func verifyNativeFixture(webView: WKWebView, host: NSView, bridge: DesktopBridge
                 guard message.contains("请选择静态 PNG 或 JPEG 图片") else { throw BridgeError.invalidResponse }
             }
             checks["binary_input"] = true
+            if ProcessInfo.processInfo.environment["NATIVE_UI_FIXTURE_LARGE_BACKUP"] == "1" {
+                stage = "backup_at_limit"
+                print("SWITCHER_NATIVE_STAGE \(stage)")
+                fflush(stdout)
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.sortedKeys]
+                let before = try encoder.encode(publisher.draft)
+                await publisher.restoreBackup(Data(count: 64 * 1024 * 1024), passphrase: "synthetic-passphrase")
+                guard publisher.error?.contains("backup_header") == true,
+                      publisher.canEdit, !publisher.recoveryRefreshPending,
+                      try encoder.encode(publisher.draft) == before else {
+                    print("SWITCHER_NATIVE_LARGE_FAILURE \(publisher.error ?? "no error")")
+                    throw BridgeError.invalidResponse
+                }
+                checks["backup_at_limit"] = true
+
+                stage = "backup_over_limit"
+                print("SWITCHER_NATIVE_STAGE \(stage)")
+                fflush(stdout)
+                let oversized = Data(count: 64 * 1024 * 1024 + 1).base64EncodedString()
+                do {
+                    _ = try await bridge.invoke(.restorePublisherBackup, arguments: [
+                        "bytes": .string(oversized), "passphrase": .string("synthetic-passphrase")
+                    ])
+                    throw BridgeError.invalidResponse
+                } catch BridgeError.remote(let message) {
+                    guard message.contains("备份文件超过 64 MiB 上限") else {
+                        print("SWITCHER_NATIVE_LARGE_FAILURE \(message)")
+                        throw BridgeError.invalidResponse
+                    }
+                }
+                checks["backup_over_limit"] = true
+            }
         } else {
             guard publisher.draft == nil, !SwitcherPage.visible(in: .public).contains(.operations)
             else { throw BridgeError.invalidResponse }

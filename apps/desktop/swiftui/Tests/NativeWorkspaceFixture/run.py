@@ -49,7 +49,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--edition', choices=('personal', 'public'), required=True)
+    parser.add_argument('--large-backup', action='store_true', help='exercise the 64 MiB native IPC boundary')
     args = parser.parse_args()
+    if args.large_backup and args.edition != 'personal':
+        parser.error('--large-backup requires the personal edition')
     output = args.output.absolute()
     if any(path.is_symlink() for path in (output, *output.parents)):
         raise ValueError('output path must not contain symlinks')
@@ -74,6 +77,8 @@ def main():
            'IPC_BUSINESS_ROOT': str(output / 'tmp/business-root'),
            'IPC_ORDINARY_PUBLISHER_OPT_IN': 'synthetic-memory-vault-only',
            'NATIVE_UI_FIXTURE_IMAGE': str(output / 'workspace.png')}
+    if args.large_backup:
+        env['NATIVE_UI_FIXTURE_LARGE_BACKUP'] = '1'
     command = [str(TOOL / 'cargo'), 'build', '--release', '--offline', '--locked', '--target', 'aarch64-apple-darwin',
                '-p', 'switcher-desktop', '--bin', 'switcher-desktop', '--no-default-features',
                '--features', f'{args.edition},ipc-business,native-ui,custom-protocol']
@@ -96,11 +101,13 @@ def main():
                    check=True, capture_output=True)
     with (output / 'runtime.log').open('wb') as log:
         result = subprocess.run(sandbox + [str(product), '--native-workspace'], cwd=output, env=env,
-                                stdout=log, stderr=subprocess.STDOUT, timeout=60)
+                                stdout=log, stderr=subprocess.STDOUT, timeout=150 if args.large_backup else 60)
     lines = [line.removeprefix('SWITCHER_NATIVE_RESULT ') for line in (output / 'runtime.log').read_text(errors='replace').splitlines()
              if line.startswith('SWITCHER_NATIVE_RESULT ')]
     expected = dict(COMMON, **({'publisher': True, 'binary_input': True} if args.edition == 'personal'
                                else {'publisher_hidden': True, 'backend_denied': True}))
+    if args.large_backup:
+        expected.update(backup_at_limit=True, backup_over_limit=True)
     if result.returncode != 0 or len(lines) != 1 or json.loads(lines[0]) != expected:
         raise RuntimeError('native workspace fixture failed; see runtime.log')
     inputs = sorted((ROOT / 'apps/desktop/swiftui/Sources/SwitcherUI').rglob('*.swift'))
