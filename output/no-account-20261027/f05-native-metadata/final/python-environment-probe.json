@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/usr/bin/python3",
+    "-I",
+    "-u",
+    "-c",
+    "import os,sys,ssl; print(sys.executable); print(sorted(os.environ)); s=__import__('socket').socket(); s.bind(('127.0.0.1',0)); print('loopback_bind_ok')"
+  ],
+  "exit_code": 0,
+  "stdout": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3\n['CPATH', 'HOME', 'LC_ALL', 'LIBRARY_PATH', 'MANPATH', 'SDKROOT', 'TMPDIR', '__CF_USER_TEXT_ENCODING']\nloopback_bind_ok\n",
+  "stderr": ""
+}

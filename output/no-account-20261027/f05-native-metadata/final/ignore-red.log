@@ -1,0 +1,17 @@
+test_account_source_is_visible_and_account_data_stays_ignored (test_source_tracking.SourceTrackingTests.test_account_source_is_visible_and_account_data_stays_ignored) ... FAIL
+
+======================================================================
+FAIL: test_account_source_is_visible_and_account_data_stays_ignored (test_source_tracking.SourceTrackingTests.test_account_source_is_visible_and_account_data_stays_ignored)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexWorkspaces/claude-switcher/tests/test_source_tracking.py", line 23, in test_account_source_is_visible_and_account_data_stays_ignored
+    self.assertEqual(set(result.stdout.splitlines()), data)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'crates/switcher-core/src/accounts/legacy.rs'
+'crates/switcher-core/src/accounts/tests/native_metadata.rs'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.014s
+
+FAILED (failures=1)

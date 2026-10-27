@@ -1,6 +1,8 @@
 .DS_Store
 *.tmp
 accounts/
+# Account implementation is source, not generated login data.
+!/crates/switcher-core/src/accounts/
 lastip
 last-check.txt
 *.log

@@ -6729,14 +6729,23 @@
       "not_proven": [
         {
           "kind": "CORE_BRANCH_COMPLETENESS",
-          "requirement_checklist": "A/B/active内容、权限、xattr、目录身份保持；目标缺失、复制失败与空间错误不提交"
+          "requirement_checklist": "A/B/active内容、权限、xattr、目录身份保持的完整分支；无存档B允许空白资料，复制失败与空间错误不提交"
         },
         {
           "kind": "NATIVE_SYSTEM_EXTERNAL_TIME_GATES",
           "requirement_checklist": "N：macOS 临时 APFS 目录使用实际复制/交换/xattr；跨卷仅按已有支持合同拒绝或处理"
         }
       ],
-      "next_review": "保存交换前后树摘要、mode和xattr，再覆盖失败路径"
+      "next_review": "同卷元数据已有局部原生证据；继续核对跨卷及复制失败/空间错误合同与覆盖",
+      "supplemental_evidence": {
+        "status": "PARTIAL_NATIVE_VERIFIED_NOT_FULL_ACCEPTANCE",
+        "path": "output/no-account-20261027/f05-native-metadata/receipt.json",
+        "tests": [
+          "accounts::tests::native_metadata::f05_native_round_trip_preserves_both_trees_and_latest_nested_metadata",
+          "accounts::tests::native_metadata::f05_native_running_process_preserves_active_archive_and_committed_state"
+        ],
+        "scope": "Production transaction with synthetic stopped callback; actual APFS/ditto/exchange and independently read nested metadata. Cross-volume and complete failure coverage remain unproven."
+      }
     },
     {
       "id": "F-06",

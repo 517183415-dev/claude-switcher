@@ -1,0 +1,23 @@
+{
+  "base_commit": "1c30259858aed7eab05d49c1066d9e96edc7598f",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "results": [
+    {
+      "name": "core-tests",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 101,
+      "inputs_unchanged": true,
+      "log_sha256": "6444568e5491460fbe178a114589b4e4f37c93b459a354c81b68ea135c501f90"
+    }
+  ]
+}

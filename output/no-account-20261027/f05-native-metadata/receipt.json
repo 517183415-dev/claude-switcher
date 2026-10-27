@@ -1,0 +1,54 @@
+{
+  "status": "F05_PARTIAL_NATIVE_VERIFIED_NOT_FULL_ACCEPTANCE",
+  "base_commit": "1c30259858aed7eab05d49c1066d9e96edc7598f",
+  "production_transaction": "AccountStore::select_legacy_checked -> accounts::legacy::select",
+  "injected_boundary": "Claude-stopped callback only; no real Claude process control",
+  "filesystem": "apfs",
+  "core_suite": {
+    "initial": {
+      "passed": 441,
+      "failed": 10,
+      "total": 451
+    },
+    "failed_only_retry": {
+      "passed": 10,
+      "failed": 0
+    },
+    "distinct_passed": 451,
+    "note": "Union of initial passing tests and 10 exact-name retries; not an entirely green single invocation."
+  },
+  "clippy": "PASS all targets -D warnings",
+  "format": "PASS rustfmt --check native_metadata.rs",
+  "ignore_regression": "RED before exception; GREEN after exception",
+  "source_sha256": {
+    ".gitignore": "523c283a8fca4ddbd89ac90bbd609e92f3bb4371212b654e0ebe0f638c130654",
+    "tests/test_source_tracking.py": "e8b1605f66ef1bde66e051348cb38a1c9b0855143318257cb72e54cbdb477c95",
+    "crates/switcher-core/src/accounts.rs": "648ef7a58b21f00c7715caa42a5718e095090d71398a9c240f8738ce2ea1c807",
+    "crates/switcher-core/src/accounts/legacy.rs": "36396ba43a4fe47ae3f0fe2c15049e5df3c693b39ac8600a6c0ad3df6bd737ee",
+    "crates/switcher-core/src/accounts/tests/native_metadata.rs": "9aece952e00ccf408902dead16f14cb256a4c2b7fed895feca92a025ae197dad"
+  },
+  "evidence_sha256": {
+    "final/clippy.log": "bea534492f8b86c7759ba55ae132b4cba789f0575d0609ee82e04a2650018421",
+    "final/codegraph-status.json": "d7ef5ab27c3a8574b31ffdd8f4fb8e2f74e209685d5c7d8a92c9842f2f746611",
+    "final/commands.json": "8c68b6eb955990d64377e5660426d968735293a336940158773d97512b6bc902",
+    "final/core-tests.log": "6444568e5491460fbe178a114589b4e4f37c93b459a354c81b68ea135c501f90",
+    "final/direct-python-probe.json": "5dfca445bebe7f65973d9f60e10369de599b98737376afd634c09a2735b43194",
+    "final/ignore-green.log": "31e54c162b7310ed170a985e5c58bfb91ecb883170e5d1410f83d91af94012f6",
+    "final/ignore-red.log": "ea47fac9dedc5c4511343e80b5476a68973c274660363702ac7df408437d2b53",
+    "final/inputs.json": "7d0f446cbb4a2c3230277cc7cc186df2d11838c635e16ca064d1a9cb2064b2a7",
+    "final/python-environment-probe.json": "cc05da795796552ea9aabe2d5bf4ebeeb0195aab03035cfcea4bf73def4946b3",
+    "final/retries.json": "bd630ba2e612b89621c1a88fb258adf9e46a2ee7d756f128b25429d57786b30d",
+    "final/retry-01.log": "9a911dddbd59b636937e3cb057af89618f5f6a46923926629f33628a8a5928b1",
+    "final/retry-02.log": "658c1e6ffadd0cf2e3e1f117e63f42960d62e1609fbcf0ac865fcba60b9142df",
+    "final/retry-03.log": "53578ddfa0b1aeef6541a29f3f5a59bb497e23729a728005fad2fd729b6f7c44",
+    "final/retry-04.log": "22dbe8b21ce94bb15046b9931fbec37d159084729195d2366150ef139cf1a6ac",
+    "final/retry-05.log": "2d86fc8f91bc1af6900037fbd4963cb57fb3c146e198702d871623943b48acc7",
+    "final/retry-06.log": "950f7af129d57880f1a083455222c1aa5380f432a301dbd42d8c10b454566d9b",
+    "final/retry-07.log": "454fe6e7f766c240db14a2be071d84b59b34e5937fbf72df4d23e302c83c35c9",
+    "final/retry-08.log": "d0e43e6ee049f9895828b3d40a376a8acc08ead09bad98d39d78a7b529d7e171",
+    "final/retry-09.log": "b883e2bbe708c91350d83453d84d8ee08f0080ccb3a71b0500d0fa6cdf8fd449",
+    "final/retry-10.log": "3e18d601893431b10a57be26a4d255cf03f0a1c1d81eaabea95a065127a69a65",
+    "final/retry-account-free.sb": "c4af0681ee51c9df8adaf162f64d0bb209810e10d0093a26453015129199d079",
+    "final/snapshots.json": "f2f26aea8102c4bc3047b5aecd6237f7d8bc64baadbac22eb8f22c92ff120393"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "-I",
+    "-c",
+    "import os,ssl; print(sorted(os.environ)); print(\"ssl_ok\")"
+  ],
+  "exit_code": 0,
+  "stdout": "['HOME', 'LC_ALL', 'TMPDIR', '__CF_USER_TEXT_ENCODING']\nssl_ok\n",
+  "stderr": ""
+}

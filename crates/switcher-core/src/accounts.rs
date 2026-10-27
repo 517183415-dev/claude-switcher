@@ -1563,6 +1563,8 @@ pub(crate) fn access_control(_: &Path) -> io::Result<Vec<u8>> {
 
 #[cfg(all(test, target_os = "macos"))]
 mod tests {
+    mod native_metadata;
+
     use super::*;
     use std::os::unix::fs::PermissionsExt;
     struct Fixture {

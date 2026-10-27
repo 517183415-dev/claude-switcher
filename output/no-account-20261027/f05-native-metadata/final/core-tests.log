@@ -1,0 +1,765 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.78s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 451 tests
+test accounts::legacy::tests::f01_empty_directory_fingerprint_matches_disk ... ok
+test accounts::legacy::tests::changed_stage_is_preserved_instead_of_overwriting_account_data ... ok
+test accounts::legacy::tests::cleanup_resumes_when_child_removed_before_stage_directory ... ok
+test accounts::legacy::tests::f01_empty_outgoing_copy_cannot_replace_saved_archive ... ok
+test accounts::legacy::tests::f01_preserve_flag_cannot_hide_nonempty_outgoing ... ok
+test accounts::legacy::tests::f01_sigkill_child_fixture ... ok
+test accounts::legacy::tests::f01_mismatched_outgoing_journal_stops_before_recovery_mutation ... ok
+test accounts::legacy::tests::f01_old_empty_journals_without_at_risk_a_archive_still_recover ... ok
+test accounts::legacy::tests::ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes ... ok
+F01 target=A boundary=journal_written signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_preserved_archive_rejects_changed_outgoing_staging ... ok
+F01 target=A boundary=prepared signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_source_becoming_empty_before_snapshot_preserves_archive ... ok
+test accounts::legacy::tests::f06_fresh_recovery_child_fixture ... ok
+test accounts::legacy::tests::f01_source_restored_after_empty_copy_is_rejected ... ok
+test accounts::legacy::tests::f01_recorded_empty_active_keeps_legacy_archiving ... ok
+F01 target=A boundary=active_exchanged signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_committed_cleanup_recovers_after_child_removal ... ok
+
+running 1 test
+test accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity ... ok
+test accounts::legacy::tests::legacy_process_crash_child ... ok
+F06 fresh recovery pid=20111 recoveries=2 metadata/stages/journal=ok
+test accounts::legacy::tests::f06_fresh_recovery_child_fixture ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 450 filtered out; finished in 0.21s
+
+F06 boundary=journal_written signal=SIGKILL fresh_recovery_exit=0 recoveries=2 archives/metadata/stages/journal=ok
+test accounts::legacy::tests::journal_write_error_after_rename_preserves_recoverable_stages ... ok
+F01 target=A boundary=swapped signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::pending_journal_without_in_place_field_retains_exchange_recovery ... ok
+
+running 1 test
+F01 target=A boundary=archived signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+F06 fresh recovery pid=20145 recoveries=2 metadata/stages/journal=ok
+test accounts::legacy::tests::f06_fresh_recovery_child_fixture ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 450 filtered out; finished in 0.25s
+
+F06 boundary=active_exchanged signal=SIGKILL fresh_recovery_exit=0 recoveries=2 archives/metadata/stages/journal=ok
+test accounts::legacy::tests::f01_old_empty_first_a_in_place_journal_stops_before_recovery_writes ... ok
+legacy phase=prepared SIGKILL recovery=ok
+test accounts::legacy::tests::unsupported_fifo_times_out_in_native_ditto_without_touching_source ... ok
+F01 target=A boundary=committed signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_preexisting_empty_outgoing_journal_is_preserved_for_review ... ok
+test accounts::tests::account_process_crash_child_fixture ... ok
+
+running 1 test
+F06 fresh recovery pid=20183 recoveries=2 metadata/stages/journal=ok
+test accounts::legacy::tests::f06_fresh_recovery_child_fixture ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 450 filtered out; finished in 0.03s
+
+F06 boundary=journal_unlinked signal=SIGKILL fresh_recovery_exit=0 recoveries=2 archives/metadata/stages/journal=ok
+legacy phase=swapped SIGKILL recovery=ok
+test accounts::legacy::tests::f06_missing_switch_boundaries_recover_in_fresh_process ... ok
+test accounts::legacy::tests::in_place_adoption_recovers_every_durable_boundary_without_replacing_live ... ok
+test accounts::legacy::tests::writable_acl_is_copied_without_becoming_a_business_gate ... ok
+test accounts::tests::copy_provenance_addition_is_allowed_only_for_a_new_verified_copy ... ok
+test accounts::legacy::tests::f01_unowned_empty_prejournal_errors_remove_only_attempt_stages ... ok
+F01 target=A boundary=mirrored signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::copy_provenance_direction_and_existing_values_remain_strict ... ok
+test accounts::legacy::tests::pre_journal_failures_remove_stages_and_preserve_accounts ... ok
+test accounts::tests::copy_rejects_destination_child_replaced_after_proof ... ok
+test accounts::legacy::tests::destination_local_stages_resume_every_persisted_boundary_without_receipts ... ok
+test accounts::tests::copy_rejects_destination_content_changed_after_proof ... ok
+test accounts::tests::copy_rejects_destination_mtime_changed_after_proof ... ok
+legacy phase=archived SIGKILL recovery=ok
+test accounts::tests::copy_proof_rejects_other_xattrs_acl_content_and_mtime_changes ... ok
+test accounts::tests::dangling_account_journal_blocks_switch_before_mutation ... ok
+F01 target=A boundary=active_cleaned signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::dangling_account_journal_requires_recovery ... ok
+test accounts::tests::dangling_legacy_journal_requires_recovery ... ok
+test accounts::tests::dangling_migration_journal_requires_recovery ... ok
+test accounts::tests::derived_current_is_repaired_from_authoritative_state ... ok
+test accounts::tests::existing_a_missing_state_requires_matching_explicit_preview ... ok
+test accounts::tests::graceful_quit_requests_once_waits_for_stop_and_bounds_retries ... ok
+legacy phase=committed SIGKILL recovery=ok
+F01 target=A boundary=archive_cleaned signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::f04_absent_current_keeps_v2_fallback_for_inspection_and_selection ... ok
+test accounts::tests::journal_staged_hash_legacy_fallback_and_format_validation ... ok
+F01 target=A boundary=journal_unlinked signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::legacy_0755_archive_container_opens_without_changing_permissions ... ok
+legacy phase=mirrored SIGKILL recovery=ok
+checkpoint=prepared signal=SIGKILL recoveries=2 current=A identity/content/mode/xattr/mirror/journal=ok
+test accounts::tests::legacy_archive_compatibility_keeps_v2_directories_private ... ok
+test accounts::tests::copy_provenance_round_trip_and_separate_artifact_tampering ... ok
+F01 target=B boundary=journal_written signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::f04_dangling_current_link_is_rejected_before_inspection_or_selection ... ok
+test accounts::tests::legacy_archive_contents_and_metadata_survive_open ... ok
+test accounts::tests::f04_existing_current_link_is_rejected_before_inspection_or_selection ... ok
+legacy phase=active_cleaned SIGKILL recovery=ok
+test accounts::tests::legacy_recovery_accepts_absent_account_journal ... ok
+test accounts::tests::legacy_recovery_rejects_dangling_account_journal_without_mutation ... ok
+checkpoint=swap_intent signal=SIGKILL recoveries=2 current=A identity/content/mode/xattr/mirror/journal=ok
+F01 target=B boundary=prepared signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::missing_archive_container_is_created_private ... ok
+test accounts::tests::legacy_archive_container_modes_and_acl_are_accepted_but_root_links_are_not ... ok
+test accounts::tests::malformed_journal_and_replaced_directory_preserve_every_directory ... ok
+legacy phase=archive_cleaned SIGKILL recovery=ok
+F01 target=B boundary=active_exchanged signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::sigkill_recovers_destination_local_transactions_at_every_boundary ... ok
+test accounts::tests::legacy_selection_recovers_interrupted_exchange_without_backup_permit ... ok
+F05_NATIVE_RUNNING_PROCESS {"active":{"":{"device":16777233,"inode":69199926,"payload":{"attribute":[65,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,421880654],"owner":501}},"session":{"device":16777233,"inode":69199933,"payload":{"attribute":[65,47,115,101,115,115,105,111,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":384,"modified":[1793080952,359874978],"owner":501}},"嵌套目录":{"device":16777233,"inode":69199957,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,429688551],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69199961,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,47,228,188,154,232,175,157,46,98,105,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":416,"modified":[1793080952,437890910],"owner":501}}},"archive":{"":{"device":16777233,"inode":69199983,"payload":{"attribute":[65,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,421880654],"owner":501}},"session":{"device":16777233,"inode":69200001,"payload":{"attribute":[65,47,115,101,115,115,105,111,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":384,"modified":[1793080952,359874978],"owner":501}},"嵌套目录":{"device":16777233,"inode":69199988,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,429688551],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69199997,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,47,228,188,154,232,175,157,46,98,105,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":416,"modified":[1793080952,437890910],"owner":501}}},"current_unchanged":true,"filesystem":"apfs","state_unchanged":true,"transaction_count":0}
+test accounts::tests::native_metadata::f05_native_running_process_preserves_active_archive_and_committed_state ... ok
+checkpoint=after_swap signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test accounts::tests::missing_outgoing_archive_is_recreated_and_recovered_after_rename ... ok
+test accounts::tests::readonly_inspection_uses_legacy_current_without_creating_v2 ... ok
+F01 target=B boundary=swapped signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::synthetic_process_records_block_account_initialization_without_running_apps ... ok
+test accounts::tests::synthetic_process_records_preserve_owner_and_path_boundaries ... ok
+test accounts::tests::pending_repairs_survive_lock_release_and_block_all_account_mutations ... ok
+F05_NATIVE_METADATA {"a_latest":{"":{"device":16777233,"inode":69199831,"payload":{"attribute":[65,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,135797890],"owner":501}},"session":{"device":16777233,"inode":69199841,"payload":{"attribute":[65,47,115,101,115,115,105,111,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":384,"modified":[1793080952,7841840],"owner":501}},"嵌套目录":{"device":16777233,"inode":69199875,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,143681372],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69199877,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,47,228,188,154,232,175,157,46,98,105,110,0,255],"content":[65,45,108,97,116,101,115,116,0,255],"group":20,"mode":416,"modified":[1793080952,657955713],"owner":501}}},"a_restored":{"":{"device":16777233,"inode":69200228,"payload":{"attribute":[65,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,135797890],"owner":501}},"session":{"device":16777233,"inode":69200245,"payload":{"attribute":[65,47,115,101,115,115,105,111,110,0,255],"content":[65,45,111,114,105,103,105,110,97,108],"group":20,"mode":384,"modified":[1793080952,7841840],"owner":501}},"嵌套目录":{"device":16777233,"inode":69200234,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,143681372],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69200237,"payload":{"attribute":[65,47,229,181,140,229,165,151,231,155,174,229,189,149,47,228,188,154,232,175,157,46,98,105,110,0,255],"content":[65,45,108,97,116,101,115,116,0,255],"group":20,"mode":416,"modified":[1793080952,657955713],"owner":501}}},"b_latest":{"":{"device":16777233,"inode":69200066,"payload":{"attribute":[66,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,607527551],"owner":501}},"session":{"device":16777233,"inode":69200082,"payload":{"attribute":[66,47,115,101,115,115,105,111,110,0,255],"content":[66,45,112,114,105,118,97,116,101],"group":20,"mode":384,"modified":[1793080952,570030536],"owner":501}},"嵌套目录":{"device":16777233,"inode":69200070,"payload":{"attribute":[66,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,607772387],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69200074,"payload":{"attribute":[66,45,108,97,116,101,115,116,45,97,116,116,114,105,98,117,116,101,0,254],"content":[66,45,108,97,116,101,115,116,0,254],"group":20,"mode":384,"modified":[1793080953,172844369],"owner":501}}},"b_original":{"":{"device":16777233,"inode":69199986,"payload":{"attribute":[66,47,0,255],"content":null,"group":20,"mode":488,"modified":[1793080952,607527551],"owner":501}},"session":{"device":16777233,"inode":69199994,"payload":{"attribute":[66,47,115,101,115,115,105,111,110,0,255],"content":[66,45,112,114,105,118,97,116,101],"group":20,"mode":384,"modified":[1793080952,570030536],"owner":501}},"嵌套目录":{"device":16777233,"inode":69200004,"payload":{"attribute":[66,47,229,181,140,229,165,151,231,155,174,229,189,149,0,255],"content":null,"group":20,"mode":456,"modified":[1793080952,607772387],"owner":501}},"嵌套目录/会话.bin":{"device":16777233,"inode":69200006,"payload":{"attribute":[66,47,229,181,140,229,165,151,231,155,174,229,189,149,47,228,188,154,232,175,157,46,98,105,110,0,255],"content":[66,45,111,114,105,103,105,110,97,108],"group":20,"mode":416,"modified":[1793080952,618026220],"owner":501}}},"filesystem":"apfs"}
+test accounts::tests::native_metadata::f05_native_round_trip_preserves_both_trees_and_latest_nested_metadata ... ok
+test accounts::tests::unsafe_links_owners_space_and_lock_conflicts_fail_before_exchange ... ok
+F01 target=B boundary=archived signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+checkpoint=swapped signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test accounts::tests::unsafe_migration_directory_blocks_account_inspection ... ok
+test ad_runtime::tests::configured_pins_with_all_slots_off_make_zero_requests ... ok
+test accounts::tests::readonly_acl_is_preserved_and_write_grant_acl_is_rejected ... ok
+test ad_runtime::tests::clock_jump_hides_content_and_baseline_needs_signed_refresh ... ok
+F01 target=B boundary=committed signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::tests::synthetic_exchange_round_trip_keeps_latest_data_modes_and_xattrs ... ok
+test accounts::tests::unsafe_user_repairs_directory_blocks_account_switch ... ok
+test ad_runtime::tests::different_release_source_does_not_inherit_old_refresh_deadline ... ok
+checkpoint=archive_intent signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+F01 target=B boundary=mirrored signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test ad_runtime::tests::different_release_source_does_not_inherit_old_revision ... ok
+F01 target=B boundary=active_cleaned signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+checkpoint=after_archive signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+F01 target=B boundary=archive_cleaned signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_unowned_empty_active_recovers_every_durable_boundary ... ok
+test ad_runtime::tests::controlled_https_capture_rejects_request_body_over_4096_bytes ... ok
+test ad_runtime::tests::controlled_https_capture_detects_sensitive_query_headers_and_body_positive_control ... ok
+test ad_runtime::tests::every_trust_identity_component_has_a_separate_state_and_restores_on_return ... ok
+test ad_runtime::tests::formal_public_build_rejects_r2_development_domains ... ok
+F01 target=B boundary=journal_unlinked signal=SIGKILL recoveries=2 archives/active/current/journal=ok
+test accounts::legacy::tests::f01_sigkill_preserves_archives_at_every_durable_boundary ... ok
+test ad_runtime::tests::legacy_cache_cannot_authenticate_a_higher_failed_asset_watermark ... ok
+test ad_runtime::tests::legacy_cache_signed_by_old_local_key_is_not_attributed_to_new_key ... ok
+test ad_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints ... ok
+checkpoint=archived signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test ad_runtime::tests::legacy_local_cache_is_verified_before_migration_and_original_is_preserved ... ok
+test ad_runtime::tests::failed_asset_keeps_authenticated_watermark_and_hides_old_content ... ok
+test ad_runtime::tests::disabled_cached_ads_stay_request_free_after_due_expiry_and_restart ... ok
+test ad_runtime::tests::local_trust_errors_are_explicit_and_public_open_never_creates_publication ... ok
+test ad_runtime::tests::local_high_revision_does_not_delay_or_block_first_release_refresh ... ok
+test ad_runtime::tests::missing_pins_and_all_off_make_zero_requests ... ok
+test ad_runtime::tests::controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases ... ok
+test ad_runtime::tests::real_loopback_https_rejects_non_tls_peer_without_downgrade ... ok
+test ad_runtime::tests::malformed_state_is_not_reset_and_offline_content_expires ... ok
+test ad_runtime::tests::release_materials_require_complete_valid_fixed_configuration ... ok
+test ad_runtime::tests::release_and_local_trust_selection_respects_edition_and_invalid_configuration ... ok
+
+running 1 test
+test ad_runtime::tests::controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents ... ad wire Personal: manifest + one deduplicated asset, exact headers, empty bodies, synthetic HOME canaries absent
+ad wire Public: manifest + one deduplicated asset, exact headers, empty bodies, synthetic HOME canaries absent
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 450 filtered out; finished in 3.75s
+
+test ad_runtime::tests::passive_disabled_and_missing_materials_preserve_initialized_clock ... ok
+test ad_runtime::tests::legacy_local_floor_survives_key_rotation_and_failed_asset_refresh ... ok
+checkpoint=state_committed signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test ad_runtime::tests::restarted_runtime_rejects_different_signed_content_with_same_revision ... ok
+test ad_runtime::tests::controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents ... ok
+test ad_runtime::tests::transport_bounds_body_rejects_redirect_and_sends_no_identity ... ok
+test ad_runtime::tests::scheduled_refresh_fetches_new_signed_content_and_survives_restart ... ok
+test ad_runtime::tests::passive_snapshots_and_images_preserve_initialized_files_both_editions ... ok
+test ads::tests::all_disabled_has_zero_request_permits_and_single_disabled_has_no_asset ... ok
+test ad_runtime::tests::unverified_legacy_local_watermark_is_preserved_and_rejected ... ok
+test ads::tests::authentication_failures_never_refresh_cache_or_highest_revision ... ok
+test ads::tests::changing_merchant_or_normalized_host_requires_new_consent ... ok
+test ads::tests::animated_malformed_oversize_and_dimension_bombs_are_rejected ... ok
+test ads::tests::earliest_offline_expiry_and_disk_restore_do_not_extend_success_time ... ok
+test ads::tests::future_cache_success_time_is_hidden_and_cannot_be_restored ... ok
+test ads::tests::manifest_scope_validity_and_ninety_day_limit ... ok
+test ads::tests::merchant_urls_reject_private_forms_and_normalize_idn ... ok
+test ads::tests::overlapping_disabled_campaign_still_requires_resolution ... ok
+test ads::tests::nested_unknown_and_duplicate_fields_are_rejected_after_signature ... ok
+test ads::tests::png_jpeg_normalization_and_hash_mime_dimensions_are_enforced ... ok
+test ads::tests::schedule_persists_jitter_remaining_time_backoff_and_merges_manual_requests ... ok
+test ads::tests::three_unique_slots_two_campaigns_and_global_ids ... ok
+test checks::tests::gate_rejects_changed_empty_or_inconsistent_network_generation ... ok
+test ads::tests::utc_boundaries_current_next_pause_and_slot_preferences ... ok
+test checks::tests::gate_rejects_expired_future_and_inconsistent_evidence_times ... ok
+test checks::tests::gate_rejects_invalid_schema_and_each_summary_field_independently ... ok
+test checks::tests::gate_requires_complete_unique_results_and_fresh_evidence ... ok
+test checks::tests::legacy_dns_routes_language_and_wifi_use_original_scope ... ok
+test checks::tests::legacy_guardian_registration_passes_without_health_signature ... ok
+test checks::tests::legacy_history_prunes_and_counts_distinct_hashes ... ok
+test checks::tests::legacy_https_accepts_any_nonzero_http_status ... ok
+test checks::tests::legacy_language_and_asn_conditions ... ok
+test ad_runtime::tests::passive_no_work_refresh_preserves_clock_and_authenticated_history ... ok
+test checks::tests::network_generation_before_and_after_checks_controls_permission ... ok
+test checks::tests::incomplete_check_tasks_keep_all_ids_and_block ... ok
+test ad_runtime::tests::successful_refresh_persists_deadline_filters_slots_and_confirms_clicks ... ok
+test checks::tests::network_generation_samples_share_one_budget_with_observations ... ok
+test ad_runtime::tests::stale_confirmation_and_slot_disabled_never_open_cached_target ... ok
+test checks::tests::only_two_advisory_warnings_can_pass_the_gate ... ok
+test checks::tests::network_generation_sampling_timeout_keeps_complete_reports ... ok
+test checks::tests::report_completed_results_allow_only_a_complete_passing_report ... ok
+
+thread 'checks::tests::report_join_errors_and_cancellation_preserve_other_results_and_block_launch' (34102511) panicked at crates/switcher-core/src/checks.rs:1471:41:
+injected observation task panic
+test checks::tests::report_deadline_returns_all_ids_for_pending_and_missing_tasks ... note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ok
+test checks::tests::report_join_errors_and_cancellation_preserve_other_results_and_block_launch ... ok
+test checks::tests::report_deadline_preserves_completed_results_and_aborts_pending_tasks ... ok
+test checks::tests::required_region_uses_same_ip_fallback_and_blocks_unverified_country ... ok
+test checks::tests::stun_partial_response_matches_egress_but_mismatch_blocks ... ok
+test checks::tests::stun_production_path_blocks_missing_or_different_egress ... ok
+test checks::tests::stun_without_valid_responses_is_unknown_with_or_without_https_egress ... ok
+controlled STUN completed in 1ms; four local UDP responses, ASN still advisory
+test config::tests::installed_shim_literals_preserve_group_text_without_shell_evaluation ... ok
+test config::tests::shell_configuration_is_never_evaluated ... ok
+test diagnostics::tests::dead_proxy_does_not_fallback_or_modify_state ... ok
+test diagnostics::tests::explicit_proxy_validation_and_socks_dns_are_private ... ok
+test diagnostics::tests::legacy_config_accepts_unknown_fields_permissions_symlink_and_whitespace ... ok
+test checks::tests::legacy_merge_group_and_hashed_history_persist_in_fixture_home ... ok
+test diagnostics::tests::redaction_is_shared_and_idempotent ... ok
+test checks::tests::network_generation_late_synchronous_sample_cannot_allow_launch ... ok
+test guardian::legacy_behavior_tests::legacy_path_scope_sends_term_once_per_matching_process_without_signature_gate ... ok
+test guardian::health_tests::fifo_health_is_rejected_without_blocking ... ok
+test guardian::legacy_behavior_tests::only_proxy_or_tun_failure_requests_stop_for_every_event ... ok
+test guardian::native_tests::network_epoch_native_queue_overflow_still_invalidates_every_event ... ok
+test accounts::tests::all_durable_and_physical_interruption_points_recover_by_identity ... ok
+test guardian::legacy_behavior_tests::driver_checks_before_stop_and_events_config_or_heartbeat_cannot_stop ... ok
+test guardian::public_update_codesign_inline_requirement_argv ... ok
+test guardian::reload_tests::legacy_0755_root_keeps_permissions_and_private_v2 ... ok
+checkpoint=mirrored signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test accounts::tests::copy_provenance_exchange_recovers_all_existing_checkpoints ... ok
+test guardian::legacy_behavior_tests::legacy_shell_only_configuration_loads_at_startup_and_refreshes ... ok
+test checks::tests::stun_production_path_does_not_wait_for_slow_asn ... ok
+test guardian::retained_diagnostic_tests::caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal ... ok
+test guardian::retained_diagnostic_tests::inventory_child_is_deadline_limited_and_output_is_collected ... ok
+test guardian::tests::unknown_and_wake_do_not_stop_without_failure ... ok
+test guardian::retained_diagnostic_tests::unsafe_legacy_roots_and_nonprivate_v2_are_rejected ... ok
+test guardian::native_tests::network_epoch_native_receiver_keeps_observer_alive_and_drop_is_detectable ... ok
+test guardian_repair::legacy_tests::bodyguard_or_user_guardian_satisfies_readiness_without_watchdog_substitution ... ok
+test guardian::tests::stop_is_independent_of_lifecycle_lock ... ok
+test guardian_repair::legacy_tests::f03_emit_watchdog_update ... ok
+test guardian_repair::legacy_tests::f03_registered_corrupt_components_do_not_become_ready ... ok
+test guardian::native_tests::read_only_native_event_registration_and_cleanup ... ok
+test guardian_repair::legacy_tests::f03_root_file_permissions_reject_special_bits_and_foreign_owners ... ok
+test guardian_repair::legacy_tests::f03_target_update_is_canonical_and_strict ... ok
+test guardian_repair::legacy_tests::failed_bodyguard_does_not_discard_other_fixed_repairs ... ok
+test guardian_repair::legacy_tests::only_timezone_watchdog_never_satisfies_bodyguard_readiness ... ok
+test guardian_repair::tests::guardian_repair_failure_reports_committed_configuration ... ok
+test guardian_repair::tests::guardian_repair_identity_failure_and_healthy_noop_never_launch ... ok
+test guardian_repair::tests::guardian_repair_missing_and_stale_heartbeat_use_correct_action ... ok
+test guardian_repair::tests::guardian_repair_rejects_installation_change_before_or_during_health ... ok
+test guardian_repair::tests::guardian_repair_rejects_modified_plist ... ok
+test guardian_repair::tests::guardian_repair_releases_capability_before_waiting_for_health ... ok
+test guardian_repair::tests::guardian_repair_wait_does_not_accept_health_from_replaced_installation ... ok
+test guardian_repair::tests::guardian_repair_rejects_user_writable_component_paths ... ok
+test guardian_repair::legacy_tests::f03_checked_descriptor_metadata_links_and_bounds ... ok
+test guardian::retained_diagnostic_tests::health_binds_current_complete_policy_without_needing_green_report ... ok
+test install::tests::edition_replacement_is_explicit_and_paths_fixed ... ok
+test install::tests::fixture_collision_preserves_existing_directory ... ok
+F03 Python artifact receipt: {"artifact_sha256":{"bodyguard":"e817da557237d2df6f1b2d7cef20db6c88445df1fad81d38445ca8c506fa76d8","watchdog":"c2cd59a3520ee1fcc5f7bf22f43a9490ceba1c5598510209fa77452f049539de"},"python":"/Applications/Xcode.app/Contents/Developer/usr/bin/python3","source_sha256":"9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f","values":{"bodyguard":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>Label</key>\n\t<string>local.claude-bodyguard</string>\n\t<key>ProgramArguments</key>\n\t<array>\n\t\t<string>/bin/bash</string>\n\t\t<string>/Library/Application Support/claude-switcher/claude-bodyguard.sh</string>\n\t</array>\n\t<key>RunAtLoad</key>\n\t<true/>\n\t<key>StartInterval</key>\n\t<integer>10</integer>\n</dict>\n</plist>\n","watchdog":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>Label</key>\n\t<string>local.tz-watchdog</string>\n\t<key>ProgramArguments</key>\n\t<array>\n\t\t<string>/bin/bash</string>\n\t\t<string>/Library/Application Support/claude-switcher/tz-watchdog.sh</string>\n\t</array>\n\t<key>RunAtLoad</key>\n\t<true/>\n\t<key>StartInterval</key>\n\t<integer>3600</integer>\n</dict>\n</plist>\n"}}
+F03 Python artifact receipt: {"artifact_sha256":{"bodyguard":"e817da557237d2df6f1b2d7cef20db6c88445df1fad81d38445ca8c506fa76d8","watchdog":"c2cd59a3520ee1fcc5f7bf22f43a9490ceba1c5598510209fa77452f049539de"},"python":"/Applications/Xcode.app/Contents/Developer/usr/bin/python3","source_sha256":"9ea2fac8262cf43b22b9a6989c4511f531158aa0a49638880fbb5a1b3207804f","values":{"bodyguard":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>Label</key>\n\t<string>local.claude-bodyguard</string>\n\t<key>ProgramArguments</key>\n\t<array>\n\t\t<string>/bin/bash</string>\n\t\t<string>/Library/Application Support/claude-switcher/claude-bodyguard.sh</string>\n\t</array>\n\t<key>RunAtLoad</key>\n\t<true/>\n\t<key>StartInterval</key>\n\t<integer>10</integer>\n</dict>\n</plist>\n","watchdog":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>Label</key>\n\t<string>local.tz-watchdog</string>\n\t<key>ProgramArguments</key>\n\t<array>\n\t\t<string>/bin/bash</string>\n\t\t<string>/Library/Application Support/claude-switcher/tz-watchdog.sh</string>\n\t</array>\n\t<key>RunAtLoad</key>\n\t<true/>\n\t<key>StartInterval</key>\n\t<integer>3600</integer>\n</dict>\n</plist>\n"}}
+test guardian_repair::legacy_tests::f03_approved_encodings_reject_execution_contract_changes ... ok
+test guardian_repair::legacy_tests::f03_actual_python_plists_and_bootstrap_contract ... ok
+test install::update_transaction_tests::authorization_delay_and_clock_change_reject_expired_installation ... ok
+test install::tests::cancelled_authorization_preserves_old_components ... ok
+test ad_runtime::tests::source_key_and_channel_changes_restore_their_own_verified_watermarks ... ok
+test install::update_transaction_tests::native_update_rejects_dangling_transaction ... ok
+test install::update_transaction_tests::region_repair_reuses_only_the_correct_held_lock ... ok
+test install::update_transaction_tests::shell_sources_remain_literals ... ok
+test install::update_transaction_tests::native_update_blocks_all_account_journals ... ok
+test install::tests::durable_root_commit_prevents_rollback_after_lost_reply_or_restart ... ok
+
+thread 'tokio-rt-worker' (34102622) panicked at crates/switcher-core/src/installation_health.rs:264:32:
+isolated installation probe failure
+test installation_health::tests::failed_probe_worker_does_not_prevent_a_later_tick ... ok
+test installation_health::tests::guardian_probe_is_single_flight_and_does_not_block_ticks ... ok
+test install::update_transaction_tests::update_journal_accepts_authenticated_state_larger_than_generic_metadata_limit ... ok
+test installation_health::tests::guardian_zero_sequence_is_rejected_before_native_io ... ok
+test install::update_transaction_tests::codesign_direct_passes_inline_requirement_as_one_argument ... ok
+test installation_health::tests::gui_context_requires_current_owner_edition_and_full_install_record ... ok
+test installation_health::tests::successful_pending_challenge_is_reported_again_after_retry_interval ... ok
+test lifecycle::tests::changed_or_unavailable_network_blocks_switch_before_selection ... ok
+test install::update_transaction_tests::codesign_generated_shell_passes_inline_requirement_as_one_argument ... ok
+test lifecycle::tests::evidence_expiring_after_initial_gate_never_reaches_system_open ... ok
+test lifecycle::tests::check_error_after_selection_preserves_target_until_fresh_launch_check ... ok
+test lifecycle::tests::final_network_recheck_blocks_aba_wake_and_sampling_failure ... ok
+test lifecycle::tests::first_b_checks_before_selection_and_again_before_open ... ok
+test lifecycle::tests::open_failure_is_reported_without_claiming_launch ... ok
+test lifecycle::tests::interrupted_selection_keeps_account_and_requires_explicit_retry ... ok
+test lifecycle::tests::ordinary_launch_needs_only_checks_and_system_open ... ok
+test lifecycle::tests::preflight_failure_does_not_quit_switch_or_open ... ok
+test lifecycle::tests::selected_account_change_during_check_prevents_wrong_account_launch ... ok
+test lifecycle::tests::prerequisite_errors_block_launch_until_explicit_fresh_retry ... ok
+test lifecycle::tests::stable_network_allows_both_editions_at_the_thirty_second_boundary ... ok
+test macos::test_observer::network_epoch_guardian_event_does_not_invalidate_unregistered_frontend ... ok
+test macos::test_observer::network_epoch_registration_is_reused_and_failure_is_sticky ... ok
+test macos::tests::automatic_proxy_adapter_includes_odcloud_and_clash_verge ... ok
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=2973168fb33733f1b5479ba2aea9eb5bd2abed7ec4e8cac34560a8a548940065 body="assert sys.argv[1:] == ['+short', '+time=3', '+tries=1', 'fixture.invalid']\ntime.sleep(2.5)\nprint('198.18.0.1')"
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=ef92898cf29630d78e9942b3424681966230c689833c801bd00b4639e4a30bde body="sys.stdout.buffer.write(b'\\xff')"
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=7ae782973c7a64bf56c3ac1d86459cdf2f663d6a0d9d460f6c2235b4ac8841c2 body="time.sleep(2.5)\nprint('198.18.0.1')"
+test install::tests::recovery_failure_blocks_new_install ... ok
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=b32b0c3cdf36e67cd2043fe60a23cefd2771ec41baf11e4e303423174b17038c body="time.sleep(30)"
+test macos::tests::generation_rejects_aba_and_events_during_observation ... ok
+test macos::tests::legacy_proxy_and_tun_observe_vpn_and_fake_ip_not_route ... ok
+test macos::tests::legacy_tun_and_shadowrocket_conditions ... ok
+test macos::tests::only_a_real_tunnel_interface_is_accepted ... ok
+test install::update_transaction_tests::source_local_signature_passes_exact_pin_requirement_as_one_argument ... ok
+test ad_runtime::tests::unacknowledged_enabled_slots_never_request_content ... ok
+F08 output child pid=20578 body="sys.stdout.buffer.write(b'\\xff')" result=Err("observation_invalid")
+checkpoint=completed signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=0330c2c08d652b6adcb17441673ac288118de925b55a3960712ef10a805cc53b body="print('198.18.0.1')\nsys.exit(7)"
+test install::tests::every_mutation_failure_restores_and_persists ... ok
+F08 output child pid=20590 body="print('198.18.0.1')\nsys.exit(7)" result=Err("observation_unavailable")
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=cb01610d37f3c8c74c5f9fe7153e68af7a58e4efb71280523df421c5a16ffc7c body="sys.stdout.write('x' * (256 * 1024 + 1))"
+F08 output child pid=20603 body="sys.stdout.write('x' * (256 * 1024 + 1))" result=Err("observation_too_large")
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=7d03f499fbd305af362e353402acbcb17fefc707bc4ebf30e479ceafd61fd9b5 body="print('alias.invalid')\nprint('198.18.0.1')"
+checkpoint=cleaned signal=SIGKILL recoveries=2 current=B identity/content/mode/xattr/mirror/journal=ok
+test accounts::tests::killed_process_recovers_every_durable_and_physical_checkpoint ... ok
+test migration::tests::f01_invalid_marker_uses_recorded_v2_for_same_account_shortcut ... ok
+test migration::tests::failed_quit_never_creates_store_or_changes_active_data ... ok
+no-response STUN remained unknown in 3002ms while geo remained pending for 11s
+test checks::tests::stun_no_response_is_unknown_without_waiting_for_slow_geo ... ok
+F08 output child pid=20612 body="print('alias.invalid')\nprint('198.18.0.1')" result=Err("dns_observation_unavailable")
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=463b72a14b7a79c680bac2a1f1c8b44307149363dfa6023fd307ef0ed7c51abe body="print('198.18.0.1')\nprint('198.18.0.2')\nsys.stderr.write('ignored')"
+F08 generic elapsed=2.0047315s cleanup=[TimeoutReceipt { pid: Some(20579), kill_ok: true, wait_ok: true }]
+test migration::tests::first_a_archives_without_requiring_existing_v2_or_backup ... ok
+test macos::tests::f08_generic_keeps_two_second_timeout_and_waits ... ok
+F08 output child pid=20634 body="print('198.18.0.1')\nprint('198.18.0.2')\nsys.stderr.write('ignored')" result=Ok([198.18.0.1])
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=5fd1d071bff290a570a2bb0d1aff94c9be6724c9385c94738107b21569b02609 body="sys.stdout.write('x' * (256 * 1024))"
+test migration::tests::f01_unowned_empty_active_preserves_saved_accounts ... ok
+test macos::tests::f08_real_children_preserve_output_and_first_answer_contract ... ok
+test migration::tests::first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data ... ok
+test migration::tests::missing_current_uses_existing_v2_account_selection ... ok
+test migration::tests::old_current_wins_and_replaced_live_directory_is_rebound_without_migration ... ok
+F08 delayed DNS elapsed=2.9591595s pid=20577 result=Ok([198.18.0.1])
+test macos::tests::f08_dns_accepts_real_delayed_child ... ok
+test network::socks_controlled::socks_transport_child ... ok
+test network::socks_controlled::test_tools_ignore_writable_path ... ok
+test migration::tests::previous_in_place_journal_recovers_copy_without_version_keychain_or_backup ... ok
+test network::tests::authentication_and_access_do_not_assert_account_usability ... ok
+test migration::tests::selecting_current_account_does_not_quit_or_rewrite_live_data ... ok
+test network::tests::explicit_proxy_authentication_tls_and_timeout_are_distinct ... ok
+test network::tests::explicit_proxy_isolation_child ... ok
+test network::tests::explicit_proxy_verified_tls_child ... ok
+test network::tests::geo_enrichment_keeps_source_identity_and_never_defaults_country ... ok
+test network::tests::geo_ip_sb_fallback_and_failure_are_distinct ... ok
+test network::tests::geo_same_ip_fallback_fills_missing_country ... ok
+test network::tests::legacy_checks_inherit_proxy_in_an_isolated_child ... ok
+test network::tests::legacy_inherited_proxy_child ... ok
+test network::tests::resolver_failure_has_a_dns_classification_without_network_requests ... ok
+test network::tests::socks_ipv6_uses_remote_domain_dns_without_http_connect_and_classifies_authentication ... ok
+test network::tests::stun_ipv6_xor_padding_and_magic_cookie_are_checked ... ok
+test network::tests::stun_validates_identity_source_lengths_and_family ... ok
+F05 open-only mode=ClashVerge running=false result=Ok(()) counters=F05Opener { running: false, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: ["Clash Verge"] }
+F05 open-only mode=ClashVerge running=true result=Ok(()) counters=F05Opener { running: true, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: [] }
+F05 open-only mode=Shadowrocket running=false result=Ok(()) counters=F05Opener { running: false, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: ["Shadowrocket"] }
+F05 open-only mode=Shadowrocket running=true result=Ok(()) counters=F05Opener { running: true, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: [] }
+F05 open-only mode=ClashX running=false result=Ok(()) counters=F05Opener { running: false, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: ["ClashX"] }
+F05 open-only mode=ClashX running=true result=Ok(()) counters=F05Opener { running: true, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: [] }
+F05 open-only mode=Surge running=false result=Ok(()) counters=F05Opener { running: false, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: ["Surge"] }
+F05 open-only mode=Surge running=true result=Ok(()) counters=F05Opener { running: true, open_error: false, running_checks: 1, checks: 0, pauses: 0, opened: [] }
+test proxy_repair::tests::f05_open_only_has_no_readiness_budget_and_keeps_app_names ... ok
+F05 open-error mode=ClashVerge result=Err("synthetic_open_failure") counters=F05Opener { running: false, open_error: true, running_checks: 1, checks: 0, pauses: 0, opened: ["Clash Verge"] }
+F05 open-error mode=Shadowrocket result=Err("synthetic_open_failure") counters=F05Opener { running: false, open_error: true, running_checks: 1, checks: 0, pauses: 0, opened: ["Shadowrocket"] }
+F05 open-error mode=ClashX result=Err("synthetic_open_failure") counters=F05Opener { running: false, open_error: true, running_checks: 1, checks: 0, pauses: 0, opened: ["ClashX"] }
+F05 open-error mode=Surge result=Err("synthetic_open_failure") counters=F05Opener { running: false, open_error: true, running_checks: 1, checks: 0, pauses: 0, opened: ["Surge"] }
+test proxy_repair::tests::f05_open_only_propagates_open_failure_without_waiting ... ok
+F05 timing issued=100 expires=220 now=99 counters=F05Opener { running: false, open_error: false, running_checks: 0, checks: 0, pauses: 0, opened: [] }
+F05 timing issued=100 expires=220 now=220 counters=F05Opener { running: false, open_error: false, running_checks: 0, checks: 0, pauses: 0, opened: [] }
+F05 timing issued=100 expires=100 now=100 counters=F05Opener { running: false, open_error: false, running_checks: 0, checks: 0, pauses: 0, opened: [] }
+F05 timing issued=100 expires=221 now=101 counters=F05Opener { running: false, open_error: false, running_checks: 0, checks: 0, pauses: 0, opened: [] }
+test proxy_repair::tests::f05_open_only_rejects_bad_time_or_unsupported_mode_before_operations ... ok
+test proxy_repair::tests::legacy_named_apps_open_without_identity_preconditions_and_wait_forty_seconds ... ok
+test proxy_repair::tests::legacy_pending_plan_keeps_decoding_without_identity_restrictions ... ok
+test proxy_repair::tests::running_app_waits_for_tun_without_reopening_and_timeout_is_bounded ... ok
+test region_detection::tests::conflicting_country_cn_and_missing_timezone_fail ... ok
+test region_detection::tests::legacy_target_accepts_geo_without_cloudflare_or_matching_ip ... ok
+test migration::tests::f01_unowned_missing_active_preserves_saved_accounts ... ok
+test network::tests::explicit_proxy_ignores_environment_and_never_falls_back_to_direct ... ok
+test network::socks_controlled::socks_local_and_remote_dns_authentication_and_tls_stay_in_explicit_proxy ... ok
+test region_detection::tests::missing_cloudflare_and_different_ip_use_geo_fallback ... ok
+test migration::tests::unsafe_migration_directory_blocks_recovery_without_mutation ... ok
+
+thread 'network::tests::explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests' (34102903) panicked at crates/switcher-core/src/network.rs:822:69:
+called `Result::unwrap()` on an `Err` value: Error("EOF while parsing a value", line: 1, column: 0)
+test regions::combined_tests::combined_authorization_denial_and_expiry_make_zero_user_writes ... ok
+test network::tests::explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests ... FAILED
+F08 DNS deadline elapsed=4.005992333s body="time.sleep(30)" cleanup=[TimeoutReceipt { pid: Some(20580), kill_ok: true, wait_ok: true }]
+F08 child python=/Applications/Xcode.app/Contents/Developer/usr/bin/python3 source_sha256=6db41ba654d65b49150c437b46785fcd2af68a6869be208e4801a57d4826703b body="os.close(1)\ntime.sleep(30)"
+test regions::combined_tests::cancelled_recovery_preserves_pending_files_and_both_journals ... ok
+test regions::combined_tests::app_open_runs_before_user_preferences_and_failure_preserves_them ... ok
+test regions::combined_tests::combined_user_write_failure_never_calls_root_and_recovers_region_journal ... ok
+test regions::combined_tests::combined_some_plan_commits_user_and_system_under_one_lock ... ok
+test regions::combined_tests::new_repair_preview_still_requires_installed_identity ... ok
+test network::socks_controlled::evidence_environment_does_not_overwrite_files_or_follow_links ... ok
+test regions::combined_tests::legacy_journal_without_runtime_state_remains_readable ... ok
+test regions::combined_tests::committed_repair_releases_lock_before_guardian_wait ... ok
+test migration::tests::f01_unowned_active_with_only_saved_b_keeps_b_archive ... ok
+test regions::combined_tests::recovery_gate_accepts_absent_user_repair_directory_and_journal ... ok
+test regions::combined_tests::recovery_gate_rejects_dangling_user_repair_directory ... ok
+test regions::combined_tests::recovery_gate_rejects_linked_existing_user_repair_directory ... ok
+test regions::combined_tests::combined_unknown_retains_both_journals_until_verified_recovery ... ok
+test regions::combined_tests::repair_preview_accepts_missing_or_stale_guardian_health ... ok
+test regions::combined_tests::combined_confirmed_root_failure_or_cancel_restores_complete_user_files ... ok
+test regions::combined_tests::runtime_authorization_denied_has_no_intent_or_process_changes ... ok
+test regions::combined_tests::dangling_journal_markers_never_trigger_user_only_recovery ... ok
+test regions::combined_tests::runtime_applied_recovery_keeps_target_files_when_restart_fails ... ok
+test regions::combined_tests::runtime_external_rewrite_after_start_never_dispatches_root_or_overwrites_conflict ... ok
+F08 DNS deadline elapsed=4.004091875s body="os.close(1)\ntime.sleep(30)" cleanup=[TimeoutReceipt { pid: Some(20761), kill_ok: true, wait_ok: true }]
+test macos::tests::f08_dns_deadline_covers_stdout_and_wait_then_reaps ... ok
+test regions::combined_tests::runtime_crash_before_root_dispatch_restores_without_root_status ... ok
+test regions::combined_tests::runtime_stop_failure_never_writes_target_files ... ok
+test regions::combined_tests::runtime_original_restart_rewrite_does_not_report_restoration_complete ... ok
+test migration::tests::f01_invalid_current_marker_does_not_skip_saved_account_loading ... ok
+test regions::legacy::tests::administrator_cancel_continues_user_items_and_retry_has_no_journal ... ok
+test regions::legacy::tests::administrator_script_runs_every_fixed_item_and_retains_failure ... ok
+F05 late-ready result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 40, checks: 40, pauses: 39, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: ["Shadowrocket"], events: ["open", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "country"], tun_home: None }
+test regions::legacy::tests::f05_composition_late_ready_has_no_second_phase ... ok
+F05 mode-selection mode=clash-verge result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 1, countries: 1, opened: ["Clash Verge"], events: ["open", "tun", "ready", "country"], tun_home: None }
+F05 mode-selection mode=shadowrocket result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: ["Shadowrocket"], events: ["open", "ready", "country"], tun_home: None }
+F05 mode-selection mode=clashx result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: ["ClashX"], events: ["open", "ready", "country"], tun_home: None }
+F05 mode-selection mode=surge result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: ["Surge"], events: ["open", "ready", "country"], tun_home: None }
+F05 mode-selection mode=auto result=Ok(()) counters=ProxyFake { running: false, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: [], events: ["ready", "country"], tun_home: None }
+F05 mode-selection mode=sing-box result=Ok(()) counters=ProxyFake { running: false, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: [], events: ["ready", "country"], tun_home: None }
+F05 mode-selection mode=0dcloud result=Ok(()) counters=ProxyFake { running: false, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 1, opened: [], events: ["ready", "country"], tun_home: None }
+test regions::legacy::tests::f05_composition_named_and_unnamed_modes_keep_open_selection ... ok
+F05 composition open-error mode=clash-verge result=Err("synthetic_open_failure") counters=ProxyFake { running: false, open_sets_running: true, open_error: true, ready_at: 1, checks: 0, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 0, opened: ["Clash Verge"], events: ["open"], tun_home: None }
+F05 composition open-error mode=shadowrocket result=Err("synthetic_open_failure") counters=ProxyFake { running: false, open_sets_running: true, open_error: true, ready_at: 1, checks: 0, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 0, opened: ["Shadowrocket"], events: ["open"], tun_home: None }
+F05 composition open-error mode=clashx result=Err("synthetic_open_failure") counters=ProxyFake { running: false, open_sets_running: true, open_error: true, ready_at: 1, checks: 0, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 0, opened: ["ClashX"], events: ["open"], tun_home: None }
+F05 composition open-error mode=surge result=Err("synthetic_open_failure") counters=ProxyFake { running: false, open_sets_running: true, open_error: true, ready_at: 1, checks: 0, pauses: 0, starts: 0, stops: 0, tun_repairs: 0, countries: 0, opened: ["Surge"], events: ["open"], tun_home: None }
+test regions::legacy::tests::f05_composition_open_failure_stops_before_tun_start_wait_and_country ... ok
+F05 timeout result=Err("代理内核与 TUN 未就绪；未修改系统与用户偏好") counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 18446744073709551615, checks: 40, pauses: 40, starts: 0, stops: 0, tun_repairs: 0, countries: 0, opened: ["Surge"], events: ["open", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause", "ready", "pause"], tun_home: None }
+test regions::legacy::tests::f05_composition_timeout_has_one_forty_iteration_budget ... ok
+F05 verge-order initial-running=false open-starts=false result=Ok(()) counters=ProxyFake { running: true, open_sets_running: false, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 1, stops: 0, tun_repairs: 1, countries: 1, opened: ["Clash Verge"], events: ["open", "tun", "start", "ready", "country"], tun_home: None }
+F05 verge-order initial-running=false open-starts=true result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 1, countries: 1, opened: ["Clash Verge"], events: ["open", "tun", "ready", "country"], tun_home: None }
+F05 verge-order initial-running=true open-starts=true result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 0, stops: 0, tun_repairs: 1, countries: 1, opened: [], events: ["tun", "ready", "country"], tun_home: None }
+test regions::legacy::tests::f05_composition_verge_order_and_optional_start ... ok
+F05 real-tun-edit result=Ok(()) counters=ProxyFake { running: true, open_sets_running: true, open_error: false, ready_at: 1, checks: 1, pauses: 0, starts: 1, stops: 1, tun_repairs: 1, countries: 1, opened: ["Clash Verge"], events: ["open", "tun", "stop", "start", "ready", "country"], tun_home: Some("/private/tmp/cs-user-repair-20022-78-1793080970271083000") }
+test regions::legacy::tests::f05_composition_verge_real_tun_edit_keeps_one_readiness_gate ... ok
+test regions::legacy::tests::failed_proxy_gate_blocks_system_and_preferences ... ok
+test regions::legacy::tests::fix_egress_production_client_inherits_proxy_in_isolated_child ... ok
+test regions::legacy::tests::fix_egress_proxy_fixture_child ... ok
+test regions::legacy::tests::guardian_only_repair_includes_both_dns_commands ... ok
+test regions::legacy::tests::proxy_fixture_accepted_stream_waits_for_delayed_request ... ok
+test regions::combined_tests::runtime_restored_files_with_failed_restart_keep_recoverable_journal ... ok
+test regions::legacy::tests::set_region_saves_target_and_locale_before_cancel_without_fix_expansion ... ok
+test regions::legacy::tests::unavailable_guardian_continues_fixed_system_and_user_repairs ... ok
+test regions::legacy::tests::user_only_repair_never_requests_administrator ... ok
+test regions::combined_tests::runtime_country_failure_restores_files_and_original_running_state ... ok
+test regions::combined_tests::user_pending_dangling_receipt_preserves_region_recovery ... ok
+test regions::tests::app_open_preview_binds_deadline_and_missing_app_does_not_block_other_repairs ... ok
+test regions::tests::app_open_intent_precedes_dispatch_and_recovery_never_replays_it ... ok
+test regions::tests::app_open_denial_expiry_config_change_and_mode_mismatch_never_dispatch ... ok
+test regions::tests::app_open_rejection_and_unknown_result_keep_intent_until_explicit_recovery ... ok
+test regions::combined_tests::runtime_target_start_failure_restores_original_files_before_restart ... ok
+test regions::tests::changed_config_and_busy_lock_never_call_helper ... ok
+test regions::tests::authorization_cancelled_or_rejected_preserves_all_config_and_creates_no_journal ... ok
+test regions::tests::config_changed_during_authorization_never_creates_repair_journal ... ok
+test regions::tests::failed_apply_does_not_commit_country_or_timezone ... ok
+test regions::combined_tests::recovered_commit_finishes_guardian_only_after_releasing_lock ... ok
+test regions::tests::commit_intent_survives_config_rename_and_never_rolls_back ... ok
+test regions::tests::interruption_before_root_dispatch_recovers_without_calling_root ... ok
+test regions::tests::first_same_legacy_target_commit_materializes_guardian_policy ... ok
+test repair_cli::tests::command_allowlist_rejects_extra_arguments_and_paths ... ok
+test repair_cli::tests::edition_mismatch_and_unverified_gui_are_rejected ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare","apply","check"],"case":"legacy-complete","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFIX:check\n{\"schema_version\":1,\"observed_at\":100,\"completed_at\":101,\"duration_ms\":1,\"network_generation\":\"synthetic\",\"checks\":[{\"id\":\"proxy_process\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"tun_route\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"egress_region\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"ip_continuity\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"timezone\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"locale\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"ipv6_policy\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"dns_route\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"stun_path\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"guardian\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"service_routes\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"client_language\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"asn_info\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]},{\"id\":\"service_transport\",\"status\":\"pass\",\"reason\":\"synthetic\",\"observed_at\":100,\"duration_ms\":1,\"valid_until\":130,\"network_generation\":\"synthetic\",\"evidence\":[]}],\"summary\":{\"passed\":14,\"advisory\":0,\"blocking\":0},\"launch\":{\"allowed\":true,\"reasons\":[]}}\nFIX:complete\nOK\n"}
+test regions::tests::lost_root_reply_keeps_journal_then_verified_status_commits ... ok
+test repair_cli::tests::f06_legacy_repair_complete_has_real_events_and_ok ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"legacy-partial-error","code":1,"execute_calls":1,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-prepare-error","code":1,"execute_calls":0,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFAIL:synthetic_precondition\n"}
+test repair_cli::tests::f06_legacy_repair_partial_failure_has_no_complete_or_ok ... ok
+test repair_cli::tests::f06_legacy_repair_prepare_failure_has_no_apply_or_ok ... ok
+test regions::tests::verified_no_start_clears_journal_without_changing_config ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"legacy-preview","code":0,"execute_calls":0,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\n"}
+test regions::tests::successful_apply_commits_new_target_and_clears_egress_continuity ... ok
+test repair_cli::tests::fixed_commands_execute_by_default_with_explicit_preview ... ok
+test repair_cli::tests::f06_legacy_repair_preview_only_has_no_apply_or_ok ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare","apply","check"],"case":"modern-Fix { apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"修复完成，完整环境检查已通过\",\"recovery\":null,\"report\":{\"checks\":[{\"duration_ms\":1,\"evidence\":[],\"id\":\"proxy_process\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"tun_route\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"egress_region\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"ip_continuity\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"timezone\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"locale\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"ipv6_policy\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"dns_route\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"stun_path\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"guardian\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"service_routes\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"client_language\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"asn_info\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130},{\"duration_ms\":1,\"evidence\":[],\"id\":\"service_transport\",\"network_generation\":\"synthetic\",\"observed_at\":100,\"reason\":\"synthetic\",\"status\":\"pass\",\"valid_until\":130}],\"completed_at\":101,\"duration_ms\":1,\"launch\":{\"allowed\":true,\"reasons\":[]},\"network_generation\":\"synthetic\",\"observed_at\":100,\"schema_version\":1,\"summary\":{\"advisory\":0,\"blocking\":0,\"passed\":14}}}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"no-recheck","code":0,"execute_calls":0,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"FIX:prepare\nFIX:preview\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"no-recheck","code":1,"execute_calls":0,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFAIL:synthetic_precondition\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+test regions::tests::unknown_wrong_plan_and_external_config_keep_recovery_blocked ... ok
+test repair_cli::tests::serialized_forwarding_keeps_only_fixed_arguments ... ok
+test repair_cli::tests::ordinary_fix_checks_once_and_never_reports_success_for_blocked_or_failed_checks ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-SetRegion { preset: Us, apply: true }-Legacy","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Modern","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+test signed::tests::duplicate_nested_keys_unknown_fields_and_replay_are_rejected ... F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"no-recheck","code":1,"execute_calls":1,"preview_calls":1,"result":{"Ok":1},"stderr":"","stdout":"FIX:prepare\nFIX:preview\nFIX:apply\nFAIL:synthetic_partial_failure\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-DetectRegion { apply: true }-Legacy","code":0,"execute_calls":1,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n{\"completed\":true,\"message\":\"系统修复已完成并保存地区目标；请重新检查环境与地区格式\",\"recovery\":null}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"modern-partial-error","code":2,"execute_calls":1,"preview_calls":1,"result":{"Err":"synthetic_partial_failure"},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"}
+ok
+test signed::tests::sha256_is_fixed_lowercase_hex_with_leading_zeroes ... ok
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"no-recheck","code":0,"execute_calls":0,"preview_calls":1,"result":{"Ok":0},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"}
+F06_REPAIR_RECEIPT {"calls":["prepare"],"case":"no-recheck","code":2,"execute_calls":0,"preview_calls":1,"result":{"Err":"synthetic_precondition"},"stderr":"","stdout":""}
+F06_REPAIR_RECEIPT {"calls":["prepare","apply"],"case":"no-recheck","code":2,"execute_calls":1,"preview_calls":1,"result":{"Err":"synthetic_partial_failure"},"stderr":"","stdout":"{\"can_execute\":true,\"message\":\"synthetic preview\",\"original\":{\"country\":\"US\",\"timezone\":\"America/Los_Angeles\",\"locale\":\"en_US\"},\"target\":{\"country\":\"JP\",\"timezone\":\"Asia/Tokyo\",\"locale\":\"ja_JP\"},\"network_service\":\"synthetic\",\"original_ipv6\":\"auto\",\"target_ipv6\":\"off\",\"user_changes\":[],\"recovery_required\":false}\n"}
+test signed::tests::exact_payload_roundtrip_tampering_wrong_key_and_limit ... ok
+test repair_cli::tests::f06_modern_repair_and_set_region_keep_json_and_errors ... ok
+test repair_cli::tests::ordinary_fix_preview_and_prepare_or_apply_errors_never_recheck ... ok
+test storage::tests::bounded_private_reads_reject_oversize_public_modes_and_fifo ... ok
+test storage::tests::atomic_metadata_replaces_privately_and_refuses_symlink_destination ... ok
+test storage::tests::anchored_io_preserves_missing_link_and_private_file_checks ... ok
+test storage::tests::failed_directory_sync_reports_possible_commit_and_retains_data ... ok
+test storage::tests::atomic_write_stays_in_opened_parent_after_path_is_replaced ... ok
+test storage::tests::identity_check_after_commit_preserves_system_error_source ... ok
+test storage::tests::fixed_parent_write_rejects_links_and_foreign_parent ... ok
+test storage::tests::guardian_snapshot_lock_read_only_and_unsafe_paths ... ok
+test storage::tests::fixed_parent_write_reports_possible_commit_after_directory_swap ... ok
+test storage::tests::lifecycle_contention_child_fixture ... ok
+test storage::tests::fixed_parent_write_requires_same_parent_and_retains_commit_semantics ... ok
+test storage::tests::lifecycle_lock_child_fixture ... ok
+test storage::tests::identity_check_preserves_underlying_system_error ... ok
+test storage::tests::lifecycle_lock_excludes_another_owner_and_os_releases_it ... ok
+test regions::combined_tests::runtime_start_and_reload_are_durable_before_root_dispatch ... ok
+test storage::tests::legacy_data_root_keeps_modes_and_rejects_unsafe_metadata ... ok
+test storage::tests::lifecycle_lock_is_released_when_the_holding_process_is_killed ... ok
+test storage::tests::lock_identity_replacement_and_duplicate_json_are_rejected ... ok
+test storage::tests::moved_parent_must_not_report_read_success ... ok
+test storage::tests::moved_parent_must_not_report_write_success ... ok
+test storage::tests::opening_an_ancestor_rejects_a_concurrent_symlink_replacement ... ok
+test storage::tests::parent_moved_after_commit_reports_possible_commit ... ok
+test storage::tests::parent_moved_after_read_is_rejected ... ok
+test time::tests::forward_jump_and_monotonic_rollback_require_recovery ... ok
+test time::tests::passive_anomaly_is_sticky_after_reload_and_baseline_requires_verification ... ok
+test time::tests::passive_first_boot_forward_and_continuous_rollback_checkpoint ... ok
+test time::tests::passive_observation_keeps_normal_baseline_and_detects_cumulative_drift ... 
+thread 'time::tests::real_macos_continuous_sample_is_available' (34104080) panicked at crates/switcher-core/src/time.rs:312:31:
+called `Result::unwrap()` on an `Err` value: "boot_id"
+ok
+test time::tests::real_macos_continuous_sample_is_available ... FAILED
+test time::tests::repeated_small_rollbacks_cannot_cross_the_verified_anchor ... ok
+test storage::tests::parent_moved_before_rename_keeps_old_data_and_removes_temporary ... ok
+test time::tests::sleep_utc_timezone_and_recovery_do_not_reset_authenticated_history ... ok
+test updates::tests::app_cdhash_requires_one_exact_fingerprint ... ok
+test updates::tests::bridge_release_is_required_before_new_signing_key ... ok
+test storage::tests::private_io_allows_search_only_ancestor ... ok
+test storage::tests::private_read_stays_in_opened_parent_after_path_is_replaced ... ok
+test updates::tests::codesign_app_identity_passes_inline_requirement_in_production_argv ... ok
+test updates::tests::component_order_requires_a_compatible_intermediate_pair ... ok
+test updates::tests::download_proofs_cannot_cross_candidate_releases ... ok
+test updates::tests::e11_consent_personal_schedule_never_reuses_completed_action_after_roundtrip ... ok
+test updates::tests::caller_gate_rejects_unsafe_migration_parent ... ok
+test updates::tests::metadata_is_bound_to_release_identity_time_version_and_source ... ok
+test updates::tests::minisign_proof_requires_exact_bytes_and_signed_version ... ok
+phase=gui-held cli=WouldBlock update=WouldBlock shared=gui
+test updates::tests::persistent_failure_suppression_preserves_replay_watermark ... ok
+test updates::tests::personal_requires_each_action_public_schedule_pause_defer_backoff_survive_restart ... ok
+test updates::transport_tests::actual_new_client_rejects_http_before_contacting_live_listener ... ok
+test updates::tests::caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal ... ok
+test regions::combined_tests::runtime_plan_expiry_after_verification_never_dispatches_root ... ok
+test updates::tests::caller_gate_blocks_account_journals_and_links ... ok
+test regions::combined_tests::recovery_entrypoints_accept_pending_journals_even_with_degraded_health ... ok
+test updates::transport_tests::archive_paths_links_and_expansion_are_bounded_before_apple_assessment ... ok
+phase=gui-SIGKILL cli=acquired update=WouldBlock shared=cli
+test updates::tests::app_cdhash_binds_resigned_bundle_resources ... ok
+phase=cli-released update=acquired final-lock=available shared=update
+test storage::tests::three_process_writers_contend_and_os_releases_killed_holder ... ok
+
+thread 'updates::transport_tests::controlled_tls_download_rejects_truncated_responses' (34104120) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::controlled_tls_download_rejects_truncated_responses ... FAILED
+test user_repairs::pinned_routes::tests::create_replace_and_preserve_user_rules ... ok
+F10 ACCEPT plain: changed=true, insertion=59, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"plain","original":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","second_changed":false,"second_output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"}
+F10 ACCEPT spaces: changed=true, insertion=62, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"spaces","original":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","second_changed":false,"second_output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:   \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"}
+F10 ACCEPT tabs: changed=true, insertion=61, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"tabs","original":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","second_changed":false,"second_output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules:\t \n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"}
+F10 ACCEPT comment: changed=true, insertion=74, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"comment","original":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n","second_changed":false,"second_output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  # user comment\n\n  - USER,RULE\nrules:\n  - MATCH,DIRECT\n"}
+F10 ACCEPT crlf-comment: changed=true, insertion=79, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"crlf-comment","original":"# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n","output":"# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n","second_changed":false,"second_output":"# user prefix\r\nprofile: &anchor\r\n  note: keep\r\nprepend-rules: \t# keep comment\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n  # user comment\r\n\r\n  - USER,RULE\r\nrules:\r\n  - MATCH,DIRECT\r\n"}
+F10 ACCEPT no-final-newline: changed=true, insertion=73, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"no-final-newline","original":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment","output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n","second_changed":false,"second_output":"# user prefix\nprofile: &anchor\n  note: keep\nprepend-rules: # keep comment\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n"}
+test user_repairs::pinned_routes::tests::f10_accept_target_header_suffixes_and_preserve_user_bytes ... ok
+F10 ACCEPT ---
+: changed=true, insertion=4, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"---\n","original":"---\nprofile: &anchor\n  store-selected: true\n","output":"---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n","second_changed":false,"second_output":"---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n"}
+F10 ACCEPT # keep
+
+--- # document
+: changed=true, insertion=23, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"# keep\n\n--- # document\n","original":"# keep\n\n--- # document\nprofile: &anchor\n  store-selected: true\n","output":"# keep\n\n--- # document\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n","second_changed":false,"second_output":"# keep\n\n--- # document\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\nprofile: &anchor\n  store-selected: true\n"}
+F10 ACCEPT # keep
+---
+: changed=true, insertion=13, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"# keep\r\n---\r\n","original":"# keep\r\n---\r\nprofile: &anchor\n  store-selected: true\n","output":"# keep\r\n---\r\nprepend-rules:\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n\r\nprofile: &anchor\n  store-selected: true\n","second_changed":false,"second_output":"# keep\r\n---\r\nprepend-rules:\r\n  # >>> claude-switcher pinned rules >>>\r\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\r\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\r\n  # <<< claude-switcher pinned rules <<<\r\n\r\nprofile: &anchor\n  store-selected: true\n"}
+F10 ACCEPT ---: changed=true, insertion=3, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"---","original":"---","output":"---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n","second_changed":false,"second_output":"---\nprepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n"}
+test user_repairs::pinned_routes::tests::f10_document_header_stays_before_inserted_rules ... ok
+F10 ACCEPT nested-only: changed=true, insertion=0, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"nested-only","original":"# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n","output":"prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n","second_changed":false,"second_output":"prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n\n# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\n"}
+F10 ACCEPT nested-before-target: changed=true, insertion=151, managed_rules=13
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"F10 Group","name":"nested-before-target","original":"# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  - USER,RULE\n","output":"# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  - USER,RULE\n","second_changed":false,"second_output":"# prepend-rules: is only a comment\nprofile: &anchor\n  prepend-rules: []\n  note: |\n    prepend-rules: []\n    ---\n    ...\nprepend-rules: # actual target\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,F10 Group\"\n  - \"DOMAIN-SUFFIX,claude.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,segment.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,F10 Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,F10 Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,F10 Group\"\n  # <<< claude-switcher pinned rules <<<\n  - USER,RULE\n"}
+test user_repairs::pinned_routes::tests::f10_nested_target_and_scalar_text_remain_unchanged ... ok
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"# >>> claude-switcher pinned rules >>>\n","output":null}
+F10 REJECT marker="# >>> claude-switcher pinned rules >>>\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"# <<< claude-switcher pinned rules <<<\n","output":null}
+F10 REJECT marker="# <<< claude-switcher pinned rules <<<\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"# >>> claude-switcher pinned rules >>>\n# >>> claude-switcher pinned rules >>>\n# <<< claude-switcher pinned rules <<<\n","output":null}
+F10 REJECT marker="# >>> claude-switcher pinned rules >>>\n# >>> claude-switcher pinned rules >>>\n# <<< claude-switcher pinned rules <<<\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"profile:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<<\n","output":null}
+F10 REJECT marker="profile:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<<\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"profile:\n  note: |\n    # >>> claude-switcher pinned rules >>>\n    # <<< claude-switcher pinned rules <<<\n","output":null}
+F10 REJECT marker="profile:\n  note: |\n    # >>> claude-switcher pinned rules >>>\n    # <<< claude-switcher pinned rules <<<\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules:\n  # >>> claude-switcher pinned rules >>> extra\n  # <<< claude-switcher pinned rules <<<\n","output":null}
+F10 REJECT marker="prepend-rules:\n  # >>> claude-switcher pinned rules >>> extra\n  # <<< claude-switcher pinned rules <<<\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<< extra\n","output":null}
+F10 REJECT marker="prepend-rules:\n  # >>> claude-switcher pinned rules >>>\n  # <<< claude-switcher pinned rules <<< extra\n": rejected=true
+F10_FIXTURE {"accepted":true,"changed":true,"expected":"accept","group":"Group","name":"legacy-migration","original":"# >>> claude-switcher pinned rules >>>\nprepend-rules:\n  - OLD\n# <<< claude-switcher pinned rules <<<\nprofile: &anchor\n  store-selected: true\nprepend-rules: # user\n  - KEEP\n","output":"profile: &anchor\n  store-selected: true\nprepend-rules: # user\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,Group\"\n  - \"DOMAIN-SUFFIX,claude.com,Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,Group\"\n  - \"DOMAIN-SUFFIX,segment.io,Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,Group\"\n  # <<< claude-switcher pinned rules <<<\n  - KEEP\n","second_changed":false,"second_output":"profile: &anchor\n  store-selected: true\nprepend-rules: # user\n  # >>> claude-switcher pinned rules >>>\n  - \"DOMAIN-SUFFIX,claude.ai,Group\"\n  - \"DOMAIN-SUFFIX,claude.com,Group\"\n  - \"DOMAIN-SUFFIX,anthropic.com,Group\"\n  - \"DOMAIN-SUFFIX,claudeusercontent.com,Group\"\n  - \"DOMAIN-SUFFIX,challenges.cloudflare.com,Group\"\n  - \"DOMAIN-SUFFIX,datadoghq.com,Group\"\n  - \"DOMAIN-SUFFIX,segment.io,Group\"\n  - \"DOMAIN-SUFFIX,stripe.com,Group\"\n  - \"DOMAIN-SUFFIX,stripe.network,Group\"\n  - \"DOMAIN-SUFFIX,stripecdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercom.io,Group\"\n  - \"DOMAIN-SUFFIX,intercomcdn.com,Group\"\n  - \"DOMAIN-SUFFIX,intercomassets.com,Group\"\n  # <<< claude-switcher pinned rules <<<\n  - KEEP\n"}
+F10 ACCEPT legacy migration: one target; anchor/user preserved; idempotent
+test user_repairs::pinned_routes::tests::f10_reject_ambiguous_markers_and_keep_legacy_migration ... ok
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","name":"missing-comment-separator","original":"prepend-rules:#comment\n  - RULE\n","output":null}
+test user_repairs::pinned_routes::tests::f10_reject_comment_without_yaml_separator ... ok
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules:\nprepend-rules:\n","output":null}
+F10 REJECT structure="prepend-rules:\nprepend-rules:\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: # first\nprepend-rules: \t# second\n","output":null}
+F10 REJECT structure="prepend-rules: # first\nprepend-rules: \t# second\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"---\nprofile:\n---\nprofile:\n","output":null}
+F10 REJECT structure="---\nprofile:\n---\nprofile:\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"profile:\n---\n","output":null}
+F10 REJECT structure="profile:\n---\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"...\n","output":null}
+F10 REJECT structure="...\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"--- content\n","output":null}
+F10 REJECT structure="--- content\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"%YAML 1.2\n---\n","output":null}
+F10 REJECT structure="%YAML 1.2\n---\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"'prepend-rules':\n","output":null}
+F10 REJECT structure="'prepend-rules':\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"\"prepend-rules\":\n","output":null}
+F10 REJECT structure="\"prepend-rules\":\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules :\n","output":null}
+F10 REJECT structure="prepend-rules :\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"? prepend-rules\n: []\n","output":null}
+F10 REJECT structure="? prepend-rules\n: []\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"{prepend-rules: []}\n","output":null}
+F10 REJECT structure="{prepend-rules: []}\n": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules\n","output":null}
+F10 REJECT structure="prepend-rules\n": rejected=true
+test user_repairs::pinned_routes::tests::f10_reject_duplicate_keys_and_document_ambiguity ... ok
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: []\n","output":null}
+F10 REJECT inline="[]": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: [RULE]\n","output":null}
+F10 REJECT inline="[RULE]": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: {}\n","output":null}
+F10 REJECT inline="{}": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: null\n","output":null}
+F10 REJECT inline="null": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: &anchor\n","output":null}
+F10 REJECT inline="&anchor": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: *alias\n","output":null}
+F10 REJECT inline="*alias": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: |\n","output":null}
+F10 REJECT inline="|": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: >\n","output":null}
+F10 REJECT inline=">": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: !!seq\n","output":null}
+F10 REJECT inline="!!seq": rejected=true
+F10_FIXTURE {"accepted":false,"changed":null,"expected":"reject","original":"prepend-rules: RULE\n","output":null}
+F10 REJECT inline="RULE": rejected=true
+test user_repairs::pinned_routes::tests::f10_reject_inline_values ... ok
+test user_repairs::pinned_routes::tests::select_group_subset_and_ambiguous_rejection ... ok
+
+thread 'updates::transport_tests::controlled_tls_download_enforces_unknown_length_stream_limit' (34104116) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::controlled_tls_download_enforces_unknown_length_stream_limit ... FAILED
+test user_repairs::tests::absent_user_repair_journal_has_no_pending_receipt ... ok
+
+thread 'updates::transport_tests::controlled_tls_request_uses_production_user_agent' (34104122) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::controlled_tls_request_uses_production_user_agent ... FAILED
+
+thread 'updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint' (34104113) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint ... FAILED
+
+thread 'updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets' (34104128) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets ... FAILED
+
+thread 'updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize' (34104115) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+test updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize ... FAILED
+thread 'updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control' (34104151) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+
+test updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control ... FAILED
+test user_repairs::tests::dangling_user_repair_journal_blocks_recovery_and_execution ... ok
+test user_repairs::tests::f04_current_merge_with_missing_live_rules_requires_reload_without_writing ... ok
+test user_repairs::tests::dangling_journal_blocks_archived_receipt_and_finalization ... 
+thread 'updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit' (34104176) panicked at crates/switcher-core/src/updates.rs:2168:43:
+called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+ok
+test updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit ... FAILED
+test user_repairs::tests::f04_current_legacy_config_with_missing_live_rules_requires_reload_without_writing ... ok
+test user_repairs::tests::filtered_copy_digest_retains_quarantine_custom_xattrs_and_acl ... ok
+F04 case=current_stale needs_reload=true calls=["stop", "start", "verify"]
+test regions::combined_tests::recovery_entrypoint_rejections_preserve_journals_and_backups ... ok
+test user_repairs::tests::legacy_language_skips_app_fallback_or_system_english_and_locale_is_independent ... ok
+F04 case=current_live needs_reload=false calls=[]
+test user_repairs::tests::legacy_merge_uses_saved_group_creates_directory_and_preserves_complex_yaml ... ok
+test user_repairs::tests::legacy_proxy_text_replaces_false_even_in_complex_documents ... ok
+test regions::tests::app_open_post_dispatch_expiry_and_config_conflicts_keep_intent ... ok
+F04 case=missing_stale needs_reload=true calls=["stop", "start", "verify"]
+test user_repairs::tests::legacy_tun_quits_before_edit_and_restarts_without_touching_real_apps ... ok
+F04 case=outdated_stale needs_reload=true calls=["stop", "start", "verify"]
+test user_repairs::tests::failed_second_write_rolls_back_first_write ... ok
+test user_repairs::tests::f04_real_merge_decision_reloads_once_or_skips_when_live_rules_pass ... ok
+test user_repairs::tests::durable_commit_decision_survives_archive_cleanup_crash_without_rollback ... ok
+test user_repairs::tests::preview_is_read_only_redacted_and_fixed_enums ... ok
+test user_repairs::tests::ordinary_large_user_file_with_write_acl_is_accepted ... ok
+test user_repairs::tests::read_only_external_preference_copy_probe ... ok
+test user_repairs::tests::provenance_copy_exception_is_directional_and_keeps_other_stamp_fields_strict ... ok
+test user_repairs::tests::ordinary_symlink_hardlink_and_world_writable_source_are_accepted ... ok
+test user_repairs::tests::restored_receipt_accepts_saved_real_copy_with_added_provenance ... ok
+test user_repairs::tests::full_apply_and_restore_preserves_bytes_modes_xattrs_and_unrelated_plist_types ... ok
+test user_repairs::tests::large_preferences_keep_raw_targets_out_of_the_bounded_journal ... ok
+test user_repairs::tests::missing_client_preferences_restore_to_absent ... ok
+test user_repairs::tests::old_journal_missing_backup_stamp_keeps_strict_original_validation ... ok
+test user_repairs::tests::commit_retains_full_backup_receipt_and_rejects_post_apply_changes ... ok
+test user_repairs::tests::stopped_gate_runs_before_backups_or_writes ... ok
+test user_repairs::tests::symlinked_user_repair_directory_is_never_absent ... ok
+test user_repairs::tests::stale_preview_and_wrong_lock_never_write ... ok
+test user_repairs::tests::unsupported_proxy_is_explicit_without_suppressing_safe_locale_items ... ok
+test user_repairs::tests::writable_ancestor_is_accepted ... ok
+test user_repairs::tests::recovery_rejects_unrelated_external_changes_and_corrupt_backup ... ok
+test user_repairs::tests::archived_commit_and_restore_are_idempotent_and_reject_arbitrary_ids ... ok
+test user_repairs::tests::recovery_is_idempotent_if_rollback_was_interrupted ... ok
+test user_repairs::tests::restored_receipt_verifies_unattempted_original_and_legacy_journals_strictly ... ok
+test user_repairs::tests::routes_create_preview_execute_restore_and_source_drift ... ok
+test user_repairs::tests::routes_replacement_preserves_user_rules_and_recovers_full_original ... ok
+test user_repairs::tests::crash_at_each_journal_checkpoint_restores_without_receipt_memory ... ok
+
+failures:
+
+failures:
+    network::tests::explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests
+    time::tests::real_macos_continuous_sample_is_available
+    updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint
+    updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize
+    updates::transport_tests::controlled_tls_download_enforces_unknown_length_stream_limit
+    updates::transport_tests::controlled_tls_download_rejects_truncated_responses
+    updates::transport_tests::controlled_tls_request_uses_production_user_agent
+    updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets
+    updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control
+    updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit
+
+test result: FAILED. 441 passed; 10 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.49s
+
+error: test failed, to rerun pass `-p switcher-core --lib`

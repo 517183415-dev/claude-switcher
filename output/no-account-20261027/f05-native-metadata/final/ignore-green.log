@@ -1,0 +1,6 @@
+test_account_source_is_visible_and_account_data_stays_ignored (test_source_tracking.SourceTrackingTests.test_account_source_is_visible_and_account_data_stays_ignored) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.006s
+
+OK

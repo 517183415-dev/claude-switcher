@@ -1,0 +1,224 @@
+{
+  "path": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+  "results": [
+    {
+      "name": "retry-01",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "network::tests::explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "9a911dddbd59b636937e3cb057af89618f5f6a46923926629f33628a8a5928b1"
+    },
+    {
+      "name": "retry-02",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "time::tests::real_macos_continuous_sample_is_available",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "c4af0681ee51c9df8adaf162f64d0bb209810e10d0093a26453015129199d079",
+      "log_sha256": "658c1e6ffadd0cf2e3e1f117e63f42960d62e1609fbcf0ac865fcba60b9142df"
+    },
+    {
+      "name": "retry-03",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "53578ddfa0b1aeef6541a29f3f5a59bb497e23729a728005fad2fd729b6f7c44"
+    },
+    {
+      "name": "retry-04",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "22dbe8b21ce94bb15046b9931fbec37d159084729195d2366150ef139cf1a6ac"
+    },
+    {
+      "name": "retry-05",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::controlled_tls_download_enforces_unknown_length_stream_limit",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "2d86fc8f91bc1af6900037fbd4963cb57fb3c146e198702d871623943b48acc7"
+    },
+    {
+      "name": "retry-06",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::controlled_tls_download_rejects_truncated_responses",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "950f7af129d57880f1a083455222c1aa5380f432a301dbd42d8c10b454566d9b"
+    },
+    {
+      "name": "retry-07",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::controlled_tls_request_uses_production_user_agent",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "454fe6e7f766c240db14a2be071d84b59b34e5937fbf72df4d23e302c83c35c9"
+    },
+    {
+      "name": "retry-08",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "d0e43e6ee049f9895828b3d40a376a8acc08ead09bad98d39d78a7b529d7e171"
+    },
+    {
+      "name": "retry-09",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "b883e2bbe708c91350d83453d84d8ee08f0080ccb3a71b0500d0fa6cdf8fd449"
+    },
+    {
+      "name": "retry-10",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "3e18d601893431b10a57be26a4d255cf03f0a1c1d81eaabea95a065127a69a65"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+      "log_sha256": "bea534492f8b86c7759ba55ae132b4cba789f0575d0609ee82e04a2650018421"
+    }
+  ]
+}

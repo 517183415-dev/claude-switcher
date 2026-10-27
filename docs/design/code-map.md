@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：生产账号路径的原生元数据测试
+
+新增 `accounts/tests/native_metadata.rs`：`select_legacy_checked → accounts::legacy::select → ditto → Darwin 目录交换 → 状态/current/清理`。只替换进程观察；APFS、复制、交换和 xattr 均真实执行。测试独立读取嵌套树元数据，覆盖 A/B 最新数据往返与仍运行时不提交。
+
+修复 `.gitignore` 将账号源码视为资料的规则，保留资料目录忽略并补 RED/GREEN 回归。CodeGraph 已增量同步：235 文件、6282 节点、26222 条边，complete、pending 0。核心测试首次 441/451 通过，修正测试运行环境后仅重跑失败的 10 项，全部通过；Clippy 通过。[执行证据](../../output/no-account-20261027/f05-native-metadata/README.md)。完整原生/跨卷验收仍未完成。
+
 ## 2026-10-27：远程来源与其他窗口测试工具
 
 已补测试窗口与本机服务器，保留普通 Rust 后端和实际权限。Public/Personal 计划逐上下文拒绝 23/48 个命令，校验完整序列、版本、URL 和真实 IPC 桥；缺桥、缺参或未知命令不能计 ACL 通过。复用同一报告读取与隔离生命周期，不新增产品测试命令。
