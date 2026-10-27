@@ -62,15 +62,19 @@ final class WorkspaceModel: ObservableObject {
         snapshot?.checkReport = nil
     }
 
+    private func beginAction(_ label: String) {
+        busy = label
+        error = nil
+        outcome = nil
+    }
+
     func runChecks() async {
         guard busy == nil, snapshot != nil else { return }
         checkEpoch += 1
         let epoch = checkEpoch
         clearReport()
-        busy = "正在检查 14 项环境…"
+        beginAction("正在检查 14 项环境…")
         canCancelCheck = true
-        error = nil
-        outcome = nil
         defer {
             if epoch == checkEpoch { busy = nil; canCancelCheck = false }
         }
@@ -110,9 +114,7 @@ final class WorkspaceModel: ObservableObject {
         guard busy == nil, snapshot != nil else { return }
         let invalidatesReport = command == .launchChecked || command == .accountAction
         if invalidatesReport { checkEpoch += 1; clearReport() }
-        busy = label
-        error = nil
-        outcome = nil
+        beginAction(label)
         defer { busy = nil }
         do {
             let result: OperationOutcome = try await bridge.read(command, arguments: arguments)
@@ -132,7 +134,7 @@ final class WorkspaceModel: ObservableObject {
 
     func exportActivity() async {
         guard busy == nil, !activity.isEmpty else { return }
-        busy = "正在导出本机脱敏记录…"
+        beginAction("正在导出本机脱敏记录…")
         defer { busy = nil }
         do {
             let result = try await bridge.invoke(.exportActivity)
@@ -152,7 +154,7 @@ final class WorkspaceModel: ObservableObject {
         guard !enabled || preferences.ads.requestPurposeAcknowledged || acknowledged else { return }
         preferences.ads.slotsEnabled[index] = enabled
         if acknowledged { preferences.ads.requestPurposeAcknowledged = true }
-        busy = "正在保存本机设置…"
+        beginAction("正在保存本机设置…")
         defer { busy = nil }
         do {
             let saved: Preferences = try await bridge.read(.savePreferences, arguments: ["preferences": try bridge.argument(preferences)])
@@ -163,7 +165,7 @@ final class WorkspaceModel: ObservableObject {
 
     func openAd(slot: String, confirmed: Bool) async {
         guard busy == nil, Self.slots.contains(where: { $0.id == slot }) else { return }
-        busy = "正在核验商家链接…"
+        beginAction("正在核验商家链接…")
         defer { busy = nil }
         do {
             let result: OperationOutcome = try await bridge.read(.openAdLink, arguments: ["slot": .string(slot), "confirmed": .bool(confirmed)])

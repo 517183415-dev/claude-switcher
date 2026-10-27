@@ -101,6 +101,61 @@ func failedSaveDoesNotChangePreferencesAndWrongEditionIsRejected() async throws 
 }
 
 @Test @MainActor
+func adPreferenceRetryReplacesPreviousFeedback() async throws {
+    let (model, transport) = setup()
+    try await model.refresh()
+    model.outcome = OperationOutcome(completed: true, message: "旧操作成功", recovery: nil)
+    transport.replies["save_preferences"] = #"{"ok":false,"error":"保存失败"}"#
+    await model.setAdEnabled(index: 0, enabled: true, acknowledged: true)
+    #expect(model.error == "保存失败")
+    #expect(model.outcome == nil)
+    #expect(model.snapshot?.preferences.ads.slotsEnabled == [false, false, false])
+
+    transport.replies["save_preferences"] = success(#"{"ads":{"slots_enabled":[true,false,false],"request_purpose_acknowledged":true},"updates_paused_until":null}"#)
+    await model.setAdEnabled(index: 0, enabled: true, acknowledged: true)
+    #expect(model.error == nil)
+    #expect(model.snapshot?.preferences.ads.slotsEnabled == [true, false, false])
+}
+
+@Test @MainActor
+func activityExportRetryReplacesPreviousFeedback() async throws {
+    let (model, transport) = setup()
+    try await model.refresh()
+    let entries = #"[{"observed_at":1,"level":"info","message":"合成记录"}]"#
+    transport.replies["activity_log"] = success(entries)
+    await model.loadActivity()
+    transport.replies["export_activity"] = success(#"["/synthetic/export.json",\#(entries)]"#)
+    await model.exportActivity()
+    #expect(model.outcome?.completed == true)
+    transport.replies["export_activity"] = #"{"ok":false,"error":"导出失败"}"#
+    await model.exportActivity()
+    #expect(model.error == "导出失败")
+    #expect(model.outcome == nil)
+    #expect(model.activity.count == 1)
+
+    transport.replies["export_activity"] = success(#"["/synthetic/export.json",\#(entries)]"#)
+    await model.exportActivity()
+    #expect(model.error == nil)
+    #expect(model.outcome?.completed == true)
+}
+
+@Test @MainActor
+func adLinkRetryReplacesPreviousFeedback() async throws {
+    let (model, transport) = setup()
+    try await model.refresh()
+    model.outcome = OperationOutcome(completed: true, message: "旧操作成功", recovery: nil)
+    transport.replies["open_ad_link"] = #"{"ok":false,"error":"核验失败"}"#
+    await model.openAd(slot: "account_service", confirmed: false)
+    #expect(model.error == "核验失败")
+    #expect(model.outcome == nil)
+
+    transport.replies["open_ad_link"] = success(#"{"completed":false,"message":"确认商家","recovery":"confirm_ad_link"}"#)
+    await model.openAd(slot: "account_service", confirmed: false)
+    #expect(model.error == nil)
+    #expect(model.adConfirmation?.message == "确认商家")
+}
+
+@Test @MainActor
 func cancelledRepairPreviewCannotExecuteAfterLateResponse() async throws {
     let (model, transport) = setup()
     try await model.refresh()
