@@ -7938,6 +7938,12 @@
         "sha256": "be44661088b978268e1fd33851a5ef979e2f792eae3d560675ccd5b33c7d2a76",
         "status": "NATIVE_WEBVIEW_IPC_SYNTHETIC_MEMORY_VAULT",
         "scope": "13 IPC responses and 5 checkpoints validate channel separation, retained targets and local selection. Product UI, default Keychain, process restart and real R2 not tested."
+      },
+      "native_remote_ui_evidence": {
+        "path": "output/no-account-20261027/native-remote-ui/README.md",
+        "sha256": "93f90d3ba35be14977a9c8d6364f94c5f1241695e7c8191b366fc97f97f4606b",
+        "status": "PRODUCT_SVELTE_NATIVE_WEBVIEW_SYNTHETIC_BOOTSTRAP_VAULT",
+        "scope": "产品页面执行预览与正式配置、本机切换及保留目标选择；启动快照和检查模拟，业务命令走正式 IPC/ACL。默认 Keychain、进程重启和真实 R2 未验。"
       }
     },
     {
@@ -8010,6 +8016,12 @@
         "sha256": "be44661088b978268e1fd33851a5ef979e2f792eae3d560675ccd5b33c7d2a76",
         "status": "NATIVE_WEBVIEW_IPC_SYNTHETIC_MEMORY_VAULT",
         "scope": "13 IPC responses and 5 checkpoints validate channel separation, retained targets and local selection. Product UI, default Keychain, process restart and real R2 not tested."
+      },
+      "native_remote_ui_evidence": {
+        "path": "output/no-account-20261027/native-remote-ui/README.md",
+        "sha256": "93f90d3ba35be14977a9c8d6364f94c5f1241695e7c8191b366fc97f97f4606b",
+        "status": "PRODUCT_SVELTE_NATIVE_WEBVIEW_SYNTHETIC_BOOTSTRAP_VAULT",
+        "scope": "产品页面执行预览与正式配置、本机切换及保留目标选择；启动快照和检查模拟，业务命令走正式 IPC/ACL。默认 Keychain、进程重启和真实 R2 未验。"
       }
     },
     {

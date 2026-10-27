@@ -1,5 +1,8 @@
 # 无真实账号功能覆盖审查索引
 
+AD-03/04 增量：[产品页面远程配置](../../../../output/no-account-20261027/native-remote-ui/README.md)在隔离 WKWebView 操作产品 Svelte 页面，覆盖双渠道保存、本机切换及选回目标。启动检查被模拟，密钥库为内存夹具；默认 Keychain、进程重启与真实服务仍待验，不升级整项。
+
+
 AD-03/04 增量：[原生远程配置 IPC](../../../../output/no-account-20261027/native-remote-config/README.md)覆盖配置读写、渠道隔离、保留目标和本机回退。使用测试前端及合成 MemoryVault；产品页面、默认 Keychain 与真实服务待验，整项不升级。
 
 AD-04 增量：[SDK 写入响应丢失恢复](../../../../output/no-account-20261027/r2-uncertain/README.md)验证本机模拟存储保存后断连、同进程重开 Publisher、同版本恢复及公开回读。真实 R2、应用进程重启和整体验收仍待验证。

@@ -1,0 +1,46 @@
+{
+  "status": "PASS_PRODUCT_SVELTE_NATIVE_WEBVIEW_REMOTE_CONFIG_SYNTHETIC_VAULT",
+  "head_at_run": "3cac10380fbdfcd49c419c6442f3951a0be5a18e",
+  "frontend": "product Svelte build with test-only Tauri import shim",
+  "simulated_commands": [
+    "workspace_snapshot",
+    "check_environment"
+  ],
+  "publisher_commands_use_product_ipc_acl": true,
+  "publisher_responses": 6,
+  "checkpoints": [
+    "baseline",
+    "done"
+  ],
+  "tested": [
+    "read local source",
+    "save preview R2",
+    "save production R2",
+    "switch preview to local",
+    "select retained preview target",
+    "clear credential inputs"
+  ],
+  "credentials_absent_in": [
+    "webview.json",
+    "runtime.log",
+    "synthetic business-root"
+  ],
+  "source_inputs_match_at_receipt": true,
+  "inputs_sha256": "ba2ca0f6a18ad9746a290cea0a741fed9235d5082f8a7a12572febf76b93ed5b",
+  "shared_runner_sha256": "f243522244c7b637348918cd30448587bcd937cd90564fc45f9e088fad46f7a5",
+  "shim_regression_sha256": "a3f60f584fa88f97d3861f05e0130c4e47d8d5e9a949795ef69c6cd29f9a5f15",
+  "binary_sha256": "b77682578dc9509f1280d63ff61e688c1a7850f519e6519e1b988a0fe0a549dd",
+  "native_build_exit": 0,
+  "observed_related_tests": {
+    "node_shim_regression": "1 passed",
+    "shared_runner_unit": "3 passed"
+  },
+  "limitations": [
+    "startup snapshot and checks simulated",
+    "synthetic in-memory vault",
+    "no application process restart",
+    "no default Keychain",
+    "no real R2 or CDN",
+    "no live publication or propagation"
+  ]
+}

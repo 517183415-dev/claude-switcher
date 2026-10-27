@@ -126,7 +126,7 @@ def prepare_paths(out):
     return home, tmp, dist
 
 
-def execute(out, reuse=None):
+def execute(out, reuse=None, prepare_frontend=None, additional_inputs=()):
     out = out.resolve()
     out.relative_to(ROOT / 'output')
     home, tmp, dist = prepare_paths(out)
@@ -139,10 +139,13 @@ def execute(out, reuse=None):
         try:
             plan = {'endpoint': f'http://127.0.0.1:{server.server_port}', 'token': server.token}
             save(out / 'plan.json', plan)
-            (dist / 'index.html').write_text('<!doctype html><html><meta charset="utf-8"><body data-plan="'
-                + html.escape(json.dumps(plan), quote=True) + '">正在验证正式运营 IPC…<script src="probe.js"></script></body></html>')
-            shutil.copy2(HERE / 'probe.js', dist / 'probe.js')
-            shutil.copy2(HERE.parent / 'native-ipc-business/backup-source.png', dist / 'image.png')
+            if prepare_frontend:
+                prepare_frontend(out, dist, plan)
+            else:
+                (dist / 'index.html').write_text('<!doctype html><html><meta charset="utf-8"><body data-plan="'
+                    + html.escape(json.dumps(plan), quote=True) + '">正在验证正式运营 IPC…<script src="probe.js"></script></body></html>')
+                shutil.copy2(HERE / 'probe.js', dist / 'probe.js')
+                shutil.copy2(HERE.parent / 'native-ipc-business/backup-source.png', dist / 'image.png')
             config = json.loads((ROOT / 'packaging/editions/personal.json').read_text())
             config['build'] = {'frontendDist': str(dist)}
             # Only the test frontend can contact this random local receipt endpoint.
@@ -168,6 +171,7 @@ def execute(out, reuse=None):
                 'crates', 'apps/desktop/src-tauri', 'packaging/editions'], cwd=ROOT).decode().split('\0')
             paths += [str(p.relative_to(ROOT)) for p in HERE.glob('*') if p.is_file()]
             paths += ['apps/desktop/src-tauri/src/ipc_business/ordinary.rs']
+            paths += list(additional_inputs)
             inputs = {p: digest(ROOT / p) for p in sorted(set(paths)) if p and (ROOT / p).is_file()}
             save(out / 'inputs.json', inputs)
             command = [str(TOOL / 'cargo'), 'build', '--release', '--offline', '--locked', '--target',

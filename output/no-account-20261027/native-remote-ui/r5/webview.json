@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "command": "workspace_snapshot",
+      "simulated": true
+    },
+    {
+      "command": "check_environment",
+      "simulated": true
+    },
+    {
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "channel": null
+    },
+    {
+      "command": "publisher_remote_read",
+      "ok": true,
+      "channel": null
+    },
+    {
+      "command": "publisher_remote_save",
+      "ok": true,
+      "channel": "preview"
+    },
+    {
+      "command": "publisher_remote_save",
+      "ok": true,
+      "channel": "production"
+    },
+    {
+      "command": "publisher_remote_save",
+      "ok": true,
+      "channel": "preview"
+    },
+    {
+      "command": "publisher_remote_select",
+      "ok": true,
+      "channel": "preview"
+    }
+  ],
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+}

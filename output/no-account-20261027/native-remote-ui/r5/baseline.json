@@ -1,0 +1,54 @@
+{
+  "active": {
+    "schema": 1,
+    "generation": "6de61308f2e3423dc90250e06081851c"
+  },
+  "state": {
+    "schema": 1,
+    "draft": {
+      "schema_version": 1,
+      "channel": "preview",
+      "content_revision": 1,
+      "key_id": "ads-personal-v1",
+      "issued_at": 1793105186,
+      "expires_at": 1800881186,
+      "release_id": "1f900a6060a07261d2606d732927aa61",
+      "slots": [
+        {
+          "slot": "residential_broadband",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "account_service",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "kyc_service",
+          "enabled": true,
+          "campaigns": []
+        }
+      ]
+    },
+    "history": [],
+    "assets": [],
+    "sequences": [
+      {
+        "highest": 0,
+        "payload_hash": null
+      },
+      {
+        "highest": 0,
+        "payload_hash": null
+      }
+    ],
+    "pending": null,
+    "recovery_required": false,
+    "last_resolution": null
+  },
+  "states": {
+    "6de61308f2e3423dc90250e06081851c": "a2e4aa7fa8d23bd54c6d9ab58d55be8f5a43aea3f4e18cad40a66ada2544563b"
+  },
+  "public": {}
+}

@@ -1,5 +1,12 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：产品页面远程配置接线
+
+`RemotePublisher.svelte → 测试构建专用 invoke 包装 → 正式 Tauri IPC/权限 → Publisher 远程配置 → 合成 MemoryVault`。测试包装只模拟启动时的工作区快照和环境检查。产品页面的预览/正式保存、本机切换和旧目标选回通过。[证据](../../output/no-account-20261027/native-remote-ui/README.md)。
+
+CodeGraph complete、pending 0：265 文件、6703 节点、27763 条边。默认 Keychain、真实 R2 与线上发布仍待验。
+
+
 ## 2026-10-27：远程配置原生 IPC
 
 `测试前端 → WKWebView → publisher_remote_read/save/select → Publisher::configure_r2 / select_retained_r2 → Registry → 合成 MemoryVault`。13 次响应覆盖渠道隔离、目标保留和切回本机；5 个检查点未产生公开内容。[证据](../../output/no-account-20261027/native-remote-config/README.md)。

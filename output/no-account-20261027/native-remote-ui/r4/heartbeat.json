@@ -1,0 +1,11 @@
+{
+  "label": "page-finished",
+  "ready": "complete",
+  "buttons": 27,
+  "probeStarted": true,
+  "asset": "200:6324",
+  "scriptPaths": [
+    "/assets/index-BzInf_Wj.js",
+    "/probe.js"
+  ]
+}
