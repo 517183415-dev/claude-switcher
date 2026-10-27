@@ -1,0 +1,41 @@
+{
+  "source_commit": "0cc35152dfe34fde2de8e0dd30c1811853c0ab4e",
+  "source_mode": "tracked worktree clean; local generated and dependency inputs used",
+  "signing": "local ad-hoc, not notarized",
+  "products": {
+    "personal": {
+      "path": "output/no-account-20261027/swiftui-products-20261028-final-sm60m9pz/products/Claude 切换器 Personal.app",
+      "binary_sha256": "24e2c0728d400b02bf65c9548867a64151768372a2c4fa55bd404a3025670f33",
+      "bundle_identifier": "local.claudeswitcher.personal",
+      "minimum_macos": "13.0",
+      "architecture": "arm64",
+      "strict_signature_verified": true,
+      "build_log_sha256": "09792c5d607ececa12ab2eab8fb676fc84a6e40c0b4be2133413f67b18c91f0e",
+      "isolated_process_and_window": {
+        "process_running": true,
+        "own_window_found": true
+      }
+    },
+    "public": {
+      "path": "output/no-account-20261027/swiftui-products-20261028-final-sm60m9pz/products/Claude 切换器 Public.app",
+      "binary_sha256": "f20202a73a568a999187c56afb20b9cd1e572e8501a1986635240ca1fd829282",
+      "bundle_identifier": "local.claudeswitcher.public",
+      "minimum_macos": "13.0",
+      "architecture": "arm64",
+      "strict_signature_verified": true,
+      "build_log_sha256": "3fe93ac6ccfae736e9216d448b42a039eb6983deec25fc8f895a981b9e760f5d",
+      "isolated_process_and_window": {
+        "process_running": true,
+        "own_window_found": true
+      }
+    }
+  },
+  "swift_feedback_red_sha256": "466bbb329da0d98c90f93c1c2b28856f05bebe7b59087be6fe0d424b2965d8b0",
+  "swift_tests_green_sha256": "f3168e36821f553a9ed08fff3a708dd9cbb7b8ef1ec8768e661b4605a04a5c98",
+  "swift_model_sha256": "88a2faeb58749fc7c2c1e227c39175ef844728cf237212fd72eb329b852336d6",
+  "swift_test_source_sha256": "89119764c349fd8099bd4f749fbdb9aa34f49f8ea7be1ac55b968b794389751b",
+  "codegraph_status_sha256": "23c62f66e3dc0ff4dff624f241fcdf9bb211fab11cbaab0850a3be8daab94681",
+  "build_script_sha256": "0c7b3a2ea850bbf245f47130042fba1636d51a5b2a59fd1cc11c0bf3e1ea11cd",
+  "probe_script_sha256": "fd5b3cddf5d151870a6b54397fc1e730b3c9bd4e9a97b91da7f8bd70cda4cba4",
+  "runtime_probe_sha256": "53be2a367d6c48bb8fb75bc40f1419338389c5fe6e3cd5571b053509ace399d7"
+}

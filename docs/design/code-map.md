@@ -1,12 +1,18 @@
 # Claude 切换器当前代码图谱
 
-## 2026-10-27：SwiftUI 基础与隔离桥接
+## 2026-10-28：SwiftUI 产品入口与工作区提示
 
-当前产品仍从 `App.svelte → Tauri IPC → Rust` 启动。新目录 `apps/desktop/swiftui/` 是尚未接入产品的原生迁移基础：`SwitcherPreview → SwitcherShell / OverviewView` 只显示合成数据；`DesktopBridge → TauriWebViewTransport → WKWebView → 现有 IPC` 已在隔离测试窗口验证，尚未由产品装载。
+产品构建启用 `native-ui`：`SwitcherWorkspaceView → WorkspaceModel / PublisherModel → DesktopBridge → TauriWebViewTransport → WKWebView → Tauri IPC → Rust`。未启用该特性的开发构建仍使用 `App.svelte`。工作区的 `beginAction` 统一清理检查、普通操作、设置保存、记录导出和商家链接核验开始时的旧提示；三项新增回归验证失败与重试。
 
-原生总览保留现有布局，采用暖色玻璃；macOS 26 及以上使用系统 glassEffect，macOS 13–25 使用 SwiftUI 材质。其余五页、真实数据和操作、原生宿主及打包接线均未完成。[验证范围](../../output/no-account-20261027/swiftui-foundation/README.md)。
+启动路径为 `DesktopState::launch_checked → lifecycle::launch_checked → launch_expected_with → 完整检查 → 两次启动决定复核 → open`。证据超过时限或网络代次变化会阻止启动，提示重新检查。既有边界测试没有在此轮重复运行。
 
-本次 CodeGraph 状态 complete、pending 0：283 文件、6985 节点、28337 条边；这是本地索引统计，不证明业务已接通。
+本次 CodeGraph 状态 complete、pending 0：303 文件、7465 节点、29686 条边。索引统计不代表测试覆盖率。[验证记录](../acceptance/evidence/no-account-20261027/swiftui-workspace-feedback-20261028.md)。
+
+## 2026-10-27：SwiftUI 基础与隔离桥接（历史）
+
+当时产品仍从 `App.svelte → Tauri IPC → Rust` 启动。`SwitcherPreview → SwitcherShell / OverviewView` 只显示合成数据；原生宿主及其他页面当时尚未接入。[历史验证范围](../../output/no-account-20261027/swiftui-foundation/README.md)。
+
+当时 CodeGraph 状态 complete、pending 0：283 文件、6985 节点、28337 条边。
 
 ## 2026-10-27：恢复确认后的界面锁
 
