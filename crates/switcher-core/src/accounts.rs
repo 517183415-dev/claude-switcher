@@ -233,18 +233,26 @@ pub struct AccountStatus {
 }
 /// Pending user/system repairs outlive an OS lock after a crash. Account data must wait.
 pub(crate) fn ensure_no_pending_repairs(root: &Path) -> io::Result<()> {
-    for relative in ["v2/region-repair.json", "v2/user-repairs/journal.json"] {
-        match fs::symlink_metadata(root.join(relative)) {
-            Ok(_) => {
-                return Err(denied(
-                    "地区或用户配置修复尚未完成；先恢复修复事务，再操作账号",
-                ));
-            }
-            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-            Err(_) => return Err(denied("无法安全确认地区或用户配置修复状态")),
-        }
+    match crate::regions::recovery_pending_v2(&root.join("v2")) {
+        Ok(false) => Ok(()),
+        Ok(true) => Err(denied(
+            "地区或用户配置修复尚未完成；先恢复修复事务，再操作账号",
+        )),
+        Err(_) => Err(denied("无法安全确认地区或用户配置修复状态")),
     }
-    Ok(())
+}
+pub(crate) fn account_recovery_pending_v2(v2: &Path) -> io::Result<bool> {
+    if AccountStore::journal_present(&v2.join("legacy-account-journal.json"))?
+        || AccountStore::journal_present(&v2.join("account-journal.json"))?
+    {
+        return Ok(true);
+    }
+    let directory = v2.join("migration");
+    match storage::validate_no_symlinks(&directory) {
+        Ok(()) => AccountStore::journal_present(&directory.join("in-place-journal.json")),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error),
+    }
 }
 /// Preview is opaque. Association rechecks both identity and content before committing.
 #[derive(Debug, Clone)]
@@ -424,10 +432,7 @@ impl AccountStore {
             current: Some(self.selected_account()?),
             a_saved: optional_identity(&self.archive(AccountId::A))?.is_some(),
             b_saved: optional_identity(&self.archive(AccountId::B))?.is_some(),
-            recovery_pending: Self::journal_present(
-                &self.v2().join("legacy-account-journal.json"),
-            )? || Self::journal_present(&self.journal_path())?
-                || self.migration_journal_present()?,
+            recovery_pending: account_recovery_pending_v2(&self.v2())?,
         })
     }
     fn no_journal(&self) -> io::Result<()> {
@@ -441,14 +446,6 @@ impl AccountStore {
     fn journal_present(path: &Path) -> io::Result<bool> {
         match fs::symlink_metadata(path) {
             Ok(_) => Ok(true),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
-            Err(error) => Err(error),
-        }
-    }
-    fn migration_journal_present(&self) -> io::Result<bool> {
-        let directory = self.v2().join("migration");
-        match storage::validate_no_symlinks(&directory) {
-            Ok(()) => Self::journal_present(&directory.join("in-place-journal.json")),
             Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
             Err(error) => Err(error),
         }
@@ -2972,6 +2969,37 @@ mod tests {
             // A dangling journal symlink must also remain fail-closed.
             std::os::unix::fs::symlink(store.root.join("missing"), &target).unwrap();
             assert!(ensure_no_pending_repairs(&store.root).is_err());
+        }
+    }
+
+    #[test]
+    fn unsafe_user_repairs_directory_blocks_account_switch() {
+        for target_exists in [false, true] {
+            let fixture = Fixture::new();
+            fixture.initialize();
+            fixture.add_b();
+            let store = &fixture.store;
+            let target = fixture.base.join("repair-target");
+            if target_exists {
+                storage::create_private_directory(&target).unwrap();
+            }
+            let link = store.v2().join("user-repairs");
+            std::os::unix::fs::symlink(&target, &link).unwrap();
+            let active_before = fs::read(store.active.join("session")).unwrap();
+            let state_before = fs::read(store.state_path()).unwrap();
+            assert!(fixture.switch(AccountId::B).is_err());
+            assert!(AccountStore::new(&store.root, &store.active, store.owner).is_err());
+            assert_eq!(
+                fs::read(store.active.join("session")).unwrap(),
+                active_before
+            );
+            assert_eq!(fs::read(store.state_path()).unwrap(), state_before);
+            assert!(
+                fs::symlink_metadata(&link)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
         }
     }
 

@@ -284,11 +284,15 @@ impl UpdateRuntime {
         if action == updates::UpdateAction::Install
             && let Err(reason) = updates::ensure_installation_idle(&self.v2(), lock)
         {
-            return Ok(outcome(
-                false,
-                "地区或配置修复尚未恢复完成，暂不能准备或安装更新。",
-                Some(reason),
-            ));
+            let message = match reason {
+                "account_recovery_pending" => "账号事务尚未恢复完成，暂不能准备或安装更新。",
+                "account_recovery_state_invalid" => {
+                    "账号事务状态无法安全确认，暂不能准备或安装更新。"
+                }
+                "repair_recovery_pending" => "地区或配置修复尚未恢复完成，暂不能准备或安装更新。",
+                _ => "无法确认事务状态，暂不能准备或安装更新。",
+            };
+            return Ok(outcome(false, message, Some(reason)));
         }
         let mut state = self.load(sample)?;
         if manual {
@@ -803,7 +807,12 @@ mod tests {
                 std::process::id(),
                 SERIAL.fetch_add(1, Ordering::Relaxed)
             ));
-            Self(path)
+            Self::at(path).unwrap()
+        }
+        fn at(path: PathBuf) -> std::io::Result<Self> {
+            use std::os::unix::fs::DirBuilderExt;
+            std::fs::DirBuilder::new().mode(0o700).create(&path)?;
+            Ok(Self(path))
         }
     }
     impl Drop for Fixture {
@@ -1298,6 +1307,10 @@ mod tests {
                 .unwrap();
             assert!(!denied.completed);
             assert_eq!(denied.recovery.as_deref(), Some("repair_recovery_pending"));
+            assert_eq!(
+                denied.message,
+                "地区或配置修复尚未恢复完成，暂不能准备或安装更新。"
+            );
             assert_eq!(std::fs::read(runtime.state_path()).ok(), before);
             assert_eq!(std::fs::read(&path).unwrap(), b"unknown-root-result");
             let check = runtime
@@ -1316,6 +1329,82 @@ mod tests {
                 Some("source_local_rebuild_required")
             );
         }
+    }
+    #[test]
+    fn update_feedback_pending_account_journals() {
+        let fixture = Fixture::new();
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Personal);
+        let lock = runtime.lock().unwrap();
+        for journal in [
+            "account-journal.json",
+            "legacy-account-journal.json",
+            "migration/in-place-journal.json",
+        ] {
+            let path = runtime.v2().join(journal);
+            storage::create_private_directory(path.parent().unwrap()).unwrap();
+            storage::atomic_write(&path, b"synthetic-journal").unwrap();
+            let before = std::fs::read(runtime.state_path()).ok();
+            let denied = runtime
+                .run_locked(updates::UpdateAction::Install, true, &at(100), &lock)
+                .unwrap();
+            assert!(!denied.completed);
+            assert_eq!(denied.recovery.as_deref(), Some("account_recovery_pending"));
+            assert!(denied.message.contains("账号"), "{}", denied.message);
+            assert_eq!(std::fs::read(runtime.state_path()).ok(), before);
+            assert_eq!(std::fs::read(&path).unwrap(), b"synthetic-journal");
+            let check = runtime
+                .run_locked(updates::UpdateAction::Check, true, &at(100), &lock)
+                .unwrap();
+            assert_eq!(
+                check.recovery.as_deref(),
+                Some("source_local_rebuild_required")
+            );
+            std::fs::remove_file(path).unwrap();
+        }
+    }
+    #[test]
+    fn update_feedback_invalid_account_state() {
+        let fixture = Fixture::new();
+        let runtime = fixture_runtime(fixture.0.clone(), Edition::Personal);
+        let lock = runtime.lock().unwrap();
+        let target = fixture.0.join("synthetic-target");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("sentinel"), b"untouched").unwrap();
+        let migration = runtime.v2().join("migration");
+        std::os::unix::fs::symlink(&target, &migration).unwrap();
+        let before = std::fs::read(runtime.state_path()).ok();
+        let denied = runtime
+            .run_locked(updates::UpdateAction::Install, true, &at(100), &lock)
+            .unwrap();
+        assert!(!denied.completed);
+        assert_eq!(
+            denied.recovery.as_deref(),
+            Some("account_recovery_state_invalid")
+        );
+        assert!(denied.message.contains("账号"), "{}", denied.message);
+        assert_eq!(std::fs::read(runtime.state_path()).ok(), before);
+        assert_eq!(std::fs::read_link(migration).unwrap(), target);
+        assert_eq!(
+            std::fs::read(target.join("sentinel")).unwrap(),
+            b"untouched"
+        );
+    }
+    #[test]
+    fn update_feedback_fixture_collision_does_not_claim_or_delete_directory() {
+        let parent = Fixture::new();
+        std::fs::create_dir_all(&parent.0).unwrap();
+        let collision = parent.0.join("preexisting");
+        std::fs::create_dir(&collision).unwrap();
+        let sentinel = collision.join("sentinel");
+        std::fs::write(&sentinel, b"untouched").unwrap();
+        let claimed = Fixture::at(collision);
+        let refused = claimed.is_err();
+        drop(claimed);
+        assert_eq!(
+            std::fs::read(sentinel).ok().as_deref(),
+            Some(&b"untouched"[..])
+        );
+        assert!(refused);
     }
     #[test]
     fn pinned_updater_policy_cannot_downgrade_or_skip_signed_version() {

@@ -97,7 +97,14 @@ pub fn recovery_pending_v2(v2: &Path) -> Result<bool, &'static str> {
     ["region-repair.json", "user-repairs/journal.json"]
         .iter()
         .try_fold(false, |pending, name| {
-            match fs::symlink_metadata(v2.join(name)) {
+            let path = v2.join(name);
+            let parent = path.parent().ok_or("无法读取修复事务状态")?;
+            match storage::validate_no_symlinks(parent) {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(pending),
+                Err(_) => return Err("无法读取修复事务状态"),
+            }
+            match fs::symlink_metadata(path) {
                 Ok(_) => Ok(true),
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(pending),
                 Err(_) => Err("无法读取修复事务状态"),
@@ -2076,6 +2083,47 @@ mod combined_tests {
             }
         }
     }
+    fn assert_unsafe_user_repair_directory_is_rejected(target_exists: bool) {
+        let fixture = Fixture::new();
+        let v2 = fixture.root.join(".claude-switcher/v2");
+        let target = fixture.root.join("repair-directory-target");
+        if target_exists {
+            fs::create_dir(&target).unwrap();
+            fs::write(target.join("sentinel"), b"unchanged").unwrap();
+        }
+        let before = images(&fixture.root);
+        let link = v2.join("user-repairs");
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+
+        assert!(recovery_pending_v2(&v2).is_err());
+        assert_eq!(fs::read_link(&link).unwrap(), target);
+        assert_eq!(images(&fixture.root), before);
+        if target_exists {
+            assert_eq!(fs::read(target.join("sentinel")).unwrap(), b"unchanged");
+        }
+    }
+
+    #[test]
+    fn recovery_gate_rejects_dangling_user_repair_directory() {
+        assert_unsafe_user_repair_directory_is_rejected(false);
+    }
+
+    #[test]
+    fn recovery_gate_rejects_linked_existing_user_repair_directory() {
+        assert_unsafe_user_repair_directory_is_rejected(true);
+    }
+
+    #[test]
+    fn recovery_gate_accepts_absent_user_repair_directory_and_journal() {
+        let fixture = Fixture::new();
+        let v2 = fixture.root.join(".claude-switcher/v2");
+        assert_eq!(recovery_pending_v2(&v2), Ok(false));
+        fs::create_dir(v2.join("user-repairs")).unwrap();
+        assert_eq!(recovery_pending_v2(&v2), Ok(false));
+        fs::write(v2.join("user-repairs/journal.json"), b"pending").unwrap();
+        assert_eq!(recovery_pending_v2(&v2), Ok(true));
+    }
+
     #[test]
     fn dangling_journal_markers_never_trigger_user_only_recovery() {
         use std::os::unix::fs::symlink;

@@ -1543,6 +1543,39 @@ mod retained_diagnostic_tests {
         }
     }
     #[test]
+    fn caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal() {
+        use std::os::unix::fs::symlink;
+        let f = Fixture::new();
+        f.save("US");
+        let config = std::fs::read(f.0.join("config.json")).unwrap();
+        assert!(PolicySnapshot::load(&f.0).is_ok());
+        let target = f.0.join("target");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("sentinel"), b"unchanged").unwrap();
+        let parent = f.0.join("user-repairs");
+        for destination in [f.0.join("missing"), target.clone()] {
+            symlink(&destination, &parent).unwrap();
+            assert!(PolicySnapshot::load(&f.0).is_err());
+            assert_eq!(std::fs::read_link(&parent).unwrap(), destination);
+            assert_eq!(
+                std::fs::read(target.join("sentinel")).unwrap(),
+                b"unchanged"
+            );
+            std::fs::remove_file(&parent).unwrap();
+        }
+        std::fs::create_dir(&parent).unwrap();
+        std::fs::write(parent.join("journal.json"), b"pending").unwrap();
+        assert_eq!(
+            PolicySnapshot::load(&f.0).unwrap_err(),
+            "guardian_repair_pending"
+        );
+        assert_eq!(
+            std::fs::read(parent.join("journal.json")).unwrap(),
+            b"pending"
+        );
+        assert_eq!(std::fs::read(f.0.join("config.json")).unwrap(), config);
+    }
+    #[test]
     fn health_binds_current_complete_policy_without_needing_green_report() {
         let f = Fixture::new();
         f.save("US");

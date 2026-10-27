@@ -308,16 +308,54 @@ mod tests {
             std::process::id(),
             SERIAL.fetch_add(1, Ordering::Relaxed)
         ));
-        let installer = Installer::new(path).unwrap();
-        let preview = installer
-            .preview(
-                unsafe { libc::geteuid() },
-                Edition::Personal,
-                None,
-                InstallIntent::Install,
-            )
+        fixture_at(path).unwrap()
+    }
+    fn fixture_at(path: PathBuf) -> std::io::Result<(Installer, InstallPreview)> {
+        use std::os::unix::fs::DirBuilderExt;
+        std::fs::DirBuilder::new().mode(0o700).create(&path)?;
+        let result = (|| {
+            let installer = Installer::new(path.clone()).map_err(std::io::Error::other)?;
+            let preview = installer
+                .preview(
+                    unsafe { libc::geteuid() },
+                    Edition::Personal,
+                    None,
+                    InstallIntent::Install,
+                )
+                .map_err(std::io::Error::other)?;
+            Ok((installer, preview))
+        })();
+        if result.is_err() {
+            let _ = std::fs::remove_dir_all(&path);
+        }
+        result
+    }
+    #[test]
+    fn fixture_collision_preserves_existing_directory() {
+        use std::os::unix::fs::DirBuilderExt;
+        let parent = std::env::temp_dir().canonicalize().unwrap().join(format!(
+            "switcher-install-collision-{}-{}",
+            std::process::id(),
+            SERIAL.fetch_add(1, Ordering::Relaxed)
+        ));
+        std::fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&parent)
             .unwrap();
-        (installer, preview)
+        let collision = parent.join("existing");
+        std::fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&collision)
+            .unwrap();
+        let sentinel = collision.join("sentinel");
+        std::fs::write(&sentinel, b"preserve").unwrap();
+        let result = fixture_at(collision);
+        let contents = std::fs::read(&sentinel).unwrap();
+        std::fs::remove_dir_all(parent).unwrap();
+        assert_eq!(contents, b"preserve");
+        assert!(
+            matches!(result, Err(ref error) if error.kind() == std::io::ErrorKind::AlreadyExists)
+        );
     }
     #[test]
     fn cancelled_authorization_preserves_old_components() {
@@ -924,6 +962,22 @@ fn read_update_transaction(path: &Path) -> std::io::Result<UpdateTransaction> {
     let bytes = storage::read_private_bytes(path, limit)?;
     crate::signed::strict_json(&bytes, limit).map_err(std::io::Error::other)
 }
+#[cfg(any(target_os = "macos", test))]
+fn ensure_account_idle(root: &Path) -> Result<(), &'static str> {
+    if crate::accounts::account_recovery_pending_v2(root).map_err(|_| "account_journal")? {
+        return Err("account_recovery_required");
+    }
+    Ok(())
+}
+#[cfg(any(target_os = "macos", test))]
+fn ensure_update_transaction_idle(path: &Path) -> Result<(), &'static str> {
+    match read_update_transaction(path) {
+        Ok(previous) if !previous.committed => Err("update_recovery_required"),
+        Ok(_) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(_) => Err("update_transaction_read"),
+    }
+}
 #[cfg(target_os = "macos")]
 fn run_root_operation(
     op: &switcher_helper::root_operation::RootOperation,
@@ -1063,14 +1117,7 @@ impl<'a> NativeUpdateCoordinator<'a> {
         {
             return Err("update_recovery_identity");
         }
-        if self
-            .root
-            .join("account-journal.json")
-            .try_exists()
-            .map_err(|_| "account_journal")?
-        {
-            return Err("account_recovery_required");
-        }
+        ensure_account_idle(&self.root)?;
         journal.updates.recover_interrupted();
         self.save(&journal)?;
         if journal.helper_pending
@@ -1148,14 +1195,7 @@ impl<'a> NativeUpdateCoordinator<'a> {
         let now: u64 = sample.utc_secs.try_into().map_err(|_| "update_clock")?;
         validate_update_time(&self.clock, metadata.issued_at, metadata.expires_at, now)?;
         crate::accounts::ensure_claude_stopped(uid).map_err(|_| "claude_running")?;
-        if self
-            .root
-            .join("account-journal.json")
-            .try_exists()
-            .map_err(|_| "account_journal")?
-        {
-            return Err("account_recovery_required");
-        }
+        ensure_account_idle(&self.root)?;
         Ok(now)
     }
     fn recovery_pkg(&self, edition: Edition) -> PathBuf {
@@ -1178,13 +1218,7 @@ impl crate::updates::UpdateInstallCoordinator for NativeUpdateCoordinator<'_> {
         if !self.lock.protects(&self.root) {
             return Err("lifecycle_lock_required");
         }
-        if self.path().exists() {
-            let previous: UpdateTransaction =
-                read_update_transaction(&self.path()).map_err(|_| "update_transaction_read")?;
-            if !previous.committed {
-                return Err("update_recovery_required");
-            }
-        }
+        ensure_update_transaction_idle(&self.path())?;
         let sample = crate::time::sample()?;
         self.clock.observe(sample.clone());
         if !self.clock.trusted() {
@@ -1195,14 +1229,7 @@ impl crate::updates::UpdateInstallCoordinator for NativeUpdateCoordinator<'_> {
         let installed = validate_installed_identity(metadata.edition, uid)?;
         let installed_team = installed.developer_team()?.to_owned();
         validate_installed_health(uid)?;
-        if self
-            .root
-            .join("account-journal.json")
-            .try_exists()
-            .map_err(|_| "account_journal")?
-        {
-            return Err("account_recovery_required");
-        }
+        ensure_account_idle(&self.root)?;
         crate::accounts::ensure_claude_stopped(uid).map_err(|_| "claude_running")?;
         let app = installed_app(metadata.edition);
         verify_binary_signature(
@@ -1591,6 +1618,121 @@ mod update_transaction_tests {
             validate_update_time(&clock, 100, 200, 150),
             Err("clock_recovery_required")
         );
+    }
+    #[test]
+    fn native_update_blocks_all_account_journals() {
+        let (installer, _) = super::tests::fixture();
+        let root = installer.directory();
+        assert_eq!(ensure_account_idle(root), Ok(()));
+        for relative in [
+            "account-journal.json",
+            "legacy-account-journal.json",
+            "migration/in-place-journal.json",
+        ] {
+            let path = root.join(relative);
+            storage::create_private_directory(path.parent().unwrap()).unwrap();
+            std::os::unix::fs::symlink(root.join("missing"), &path).unwrap();
+            assert_eq!(
+                ensure_account_idle(root),
+                Err("account_recovery_required"),
+                "{relative}"
+            );
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
+            std::fs::remove_file(&path).unwrap();
+            storage::atomic_write(&path, b"pending").unwrap();
+            assert_eq!(ensure_account_idle(root), Err("account_recovery_required"));
+            std::fs::remove_file(path).unwrap();
+        }
+        let migration = root.join("migration");
+        std::fs::remove_dir(&migration).unwrap();
+        std::os::unix::fs::symlink(root.join("missing"), &migration).unwrap();
+        assert_eq!(ensure_account_idle(root), Err("account_journal"));
+        std::fs::remove_file(&migration).unwrap();
+        let target = root.join("migration-target");
+        storage::create_private_directory(&target).unwrap();
+        storage::atomic_write(&target.join("sentinel"), b"unchanged").unwrap();
+        std::os::unix::fs::symlink(&target, &migration).unwrap();
+        assert_eq!(ensure_account_idle(root), Err("account_journal"));
+        assert!(
+            std::fs::symlink_metadata(&migration)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            std::fs::read(target.join("sentinel")).unwrap(),
+            b"unchanged"
+        );
+        std::fs::remove_file(&migration).unwrap();
+        storage::atomic_write(&migration, b"not a directory").unwrap();
+        assert_eq!(ensure_account_idle(root), Err("account_journal"));
+        assert_eq!(std::fs::read(&migration).unwrap(), b"not a directory");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn native_update_rejects_dangling_transaction() {
+        let (installer, _) = super::tests::fixture();
+        let root = installer.directory();
+        let path = root.join("update-install-transaction.json");
+        assert_eq!(ensure_update_transaction_idle(&path), Ok(()));
+        std::os::unix::fs::symlink(root.join("missing"), &path).unwrap();
+        assert_eq!(
+            ensure_update_transaction_idle(&path),
+            Err("update_transaction_read")
+        );
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        std::fs::remove_file(&path).unwrap();
+        let mut journal = UpdateTransaction {
+            schema: 1,
+            edition: Edition::Public,
+            team: "TESTTEAM01".into(),
+            old_app: "1.0.0".into(),
+            old_helper: "1.0.0".into(),
+            app: "1.1.0".into(),
+            helper_changed: false,
+            helper_pending: false,
+            app_pending: true,
+            committed: false,
+            updates: crate::updates::UpdateState::default(),
+        };
+        storage::atomic_write(&path, &serde_json::to_vec(&journal).unwrap()).unwrap();
+        assert_eq!(
+            ensure_update_transaction_idle(&path),
+            Err("update_recovery_required")
+        );
+        journal.committed = true;
+        storage::atomic_write(&path, &serde_json::to_vec(&journal).unwrap()).unwrap();
+        assert_eq!(ensure_update_transaction_idle(&path), Ok(()));
+        let valid_bytes = std::fs::read(&path).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap();
+        assert_eq!(
+            ensure_update_transaction_idle(&path),
+            Err("update_transaction_read")
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), valid_bytes);
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o644
+        );
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+        storage::atomic_write(&path, b"{broken").unwrap();
+        assert_eq!(
+            ensure_update_transaction_idle(&path),
+            Err("update_transaction_read")
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), b"{broken");
+        std::fs::remove_dir_all(root).unwrap();
     }
     #[test]
     fn update_journal_accepts_authenticated_state_larger_than_generic_metadata_limit() {

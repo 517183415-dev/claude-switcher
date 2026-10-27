@@ -26,6 +26,11 @@ pub fn ensure_installation_idle(
     if crate::regions::recovery_pending_v2(v2)? {
         return Err("repair_recovery_pending");
     }
+    if crate::accounts::account_recovery_pending_v2(v2)
+        .map_err(|_| "account_recovery_state_invalid")?
+    {
+        return Err("account_recovery_pending");
+    }
     Ok(())
 }
 
@@ -969,6 +974,113 @@ impl UpdateSchedule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    struct IdleFixture(std::path::PathBuf);
+    impl IdleFixture {
+        fn new() -> Self {
+            use std::os::unix::fs::DirBuilderExt;
+            static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+            let path = std::env::temp_dir().canonicalize().unwrap().join(format!(
+                "update-idle-{}-{}",
+                std::process::id(),
+                NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            ));
+            std::fs::DirBuilder::new()
+                .mode(0o700)
+                .create(&path)
+                .unwrap();
+            Self(path)
+        }
+    }
+    impl Drop for IdleFixture {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+    #[test]
+    fn caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal() {
+        use std::os::unix::fs::symlink;
+        let f = IdleFixture::new();
+        let lock = crate::storage::LifecycleLock::try_acquire(&f.0).unwrap();
+        assert_eq!(ensure_installation_idle(&f.0, &lock), Ok(()));
+        let target = f.0.join("target");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("sentinel"), b"unchanged").unwrap();
+        let parent = f.0.join("user-repairs");
+        for destination in [f.0.join("missing"), target.clone()] {
+            symlink(&destination, &parent).unwrap();
+            assert!(ensure_installation_idle(&f.0, &lock).is_err());
+            assert_eq!(std::fs::read_link(&parent).unwrap(), destination);
+            assert_eq!(
+                std::fs::read(target.join("sentinel")).unwrap(),
+                b"unchanged"
+            );
+            std::fs::remove_file(&parent).unwrap();
+        }
+        std::fs::create_dir(&parent).unwrap();
+        std::fs::write(parent.join("journal.json"), b"pending").unwrap();
+        assert_eq!(
+            ensure_installation_idle(&f.0, &lock),
+            Err("repair_recovery_pending")
+        );
+        assert_eq!(
+            std::fs::read(parent.join("journal.json")).unwrap(),
+            b"pending"
+        );
+    }
+    #[test]
+    fn caller_gate_blocks_account_journals_and_links() {
+        use std::os::unix::fs::symlink;
+        let f = IdleFixture::new();
+        let lock = crate::storage::LifecycleLock::try_acquire(&f.0).unwrap();
+        std::fs::create_dir(f.0.join("migration")).unwrap();
+        assert_eq!(ensure_installation_idle(&f.0, &lock), Ok(()));
+        for name in [
+            "account-journal.json",
+            "legacy-account-journal.json",
+            "migration/in-place-journal.json",
+        ] {
+            let journal = f.0.join(name);
+            std::fs::write(&journal, b"pending").unwrap();
+            assert_eq!(
+                ensure_installation_idle(&f.0, &lock),
+                Err("account_recovery_pending")
+            );
+            assert_eq!(std::fs::read(&journal).unwrap(), b"pending");
+            std::fs::remove_file(&journal).unwrap();
+            let missing = f.0.join("missing");
+            symlink(&missing, &journal).unwrap();
+            assert_eq!(
+                ensure_installation_idle(&f.0, &lock),
+                Err("account_recovery_pending")
+            );
+            assert_eq!(std::fs::read_link(&journal).unwrap(), missing);
+            std::fs::remove_file(&journal).unwrap();
+            assert_eq!(ensure_installation_idle(&f.0, &lock), Ok(()));
+        }
+    }
+    #[test]
+    fn caller_gate_rejects_unsafe_migration_parent() {
+        use std::os::unix::fs::symlink;
+        let f = IdleFixture::new();
+        let lock = crate::storage::LifecycleLock::try_acquire(&f.0).unwrap();
+        let target = f.0.join("target");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("sentinel"), b"unchanged").unwrap();
+        let parent = f.0.join("migration");
+        for destination in [f.0.join("missing"), target.clone()] {
+            symlink(&destination, &parent).unwrap();
+            assert_eq!(
+                ensure_installation_idle(&f.0, &lock),
+                Err("account_recovery_state_invalid")
+            );
+            assert_eq!(std::fs::read_link(&parent).unwrap(), destination);
+            assert_eq!(
+                std::fs::read(target.join("sentinel")).unwrap(),
+                b"unchanged"
+            );
+            std::fs::remove_file(&parent).unwrap();
+        }
+    }
     #[test]
     fn e11_consent_personal_schedule_never_reuses_completed_action_after_roundtrip() {
         for completed in [
