@@ -1,0 +1,7 @@
+c5d9c74907554e9ca45e16a23d73213a2fd8f198481668ab01a34a469045edd8  apps/desktop/src-tauri/src/publisher/connection/r2_integration_tests.rs
+da57e9c936141db67b9baf17b3546f52e7a942a4305a69f62783b3b67f08d703  apps/desktop/src-tauri/src/publisher/connection.rs
+b4a083fba40763818899298c8ca79485277420543c30a0821ab508f39b2914d3  apps/desktop/src-tauri/src/publisher/r2_store.rs
+140c63d4d815db1f929943cf24b41564a00afc61d043ca8038cf68e3b0f6a276  apps/desktop/src-tauri/src/publisher/protocol.rs
+e5e47ccd03a210e4d19ac9848d53813ab59089c2158248d810f52d7dd89c49b2  crates/switcher-core/src/ads.rs
+ce34cd03b9cde5cf07623fabba9b525145759b9157839b3d08213a5614984bfe  crates/switcher-core/src/ad_runtime.rs
+1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae  Cargo.lock

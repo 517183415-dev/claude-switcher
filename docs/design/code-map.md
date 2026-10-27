@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：发布内容与接收端组件联通
+
+`Publisher → R2Store / AWS SDK → 回环模拟存储 → ContentSource → AdCache → 图片校验`。现有集成测试增加接收端路径、两次版本采用、旧版本与签名篡改拒绝。测试用本机 HTTP 重定向模拟源，不运行生产 HTTPS 客户端或后台计时器。[证据](../../output/no-account-20261027/r2-recipient-integration/README.md)。
+
+普通桌面启动会调用 `refresh_ads(false)`，之后每 30 秒再次判断；实际刷新周期由 `RefreshSchedule` 控制。这是代码路径核对，不是在线传播验收。CodeGraph complete、pending 0：256 文件、6633 节点、27554 条边。
+
 ## 2026-10-27：R2 SDK 与发布流程的本机联通
 
 `publish_configured_with → 目标选择 / 发布锁 → Publisher → R2Store → AWS S3 SDK → 回环模拟对象存储`。测试复用现有合成配置和密钥库。公开读取、图片与签名版本、条件写入和冲突保留由同一场景验证。模拟服务器和延迟发送回归只在测试中使用；没有变更产品运行逻辑或依赖。[证据](../../output/no-account-20261027/r2-sdk-integration/README.md)。

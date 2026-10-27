@@ -7985,6 +7985,12 @@
         "path": "output/no-account-20261027/r2-sdk-integration/README.md",
         "status": "LOCAL_STATEFUL_PEER_REAL_SDK_SYNTHETIC_CREDENTIALS",
         "scope": "预览渠道：正式配置发布流程调用真实 SDK，上传图片与签名版本、匿名公开回读、条件写入及模拟冲突；不验证真实 TLS、R2、服务端请求签名或客户端传播。"
+      },
+      "recipient_component_evidence": {
+        "path": "output/no-account-20261027/r2-recipient-integration/README.md",
+        "sha256": "04aa44b445aad25625e4602d67095fed1aa503dd0ecde3eb481394df62efc727",
+        "status": "LOCAL_SDK_TO_CLIENT_COMPONENTS_NOT_LIVE_PROPAGATION",
+        "scope": "Two signed preview revisions and assets over loopback mock; client cache rejects stale or tampered content. Production HTTPS, timer and real source not tested."
       }
     },
     {
@@ -8012,7 +8018,13 @@
           "requirement_checklist": "N/E实源/T：current缓存≤60s、首轮成功且源健康、连续在线实际≤20min采用；睡眠/断网/重试另计"
         }
       ],
-      "next_review": "穷举受控时钟，再对获授权实源记录发布与采用时间"
+      "next_review": "穷举受控时钟，再对获授权实源记录发布与采用时间",
+      "recipient_component_evidence": {
+        "path": "output/no-account-20261027/r2-recipient-integration/README.md",
+        "sha256": "04aa44b445aad25625e4602d67095fed1aa503dd0ecde3eb481394df62efc727",
+        "status": "LOCAL_SDK_TO_CLIENT_COMPONENTS_NOT_LIVE_PROPAGATION",
+        "scope": "Two signed preview revisions and assets over loopback mock; client cache rejects stale or tampered content. Production HTTPS, timer and real source not tested."
+      }
     },
     {
       "id": "AD-06",
@@ -8123,7 +8135,13 @@
           "requirement_checklist": "N/E受控：断网/坏响应/原生恢复按钮/重启；S/T：实际唤醒和时钟连续性，不擅自改系统时间"
         }
       ],
-      "next_review": "受控时钟验证全部状态，再补实际睡眠唤醒证据"
+      "next_review": "受控时钟验证全部状态，再补实际睡眠唤醒证据",
+      "recipient_component_evidence": {
+        "path": "output/no-account-20261027/r2-recipient-integration/README.md",
+        "sha256": "04aa44b445aad25625e4602d67095fed1aa503dd0ecde3eb481394df62efc727",
+        "status": "LOCAL_SDK_TO_CLIENT_COMPONENTS_NOT_LIVE_PROPAGATION",
+        "scope": "Two signed preview revisions and assets over loopback mock; client cache rejects stale or tampered content. Production HTTPS, timer and real source not tested."
+      }
     },
     {
       "id": "AD-09",

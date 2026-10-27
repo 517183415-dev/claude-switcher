@@ -13,7 +13,10 @@ use std::{
     time::Duration,
 };
 use switcher_core::{ads, signed};
-use switcher_domain::ads::AdManifest;
+use switcher_domain::{
+    AdSlot,
+    ads::{AdManifest, AdPreferences},
+};
 
 #[derive(Clone)]
 struct Stored {
@@ -231,6 +234,52 @@ fn checked_manifest(wire: &[u8], public_key: &VerifyingKey, now: u64) -> AdManif
     manifest
 }
 
+// The URL is built by the real client. Only its origin is redirected to the
+// loopback peer; this fixture does not exercise the production HTTPS client.
+fn recipient_refresh(
+    peer: &LocalS3,
+    source: &ads::ContentSource,
+    preferences: &AdPreferences,
+    cache: &mut ads::AdCache,
+    key: &VerifyingKey,
+    now: u64,
+) -> std::result::Result<(), &'static str> {
+    let client = reqwest::blocking::Client::builder()
+        .no_proxy()
+        .build()
+        .unwrap();
+    let read = |url: reqwest::Url| {
+        assert!(source.permits_response_url(&url, &url));
+        client
+            .get(format!("{}{}", peer.endpoint, url.path()))
+            .send()
+            .unwrap()
+            .error_for_status()
+            .unwrap()
+            .bytes()
+            .unwrap()
+    };
+    let current = source
+        .manifest_request(preferences, AdChannel::Preview)
+        .unwrap();
+    let wire = read(current);
+    cache.accept(&wire, key, AdChannel::Preview, "ads-personal-v1", now, true)?;
+    let campaign = cache
+        .current_campaign(AdSlot::ResidentialBroadband, now, preferences, true)
+        .unwrap();
+    let image = source
+        .asset_request(
+            AdSlot::ResidentialBroadband,
+            &campaign.image,
+            preferences,
+            AdChannel::Preview,
+        )
+        .unwrap()
+        .unwrap();
+    ads::validate_image(&read(image), &campaign.image).unwrap();
+    Ok(())
+}
+
 #[test]
 fn configured_publication_uses_sdk_upload_readback_and_conditional_updates() {
     let peer = LocalS3::start();
@@ -262,14 +311,47 @@ fn configured_publication_uses_sdk_upload_readback_and_conditional_updates() {
             },
         )
     };
+    let source = ads::ContentSource::new("https://preview.example.com/").unwrap();
+    let preferences = AdPreferences {
+        slots_enabled: [true, false, false],
+        request_purpose_acknowledged: true,
+    };
+    let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
+    let mut recipient = ads::AdCache::default();
     let first = publish(&mut publisher, 1002).unwrap();
+    recipient_refresh(
+        &peer,
+        &source,
+        &preferences,
+        &mut recipient,
+        &public_key,
+        1002,
+    )
+    .unwrap();
+    assert_eq!(recipient.highest_revision, first.revision);
     let mut draft = publisher.draft_read();
     draft.slots[0].campaigns[0].title = "更新后的合成广告".into();
     publisher.draft_save(draft, 1003).unwrap();
     let second = publish(&mut publisher, 1004).unwrap();
     assert!(second.revision > first.revision);
+    recipient_refresh(
+        &peer,
+        &source,
+        &preferences,
+        &mut recipient,
+        &public_key,
+        1004,
+    )
+    .unwrap();
+    assert_eq!(recipient.highest_revision, second.revision);
+    assert_eq!(
+        recipient
+            .current_campaign(AdSlot::ResidentialBroadband, 1004, &preferences, true)
+            .unwrap()
+            .title,
+        "更新后的合成广告"
+    );
 
-    let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
     let current_before_conflict = {
         let state = peer.state.lock().unwrap();
         let first_key = format!("preview/versions/{}.json", first.release_id);
@@ -343,5 +425,54 @@ fn configured_publication_uses_sdk_upload_readback_and_conditional_updates() {
         state.requests.iter().any(|r| r.authenticated
             && r.method == "PUT"
             && r.key == "preview/publisher-lock.json")
+    );
+    let first_wire = state.objects[&format!("preview/versions/{}.json", first.release_id)]
+        .bytes
+        .clone();
+    drop(state);
+
+    // Simulate a stale or tampered public response, after the client accepted v2.
+    peer.state
+        .lock()
+        .unwrap()
+        .objects
+        .get_mut("preview/current.json")
+        .unwrap()
+        .bytes = first_wire;
+    assert_eq!(
+        recipient_refresh(
+            &peer,
+            &source,
+            &preferences,
+            &mut recipient,
+            &public_key,
+            1005
+        ),
+        Err("old_revision")
+    );
+    let mut forged: signed::Envelope = serde_json::from_slice(&current_before_conflict).unwrap();
+    forged.payload.push(' ');
+    peer.state
+        .lock()
+        .unwrap()
+        .objects
+        .get_mut("preview/current.json")
+        .unwrap()
+        .bytes = serde_json::to_vec(&forged).unwrap();
+    assert_eq!(
+        recipient_refresh(
+            &peer,
+            &source,
+            &preferences,
+            &mut recipient,
+            &public_key,
+            1005
+        ),
+        Err("signature")
+    );
+    assert_eq!(recipient.highest_revision, second.revision);
+    assert_eq!(
+        recipient.cached_wire.as_deref(),
+        Some(current_before_conflict.as_slice())
     );
 }
