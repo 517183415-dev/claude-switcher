@@ -8130,6 +8130,14 @@
         "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
         "personal_full_tests": 230,
         "public_full_tests": 35
+      },
+      "native_boundary_evidence": {
+        "path": "output/no-account-20261027/native-window-unlocked/README.md",
+        "scope": "ordinary production entry with scripted frontend and test windows; remote and other window only",
+        "personal_denials_per_context": 48,
+        "public_denials_per_context": 23,
+        "contexts": 2,
+        "whole_requirement_complete": false
       }
     },
     {

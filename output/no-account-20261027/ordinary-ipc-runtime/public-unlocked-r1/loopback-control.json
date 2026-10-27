@@ -1,0 +1,9 @@
+{
+  "scope": "direct loopback inside unchanged Seatbelt",
+  "exit": 0,
+  "stdout": "200\n",
+  "stderr": "",
+  "requests": [
+    "/"
+  ]
+}

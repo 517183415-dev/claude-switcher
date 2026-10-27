@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：真实 WKWebView 拒绝边界补证
+
+`native-ipc-policy/run.py → 普通 main/ipc::handler → 实际 capability → WKWebView 报告 → 宿主独立校验` 已完成两版远程来源主窗口和其他窗口矩阵。Public 23×2、Personal 48×2，共 142 条明确 ACL 拒绝。生产调用链和权限未改。
+
+测试策略只额外允许 WebKit 必需的 `/private/var/run/mDNSResponder`；回归同时检查其他套接字、外网和真实资料仍拒绝。校验器支持本地根 URL 的两种序列化，拒绝来源伪装。两项缺陷均保留 RED/GREEN，完整 Python 集合 14 项通过。Public 只重校验已保存的原生回执，Personal 一次新构建取得回执。[输入与限制](../../output/no-account-20261027/native-window-unlocked/README.md)。真实 Keychain、成功业务与系统验收未因此通过。
+
 ## 2026-10-27：生产运营 IPC 共享密钥边界与成功恢复闭环
 
 Personal 的 Tauri Builder 单独注册 ManagedVault，默认使用 KeychainVault。15 个需要凭据的生产命令经 Tauri State 注入同一服务，复用 Publisher→Vault 锁顺序；DesktopState 保持独立。前端 JSON、命令名、ACL 和 Public 运营隔离不变。合成 Vault 仅测试可构造。

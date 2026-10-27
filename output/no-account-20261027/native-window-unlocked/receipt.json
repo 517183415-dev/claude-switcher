@@ -1,0 +1,32 @@
+{
+  "status": "PASS_SCOPED",
+  "product_source_commit": "a7f61dce",
+  "native_responses": {
+    "public": 46,
+    "personal": 96,
+    "total": 142
+  },
+  "independent_test_count": 14,
+  "test_scope": "complete changed Python runner test suite",
+  "product_code_changed": false,
+  "personal_documentation_drift": [
+    "apps/desktop/tests/native-ipc-policy/README.md"
+  ],
+  "rust_full_tests": "REUSED_UNCHANGED_PRODUCT_INPUTS; publisher-vault-dispatch/receipt.json",
+  "not_verified": [
+    "ordinary unmodified product frontend",
+    "all successful business paths",
+    "native Keychain",
+    "real accounts",
+    "real R2 or CDN",
+    "system-managed WebKit termination",
+    "installation and system services",
+    "long-duration gates"
+  ],
+  "codegraph": {
+    "files": 241,
+    "nodes": 6381,
+    "edges": 26814,
+    "pending": 0
+  }
+}

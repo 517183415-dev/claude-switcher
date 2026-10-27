@@ -1,0 +1,38 @@
+{
+  "status": "PASS_SCOPED_SAVED_NATIVE_RECEIPTS",
+  "edition": "public",
+  "scope": "ordinary production entry and ACL with scripted frontend and test windows",
+  "contexts": [
+    "remote",
+    "other"
+  ],
+  "denials_per_context": 23,
+  "native_rerun": false,
+  "product_inputs_unchanged": true,
+  "corrected_harness_files": [
+    "apps/desktop/tests/native-ipc-policy/README.md",
+    "apps/desktop/tests/native-ipc-policy/run.py",
+    "apps/desktop/tests/native-ipc-policy/test_receipts.py"
+  ],
+  "validator_sha256": "8400658c1e3ad1481899592eb8155ec8f1bb220d2661520200dcad7e0a8e98ea",
+  "validator_tests_sha256": "1e1180035c37120701067050be173734cef3881fd6edbcfcff232e45147ac206",
+  "original_inputs_sha256": "e6db5d1e6c0b7062a3263bc40c2e7c4f1c9aa5c3b536d21a1639a5dafc91c93d",
+  "executed_binary_sha256": "f75265b3c6c9ab20fdd974fa33ddecb876d4db57e5219f75b9ae1444c3738429",
+  "evidence_sha256": {
+    "remote-result.json": "63cab14a72c94f8c45f526fafbe1632645eea83620097e1904bfc43d1d9feef1",
+    "other-result.json": "6e6d6348ffd1808062308991b72994595270d1d5d368717df084e948a5b1dc46",
+    "server.json": "17af2b2e3734196d4b942e22980954a2fb953cb5983f7c8943780dc6740442c7",
+    "window-read.json": "24bcba1aba299c890b8205a8541baf7975c02325c06b4572f7a6c5cea0977a89",
+    "process-result.json": "b954fbd18f3563fa9971395e69d7bcf9aaa389035af84bf441ee09b5164341b9",
+    "build.json": "78d8aaf4e8e51032dff6ceedc1d78092a541369f4d50c680f374c4fdb9533ea0",
+    "isolation.sb": "e5bf773402cc97e547563988614c49711814ef6b8a0d6cd4c4bd007bd1c3dcc9",
+    "runtime.log": "67590f1c69c70f960fde87c78b6b40b0203f6694ee110c4c31c80472674bc219"
+  },
+  "not_verified": [
+    "unchanged product frontend",
+    "native Keychain",
+    "real accounts",
+    "external hosting",
+    "system-managed WebKit termination"
+  ]
+}

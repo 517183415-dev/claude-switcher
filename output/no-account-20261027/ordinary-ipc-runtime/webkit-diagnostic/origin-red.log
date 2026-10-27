@@ -1,0 +1,22 @@
+F
+======================================================================
+FAIL: test_native_local_root_serialization_and_origin_spoofs (__main__.BoundaryReceiptTests.test_native_local_root_serialization_and_origin_spoofs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/native-ipc-policy/test_receipts.py", line 177, in test_native_local_root_serialization_and_origin_spoofs
+    check()
+    ~~~~~^^
+  File "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/native-ipc-policy/test_receipts.py", line 173, in check
+    runner.validate_boundary(report, "public", "other", "tauri://localhost/",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ["runtime_info", "workspace_snapshot"])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/native-ipc-policy/run.py", line 136, in validate_boundary
+    assert report["url"] == expected_url, "unexpected page origin"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpected page origin
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

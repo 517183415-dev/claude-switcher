@@ -1,0 +1,18 @@
+test_commands_match_edition_permission_counts (test_receipts.BoundaryReceiptTests.test_commands_match_edition_permission_counts) ... ok
+test_complete_boundary_report (test_receipts.BoundaryReceiptTests.test_complete_boundary_report) ... ok
+test_incomplete_reordered_successful_or_wrong_failure_cannot_pass (test_receipts.BoundaryReceiptTests.test_incomplete_reordered_successful_or_wrong_failure_cannot_pass) ... ok
+test_loopback_server_stops_after_exception_and_serves_only_assets (test_receipts.BoundaryReceiptTests.test_loopback_server_stops_after_exception_and_serves_only_assets) ... ok
+test_missing_bridge_wrong_context_or_wrong_origin_cannot_pass (test_receipts.BoundaryReceiptTests.test_missing_bridge_wrong_context_or_wrong_origin_cannot_pass) ... ok
+test_reuse_binds_exact_previous_port_and_refuses_busy_port (test_receipts.BoundaryReceiptTests.test_reuse_binds_exact_previous_port_and_refuses_busy_port) ... ok
+test_webkit_resolver_allowed_without_other_sockets_or_private_access (test_receipts.BoundaryReceiptTests.test_webkit_resolver_allowed_without_other_sockets_or_private_access) ... ok
+test_complete_local_report (test_receipts.ReceiptTests.test_complete_local_report) ... ok
+test_missing_duplicate_and_reordered_commands_fail (test_receipts.ReceiptTests.test_missing_duplicate_and_reordered_commands_fail) ... ok
+test_not_found_does_not_count_as_acl_denial_or_argument_validation (test_receipts.ReceiptTests.test_not_found_does_not_count_as_acl_denial_or_argument_validation) ... ok
+test_synthetic_home_has_private_intermediate_directories (test_receipts.ReceiptTests.test_synthetic_home_has_private_intermediate_directories) ... ok
+test_unexpected_success_in_local_denials_fails (test_receipts.ReceiptTests.test_unexpected_success_in_local_denials_fails) ... ok
+test_wrong_edition_or_persisted_preferences_fail (test_receipts.ReceiptTests.test_wrong_edition_or_persisted_preferences_fail) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.573s
+
+OK

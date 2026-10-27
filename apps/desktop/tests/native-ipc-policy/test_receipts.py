@@ -8,6 +8,10 @@ from urllib.request import build_opener, ProxyHandler
 from urllib.error import HTTPError
 from unittest.mock import patch
 import socket
+import subprocess
+import sys
+import json
+import os
 
 spec = importlib.util.spec_from_file_location("ipc_policy_runner", Path(__file__).with_name("run.py"))
 runner = importlib.util.module_from_spec(spec)
@@ -74,6 +78,50 @@ class ReceiptTests(unittest.TestCase):
 
 
 class BoundaryReceiptTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "darwin", "requires macOS Seatbelt")
+    def test_webkit_resolver_allowed_without_other_sockets_or_private_access(self):
+        # WebKit needs the resolver socket even for numeric loopback URLs.
+        # A broad Unix-socket exception would also reach unrelated local services.
+        with tempfile.TemporaryDirectory(prefix="ipc-resolver-") as temporary:
+            folder = Path(temporary)
+            profile = folder / "runtime.sb"
+            profile.write_text(runner.runtime_profile())
+            listener = socket.socket(socket.AF_UNIX)
+            self.addCleanup(listener.close)
+            unrelated = str(folder / "unrelated.sock")
+            listener.bind(unrelated)
+            listener.listen(1)
+            code = '''
+import errno,json,os,socket,sys
+def connect(family, address):
+    with socket.socket(family, socket.SOCK_STREAM) as connection:
+        connection.settimeout(1)
+        try:
+            connection.connect(address)
+            return 0
+        except OSError as error:
+            return error.errno
+try:
+    descriptor = os.open(sys.argv[2], os.O_RDONLY)
+except OSError as error:
+    private = error.errno
+else:
+    os.close(descriptor)
+    private = 0
+print(json.dumps({'resolver':connect(socket.AF_UNIX,'/private/var/run/mDNSResponder'),
+    'unrelated':connect(socket.AF_UNIX,sys.argv[1]),
+    'external':connect(socket.AF_INET,('192.0.2.1',443)), 'private':private}))
+'''
+            result = subprocess.run(["/usr/bin/sandbox-exec", "-f", str(profile),
+                                     sys.executable, "-I", "-c", code, unrelated,
+                                     str(Path(os.path.expanduser("~")) / "Library")],
+                                    capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            controls = json.loads(result.stdout)
+            self.assertEqual(controls["resolver"], 0, controls)
+            for name in ("unrelated", "external", "private"):
+                self.assertIn(controls[name], (1, 13), controls)
+
     def report(self):
         return {"phase": "remote", "edition": "public", "url": "http://127.0.0.1:12345/",
                 "bridge": True, "rows": [{"command": c, "ok": False, "error": "not allowed by ACL"}
@@ -117,6 +165,22 @@ class BoundaryReceiptTests(unittest.TestCase):
 
     def test_complete_boundary_report(self):
         self.check(self.report())
+
+    def test_native_local_root_serialization_and_origin_spoofs(self):
+        report = self.report()
+        report["phase"] = "other"
+        def check():
+            runner.validate_boundary(report, "public", "other", "tauri://localhost/",
+                                     ["runtime_info", "workspace_snapshot"])
+        for url in ("tauri://localhost", "tauri://localhost/"):
+            report["url"] = url
+            check()
+        for url in ("tauri://localhost.evil/", "tauri://localhost/path",
+                    "tauri://localhost/?query=1", "tauri://localhost/#fragment",
+                    "http://localhost/", "tauri://localhost:80/"):
+            report["url"] = url
+            with self.assertRaises(AssertionError):
+                check()
 
     def test_missing_bridge_wrong_context_or_wrong_origin_cannot_pass(self):
         for key, value in [("bridge", False), ("phase", "other"), ("edition", "personal"),

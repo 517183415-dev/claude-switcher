@@ -1,0 +1,248 @@
+{
+  "phase": "other",
+  "edition": "personal",
+  "url": "tauri://localhost",
+  "bridge": true,
+  "rows": [
+    {
+      "command": "runtime_info",
+      "ok": false,
+      "error": "Command runtime_info not allowed by ACL"
+    },
+    {
+      "command": "workspace_snapshot",
+      "ok": false,
+      "error": "Command workspace_snapshot not allowed by ACL"
+    },
+    {
+      "command": "check_environment",
+      "ok": false,
+      "error": "Command check_environment not allowed by ACL"
+    },
+    {
+      "command": "cancel_check",
+      "ok": false,
+      "error": "Command cancel_check not allowed by ACL"
+    },
+    {
+      "command": "launch_checked",
+      "ok": false,
+      "error": "Command launch_checked not allowed by ACL"
+    },
+    {
+      "command": "account_action",
+      "ok": false,
+      "error": "Command account_action not allowed by ACL"
+    },
+    {
+      "command": "migration_preparation",
+      "ok": false,
+      "error": "Command migration_preparation not allowed by ACL"
+    },
+    {
+      "command": "create_migration_backup",
+      "ok": false,
+      "error": "Command create_migration_backup not allowed by ACL"
+    },
+    {
+      "command": "preview_repair",
+      "ok": false,
+      "error": "Command preview_repair not allowed by ACL"
+    },
+    {
+      "command": "execute_repair",
+      "ok": false,
+      "error": "Command execute_repair not allowed by ACL"
+    },
+    {
+      "command": "cancel_repair",
+      "ok": false,
+      "error": "Command cancel_repair not allowed by ACL"
+    },
+    {
+      "command": "recover_repair",
+      "ok": false,
+      "error": "Command recover_repair not allowed by ACL"
+    },
+    {
+      "command": "save_preferences",
+      "ok": false,
+      "error": "Command save_preferences not allowed by ACL"
+    },
+    {
+      "command": "activity_log",
+      "ok": false,
+      "error": "Command activity_log not allowed by ACL"
+    },
+    {
+      "command": "export_activity",
+      "ok": false,
+      "error": "Command export_activity not allowed by ACL"
+    },
+    {
+      "command": "software_update",
+      "ok": false,
+      "error": "Command software_update not allowed by ACL"
+    },
+    {
+      "command": "rebuild_time_baseline",
+      "ok": false,
+      "error": "Command rebuild_time_baseline not allowed by ACL"
+    },
+    {
+      "command": "open_date_settings",
+      "ok": false,
+      "error": "Command open_date_settings not allowed by ACL"
+    },
+    {
+      "command": "open_ad_link",
+      "ok": false,
+      "error": "Command open_ad_link not allowed by ACL"
+    },
+    {
+      "command": "ad_cached_image",
+      "ok": false,
+      "error": "Command ad_cached_image not allowed by ACL"
+    },
+    {
+      "command": "refresh_ad_content",
+      "ok": false,
+      "error": "Command refresh_ad_content not allowed by ACL"
+    },
+    {
+      "command": "region_view",
+      "ok": false,
+      "error": "Command region_view not allowed by ACL"
+    },
+    {
+      "command": "preview_region_change",
+      "ok": false,
+      "error": "Command preview_region_change not allowed by ACL"
+    },
+    {
+      "command": "ad_draft_read",
+      "ok": false,
+      "error": "Command ad_draft_read not allowed by ACL"
+    },
+    {
+      "command": "ad_draft_save",
+      "ok": false,
+      "error": "Command ad_draft_save not allowed by ACL"
+    },
+    {
+      "command": "import_ad_image",
+      "ok": false,
+      "error": "Command import_ad_image not allowed by ACL"
+    },
+    {
+      "command": "ad_image_preview",
+      "ok": false,
+      "error": "Command ad_image_preview not allowed by ACL"
+    },
+    {
+      "command": "publisher_status",
+      "ok": false,
+      "error": "Command publisher_status not allowed by ACL"
+    },
+    {
+      "command": "publish_ad",
+      "ok": false,
+      "error": "Command publish_ad not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_read",
+      "ok": false,
+      "error": "Command publisher_remote_read not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_save",
+      "ok": false,
+      "error": "Command publisher_remote_save not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_select",
+      "ok": false,
+      "error": "Command publisher_remote_select not allowed by ACL"
+    },
+    {
+      "command": "pause_ad",
+      "ok": false,
+      "error": "Command pause_ad not allowed by ACL"
+    },
+    {
+      "command": "restore_ad_history",
+      "ok": false,
+      "error": "Command restore_ad_history not allowed by ACL"
+    },
+    {
+      "command": "create_ad_signing_key",
+      "ok": false,
+      "error": "Command create_ad_signing_key not allowed by ACL"
+    },
+    {
+      "command": "export_publisher_backup",
+      "ok": false,
+      "error": "Command export_publisher_backup not allowed by ACL"
+    },
+    {
+      "command": "restore_publisher_backup",
+      "ok": false,
+      "error": "Command restore_publisher_backup not allowed by ACL"
+    },
+    {
+      "command": "open_publisher_backup_folder",
+      "ok": false,
+      "error": "Command open_publisher_backup_folder not allowed by ACL"
+    },
+    {
+      "command": "preview_publisher_cleanup",
+      "ok": false,
+      "error": "Command preview_publisher_cleanup not allowed by ACL"
+    },
+    {
+      "command": "commit_publisher_cleanup",
+      "ok": false,
+      "error": "Command commit_publisher_cleanup not allowed by ACL"
+    },
+    {
+      "command": "preview_publisher_gc",
+      "ok": false,
+      "error": "Command preview_publisher_gc not allowed by ACL"
+    },
+    {
+      "command": "commit_publisher_gc",
+      "ok": false,
+      "error": "Command commit_publisher_gc not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": false,
+      "error": "Command publisher_recovery_prepare not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_confirm",
+      "ok": false,
+      "error": "Command publisher_recovery_confirm not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_cancel",
+      "ok": false,
+      "error": "Command publisher_recovery_cancel not allowed by ACL"
+    },
+    {
+      "command": "publisher_archive_import",
+      "ok": false,
+      "error": "Command publisher_archive_import not allowed by ACL"
+    },
+    {
+      "command": "publisher_retained_list",
+      "ok": false,
+      "error": "Command publisher_retained_list not allowed by ACL"
+    },
+    {
+      "command": "publisher_retained_export",
+      "ok": false,
+      "error": "Command publisher_retained_export not allowed by ACL"
+    }
+  ]
+}

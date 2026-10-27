@@ -1,0 +1,29 @@
+{
+  "edition": "public",
+  "phase": "other",
+  "denied": [
+    "runtime_info",
+    "workspace_snapshot",
+    "check_environment",
+    "cancel_check",
+    "launch_checked",
+    "account_action",
+    "migration_preparation",
+    "create_migration_backup",
+    "preview_repair",
+    "execute_repair",
+    "cancel_repair",
+    "recover_repair",
+    "save_preferences",
+    "activity_log",
+    "export_activity",
+    "software_update",
+    "rebuild_time_baseline",
+    "open_date_settings",
+    "open_ad_link",
+    "ad_cached_image",
+    "refresh_ad_content",
+    "region_view",
+    "preview_region_change"
+  ]
+}

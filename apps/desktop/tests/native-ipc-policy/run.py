@@ -40,6 +40,13 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def runtime_profile():
+    policy = (ROOT / "output/no-account-20261027/storage-directory-race/account-free.sb").read_text()
+    # WebKit resolves numeric loopback requests through this system socket.
+    # Keep other Unix sockets, external IPs and private paths denied.
+    return policy + '\n(allow network-outbound (remote unix-socket (path "/private/var/run/mDNSResponder")))\n'
+
+
 def prepare_home(home, edition):
     # mkdir(parents=True, mode=...) only applies mode to the final component.
     directory = home
@@ -126,7 +133,11 @@ def boundary_server(edition, port=0):
 
 def validate_boundary(report, edition, phase, expected_url, commands):
     assert report["phase"] == phase and report["edition"] == edition
-    assert report["url"] == expected_url, "unexpected page origin"
+    # WKWebView serializes this custom-scheme document root without a slash.
+    if expected_url in ("tauri://localhost", "tauri://localhost/"):
+        assert report["url"] in ("tauri://localhost", "tauri://localhost/"), "unexpected page origin"
+    else:
+        assert report["url"] == expected_url, "unexpected page origin"
     assert report["bridge"] is True, "no IPC bridge; cannot claim ACL denial"
     assert [r["command"] for r in report["rows"]] == commands
     for row in report["rows"]:
@@ -189,7 +200,7 @@ def execute(args, server):
     (dist / "index.html").write_bytes(page(plan))
     (dist / "probe.js").write_bytes(script)
     config["build"] = {"frontendDist": str(dist)}
-    policy = (ROOT / "output/no-account-20261027/storage-directory-race/account-free.sb").read_text()
+    policy = runtime_profile()
     profile = out / "isolation.sb"
     profile.write_text(policy)
     env = dict(os.environ, HOME=str(home), TMPDIR=str(out / "tmp") + "/",

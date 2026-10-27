@@ -1,0 +1,25 @@
+{
+  "productName": "Claude 切换器 Public",
+  "identifier": "local.claudeswitcher.public",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "IPC Remote",
+        "url": "http://127.0.0.1:50047/",
+        "width": 900,
+        "height": 600
+      },
+      {
+        "label": "other",
+        "title": "IPC Other",
+        "url": "index.html",
+        "width": 900,
+        "height": 600
+      }
+    ]
+  },
+  "build": {
+    "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-runtime/public-unlocked-r1/dist"
+  }
+}

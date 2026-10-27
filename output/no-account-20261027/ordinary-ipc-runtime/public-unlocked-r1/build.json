@@ -1,0 +1,22 @@
+{
+  "exit_code": 0,
+  "command": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "build",
+    "--release",
+    "--offline",
+    "--locked",
+    "--target",
+    "aarch64-apple-darwin",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "public,custom-protocol"
+  ],
+  "commit": "a7f61dceb65871cb680da8b553a26a074c335f1d",
+  "log_sha256": "7f2f6adbdcf49cb7bc77981b40f20cc46d37500de91769cc770519832573ab9e",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa"
+}

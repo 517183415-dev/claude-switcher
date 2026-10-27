@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_webkit_resolver_allowed_without_other_sockets_or_private_access (__main__.BoundaryReceiptTests.test_webkit_resolver_allowed_without_other_sockets_or_private_access)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/native-ipc-policy/test_receipts.py", line 121, in test_webkit_resolver_allowed_without_other_sockets_or_private_access
+    self.assertEqual(controls["resolver"], 0, controls)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : {'resolver': 1, 'unrelated': 1, 'external': 1, 'private': 1}
+
+----------------------------------------------------------------------
+Ran 1 test in 0.032s
+
+FAILED (failures=1)
