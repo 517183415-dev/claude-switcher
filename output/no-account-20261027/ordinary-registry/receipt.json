@@ -1,0 +1,67 @@
+{
+  "status": "SHARED_PRODUCT_REGISTRY_MOCK_DISPATCH_VERIFIED_NOT_NATIVE_WEBVIEW",
+  "base_commit": "9a7f56881ed35f8417ed9e7378ad8998f27a0636",
+  "registration": {
+    "personal": 48,
+    "public": 23,
+    "order_preserved": true,
+    "production_and_tests_share": "ipc::handler",
+    "baseline_evidence_sha256": "30f0c86205bf1b73eb1b1395a5a98f5a485d5924055b77d9e762803e77a5eb7b"
+  },
+  "final_tests": {
+    "personal_passed": 230,
+    "public_passed": 35,
+    "failed": 0,
+    "targeted_tests_included_not_added": true,
+    "new_distinct_names": [
+      "ipc_dispatch_tests::ordinary_registry_preferences_and_redacted_export_persist_on_reopen",
+      "ipc_dispatch_tests::ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_writes"
+    ]
+  },
+  "known_warnings": {
+    "personal_existing_clippy_style": 3,
+    "ts_rs_existing_serde_attribute": true
+  },
+  "initial_public_attempt": "Compile failure in test-only persisted helper cfg, no Public tests executed; retained separately; corrected retry and final full Public suite passed.",
+  "source_binding": {
+    "path": "final-inputs.json",
+    "sha256": "493af2c7c1614e83b163a27f8b18b1478a1636ba650da372d29ffcde3620dd81",
+    "files": 293,
+    "unchanged": true
+  },
+  "evidence_sha256": {
+    "baseline-registrations.json": "b69ba3dbf2ff103da494036af1a70ea99f37b188ea7b53f89879a74c5c2e0798",
+    "clippy-personal.json": "5930e860aefe054172d2887140a9c1fa9074ef0fdf72f1f13d48e563dc1dc82d",
+    "clippy-personal.log": "f0d0e7a007196dcf9d4562b0b69e011fe3cd22ea81927f9a749cf403e441c5b6",
+    "clippy-public.json": "8a8521fb5d15555769c0242b5e93e26d4ba6347a7aae926968b480a00bc7ecca",
+    "clippy-public.log": "e7b485aa930c7776b40cb34beeafcffe460255733a9fc68783016aed5f467391",
+    "codegraph-status.json": "b094c039daffc3c9bb94b2b9bb456d11bb7e047c6679b9edc819dd7cb6ce8993",
+    "final-checks.json": "fd95cf2a59a6be34633fb2f0e3dd6478f2c60d70255a78e9e88d67d340d93544",
+    "final-inputs.json": "493af2c7c1614e83b163a27f8b18b1478a1636ba650da372d29ffcde3620dd81",
+    "format.json": "8daf077f2a04e231ba502c626c3cec361221dff5ff597383fc03cda6a2be5b53",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "full-personal.json": "b80c59cd5a15155aa8b6254559b698dddb257656c977faad20150a4297b5cd47",
+    "full-personal.log": "21ed9aa31457f60062234736aa5a871c592c83aa1054263f95604bd192dfdc22",
+    "full-public.json": "bd42d7e1ed5f810e80c8cd35360789481b884518de10f30e582dc17e855c743d",
+    "full-public.log": "661da6a7c3b2225871e6b57864e42f0bf296ff1d93692c2a0e44b3a443ad7ab6",
+    "inputs.json": "a1043963fe5dcee4791762af20cdbb02f8642dce6f2b54724f3434c09bfc3b2b",
+    "observations.json": "620ac4c8cfac241165b58e45733d6615a1d3a5c7c76f5ece110e10235eb6b080",
+    "registry-preservation.json": "30f0c86205bf1b73eb1b1395a5a98f5a485d5924055b77d9e762803e77a5eb7b",
+    "targeted-personal.json": "e10a5da775e134ffec0814092a43c89148d6d7b4652255831342e390e9aa9ff1",
+    "targeted-personal.log": "9cf41ac37767fce3321577b3e32e65ad1e9d5400e3a548ab26d3bf9c3d0e89d0",
+    "targeted-public-r2.json": "7e6873d13b9017c985c4512613e592bbcb28236b979a21869d836190e86e8fe5",
+    "targeted-public-r2.log": "706de4232527c3b0449372e68569ed80cdb8e56562436440ef2a26cecae2f9ec",
+    "targeted-public.json": "02aec122cb983a21680b6abf2142051eb151b3acc848ee55fde342f237025068",
+    "targeted-public.log": "9216c82033bbd11136331e8c52f42b4db541633c46e54d14175ec872615e0078"
+  },
+  "not_verified": [
+    "Native WKWebView dispatch matrix",
+    "Every business success/failure branch",
+    "OS process restart",
+    "Native Keychain",
+    "Real remote storage",
+    "System installation and long-run acceptance"
+  ],
+  "ui_rewrite": "LAST task; SwiftUI Liquid Glass material; preserve current layout; no blue-purple background",
+  "registration_deployment_payment": "PAUSED"
+}

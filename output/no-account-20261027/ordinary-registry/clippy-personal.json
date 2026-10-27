@@ -1,0 +1,22 @@
+{
+  "name": "clippy-personal",
+  "edition": "personal",
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "personal",
+    "--all-targets"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 5.14,
+  "log_sha256": "f0d0e7a007196dcf9d4562b0b69e011fe3cd22ea81927f9a749cf403e441c5b6"
+}

@@ -1,6 +1,6 @@
-//! Real command decoding, ordinary ACL and publisher handlers on Tauri MockRuntime.
+//! Real command decoding, ordinary ACL and the product registry on Tauri MockRuntime.
 //! This does not exercise WKWebView, native Keychain or external publication.
-use crate::{bridge::DesktopState, publisher_commands as commands};
+use crate::bridge::DesktopState;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -32,20 +32,21 @@ impl SyntheticRoot {
     fn app(&self) -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
         let state = DesktopState::isolated_activity_fixture(
             self.0.clone(),
-            switcher_domain::Edition::Personal,
+            if cfg!(feature = "personal") {
+                switcher_domain::Edition::Personal
+            } else {
+                switcher_domain::Edition::Public
+            },
         );
         let mut context = mock_context(noop_assets());
         *context.runtime_authority_mut() = crate::ipc_policy_tests::ordinary_policy().0;
-        let app = mock_builder()
-            .manage(Arc::new(state))
-            .invoke_handler(tauri::generate_handler![
-                commands::ad_draft_read,
-                commands::ad_draft_save,
-                commands::pause_ad,
-                commands::import_ad_image,
-                commands::ad_image_preview,
-                commands::publisher_status
-            ])
+        let builder = mock_builder().manage(Arc::new(state));
+        #[cfg(feature = "personal")]
+        let builder = builder.manage(Arc::new(
+            crate::publisher_recovery_commands::RecoverySessions::default(),
+        ));
+        let app = builder
+            .invoke_handler(crate::ipc::handler())
             .build(context)
             .unwrap();
         let window = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
@@ -53,6 +54,7 @@ impl SyntheticRoot {
             .unwrap();
         (app, window)
     }
+    #[cfg(feature = "personal")]
     fn state_path(&self) -> PathBuf {
         let root = self.0.join("v2/personal/publisher");
         let active: Value =
@@ -60,6 +62,7 @@ impl SyntheticRoot {
         root.join(active["generation"].as_str().unwrap())
             .join("state.json")
     }
+    #[cfg(feature = "personal")]
     fn persisted(&self, expected: &Value) {
         let path = self.state_path();
         let stored: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
@@ -77,13 +80,21 @@ fn invoke(
     command: &str,
     body: Value,
 ) -> Result<Value, Value> {
+    invoke_from(window, command, body, "tauri://localhost/")
+}
+fn invoke_from(
+    window: &tauri::WebviewWindow<MockRuntime>,
+    command: &str,
+    body: Value,
+    url: &str,
+) -> Result<Value, Value> {
     get_ipc_response(
         window,
         InvokeRequest {
             cmd: command.into(),
             callback: CallbackFn(0),
             error: CallbackFn(1),
-            url: "tauri://localhost/".parse().unwrap(),
+            url: url.parse().unwrap(),
             body: InvokeBody::Json(body),
             headers: Default::default(),
             invoke_key: tauri::test::INVOKE_KEY.into(),
@@ -91,11 +102,161 @@ fn invoke(
     )
     .map(|body| body.deserialize().unwrap())
 }
+
+#[test]
+fn ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_writes() {
+    let root = SyntheticRoot::new();
+    let (app, main) = root.app();
+    let other = tauri::WebviewWindowBuilder::new(&app, "other", Default::default())
+        .build()
+        .unwrap();
+    let personal = cfg!(feature = "personal");
+    let registered = crate::ipc::registered_names(personal);
+    assert_eq!(registered.len(), if personal { 48 } else { 23 });
+    for command in &registered {
+        for (window, url) in [
+            (&other, "tauri://localhost/"),
+            (&main, "https://example.invalid/"),
+            (&main, "http://127.0.0.1:5555/"),
+        ] {
+            let error = invoke_from(window, command, json!({}), url).unwrap_err();
+            assert!(
+                error.as_str().unwrap().contains("not allowed"),
+                "{command} {url}: {error}"
+            );
+        }
+    }
+    let mut denied = vec![
+        "forbidden_probe".to_owned(),
+        "finish_smoke".to_owned(),
+        "__unregistered__".to_owned(),
+    ];
+    if !personal {
+        denied.extend(
+            crate::ipc::registered_names(true)
+                .difference(&registered)
+                .cloned(),
+        );
+    }
+    for command in denied {
+        let error = invoke(&main, &command, json!({})).unwrap_err();
+        assert!(
+            error.as_str().unwrap().contains("not allowed"),
+            "{command}: {error}"
+        );
+    }
+    let mut required = vec![
+        "account_action",
+        "preview_repair",
+        "execute_repair",
+        "save_preferences",
+        "software_update",
+        "open_ad_link",
+        "ad_cached_image",
+        "preview_region_change",
+        "cancel_repair",
+    ];
+    if personal {
+        required.extend(["ad_draft_save", "import_ad_image", "ad_image_preview"]);
+    }
+    for command in required {
+        let error = invoke(&main, command, json!({})).unwrap_err();
+        assert!(
+            error.as_str().unwrap().contains("invalid args"),
+            "{command}: {error}"
+        );
+    }
+    assert_eq!(fs::read_dir(&root.0).unwrap().count(), 0);
+    assert!(
+        invoke(&main, "runtime_info", json!({})).is_ok(),
+        "positive control"
+    );
+}
+
+#[test]
+fn ordinary_registry_preferences_and_redacted_export_persist_on_reopen() {
+    use switcher_core::storage;
+    let root = SyntheticRoot::new();
+    let (app, main) = root.app();
+    let edition = if cfg!(feature = "personal") {
+        "personal"
+    } else {
+        "public"
+    };
+    assert_eq!(
+        invoke(&main, "runtime_info", json!({})).unwrap()["edition"],
+        edition
+    );
+    let mut preferences =
+        serde_json::to_value(switcher_domain::desktop::Preferences::default()).unwrap();
+    preferences["updates_paused_until"] = json!(1234567890);
+    let saved = invoke(
+        &main,
+        "save_preferences",
+        json!({"preferences":preferences}),
+    )
+    .unwrap();
+    assert_eq!(saved, preferences);
+    let directory = root.0.join("v2").join(edition);
+    let path = directory.join("preferences.json");
+    let before = fs::read(&path).unwrap();
+    let disk: Value = serde_json::from_slice(&before).unwrap();
+    assert_eq!(disk, saved);
+    let mut invalid = preferences.clone();
+    invalid["ads"]["slots_enabled"] = json!([true, false, false]);
+    invalid["ads"]["request_purpose_acknowledged"] = json!(false);
+    assert!(invoke(&main, "save_preferences", json!({"preferences":invalid})).is_err());
+    invalid = preferences;
+    invalid["unexpected"] = json!(true);
+    assert!(invoke(&main, "save_preferences", json!({"preferences":invalid})).is_err());
+    assert_eq!(fs::read(&path).unwrap(), before);
+    let raw = "IP 203.0.113.9\nCookie: DISPATCH_SYNTHETIC_SECRET\nhttps://user:password@private.example/path";
+    storage::atomic_json(
+        &directory.join("activity.json"),
+        &json!([
+            {"observed_at":1,"level":"info","message":raw}
+        ]),
+    )
+    .unwrap();
+    let activity = invoke(&main, "activity_log", json!({})).unwrap();
+    let exported = invoke(&main, "export_activity", json!({})).unwrap();
+    let expected_path = directory.join("exports/activity-redacted.json");
+    assert_eq!(PathBuf::from(exported[0].as_str().unwrap()), expected_path);
+    assert_eq!(exported[1], activity);
+    let bytes = fs::read(&expected_path).unwrap();
+    assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), activity);
+    let text = String::from_utf8(bytes).unwrap();
+    for marker in [
+        "203.0.113.9",
+        "DISPATCH_SYNTHETIC_SECRET",
+        "password",
+        "private.example",
+    ] {
+        assert!(!text.contains(marker), "secret marker escaped redaction");
+    }
+    for file in [&path, &expected_path] {
+        assert_eq!(
+            fs::metadata(file).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+    }
+    drop(main);
+    drop(app);
+    let (_app, main) = root.app();
+    assert_eq!(invoke(&main, "activity_log", json!({})).unwrap(), activity);
+    assert_eq!(
+        invoke(&main, "export_activity", json!({})).unwrap()[1],
+        activity
+    );
+    assert_eq!(fs::read(&path).unwrap(), before);
+}
+#[cfg(feature = "personal")]
 fn read(window: &tauri::WebviewWindow<MockRuntime>) -> Value {
     invoke(window, "ad_draft_read", json!({})).unwrap()
 }
 
 #[test]
+#[cfg(feature = "personal")]
 fn ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft() {
     let root = SyntheticRoot::new();
     let (app, window) = root.app();
@@ -192,6 +353,7 @@ fn ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft()
 }
 
 #[test]
+#[cfg(feature = "personal")]
 fn ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft() {
     let root = SyntheticRoot::new();
     let (app, main) = root.app();

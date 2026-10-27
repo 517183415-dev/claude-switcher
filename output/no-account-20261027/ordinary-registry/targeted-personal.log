@@ -1,0 +1,24 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.74s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 6 tests
+test ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft ... ok
+test ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft ... ok
+test ipc_dispatch_tests::ordinary_registry_preferences_and_redacted_export_persist_on_reopen ... ok
+test ipc_dispatch_tests::ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_writes ... ok
+test ipc_policy_tests::ordinary_capabilities_match_registration_and_reject_other_windows_and_remote_origins ... ok
+test ipc_policy_tests::ordinary_capabilities_reject_fixture_unknown_and_cross_edition_commands ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.53s
+

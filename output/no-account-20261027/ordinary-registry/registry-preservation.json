@@ -1,0 +1,9 @@
+{
+  "baseline_sha256": "b69ba3dbf2ff103da494036af1a70ea99f37b188ea7b53f89879a74c5c2e0798",
+  "registry_sha256": "058aa4e2d978da5fa66a965f03e82b9804e24298c8cf358aef1ab8eddd9a8612",
+  "ordered_names_preserved": true,
+  "public": 23,
+  "personal": 48,
+  "test_router": "same ipc::handler as ordinary main",
+  "comparison": "Ordered source declarations before versus after extraction; independent ordinary ACL comparison runs in the Rust tests."
+}

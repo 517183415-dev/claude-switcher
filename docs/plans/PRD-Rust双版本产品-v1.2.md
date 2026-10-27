@@ -1,5 +1,15 @@
 # Claude 切换器 Rust 重写 PRD
 
+## 2026-10-27：普通产品与测试共用 IPC 注册表
+
+新增 `src-tauri/src/ipc.rs`：公共命令只声明一次，Personal 运营命令只声明一次。普通 main 与 MockRuntime 共用 `ipc::handler`，移除六命令测试路由及权限测试对 main 文本的脆弱解析。迁移前后有序注册保持 Public 23 / Personal 48；现行 ACL 独立核对一致。两个 AppHandle 命令及共用退出函数改为泛型 Runtime，业务、成功条件和退出时序不变。
+
+新增两项测试在两版执行：全部命令的其他窗口及远程来源拒绝、Public 全部运营命令拒绝、选定缺参拒绝后目录无业务文件；非默认偏好保存、无效偏好拒绝且持久字节不变、合成敏感活动读取/导出一致、0600 文件及 App 状态重建回读。Personal 既有三槽六期草稿闭环也使用完整产品分发表。此处仍是 MockRuntime，不代替 WKWebView 或所有业务分支。
+
+阶段末 Personal 230 项、Public 35 项全部通过；两版 Clippy 与格式检查通过，Personal 保留三条既有迁移风格警告。首轮 Public 测试辅助方法条件编译失败保留，修复后只重试失败版，再执行一次集中完整集合。[计划](../plans/普通IPC完整注册表-实施计划-2026-10-27.md)与[证据](../../output/no-account-20261027/ordinary-registry/README.md)。CodeGraph complete、pending 0：240 文件、6345 节点、26455 条边。
+
+本轮确认 Mac 仍锁屏，没有重复原生窗口尝试。完整动态窗口矩阵、原生 Keychain、系统与实源验收仍待完成。SwiftUI 玻璃 UI 最后执行，保留当前布局；注册、部署、付款暂停。
+
 ## 2026-10-27：排期日期拒绝无效日历输入
 
 修复生产 `operations-date.ts` 的日期归一化缺口：无效闰日或不存在的日期曾被 JavaScript 改为其他日期，非 datetime-local 语法也能进入转换。新增输入语法与日历一致性校验，复用既有 invalid 拒绝分支；保留现有 DST 缺失/重复时刻规则。仅解析函数复现，不外推原生日期控件行为。

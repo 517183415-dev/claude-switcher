@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "name": "full-personal",
+      "edition": "personal",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--bin",
+        "switcher-desktop",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 240.53,
+      "log_sha256": "21ed9aa31457f60062234736aa5a871c592c83aa1054263f95604bd192dfdc22"
+    },
+    {
+      "name": "clippy-personal",
+      "edition": "personal",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.14,
+      "log_sha256": "f0d0e7a007196dcf9d4562b0b69e011fe3cd22ea81927f9a749cf403e441c5b6"
+    },
+    {
+      "name": "full-public",
+      "edition": "public",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--bin",
+        "switcher-desktop",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.67,
+      "log_sha256": "661da6a7c3b2225871e6b57864e42f0bf296ff1d93692c2a0e44b3a443ad7ab6"
+    },
+    {
+      "name": "clippy-public",
+      "edition": "public",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.15,
+      "log_sha256": "e7b485aa930c7776b40cb34beeafcffe460255733a9fc68783016aed5f467391"
+    },
+    {
+      "name": "format",
+      "edition": "personal",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "--config",
+        "skip_children=true",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/main.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/commands.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/bridge.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_policy_tests.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_dispatch_tests.rs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.04,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "inputs_unchanged": true,
+  "base_commit": "9a7f56881ed35f8417ed9e7378ad8998f27a0636"
+}

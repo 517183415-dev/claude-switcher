@@ -1,0 +1,6 @@
+{
+  "session_locked_observed": true,
+  "source": "CGSessionCopyCurrentDictionary / CGSSessionScreenIsLocked via CoreGraphics",
+  "native_window_attempts": 0,
+  "registration_deployment_payment": "PAUSED"
+}

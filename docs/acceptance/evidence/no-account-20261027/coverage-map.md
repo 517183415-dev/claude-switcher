@@ -1,5 +1,7 @@
 # 无真实账号功能覆盖审查索引
 
+PR-07/08、AD-01/09 补充：MockRuntime 与普通产品共用完整注册表；两版拒绝矩阵及偏好/脱敏导出通过，Personal 草稿闭环保留。完整桌面 Personal 230 / Public 35 项通过，不能替代真实窗口及全部业务分支。见[证据](../../../../output/no-account-20261027/ordinary-registry/receipt.json)。
+
 AD-06 补充：排期解析器拒绝无效日历和非编辑器语法；保留原 DST 规则。有效 RED 两项失败，最终定向 9 项、完整前端 67 项通过；不等于原生输入验收。见[证据](../../../../output/no-account-20261027/campaign-date-validation/receipt.json)。
 
 AD-01/PR-08 增量：两个 MockRuntime 分发测试经过真实 JSON 解码、普通 ACL 和六个生产处理函数，覆盖素材、三槽六期、修改/暂停、状态重建、拒绝保持与损坏状态拒绝。见[范围与回执](../../../../output/no-account-20261027/ipc-dispatch/README.md)。不计为实际 WKWebView 动态通过；完整产品注册表、系统重启及其他命令仍另验。

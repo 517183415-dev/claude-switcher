@@ -22,16 +22,16 @@ pub fn cancel_check(state: Desktop<'_>) -> OperationOutcome {
     state.cancel_check()
 }
 #[tauri::command]
-pub async fn launch_checked(
+pub async fn launch_checked<R: tauri::Runtime>(
     state: Desktop<'_>,
-    app: tauri::AppHandle,
+    app: tauri::AppHandle<R>,
 ) -> Result<OperationOutcome, String> {
     let outcome = state.launch_checked().await;
     close_after_launch(&app, &outcome);
     Ok(outcome)
 }
 
-fn close_after_launch(app: &tauri::AppHandle, outcome: &OperationOutcome) {
+fn close_after_launch<R: tauri::Runtime>(app: &tauri::AppHandle<R>, outcome: &OperationOutcome) {
     if outcome.completed {
         let app = app.clone();
         tauri::async_runtime::spawn(async move {
@@ -55,10 +55,10 @@ pub async fn create_migration_backup(state: Desktop<'_>) -> Result<OperationOutc
         .map_err(|_| "迁移备份操作被中断，请保留资料并重新预览准备状态".to_owned())
 }
 #[tauri::command]
-pub async fn account_action(
+pub async fn account_action<R: tauri::Runtime>(
     state: Desktop<'_>,
     action: AccountAction,
-    app: tauri::AppHandle,
+    app: tauri::AppHandle<R>,
 ) -> Result<OperationOutcome, String> {
     let state = state.inner().clone();
     let target = match action {

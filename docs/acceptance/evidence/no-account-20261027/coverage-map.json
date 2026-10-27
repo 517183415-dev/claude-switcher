@@ -7502,7 +7502,14 @@
           "requirement_checklist": "N：注入合成敏感事件，原生查看、重启回读、导出文件比对；不读真实日志"
         }
       ],
-      "next_review": "建统一语料和三消费者契约测试，再验原生路径"
+      "next_review": "建统一语料和三消费者契约测试，再验原生路径",
+      "shared_registry_evidence": {
+        "status": "MOCK_RUNTIME_SHARED_PRODUCT_REGISTRY_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ordinary-registry/receipt.json",
+        "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
+        "personal_full_tests": 230,
+        "public_full_tests": 35
+      }
     },
     {
       "id": "PR-08",
@@ -7538,6 +7545,13 @@
           "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft"
         ],
         "scope": "Real Tauri InvokeRequest decoding, ordinary ACL and six production publisher handlers; synthetic assets and draft storage. Includes App state reconstruction, not OS process restart. Actual WKWebView and complete command registry remain separate gates."
+      },
+      "shared_registry_evidence": {
+        "status": "MOCK_RUNTIME_SHARED_PRODUCT_REGISTRY_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ordinary-registry/receipt.json",
+        "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
+        "personal_full_tests": 230,
+        "public_full_tests": 35
       }
     },
     {
@@ -7838,6 +7852,13 @@
           "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft"
         ],
         "scope": "Real Tauri InvokeRequest decoding, ordinary ACL and six production publisher handlers; synthetic assets and draft storage. Includes App state reconstruction, not OS process restart. Actual WKWebView and complete command registry remain separate gates."
+      },
+      "shared_registry_evidence": {
+        "status": "MOCK_RUNTIME_SHARED_PRODUCT_REGISTRY_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ordinary-registry/receipt.json",
+        "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
+        "personal_full_tests": 230,
+        "public_full_tests": 35
       }
     },
     {
@@ -8093,7 +8114,14 @@
           "requirement_checklist": "N/E受控：Public逐个写IPC拒绝、运行载荷捕获与全关正控制；B：正式包无测试入口"
         }
       ],
-      "next_review": "复用PR-01/08/11证据，按同一当前候选检查"
+      "next_review": "复用PR-01/08/11证据，按同一当前候选检查",
+      "shared_registry_evidence": {
+        "status": "MOCK_RUNTIME_SHARED_PRODUCT_REGISTRY_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ordinary-registry/receipt.json",
+        "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
+        "personal_full_tests": 230,
+        "public_full_tests": 35
+      }
     },
     {
       "id": "AD-10",

@@ -1,0 +1,52 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-820c85b830ef89e6)
+
+running 35 tests
+test bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten ... ok
+test bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish ... ok
+test bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own ... ok
+test bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report ... ok
+test bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace ... ok
+test ipc_dispatch_tests::ordinary_registry_preferences_and_redacted_export_persist_on_reopen ... ok
+test ipc_dispatch_tests::ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_writes ... ok
+test ipc_policy_tests::ordinary_capabilities_match_registration_and_reject_other_windows_and_remote_origins ... ok
+test ipc_policy_tests::ordinary_capabilities_reject_fixture_unknown_and_cross_edition_commands ... ok
+test native_probe::tests::only_exact_health_arguments_are_accepted ... ok
+test native_probe::tests::ordinary_startup_is_not_a_probe ... ok
+test update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions ... ok
+test update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history ... ok
+test update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight ... ok
+test update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume ... ok
+test update_runtime::tests::corrupted_state_never_resets_the_replay_watermark ... ok
+test update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart ... ok
+test update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints ... ok
+test update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data ... ok
+test update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart ... ok
+test update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions ... ok
+test update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions ... ok
+test update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check ... ok
+test update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery ... ok
+test update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version ... ok
+test update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes ... ok
+test update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence ... ok
+test update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate ... ok
+test update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures ... ok
+test update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons ... ok
+test update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting ... ok
+test update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes ... ok
+test update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory ... ok
+test update_runtime::tests::update_feedback_invalid_account_state ... ok
+test update_runtime::tests::update_feedback_pending_account_journals ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.32s
+

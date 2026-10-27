@@ -1,0 +1,21 @@
+{
+  "name": "format",
+  "edition": "personal",
+  "command": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    "2024",
+    "--check",
+    "--config",
+    "skip_children=true",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/main.rs",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc.rs",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/commands.rs",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/bridge.rs",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_policy_tests.rs",
+    "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_dispatch_tests.rs"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.04,
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

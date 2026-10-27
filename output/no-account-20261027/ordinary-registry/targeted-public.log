@@ -1,0 +1,22 @@
+   Compiling tauri v2.12.5
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling tauri-plugin-updater v2.14.0
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+error[E0599]: no method named `state_path` found for reference `&SyntheticRoot` in the current scope
+  --> apps/desktop/src-tauri/src/ipc_dispatch_tests.rs:66:25
+   |
+66 |         let path = self.state_path();
+   |                         ^^^^^^^^^^ method not found in `&SyntheticRoot`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `switcher-desktop` (bin "switcher-desktop" test) due to 1 previous error

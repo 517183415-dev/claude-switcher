@@ -14,27 +14,7 @@ use tauri::{
 };
 
 fn registrations(edition: &str) -> BTreeSet<String> {
-    let source = include_str!("main.rs");
-    let marker = format!("#[cfg(all(not(feature = \"ipc-smoke\"), feature = \"{edition}\"))]");
-    source
-        .split_once(&marker)
-        .expect("ordinary edition registration")
-        .1
-        .split_once("]);")
-        .expect("registration terminator")
-        .0
-        .lines()
-        .filter_map(|line| {
-            let line = line.trim().trim_end_matches(',');
-            [
-                "commands::",
-                "publisher_commands::",
-                "publisher_recovery_commands::",
-            ]
-            .iter()
-            .find_map(|prefix| line.strip_prefix(prefix).map(str::to_owned))
-        })
-        .collect()
+    crate::ipc::registered_names(edition == "personal")
 }
 
 pub(super) fn ordinary_policy() -> (RuntimeAuthority, BTreeSet<String>) {

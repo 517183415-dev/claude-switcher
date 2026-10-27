@@ -21,6 +21,12 @@ mod ipc_limits;
 
 mod bridge;
 mod commands;
+#[cfg(not(any(
+    feature = "ipc-smoke",
+    feature = "ipc-limits",
+    feature = "ipc-business"
+)))]
+mod ipc;
 mod native_probe;
 #[cfg(feature = "personal")]
 mod publisher;
@@ -42,7 +48,6 @@ mod ipc_policy_tests;
 
 #[cfg(all(
     test,
-    feature = "personal",
     not(any(
         feature = "ipc-smoke",
         feature = "ipc-limits",
@@ -172,83 +177,9 @@ fn main() {
         forbidden_probe,
         finish_smoke
     ]);
-    #[cfg(all(not(feature = "ipc-smoke"), feature = "public"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![
-        commands::runtime_info,
-        commands::workspace_snapshot,
-        commands::check_environment,
-        commands::cancel_check,
-        commands::launch_checked,
-        commands::account_action,
-        commands::migration_preparation,
-        commands::create_migration_backup,
-        commands::preview_repair,
-        commands::execute_repair,
-        commands::cancel_repair,
-        commands::recover_repair,
-        commands::save_preferences,
-        commands::activity_log,
-        commands::export_activity,
-        commands::software_update,
-        commands::rebuild_time_baseline,
-        commands::open_date_settings,
-        commands::open_ad_link,
-        commands::ad_cached_image,
-        commands::refresh_ad_content,
-        commands::region_view,
-        commands::preview_region_change
-    ]);
-    #[cfg(all(not(feature = "ipc-smoke"), feature = "personal"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![
-        commands::runtime_info,
-        commands::workspace_snapshot,
-        commands::check_environment,
-        commands::cancel_check,
-        commands::launch_checked,
-        commands::account_action,
-        commands::migration_preparation,
-        commands::create_migration_backup,
-        commands::preview_repair,
-        commands::execute_repair,
-        commands::cancel_repair,
-        commands::recover_repair,
-        commands::save_preferences,
-        commands::activity_log,
-        commands::export_activity,
-        commands::software_update,
-        commands::rebuild_time_baseline,
-        commands::open_date_settings,
-        commands::open_ad_link,
-        commands::ad_cached_image,
-        commands::refresh_ad_content,
-        commands::region_view,
-        commands::preview_region_change,
-        publisher_commands::ad_draft_read,
-        publisher_commands::ad_draft_save,
-        publisher_commands::import_ad_image,
-        publisher_commands::ad_image_preview,
-        publisher_commands::publisher_status,
-        publisher_commands::publish_ad,
-        publisher_commands::publisher_remote_read,
-        publisher_commands::publisher_remote_save,
-        publisher_commands::publisher_remote_select,
-        publisher_recovery_commands::publisher_recovery_prepare,
-        publisher_recovery_commands::publisher_recovery_confirm,
-        publisher_recovery_commands::publisher_recovery_cancel,
-        publisher_recovery_commands::publisher_archive_import,
-        publisher_recovery_commands::publisher_retained_list,
-        publisher_recovery_commands::publisher_retained_export,
-        publisher_commands::pause_ad,
-        publisher_commands::restore_ad_history,
-        publisher_commands::create_ad_signing_key,
-        publisher_commands::export_publisher_backup,
-        publisher_commands::restore_publisher_backup,
-        publisher_commands::open_publisher_backup_folder,
-        publisher_commands::preview_publisher_cleanup,
-        publisher_commands::commit_publisher_cleanup,
-        publisher_commands::preview_publisher_gc,
-        publisher_commands::commit_publisher_gc
-    ]);
+    #[cfg(not(feature = "ipc-smoke"))]
+    let builder = builder.invoke_handler(ipc::handler());
+
     let mut context = tauri::generate_context!();
     let mut builder = builder;
     if let Some(pins) = update_runtime::compiled_release_pins() {
