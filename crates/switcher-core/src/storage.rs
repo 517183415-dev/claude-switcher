@@ -224,6 +224,10 @@ fn path_component(name: &std::ffi::OsStr) -> io::Result<std::ffi::CString> {
 // Bind each ancestor to an open directory. A later rename can move that inode;
 // this protects against path redirection, not arbitrary same-user directory edits.
 fn open_parent(path: &Path) -> io::Result<(File, std::ffi::CString)> {
+    #[cfg(target_os = "macos")]
+    let directory_flags = libc::O_SEARCH | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC;
+    #[cfg(not(target_os = "macos"))]
+    let directory_flags = libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC;
     let parent = path
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing parent"))?;
@@ -237,12 +241,7 @@ fn open_parent(path: &Path) -> io::Result<(File, std::ffi::CString)> {
         ));
     }
     let root = c"/";
-    let fd = unsafe {
-        libc::open(
-            root.as_ptr(),
-            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
-        )
-    };
+    let fd = unsafe { libc::open(root.as_ptr(), directory_flags) };
     if fd < 0 {
         return Err(io::Error::last_os_error());
     }
@@ -254,13 +253,8 @@ fn open_parent(path: &Path) -> io::Result<(File, std::ffi::CString)> {
                 #[cfg(test)]
                 tests::before_component_open(name);
                 let name = path_component(name)?;
-                let fd = unsafe {
-                    libc::openat(
-                        directory.as_raw_fd(),
-                        name.as_ptr(),
-                        libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
-                    )
-                };
+                let fd =
+                    unsafe { libc::openat(directory.as_raw_fd(), name.as_ptr(), directory_flags) };
                 if fd < 0 {
                     let error = io::Error::last_os_error();
                     if matches!(error.raw_os_error(), Some(libc::ELOOP | libc::ENOTDIR)) {
@@ -482,6 +476,30 @@ mod tests {
     use super::*;
 
     type ComponentHook = Box<dyn FnMut(&std::ffi::OsStr)>;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn private_io_allows_search_only_ancestor() {
+        struct RestorePermissions(PathBuf);
+        impl Drop for RestorePermissions {
+            fn drop(&mut self) {
+                let _ = fs::set_permissions(&self.0, fs::Permissions::from_mode(0o700));
+            }
+        }
+        let root = RaceRoot::new();
+        let ancestor = root.0.join("parent");
+        let child = ancestor.join("private");
+        create_private_directory(&child).unwrap();
+        let _restore = RestorePermissions(ancestor.clone());
+        fs::set_permissions(&ancestor, fs::Permissions::from_mode(0o111)).unwrap();
+        assert_eq!(
+            File::open(&ancestor).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        let path = child.join("state");
+        atomic_write(&path, b"synthetic").unwrap();
+        assert_eq!(read_private_bytes(&path, 32).unwrap(), b"synthetic");
+    }
 
     thread_local! {
         static IDENTITY_FAULT: std::cell::RefCell<Option<io::Error>> =
