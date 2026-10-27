@@ -3,7 +3,7 @@ use base64::Engine;
 use std::{path::PathBuf, sync::Mutex};
 use switcher_core::{
     accounts::{AccountId, AccountStore},
-    ad_runtime::{AdRuntime, ClickDecision},
+    ad_runtime::{AdRuntime, AdSnapshot, ClickDecision},
     checks, config, diagnostics, regions, storage, time,
 };
 use switcher_domain::{Edition, checks::CheckReport, desktop::*};
@@ -102,6 +102,26 @@ pub(crate) fn ad_refresh_waiting(reason: &str, edition: Edition) -> OperationOut
         ),
     };
     waiting(message, recovery)
+}
+
+fn present_ads(
+    result: Result<AdSnapshot, &'static str>,
+    materials: &mut Vec<String>,
+) -> Option<switcher_domain::ads::AdManifest> {
+    match result {
+        Ok(snapshot) => {
+            if snapshot.refresh_failed {
+                materials.push(
+                    "广告内容更新失败；条件允许时将自动重试。仍有效的缓存可以继续显示。".into(),
+                );
+            }
+            snapshot.manifest
+        }
+        Err(reason) => {
+            materials.push(format!("广告已收起：{reason}。请检查广告缓存和内容来源。"));
+            None
+        }
+    }
 }
 
 /// Recovery guidance follows the persisted transaction, not new-operation dependencies.
@@ -230,13 +250,10 @@ impl DesktopState {
         let preferences = self.preferences()?;
         let mut runtime = switcher_core::runtime_info(self.edition);
         runtime.ads_enabled = preferences.ads.slots_enabled.iter().any(|v| *v);
-        let ads_manifest = match ad_runtime.snapshot(&preferences.ads) {
-            Ok(manifest) => manifest,
-            Err(reason) => {
-                materials.push(format!("广告已收起：{reason}。请检查广告缓存和内容来源。"));
-                None
-            }
-        };
+        let ads_manifest = present_ads(
+            ad_runtime.snapshot_with_status(&preferences.ads),
+            &mut materials,
+        );
         Ok(WorkspaceSnapshot {
             runtime,
             accounts: self.accounts()?,
@@ -634,6 +651,50 @@ pub fn open_date_settings() -> OperationOutcome {
     {
         Ok(status) if status.success() => completed("已打开系统日期与时间设置"),
         _ => waiting("无法打开系统日期与时间设置", "请从系统设置进入日期与时间"),
+    }
+}
+
+#[cfg(test)]
+mod ad_status_tests {
+    use super::*;
+    use switcher_domain::ads::{AdChannel, AdManifest};
+
+    #[test]
+    fn failed_refresh_reports_separately_and_preserves_cached_manifest() {
+        let manifest = AdManifest {
+            schema_version: 1,
+            channel: AdChannel::Production,
+            content_revision: 7,
+            key_id: "test".into(),
+            issued_at: 1,
+            expires_at: 2,
+            release_id: "test".into(),
+            slots: Vec::new(),
+        };
+        let mut materials = vec!["其他提示".into()];
+        let shown = present_ads(
+            Ok(AdSnapshot {
+                manifest: Some(manifest.clone()),
+                refresh_failed: true,
+            }),
+            &mut materials,
+        );
+        assert_eq!(shown, Some(manifest.clone()));
+        assert_eq!(materials.len(), 2);
+        assert!(materials[1].contains("广告内容更新失败"));
+
+        let mut recovered_materials = vec!["其他提示".into()];
+        assert_eq!(
+            present_ads(
+                Ok(AdSnapshot {
+                    manifest: Some(manifest.clone()),
+                    refresh_failed: false
+                }),
+                &mut recovered_materials
+            ),
+            Some(manifest),
+        );
+        assert_eq!(recovered_materials, ["其他提示"]);
     }
 }
 

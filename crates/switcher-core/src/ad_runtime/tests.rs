@@ -978,6 +978,80 @@ fn scheduled_refresh_fetches_new_signed_content_and_survives_restart() {
 }
 
 #[test]
+fn background_refresh_failure_remains_visible_until_verified_recovery() {
+    static NOW: AtomicU64 = AtomicU64::new(1000);
+    fn current_clock() -> Result<ClockSample> {
+        Ok(sample(NOW.load(Ordering::SeqCst) as i64))
+    }
+
+    for edition in [Edition::Personal, Edition::Public] {
+        for bad_signature in [false, true] {
+            NOW.store(1000, Ordering::SeqCst);
+            let root = Root::new();
+            let mut runtime = configured_runtime(&root);
+            runtime.edition = edition;
+            runtime.sample_clock = current_clock;
+            let mut fetcher = MemoryFetch::default();
+            fetcher.set(&runtime, &manifest(7));
+            assert!(refresh(&runtime, &mut fetcher, 1000).unwrap().refreshed);
+            let initial = runtime.snapshot_with_status(&prefs()).unwrap();
+            assert!(!initial.refresh_failed);
+            assert_eq!(initial.manifest.unwrap().content_revision, 7);
+
+            if bad_signature {
+                fetcher.set_signed(&runtime, &manifest(8), &SigningKey::from_bytes(&[0x66; 32]));
+            } else {
+                let url = runtime
+                    .pins
+                    .as_ref()
+                    .unwrap()
+                    .source
+                    .manifest_request(&prefs(), AdChannel::Production)
+                    .unwrap();
+                fetcher.objects.remove(url.as_str());
+            }
+            NOW.store(1917, Ordering::SeqCst);
+            {
+                let _lock = runtime.lock().unwrap();
+                assert!(
+                    runtime
+                        .refresh_locked(&prefs(), false, sample(1917), Some(&mut fetcher), Some(0))
+                        .is_err()
+                );
+            }
+
+            // A new runtime models an app restart and reads the persisted failure.
+            let mut restarted = configured_runtime(&root);
+            restarted.edition = edition;
+            restarted.sample_clock = current_clock;
+            let failed = restarted.snapshot_with_status(&prefs()).unwrap();
+            assert!(failed.refresh_failed);
+            assert_eq!(failed.manifest.unwrap().content_revision, 7);
+            let disabled = restarted
+                .snapshot_with_status(&AdPreferences::default())
+                .unwrap();
+            assert!(!disabled.refresh_failed);
+            assert!(disabled.manifest.is_none());
+
+            NOW.store(1977, Ordering::SeqCst);
+            fetcher.set(&restarted, &manifest(8));
+            {
+                let _lock = restarted.lock().unwrap();
+                assert!(
+                    restarted
+                        .refresh_locked(&prefs(), false, sample(1977), Some(&mut fetcher), Some(0))
+                        .unwrap()
+                        .refreshed
+                );
+            }
+            let recovered = restarted.snapshot_with_status(&prefs()).unwrap();
+            assert!(!recovered.refresh_failed);
+            assert_eq!(recovered.manifest.unwrap().content_revision, 8);
+        }
+    }
+}
+
+#[test]
 fn scheduled_failures_back_off_across_restarts_until_verified_recovery() {
     let root = Root::new();
     let runtime = configured_runtime(&root);

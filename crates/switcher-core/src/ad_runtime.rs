@@ -167,6 +167,12 @@ pub struct RefreshResult {
     pub reason: &'static str,
     pub next_check_at: Option<u64>,
 }
+
+/// Content and refresh health are read under the same lifecycle lock.
+pub struct AdSnapshot {
+    pub manifest: Option<AdManifest>,
+    pub refresh_failed: bool,
+}
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClickDecision {
     NeedsConfirmation {
@@ -554,6 +560,9 @@ impl AdRuntime {
             .is_some_and(|hash| state.local_attempt_hash.as_ref() != Some(&hash)))
     }
     pub fn snapshot(&self, preferences: &AdPreferences) -> Result<Option<AdManifest>> {
+        Ok(self.snapshot_with_status(preferences)?.manifest)
+    }
+    pub fn snapshot_with_status(&self, preferences: &AdPreferences) -> Result<AdSnapshot> {
         let _lock = self.lock()?;
         let mut sample = (self.sample_clock)()?;
         if self.pins.as_ref().is_some_and(|pins| pins.local) && enabled(preferences) {
@@ -562,7 +571,12 @@ impl AdRuntime {
         }
         let (state, clock) = self.load(&sample)?;
         self.save(&state, &clock)?;
-        Ok(self.visible(&state, &clock, preferences, utc(&sample)?))
+        Ok(AdSnapshot {
+            manifest: self.visible(&state, &clock, preferences, utc(&sample)?),
+            refresh_failed: self.pins.is_some()
+                && enabled(preferences)
+                && state.schedule.failures > 0,
+        })
     }
     pub fn refresh_if_due(
         &self,
