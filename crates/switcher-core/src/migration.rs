@@ -271,6 +271,10 @@ impl MigrationCoordinator {
         ))
     }
 }
+#[cfg(all(test, target_os = "macos"))]
+#[path = "migration/update_contention_tests.rs"]
+mod update_contention_tests;
+
 pub(crate) fn account_home(owner: u32) -> io::Result<PathBuf> {
     let mut record = std::mem::MaybeUninit::<libc::passwd>::uninit();
     let mut result = std::ptr::null_mut();

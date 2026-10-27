@@ -1611,3 +1611,7 @@ mod tests {
         assert!(!restored.clock.trusted());
     }
 }
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "update_runtime/contention_tests.rs"]
+mod contention_tests;
