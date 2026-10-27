@@ -1,0 +1,25 @@
+{
+  "status": "PASS_PRODUCT_NATIVE_RECOVERY_UI_SYNTHETIC_VAULT",
+  "responses": 7,
+  "checkpoints": [
+    "baseline",
+    "prepared",
+    "canceled",
+    "confirmed",
+    "republished"
+  ],
+  "guard_during_delayed_reload": true,
+  "failed_reload_requires_retry": true,
+  "cancel_preserves_state": true,
+  "confirmation_does_not_publish": true,
+  "old_generation_preserved": true,
+  "explicit_republish_signature_verified": true,
+  "binary_sha256": "b75c9e0d675806cf8118a5d577760b3f149da84d285c96b2ec07a4b0ce882946",
+  "inputs_sha256": "5943d19aa058e6da3023a2f1a394e34a1f706ec0b0d38f019525e26eb621277c",
+  "not_proven": [
+    "default Keychain permission",
+    "full desktop restart",
+    "R2/CDN",
+    "whole AD-10"
+  ]
+}

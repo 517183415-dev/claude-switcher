@@ -1,0 +1,14 @@
+{
+  "status": "RED_PRODUCT_UI_GUARD_RELEASED_DURING_RELOAD",
+  "product_baseline_commit": "50043411",
+  "product_source_sha256": "2d4b56b4956c0c89ec21f7bb4ee8a2988963750a742f8d1e97dd8019c8641711",
+  "observed_error": "Error: publication guard released before draft reload",
+  "relevant_commands": [
+    "create_ad_signing_key",
+    "publish_ad",
+    "publisher_recovery_prepare",
+    "publisher_recovery_cancel",
+    "publisher_recovery_prepare",
+    "publisher_recovery_confirm"
+  ]
+}

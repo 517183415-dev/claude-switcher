@@ -1,0 +1,9 @@
+{
+  "product_source_sha256": "ebea2cb886504c32b55066af85b951c8d979650a238c4ae91ac902b98d21f213",
+  "red_status": "RED_PRODUCT_UI_GUARD_RELEASED_DURING_RELOAD",
+  "green_status": "PASS_PRODUCT_NATIVE_RECOVERY_UI_SYNTHETIC_VAULT",
+  "svelte_check_exit": 0,
+  "svelte_check_sha256": "9b56c79abb8f278c6390ccec9dbe23d378e79be013ec591288ae33ae0becdf78",
+  "native_runner_exit": 0,
+  "scope": "Synthetic vault, isolated WebView, local object store and simulated bootstrap checks"
+}

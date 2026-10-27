@@ -1,0 +1,42 @@
+{
+  "ok": false,
+  "rows": [
+    {
+      "command": "workspace_snapshot",
+      "simulated": true
+    },
+    {
+      "command": "check_environment",
+      "simulated": true
+    },
+    {
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "channel": null
+    },
+    {
+      "command": "publish_ad",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_cancel",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_confirm",
+      "ok": true
+    }
+  ],
+  "error": "Error: publication guard released before draft reload",
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "alerts": []
+}

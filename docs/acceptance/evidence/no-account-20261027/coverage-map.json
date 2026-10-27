@@ -8277,7 +8277,7 @@
           "requirement_checklist": "N：真实WebView备份边界、原生两次确认和重启；E受控/实源：认证回读、补传、下一序号；专用测试密钥存储，不读用户Keychain"
         }
       ],
-      "next_review": "已补真实 WebView 的恢复确认与取消（测试前端/MemoryVault）。继续普通产品 UI 对话框、默认 Keychain 权限、R2 传播和完整清理分支；不重复有效检查。",
+      "next_review": "产品页面确认、取消及刷新失败重试已验证。继续默认 Keychain 权限、R2 传播和完整清理分支；不重复有效检查。",
       "ordinary_recovery_rejection_evidence": {
         "path": "output/no-account-20261027/recovery-dispatch/receipt.json",
         "status": "MOCK_PRODUCT_RECOVERY_REJECTION_VERIFIED_NOT_NATIVE_OR_SUCCESSFUL_RESTORE",
@@ -8343,6 +8343,13 @@
         "host_checkpoints": 6,
         "frontend": "isolated test frontend",
         "secret_storage": "synthetic MemoryVault",
+        "whole_requirement_complete": false
+      },
+      "native_product_recovery_ui_evidence": {
+        "path": "output/no-account-20261027/native-recovery-ui/README.md",
+        "sha256": "627428a4b3b431c020e4bfab2b5eb286fd4e80fdf0148bdb92cf203513ce0fe0",
+        "status": "PASS_PRODUCT_NATIVE_RECOVERY_UI_SYNTHETIC_VAULT",
+        "scope": "产品页面验证延迟刷新锁、失败重试、取消、确认与明确续发；模拟启动检查、合成密钥库和本机存储。默认 Keychain、真实远程服务和整项未验。",
         "whole_requirement_complete": false
       }
     },

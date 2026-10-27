@@ -1,0 +1,103 @@
+{
+  "active": {
+    "schema": 1,
+    "generation": "5dee86b4def3fb70668b8d03a95086b1"
+  },
+  "state": {
+    "schema": 2,
+    "target": "local:3029051f6f80d2848f280f0735b3f00bd847cc96560e8cf96bf7f230df46d2f7",
+    "draft": {
+      "schema_version": 1,
+      "channel": "preview",
+      "content_revision": 1,
+      "key_id": "ads-personal-v1",
+      "issued_at": 1793106793,
+      "expires_at": 1800882793,
+      "release_id": "fca33d0dc862a1ebfcbcd495157cc1ea",
+      "slots": [
+        {
+          "slot": "residential_broadband",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "account_service",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "kyc_service",
+          "enabled": true,
+          "campaigns": []
+        }
+      ]
+    },
+    "history": [
+      {
+        "manifest": {
+          "schema_version": 1,
+          "channel": "preview",
+          "content_revision": 1,
+          "key_id": "ads-personal-v1",
+          "issued_at": 1793106793,
+          "expires_at": 1800882793,
+          "release_id": "fca33d0dc862a1ebfcbcd495157cc1ea",
+          "slots": [
+            {
+              "slot": "residential_broadband",
+              "enabled": true,
+              "campaigns": []
+            },
+            {
+              "slot": "account_service",
+              "enabled": true,
+              "campaigns": []
+            },
+            {
+              "slot": "kyc_service",
+              "enabled": true,
+              "campaigns": []
+            }
+          ]
+        },
+        "published_at": 1793106793,
+        "payload_hash": "bc56cd893f302fdeb429ee48b76f3f438a86b509dc2acc7a87d3a87cc3e80e38"
+      }
+    ],
+    "assets": [],
+    "sequences": [
+      {
+        "highest": 1,
+        "payload_hash": "bc56cd893f302fdeb429ee48b76f3f438a86b509dc2acc7a87d3a87cc3e80e38"
+      },
+      {
+        "highest": 0,
+        "payload_hash": null
+      }
+    ],
+    "pending": null,
+    "recovery_required": false,
+    "last_resolution": null
+  },
+  "states": {
+    "5dee86b4def3fb70668b8d03a95086b1": "b628b1482de5098720b629f083b5382abde7621b4aef3b5eb4fdd7a32d1a63f1"
+  },
+  "public": {
+    "trust.json": {
+      "sha256": "640cb15eeccd858aa81e2c7a128d287d49c50c9e2cd8c956603fa36da20f891b",
+      "mode": 384
+    },
+    "lifecycle.lock": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384
+    },
+    "preview/current.json": {
+      "sha256": "3fbad6baa5be8d012f3991ec1f3f4195ad46dee587fca5dd008ccd45cc8fe4d4",
+      "mode": 384
+    },
+    "preview/versions/fca33d0dc862a1ebfcbcd495157cc1ea.json": {
+      "sha256": "3fbad6baa5be8d012f3991ec1f3f4195ad46dee587fca5dd008ccd45cc8fe4d4",
+      "mode": 384
+    }
+  }
+}

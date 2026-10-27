@@ -1,0 +1,50 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "command": "workspace_snapshot",
+      "simulated": true
+    },
+    {
+      "command": "check_environment",
+      "simulated": true
+    },
+    {
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "channel": null
+    },
+    {
+      "command": "publish_ad",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_cancel",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": true
+    },
+    {
+      "command": "publisher_recovery_confirm",
+      "ok": true
+    },
+    {
+      "command": "publish_ad",
+      "ok": true
+    }
+  ],
+  "backups": [
+    "recovery-5dee86b4def3fb70668b8d03a95086b1-688456532ac5e0ee19804b8343655588.csbackup",
+    "recovery-5dee86b4def3fb70668b8d03a95086b1-560c2a9fe6579a5f85fd50ecde00f44b.csbackup"
+  ],
+  "guard_during_reload": true,
+  "failed_reload_retry": true,
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+}

@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：恢复确认后的界面锁
+
+`PublisherRecovery.confirm → publisher_recovery_confirm → refreshAfterConfirm → Operations.reloadPublisher → ad_draft_read / publisher_status`。读取完成后才释放操作锁；读取失败时保留锁并由 `retryRefresh` 重试。[真实窗口证据](../../output/no-account-20261027/native-recovery-ui/README.md)。
+
+CodeGraph complete、pending 0：270 文件、6761 节点、27916 条边。窗口测试使用合成密钥库和本机对象存储。
+
 ## 2026-10-27：远程结果未知的跨进程恢复
 
 `写入测试进程 → Publisher → R2Store / AWS SDK → 本机模拟存储 → 持久化待处理状态 → 恢复测试进程 → 公开回读与释放锁`。写入进程在记录结果未知后被终止；新进程恢复同一签名版本。[证据](../../output/no-account-20261027/r2-process-restart/README.md)。
