@@ -1,0 +1,197 @@
+{
+  "scope": "ordinary backend boundary harness; dynamic outcomes unproven",
+  "base_commit": "8cf1dcecf6072e0483739ecbab92f973f33a382c",
+  "status": "WAIT_UNLOCK_FOR_DYNAMIC_VALIDATION",
+  "tests": {
+    "python": {
+      "passed": 12,
+      "command": "python3 -B -m unittest discover -s apps/desktop/tests/native-ipc-policy -p 'test_*.py' -v"
+    },
+    "node": {
+      "passed": 9,
+      "command": "node --test apps/desktop/tests/native-ipc-policy/probe.test.mjs"
+    },
+    "capture": "Codex tool console output; no standalone raw test log"
+  },
+  "lock_evidence": {
+    "source": "cua.getApp exact public-r2 App path",
+    "result": "The Mac is locked and automatic unlock could not unlock it.",
+    "interpretation": "No valid dynamic receipt; lock observed after attempts, not proof of every earlier failure cause."
+  },
+  "fixes": [
+    "Loopback test client bypasses inherited proxy; regression uses deliberately invalid HTTP/HTTPS proxy",
+    "Server shutdown on exceptions and exact-port reuse have regression tests",
+    "Persist last window reads and server requests even on failure"
+  ],
+  "planned_matrix": {
+    "public": {
+      "remote_main": 23,
+      "local_other": 23
+    },
+    "personal": {
+      "remote_main": 48,
+      "local_other": 48
+    }
+  },
+  "dynamic_pass_count": 0,
+  "personal_boundary_build": "NOT_RUN",
+  "not_verified": [
+    "Remote and other-window runtime denials",
+    "All successful business command paths",
+    "Unmodified product UI/windows",
+    "Native Keychain",
+    "Live R2 or trusted release propagation",
+    "Installation and long-duration gates"
+  ],
+  "source_sha256": {
+    "apps/desktop/tests/native-ipc-policy/README.md": "3bd18a66cc5fbd5608070b1dd83473be6eeca076b9b2508a7fa772a2aa0c3339",
+    "apps/desktop/tests/native-ipc-policy/probe.js": "4822991a4d27d4914e69c0da4ca28ed305dbc8c9375b28eb16b501d7749bb3f8",
+    "apps/desktop/tests/native-ipc-policy/probe.test.mjs": "47dd10ccc04f48f8c845ca1e50c9bc8e688756963ca659ccc3838c96e0438d12",
+    "apps/desktop/tests/native-ipc-policy/run.py": "05abf33c18f5b054297c44a7ce91b10a257f51862cf2617f1736042dd7f6bfea",
+    "apps/desktop/tests/native-ipc-policy/test_receipts.py": "d2e92bc283352e85625649891fb200aa3670893da308e178e8bfe1bae80f60f4"
+  },
+  "attempts": {
+    "public-r1": {
+      "build.json": {
+        "exit_code": 0,
+        "command": [
+          "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+          "build",
+          "--release",
+          "--offline",
+          "--locked",
+          "--target",
+          "aarch64-apple-darwin",
+          "-p",
+          "switcher-desktop",
+          "--bin",
+          "switcher-desktop",
+          "--no-default-features",
+          "--features",
+          "public,custom-protocol"
+        ],
+        "commit": "8cf1dcecf6072e0483739ecbab92f973f33a382c",
+        "log_sha256": "bc480a21b8a49c3e660830b0f57e41bebf81209c751b86e065f950cb401132a3",
+        "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa"
+      },
+      "process.json": {
+        "pid": 16482,
+        "executable": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-boundaries/public-r1/IPC Policy.app/Contents/MacOS/switcher-desktop"
+      },
+      "process-result.json": {
+        "pid": 16482,
+        "exit_code": -15
+      },
+      "config-override.json": {
+        "productName": "Claude 切换器 Public",
+        "identifier": "local.claudeswitcher.public",
+        "app": {
+          "windows": [
+            {
+              "label": "main",
+              "title": "IPC Remote",
+              "url": "http://127.0.0.1:54361/",
+              "width": 900,
+              "height": 600
+            },
+            {
+              "label": "other",
+              "title": "IPC Other",
+              "url": "index.html",
+              "width": 900,
+              "height": 600
+            }
+          ]
+        },
+        "build": {
+          "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-boundaries/public-r1/dist"
+        }
+      },
+      "inputs_sha256": "c109cca4026cce911de30c6a33c15c69a2b3f13b506e8ab359fe6026de29e05e",
+      "runtime_log_sha256": "2e7bb281dc8b59e1141f75d73b1cc1489c84b5a4e6c5623b2a56dc4ae3b40b61",
+      "status": "NO_VALID_RECEIPT",
+      "binary_sha256": "434ef03964d16a7cd396e229fd64e72cf3d89ab336ddc19ae3343bc6276f19cb",
+      "executed_binary_sha256": "1e86935b1e5dd1bbbf07c8698c4ba473568d4aa213d3ca46a4c35b905989b5ae"
+    },
+    "public-r2": {
+      "build.json": {
+        "exit_code": 0,
+        "command": [
+          "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+          "build",
+          "--release",
+          "--offline",
+          "--locked",
+          "--target",
+          "aarch64-apple-darwin",
+          "-p",
+          "switcher-desktop",
+          "--bin",
+          "switcher-desktop",
+          "--no-default-features",
+          "--features",
+          "public,custom-protocol"
+        ],
+        "commit": "8cf1dcecf6072e0483739ecbab92f973f33a382c",
+        "log_sha256": "bc480a21b8a49c3e660830b0f57e41bebf81209c751b86e065f950cb401132a3",
+        "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+        "reused_from": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-boundaries/public-r1",
+        "reused_binary_sha256": "434ef03964d16a7cd396e229fd64e72cf3d89ab336ddc19ae3343bc6276f19cb"
+      },
+      "process.json": {
+        "pid": 16979,
+        "executable": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-boundaries/public-r2/IPC Policy.app/Contents/MacOS/switcher-desktop"
+      },
+      "process-result.json": {
+        "pid": 16979,
+        "exit_code": -15
+      },
+      "config-override.json": {
+        "productName": "Claude 切换器 Public",
+        "identifier": "local.claudeswitcher.public",
+        "app": {
+          "windows": [
+            {
+              "label": "main",
+              "title": "IPC Remote",
+              "url": "http://127.0.0.1:54361/",
+              "width": 900,
+              "height": 600
+            },
+            {
+              "label": "other",
+              "title": "IPC Other",
+              "url": "index.html",
+              "width": 900,
+              "height": 600
+            }
+          ]
+        },
+        "build": {
+          "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-boundaries/public-r2/dist"
+        }
+      },
+      "server.json": {
+        "url": "http://127.0.0.1:54361/",
+        "requests": []
+      },
+      "window-read.json": {
+        "remote": {
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": "40:45: execution error: “System Events”遇到一个错误：不能获得“window \"IPC Remote\" of application process 1 whose unix id = 16979”。 (-1728)\n"
+        },
+        "other": {
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": "40:45: execution error: “System Events”遇到一个错误：不能获得“window \"IPC Other\" of application process 1 whose unix id = 16979”。 (-1728)\n"
+        }
+      },
+      "inputs_sha256": "ce94ff2055d5b1e44e056adaa1d8163fc1eb49b0fbd39d9051044dea3eccb3e0",
+      "runtime_log_sha256": "09cb8e2e125c877685aa882b741fe796f53d1981e1196d2b4b2371b0a8c17c9d",
+      "status": "NO_VALID_RECEIPT",
+      "binary_sha256": "434ef03964d16a7cd396e229fd64e72cf3d89ab336ddc19ae3343bc6276f19cb",
+      "executed_binary_sha256": "1e86935b1e5dd1bbbf07c8698c4ba473568d4aa213d3ca46a4c35b905989b5ae"
+    }
+  }
+}

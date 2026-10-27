@@ -15,11 +15,19 @@ async function attempt(command, args = {}) {
 }
 
 async function run() {
-  if (plan.phase === 'remote') {
+  if (plan.phase === 'remote' || plan.phase === 'other') {
     const bridge = typeof window.__TAURI_INTERNALS__?.invoke === 'function';
-    const result = bridge ? await attempt('runtime_info') : { ok: false, error: 'bridge_not_injected' };
-    const report = { phase: 'remote', edition: plan.edition, bridge, rows: [result] };
-    location.replace(`${plan.endpoint}/remote-result?data=${encodeURIComponent(JSON.stringify(report))}`);
+    if (bridge) {
+      for (const command of plan.denied) {
+        const result = await attempt(command);
+        rows.push(result);
+        // Stop before further calls if this context unexpectedly has permission.
+        if (result.ok || !result.error.toLowerCase().includes('not allowed')) break;
+      }
+    }
+    document.body.textContent = `IPC_REPORT:${JSON.stringify({
+      phase: plan.phase, edition: plan.edition, url: location.href, bridge, rows
+    })}`;
     return;
   }
 
