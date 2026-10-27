@@ -1,0 +1,112 @@
+{
+  "base_commit": "15ff7cc9cd0097333115fda30f18475dcafc5071",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "results": [
+    {
+      "name": "create",
+      "command": [
+        "/usr/bin/hdiutil",
+        "create",
+        "-size",
+        "128m",
+        "-fs",
+        "APFS",
+        "-type",
+        "SPARSE",
+        "-volname",
+        "SwitcherF05Synthetic",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r6/volume.sparseimage"
+      ],
+      "exit_code": 0,
+      "log_sha256": "8bcebec4576da4bcef74b3ef4b00e580662c2bec3c4f8effceab2acef9ec96bd"
+    },
+    {
+      "name": "attach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "attach",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r6/volume.sparseimage",
+        "-nobrowse",
+        "-noautoopen",
+        "-owners",
+        "on",
+        "-mountpoint",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r6/mount",
+        "-plist"
+      ],
+      "exit_code": 0,
+      "log_sha256": "bb2192bfc5eba2ba2093fb1f1175d560cdaba98bab9704f83708ea43934748c9"
+    },
+    {
+      "name": "tests",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "f05_native_full_destination_preserves_both_accounts_and_state",
+        "--",
+        "--include-ignored",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "log_sha256": "abe59dffceebc257c56990b96e8186b56a66429b25720906e895536b07421ca9"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "b21bc2e238ad94521611c248e955ee619c5d49e009eb8727ed8a1e87aa4249f2"
+    },
+    {
+      "name": "format",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core/src/accounts/tests/native_metadata.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core/src/accounts/tests/native_metadata/volume.rs"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "detach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "detach",
+        "/dev/disk10"
+      ],
+      "exit_code": 0,
+      "log_sha256": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1"
+    }
+  ],
+  "devices": {
+    "host": 16777233,
+    "disposable_volume": 16777250
+  },
+  "detached": true,
+  "inputs_unchanged": true
+}

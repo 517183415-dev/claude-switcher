@@ -1,0 +1,7 @@
+test_ambiguous_image_identity_stops_cleanup (test_run.OwnedDevicesTests.test_ambiguous_image_identity_stops_cleanup) ... ok
+test_foreign_or_similarly_named_images_cannot_be_selected (test_run.OwnedDevicesTests.test_foreign_or_similarly_named_images_cannot_be_selected) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK

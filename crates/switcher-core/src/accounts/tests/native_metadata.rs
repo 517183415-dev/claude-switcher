@@ -1,4 +1,5 @@
 //! Real Darwin filesystem assertions, independent of the account fingerprint.
+mod volume;
 use super::{AccountId, Fixture};
 use crate::storage::LifecycleLock;
 use serde::Serialize;
@@ -119,19 +120,25 @@ fn snapshot(root: &Path) -> Tree {
     tree
 }
 
-fn assert_copy(source: &Tree, destination: &Tree) {
+fn assert_payloads(source: &Tree, destination: &Tree) {
     assert_eq!(
         source.keys().collect::<Vec<_>>(),
         destination.keys().collect::<Vec<_>>()
     );
     for (path, expected) in source {
+        assert_eq!(
+            expected.payload, destination[path].payload,
+            "{path}: copy metadata or bytes changed"
+        );
+    }
+}
+
+fn assert_copy(source: &Tree, destination: &Tree) {
+    assert_payloads(source, destination);
+    for (path, expected) in source {
         let actual = &destination[path];
         assert_eq!(expected.device, actual.device, "{path}: volume changed");
         assert_ne!(expected.inode, actual.inode, "{path}: source inode reused");
-        assert_eq!(
-            expected.payload, actual.payload,
-            "{path}: copy metadata or bytes changed"
-        );
     }
 }
 

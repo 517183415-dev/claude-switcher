@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：F-05 独立卷与真实空间不足路径
+
+新增 `accounts/tests/native_metadata/volume.rs` 与 `tests/native_accounts/` 运行器。调用生产 `select_legacy_checked → legacy::select → ditto → Darwin 目录交换`；active 或存档放入独立 APFS 卷，覆盖两个方向的最新 A/B 往返与目标空间不足拒绝提交。共用父模块的元数据读取与树断言，未改生产业务。
+
+有效结果为 `r3` 三项与 `r6` 一项，按源码片段及哈希复用，不称为一次全绿运行。运行器两项单元测试、最终 Clippy 与格式检查通过。失败夹具记录、源码绑定和卸载证明见[阶段证据](../../output/no-account-20261027/f05-volume-copy/README.md)。CodeGraph complete、pending 0：238 文件、6321 节点、26370 条边。
+
+完整 F-05 分支、普通 App 动态 IPC 及其他系统验收仍待完成。下一步继续前序核心/IPC 缺口；UI 重写仍最后执行，沿用当前布局。注册、部署、付款继续暂停。
+
 ## 2026-10-27：生产账号路径的原生元数据测试
 
 新增 `accounts/tests/native_metadata.rs`：`select_legacy_checked → accounts::legacy::select → ditto → Darwin 目录交换 → 状态/current/清理`。只替换进程观察；APFS、复制、交换和 xattr 均真实执行。测试独立读取嵌套树元数据，覆盖 A/B 最新数据往返与仍运行时不提交。

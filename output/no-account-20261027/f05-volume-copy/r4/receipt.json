@@ -1,0 +1,79 @@
+{
+  "base_commit": "15ff7cc9cd0097333115fda30f18475dcafc5071",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "results": [
+    {
+      "name": "create",
+      "command": [
+        "/usr/bin/hdiutil",
+        "create",
+        "-size",
+        "128m",
+        "-fs",
+        "APFS",
+        "-type",
+        "SPARSE",
+        "-volname",
+        "SwitcherF05Synthetic",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r4/volume.sparseimage"
+      ],
+      "exit_code": 0,
+      "log_sha256": "bd36eda24d58e468040a62b5cca77d783c2a62db0fedc6c2ee8534ecee3b445a"
+    },
+    {
+      "name": "attach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "attach",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r4/volume.sparseimage",
+        "-nobrowse",
+        "-noautoopen",
+        "-owners",
+        "on",
+        "-mountpoint",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r4/mount",
+        "-plist"
+      ],
+      "exit_code": 0,
+      "log_sha256": "fdba82d9c55efedeaaf17600f1025d8feaf765356112d8d764c86578a0b517a7"
+    },
+    {
+      "name": "tests",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "f05_native_full_destination_preserves_both_accounts_and_state",
+        "--",
+        "--include-ignored",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 101,
+      "log_sha256": "def6a8bb2bed292941295c4b6f38f5b86d8d2925f2a2651cc028d1e6c18fa361"
+    },
+    {
+      "name": "detach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "detach",
+        "/dev/disk10"
+      ],
+      "exit_code": 0,
+      "log_sha256": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1"
+    }
+  ],
+  "devices": {
+    "host": 16777233,
+    "disposable_volume": 16777250
+  },
+  "detached": true,
+  "inputs_unchanged": true
+}

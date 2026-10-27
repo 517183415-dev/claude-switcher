@@ -1,0 +1,23 @@
+
+running 1 test
+test accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state ... F05_VOLUME_PRESSURE errno=ENOSPC filler_bytes=117702656 released_bytes=4194304
+F05_FULL_DESTINATION active_external=false remaining=19226624 payload=33554432 error=ditto could not copy account data accounts/state/current/cleanup=unchanged
+F05_VOLUME_PRESSURE errno=ENOSPC filler_bytes=117506048 released_bytes=4194304
+F05_FULL_DESTINATION active_external=true remaining=19439616 payload=33554432 error=ditto could not copy account data accounts/state/current/cleanup=unchanged
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 452 filtered out; finished in 40.14s
+
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.60s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)

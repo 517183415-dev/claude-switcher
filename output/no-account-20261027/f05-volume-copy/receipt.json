@@ -1,0 +1,108 @@
+{
+  "status": "PARTIAL_NATIVE_VERIFIED_NOT_FULL_ACCEPTANCE",
+  "base_commit": "15ff7cc9cd0097333115fda30f18475dcafc5071",
+  "scope": "Production select_legacy_checked / legacy::select, synthetic account trees and stopped callback, actual ditto, APFS and Darwin exchange.",
+  "valid_test_results": [
+    {
+      "run": "r3",
+      "passed": 3,
+      "scope": "same-volume round trip; running-process rejection; cross-volume round trip in both placement directions",
+      "reuse": "All inputs match except volume.rs and run.py; volume fixture/cross-copy/round-trip span is byte-identical, parent metadata source matches recorded inputs."
+    },
+    {
+      "run": "r6",
+      "passed": 1,
+      "scope": "real ENOSPC pressure then 32 MiB copy failure; outgoing and incoming destination; all three account trees, state/current and cleanup remain unchanged",
+      "all_recorded_inputs_match": true
+    },
+    {
+      "log": "runner-unit.log",
+      "passed": 2,
+      "scope": "exact owned-image selection and ambiguous identity rejection",
+      "reuse": "owned_devices AST is unchanged from r3 executed runner snapshot"
+    }
+  ],
+  "validation": {
+    "clippy": "r6/clippy.log: --all-targets -- -D warnings, exit 0",
+    "format": "r6/format.log: exit 0",
+    "rust_diagnostics": "Existing ts-rs serde attribute parse warnings remain in test output.",
+    "no_full_core_rerun": "Previous 451 distinct passes retained; only changed native cases executed."
+  },
+  "reuse_bindings": {
+    "current_volume_sha256": "cceb6ea71d72b7b9a3d73a2d62ec9084b87be9fccc4e3b418d5b8871ecd34570",
+    "r3_executed_volume_sha256": "74f2df31c105009096f58ce2ae5838315b77f9e647b48faba0ec25c2e1d909da",
+    "unchanged_span_start": "fn fixture(",
+    "unchanged_span_end_exclusive": "fn available(",
+    "parent_native_metadata_sha256": "ebd277c090ffc193c2baa9aaaff44bdf6a894b32d46946f0526940627b25836d",
+    "runner_sha256": "20e994bd0517161dab5c47224005b6ed488877e280a5275f4d546e80226f8647"
+  },
+  "capacity": {
+    "image_mib": 128,
+    "payload_bytes": 33554432,
+    "released_after_enospc_bytes": 4194304,
+    "r6_available_bytes": [
+      19161088,
+      18915328
+    ],
+    "note": "statvfs availability is informational; assert actual ditto failure rather than infer failure from available bytes."
+  },
+  "intermediate_attempts": {
+    "r2": "Compile error in Darwin statvfs integer conversion; no test result.",
+    "r3": "Three passing tests retained; ENOSPC while filling fixture was not handled.",
+    "r4": "8 MiB payload unexpectedly fit after pressure; failed fixture expectation, not product data loss.",
+    "r5": "Both failure directions passed; filler upper bound corrected from 1232 MiB to intended 128 MiB and final run r6 verified it."
+  },
+  "cleanup": {
+    "all_recorded_runs_detached": true,
+    "fresh_owned_images_still_attached": []
+  },
+  "not_proven": [
+    "Complete F-05 branch coverage",
+    "Real Claude accounts",
+    "Other filesystem formats",
+    "Power loss/crash recovery on real hardware",
+    "Full ordinary App IPC matrix"
+  ],
+  "codegraph": "codegraph-status.json",
+  "files": {
+    "r2/attach.log": "b4c0f166d656f2740b4a6cb1c018327935b666ccac70feb8892e008f2579d161",
+    "r2/detach.log": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1",
+    "r2/inputs.json": "da31351e73a2e1d8297fe9bd5e631028c8f359c68ab0bb5ca93c861a1313ad69",
+    "r2/create.log": "787c4c5d1ad1385cce30566cb324b725ad0e6e59874c6023ba48235c13b23a88",
+    "r2/tests.log": "422122e54898dcacd132171024d717efad88e61f35c792896871a02e64f80693",
+    "r2/receipt.json": "390d9834207869293a2ac0ab4b1ddf1c101c42c8635ae0235a89f58612ef4816",
+    "r3/executed-run.py": "90b40861149cf614ce3151115875150ca48e00d90aa02f4c9d9a832867408aa2",
+    "r3/attach.log": "7c2cc31b7cdddb4c9725a21a033c0441f9ac974c0a8693809de047d4243f0114",
+    "r3/detach.log": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1",
+    "r3/inputs.json": "398d74efcd07ee9528dee6a134f19847180a8ac4370dee68608ec2357ddd2124",
+    "r3/create.log": "80ae17c27bfad45b0ce62584adb7632f4b495a0de27c850e403fc3bab07e8660",
+    "r3/tests.log": "1f85e3428afb5e39d97e8cdaeae510569dbd96030e989a597e68ec60f9e75176",
+    "r3/executed-volume.rs": "74f2df31c105009096f58ce2ae5838315b77f9e647b48faba0ec25c2e1d909da",
+    "r3/receipt.json": "92ca385f6a2fec117e78276ad354d82fc37be60b4bd38fb34cf86bef1522a1ff",
+    "r4/attach.log": "fdba82d9c55efedeaaf17600f1025d8feaf765356112d8d764c86578a0b517a7",
+    "r4/detach.log": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1",
+    "r4/inputs.json": "ff5465aa2de7bf8c1e8e536a9fe34a4b8546bcea8e9869f0f0967c4fca92a345",
+    "r4/create.log": "bd36eda24d58e468040a62b5cca77d783c2a62db0fedc6c2ee8534ecee3b445a",
+    "r4/tests.log": "def6a8bb2bed292941295c4b6f38f5b86d8d2925f2a2651cc028d1e6c18fa361",
+    "r4/executed-volume.rs": "631c1f63abef28518355046a7ad87d0a2052d9c8192d8a2c4f84dda4cb5b61f8",
+    "r4/receipt.json": "9b6d66494d72e4219c47d6dc18fc2e8446c79de3b5eca20832a7bdbcfaff7752",
+    "r5/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "r5/clippy.log": "6ca145893b9bd07f49d9e485337c421222317ef24068778d6cff814f16d31145",
+    "r5/attach.log": "6cdcd94604a7b9aa699148368b180f04c516cc33a43ac0dde9cbd21c61b1d274",
+    "r5/detach.log": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1",
+    "r5/inputs.json": "0702e8571a1447359af33c3c9b76623b18b36d9ddd2a645879abf3373782b0eb",
+    "r5/create.log": "87cac59d595ee705502ec99c01c6d1c62ca65ca7ff754d291b19924bdc1795e8",
+    "r5/tests.log": "1cc20c3315f6ecd0353ab167f3643049c86d7595597a206c85dc9c0d06ee8f2c",
+    "r5/receipt.json": "1ff71fa7a778e17e3da8fde6406d248cf31afc59d49b39bc116f417e359ebf4f",
+    "r6/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "r6/clippy.log": "b21bc2e238ad94521611c248e955ee619c5d49e009eb8727ed8a1e87aa4249f2",
+    "r6/attach.log": "bb2192bfc5eba2ba2093fb1f1175d560cdaba98bab9704f83708ea43934748c9",
+    "r6/detach.log": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1",
+    "r6/inputs.json": "5205669ba9121b84531ec2329f86ac5c3a346b6fef7a95845ddb647b254fa9c9",
+    "r6/create.log": "8bcebec4576da4bcef74b3ef4b00e580662c2bec3c4f8effceab2acef9ec96bd",
+    "r6/tests.log": "abe59dffceebc257c56990b96e8186b56a66429b25720906e895536b07421ca9",
+    "r6/receipt.json": "f1cd9a086e64dc9c4288f83693e2d955e0691f3c5c835d3403404aaac3ebc367",
+    "runner-unit.log": "3918832a93aa0f032807827ace0781beb3e010707a3844b798e598db738ef4e2",
+    "codegraph-status.json": "791511bfd1595ab11928f26a5c06c9ba223eb2ce6090ea3368603f6e73b3827e"
+  }
+}

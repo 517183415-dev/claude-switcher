@@ -6736,7 +6736,7 @@
           "requirement_checklist": "N：macOS 临时 APFS 目录使用实际复制/交换/xattr；跨卷仅按已有支持合同拒绝或处理"
         }
       ],
-      "next_review": "同卷元数据已有局部原生证据；继续核对跨卷及复制失败/空间错误合同与覆盖",
+      "next_review": "独立 APFS 两方向复制与实际容量失败已有局部证据；继续完整核心分支及普通业务 IPC，其他格式/断电不冒充已验收",
       "supplemental_evidence": {
         "status": "PARTIAL_NATIVE_VERIFIED_NOT_FULL_ACCEPTANCE",
         "path": "output/no-account-20261027/f05-native-metadata/receipt.json",
@@ -6745,6 +6745,15 @@
           "accounts::tests::native_metadata::f05_native_running_process_preserves_active_archive_and_committed_state"
         ],
         "scope": "Production transaction with synthetic stopped callback; actual APFS/ditto/exchange and independently read nested metadata. Cross-volume and complete failure coverage remain unproven."
+      },
+      "volume_evidence": {
+        "status": "PARTIAL_NATIVE_VERIFIED_NOT_FULL_ACCEPTANCE",
+        "path": "output/no-account-20261027/f05-volume-copy/receipt.json",
+        "tests": [
+          "accounts::tests::native_metadata::volume::f05_native_cross_volume_round_trip_preserves_latest_trees",
+          "accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state"
+        ],
+        "scope": "Independent APFS volume in both placement directions; actual ditto copy failures under real ENOSPC pressure preserve account trees and committed state. Complete branch coverage, other filesystems and power-loss acceptance remain unproven."
       }
     },
     {

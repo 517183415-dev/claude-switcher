@@ -1,0 +1,30 @@
+
+running 1 test
+test accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state ... F05_VOLUME_PRESSURE errno=ENOSPC filler_bytes=117768192 released_bytes=4194304
+FAILED
+
+failures:
+
+failures:
+    accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 452 filtered out; finished in 19.45s
+
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.67s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+thread 'accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state' (34137019) panicked at crates/switcher-core/src/accounts/tests/native_metadata/volume.rs:173:52:
+called `Result::unwrap_err()` on an `Ok` value: ()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p switcher-core --lib`

@@ -1,0 +1,47 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+error[E0308]: mismatched types
+   --> crates/switcher-core/src/accounts/tests/native_metadata/volume.rs:112:34
+    |
+112 |     stat.f_bavail.saturating_mul(stat.f_frsize)
+    |                   -------------- ^^^^^^^^^^^^^ expected `u32`, found `u64`
+    |                   |
+    |                   arguments to this method are incorrect
+    |
+note: method defined here
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library/core/src/num/uint_macros.rs:2443:21
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library/core/src/num/mod.rs:1239:4
+   ::: /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library/core/src/num/mod.rs:1263:5
+    |
+    = note: in this macro invocation
+    = note: this error originates in the macro `uint_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you can convert a `u64` to a `u32` and panic if the converted value doesn't fit
+    |
+112 |     stat.f_bavail.saturating_mul(stat.f_frsize.try_into().unwrap())
+    |                                               ++++++++++++++++++++
+
+error[E0308]: mismatched types
+   --> crates/switcher-core/src/accounts/tests/native_metadata/volume.rs:112:5
+    |
+104 | fn available(path: &Path) -> u64 {
+    |                              --- expected `u64` because of return type
+...
+112 |     stat.f_bavail.saturating_mul(stat.f_frsize)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u64`, found `u32`
+    |
+help: you can convert a `u32` to a `u64`
+    |
+112 |     stat.f_bavail.saturating_mul(stat.f_frsize).into()
+    |                                                +++++++
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `switcher-core` (lib test) due to 2 previous errors

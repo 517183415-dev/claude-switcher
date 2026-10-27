@@ -1,0 +1,79 @@
+{
+  "base_commit": "15ff7cc9cd0097333115fda30f18475dcafc5071",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "results": [
+    {
+      "name": "create",
+      "command": [
+        "/usr/bin/hdiutil",
+        "create",
+        "-size",
+        "128m",
+        "-fs",
+        "APFS",
+        "-type",
+        "SPARSE",
+        "-volname",
+        "SwitcherF05Synthetic",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r3/volume.sparseimage"
+      ],
+      "exit_code": 0,
+      "log_sha256": "80ae17c27bfad45b0ce62584adb7632f4b495a0de27c850e403fc3bab07e8660"
+    },
+    {
+      "name": "attach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "attach",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r3/volume.sparseimage",
+        "-nobrowse",
+        "-noautoopen",
+        "-owners",
+        "on",
+        "-mountpoint",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/f05-volume-copy/r3/mount",
+        "-plist"
+      ],
+      "exit_code": 0,
+      "log_sha256": "7c2cc31b7cdddb4c9725a21a033c0441f9ac974c0a8693809de047d4243f0114"
+    },
+    {
+      "name": "tests",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-core",
+        "--lib",
+        "accounts::tests::native_metadata",
+        "--",
+        "--include-ignored",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 101,
+      "log_sha256": "1f85e3428afb5e39d97e8cdaeae510569dbd96030e989a597e68ec60f9e75176"
+    },
+    {
+      "name": "detach",
+      "command": [
+        "/usr/bin/hdiutil",
+        "detach",
+        "/dev/disk10"
+      ],
+      "exit_code": 0,
+      "log_sha256": "3c74f0ac04abd29db79bb078e5cb17e81ffa977fc78775dbb3ff3a899b886fd1"
+    }
+  ],
+  "devices": {
+    "host": 16777233,
+    "disposable_volume": 16777250
+  },
+  "detached": true,
+  "inputs_unchanged": true
+}
