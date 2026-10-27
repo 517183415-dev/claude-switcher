@@ -81,8 +81,8 @@ pub fn account_action_failure(action: AccountAction, error: impl Into<String>) -
 }
 
 impl DesktopState {
-    /// Explicit synthetic root for the compile-time-only native business fixture.
-    #[cfg(feature = "ipc-business")]
+    /// Explicit synthetic root for compile-time-only business tests.
+    #[cfg(any(feature = "ipc-business", all(test, feature = "personal")))]
     pub(crate) fn isolated_activity_fixture(root: PathBuf, edition: Edition) -> Self {
         Self {
             root,

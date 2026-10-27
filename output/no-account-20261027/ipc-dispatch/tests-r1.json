@@ -1,0 +1,25 @@
+{
+  "base_commit": "c380ef31176fc557ae85ac55f26aec904b17778c",
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "ipc_dispatch_tests",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 16.9,
+  "log_sha256": "2fa02a772f03af748ddafab8b9df3f3b207723b822333b9328e61ec2caff71b0",
+  "inputs_unchanged": true,
+  "scope": "Tauri MockRuntime ordinary ACL and selected production publisher command dispatch; no native WKWebView or real services"
+}

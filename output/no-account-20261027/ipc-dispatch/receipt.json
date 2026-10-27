@@ -1,0 +1,63 @@
+{
+  "status": "SCOPED_MOCK_DISPATCH_VERIFIED_NOT_FULL_NATIVE",
+  "base_commit": "c380ef31176fc557ae85ac55f26aec904b17778c",
+  "scope": "Actual InvokeRequest JSON decoding, ordinary ACL, six production publisher handlers on Tauri MockRuntime; synthetic files only",
+  "full_desktop_tests": {
+    "passed": 228,
+    "failed": 0,
+    "contains_new_test_names": [
+      "ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft",
+      "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft"
+    ],
+    "targeted_runs_not_added_to_total": true
+  },
+  "public_tests_compile_only": {
+    "name": "public-tests-compile",
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+      "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+      "check",
+      "--offline",
+      "--locked",
+      "-p",
+      "switcher-desktop",
+      "--no-default-features",
+      "--features",
+      "public",
+      "--tests"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 6.12,
+    "log_sha256": "100dafa81cd8a8b4469dff761d1b19743f0fb33462e8ef28b0cf479a30d22f8d"
+  },
+  "known_clippy_style_warnings": 3,
+  "source_binding": {
+    "path": "final-inputs.json",
+    "sha256": "c58177fc5acb4298bbe901362e5c4668105b8d6f828f4a6c60d78f231bd8206c",
+    "files": 292,
+    "unchanged_at_finalization": true
+  },
+  "evidence_sha256": {
+    "tests-r1.json": "79c289a181f674083644a8e94d0ea29ed0957e41da2771a7d8a6e967ad7831a5",
+    "tests-r1.log": "2fa02a772f03af748ddafab8b9df3f3b207723b822333b9328e61ec2caff71b0",
+    "final-checks.json": "86aa62296b831614b4ac8caeb6a088986416c60ec62f90f5db64efbcca508cad",
+    "full-tests.log": "ea7d2277151629c1007159c5577e2a88b622cced7a1430154621a353b7d2a746",
+    "clippy.log": "276da5d58c7daa5140160959d8d70e9e8c99e6e9afbafa9731c4b15047d7ec69",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "public-check.json": "a323f1da55951fe68ae73ea04c22ea01defa5a5db2f45bf2fcc763b56516828f",
+    "public-check.log": "100dafa81cd8a8b4469dff761d1b19743f0fb33462e8ef28b0cf479a30d22f8d",
+    "codegraph-status.json": "841d0cb4f3b20d0b89df4a4ceeca883537b37b76b14b6cda5dcd37d0c44a87e1",
+    "observations.json": "94a99a393109dad01cf1a01533abf0408157bd359f263ac5a78a79e439a99039"
+  },
+  "not_verified": [
+    "Native WKWebView dynamic matrix",
+    "Complete production command registry",
+    "OS-process restart",
+    "Native Keychain",
+    "Real remote storage"
+  ],
+  "ui_requirement": "LAST task: SwiftUI Liquid Glass material; preserve current layout/navigation/control positions; do not copy reference layout; no blue-purple background",
+  "registration_deployment_payment": "PAUSED"
+}

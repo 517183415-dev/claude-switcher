@@ -1,0 +1,21 @@
+{
+  "name": "public-tests-compile",
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "check",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "public",
+    "--tests"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 6.12,
+  "log_sha256": "100dafa81cd8a8b4469dff761d1b19743f0fb33462e8ef28b0cf479a30d22f8d"
+}

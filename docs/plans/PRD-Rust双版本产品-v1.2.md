@@ -1,5 +1,13 @@
 # Claude 切换器 Rust 重写 PRD
 
+## 2026-10-27：普通命令解析与草稿业务闭环
+
+新增 `ipc_dispatch_tests.rs`，在 Tauri MockRuntime 中使用真实 InvokeRequest 参数解析、现行普通 ACL 和六个生产 publisher 处理函数。覆盖合成图片导入/预览、三槽六期草稿、逐槽修改与暂停、全部暂停、重建 App 状态回读，以及缺参、排期重叠、其他窗口和损坏 state 的拒绝；独立核对磁盘草稿及拒绝后的原始字节。
+
+复用既有权限解析器与隔离 DesktopState 构造器，只为测试启用已有 Tauri 的空 `test` 功能，不新增依赖库或修改 Cargo.lock。两个新测试定向通过；阶段末桌面后端 228 项通过、0 失败，Clippy 和格式检查通过，保留三条既有迁移风格警告。完整套件包含新测试，不与首次定向次数相加。 Public 测试目标编译检查通过，仅代表编译。阶段末检查见[最终回执](../../output/no-account-20261027/ipc-dispatch/final-checks.json)，详细范围见[证据说明](../../output/no-account-20261027/ipc-dispatch/README.md)。CodeGraph complete、pending 0：239 文件、6337 节点、26414 条边。
+
+真实 WKWebView 动态矩阵仍待验：本轮确认 Mac 仍锁屏，未重复窗口尝试。模拟路由仅包含六个命令，不能代替完整产品注册表或原生 Keychain/真实存储验收。UI 重写排在任务列表最后：采用 SwiftUI 流体玻璃质感，保留当前布局、导航与功能位置，不照搬参考图布局，不使用蓝紫色背景；注册、部署、付款继续暂停。
+
 ## 2026-10-27：F-05 跨卷复制与容量失败的局部验收
 
 F-05 生产路径现取得独立 APFS 卷两个方向的往返证据。真实 ENOSPC 压力下，归档 A 与恢复 B 的 32 MiB 复制均失败；active、A/B 存档、已提交 state/current 和清理状态保持原值。独立核对内容、权限、owner/group、mtime 与 xattr。

@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "name": "full-tests",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--bin",
+        "switcher-desktop",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 240.9,
+      "log_sha256": "ea7d2277151629c1007159c5577e2a88b622cced7a1430154621a353b7d2a746"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.7,
+      "log_sha256": "276da5d58c7daa5140160959d8d70e9e8c99e6e9afbafa9731c4b15047d7ec69"
+    },
+    {
+      "name": "format",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "--config",
+        "skip_children=true",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/main.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/bridge.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_policy_tests.rs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/ipc_dispatch_tests.rs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.05,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "inputs_unchanged": true,
+  "base_commit": "c380ef31176fc557ae85ac55f26aec904b17778c"
+}

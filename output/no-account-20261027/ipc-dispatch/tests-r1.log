@@ -1,0 +1,23 @@
+   Compiling tauri v2.12.5
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling tauri-plugin-updater v2.14.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.38s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)
+
+running 2 tests
+test ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft ... ok
+test ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.40s
+

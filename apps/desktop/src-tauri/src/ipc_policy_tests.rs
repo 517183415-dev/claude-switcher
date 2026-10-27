@@ -37,7 +37,7 @@ fn registrations(edition: &str) -> BTreeSet<String> {
         .collect()
 }
 
-fn ordinary_policy() -> (RuntimeAuthority, BTreeSet<String>) {
+pub(super) fn ordinary_policy() -> (RuntimeAuthority, BTreeSet<String>) {
     // These are the same generated manifests and capability files consumed by
     // generate_context!. Apply the edition's capability override, when present.
     let manifests: BTreeMap<String, Manifest> = serde_json::from_str(include_str!(concat!(

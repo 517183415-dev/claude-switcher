@@ -1,0 +1,5 @@
+{
+  "session_locked_observed": true,
+  "source": "CGSessionCopyCurrentDictionary / CGSSessionScreenIsLocked via CoreGraphics",
+  "effect": "No native window test attempt in this phase; MockRuntime checks do not prove WKWebView behavior."
+}

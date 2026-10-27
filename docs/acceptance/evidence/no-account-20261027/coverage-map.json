@@ -7529,7 +7529,16 @@
           "requirement_checklist": "N：真实IPC拒绝、WebView本地资源与导航限制；B：新两包再次静态检查"
         }
       ],
-      "next_review": "完成原生隔离后补拒绝测试，再复核正式包无入口"
+      "next_review": "完成原生隔离后补拒绝测试，再复核正式包无入口",
+      "mock_dispatch_evidence": {
+        "status": "MOCK_RUNTIME_DISPATCH_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ipc-dispatch/final-checks.json",
+        "tests": [
+          "ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft",
+          "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft"
+        ],
+        "scope": "Real Tauri InvokeRequest decoding, ordinary ACL and six production publisher handlers; synthetic assets and draft storage. Includes App state reconstruction, not OS process restart. Actual WKWebView and complete command registry remain separate gates."
+      }
     },
     {
       "id": "PR-09",
@@ -7820,7 +7829,16 @@
           "requirement_checklist": "N：Personal三槽、两期、独立开关和持久化闭环"
         }
       ],
-      "next_review": "先完成真实IPC草稿读写和重启回读"
+      "next_review": "三槽六期、修改/暂停与拒绝保持已有生产处理函数的 MockRuntime 分发证据；待可用 GUI 会话验证普通窗口实际 IPC 与进程重启",
+      "mock_dispatch_evidence": {
+        "status": "MOCK_RUNTIME_DISPATCH_VERIFIED_NOT_NATIVE_WEBVIEW",
+        "path": "output/no-account-20261027/ipc-dispatch/final-checks.json",
+        "tests": [
+          "ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft",
+          "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft"
+        ],
+        "scope": "Real Tauri InvokeRequest decoding, ordinary ACL and six production publisher handlers; synthetic assets and draft storage. Includes App state reconstruction, not OS process restart. Actual WKWebView and complete command registry remain separate gates."
+      }
     },
     {
       "id": "AD-02",
