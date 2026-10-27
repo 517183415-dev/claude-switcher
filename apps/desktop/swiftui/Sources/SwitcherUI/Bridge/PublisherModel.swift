@@ -9,6 +9,7 @@ final class PublisherModel: ObservableObject {
     @Published private(set) var dirty = false
     @Published private(set) var busy: String?
     @Published var error: String?
+    private var recoveryFailure: String?
     @Published var outcome: OperationOutcome?
     @Published private(set) var images: [String: Data] = [:]
     @Published private(set) var remote: RemoteSettings?
@@ -24,10 +25,20 @@ final class PublisherModel: ObservableObject {
 
     var canEdit: Bool { bridge.edition == .personal && busy == nil && !recoveryHolding }
 
+    private func beginAction(_ label: String, replacesOutcome: Bool = false) {
+        busy = label
+        error = nil
+        if replacesOutcome { outcome = nil }
+    }
+
+    func reportFileError(_ message: String) {
+        outcome = nil
+        error = message
+    }
+
     func load() async {
         guard canEdit, !dirty else { return }
-        busy = "正在读取本地草稿与发布历史…"
-        error = nil
+        beginAction("正在读取本地草稿与发布历史…")
         do { try await reload() } catch { self.error = desktopErrorMessage(error) }
         busy = nil
     }
@@ -120,8 +131,7 @@ final class PublisherModel: ObservableObject {
 
     func save() async {
         guard canEdit, let draft else { return }
-        busy = "正在保存本地草稿…"
-        error = nil
+        beginAction("正在保存本地草稿…", replacesOutcome: true)
         do {
             self.draft = try await bridge.read(.adDraftSave, arguments: ["manifest": try bridge.argument(draft)])
             dirty = false
@@ -133,8 +143,7 @@ final class PublisherModel: ObservableObject {
     func importImage(_ bytes: Data, slot: String, period: Int) async {
         guard canEdit, bytes.count <= 1_048_576, !bytes.isEmpty,
               draft?.slots.first(where: { $0.slot == slot })?.campaigns.indices.contains(period) == true else { return }
-        busy = "正在解码并核验素材…"
-        error = nil
+        beginAction("正在解码并核验素材…")
         do {
             let result: ImportedImage = try await bridge.read(.importAdImage, arguments: ["bytes": byteArguments(bytes)])
             if let data = WorkspaceModel.imageData(result.previewDataUrl) { images[result.asset.sha256] = data }
@@ -150,7 +159,7 @@ final class PublisherModel: ObservableObject {
 
     func pause(_ slot: String?) async {
         guard canEdit, !dirty, slot == nil || WorkspaceModel.slots.contains(where: { $0.id == slot }) else { return }
-        busy = "正在建立暂停草稿…"
+        beginAction("正在建立暂停草稿…", replacesOutcome: true)
         do {
             draft = try await bridge.read(.pauseAd, arguments: ["slot": slot.map(JSONValue.string) ?? .null])
             dirty = false
@@ -161,7 +170,7 @@ final class PublisherModel: ObservableObject {
 
     func restoreHistory(_ releaseId: String) async {
         guard canEdit, !dirty, status?.history.contains(where: { $0.releaseId == releaseId }) == true else { return }
-        busy = "正在从历史建立新草稿…"
+        beginAction("正在从历史建立新草稿…", replacesOutcome: true)
         do {
             draft = try await bridge.read(.restoreAdHistory, arguments: ["releaseId": .string(releaseId)])
             dirty = false
@@ -173,8 +182,7 @@ final class PublisherModel: ObservableObject {
 
     func outcomeAction(_ command: DesktopCommand, arguments: [String: JSONValue] = [:], label: String, refreshStatus: Bool = false) async {
         guard canEdit else { return }
-        busy = label
-        error = nil
+        beginAction(label, replacesOutcome: true)
         do {
             outcome = try await bridge.read(command, arguments: arguments)
             if refreshStatus { status = try await bridge.read(.publisherStatus) }
@@ -184,7 +192,7 @@ final class PublisherModel: ObservableObject {
 
     func readRemote() async {
         guard canEdit else { return }
-        busy = "正在读取发布配置…"
+        beginAction("正在读取发布配置…")
         do { remote = try await bridge.read(.publisherRemoteRead) }
         catch { self.error = desktopErrorMessage(error) }
         busy = nil
@@ -193,7 +201,7 @@ final class PublisherModel: ObservableObject {
     func saveRemote(channel: String, config: RemoteConfig?, accessKey: String, secretKey: String) async {
         guard canEdit, remote != nil, ["preview", "production"].contains(channel),
               config == nil || (config?.channel == channel && !accessKey.isEmpty && !secretKey.isEmpty) else { return }
-        busy = "正在保存发布配置…"
+        beginAction("正在保存发布配置…", replacesOutcome: true)
         do {
             remote = try await bridge.read(.publisherRemoteSave, arguments: ["channel": .string(channel), "config": try config.map { try bridge.argument($0) } ?? .null,
                 "accessKey": .string(accessKey), "secretKey": .string(secretKey)])
@@ -205,7 +213,7 @@ final class PublisherModel: ObservableObject {
     func selectRemote(channel: String, target: String) async {
         guard canEdit, ["preview", "production"].contains(channel),
               remote?.targets.contains(where: { $0.target == target && $0.config.channel == channel && !$0.selected }) == true else { return }
-        busy = "正在切换已保留的目标…"
+        beginAction("正在切换已保留的目标…", replacesOutcome: true)
         do {
             remote = try await bridge.read(.publisherRemoteSelect, arguments: ["channel": .string(channel), "target": .string(target)])
             outcome = OperationOutcome(completed: true, message: "已选回发布目标；此操作没有连接远程服务。", recovery: nil)
@@ -216,8 +224,7 @@ final class PublisherModel: ObservableObject {
     func prepareRecovery(passphrase: String) async {
         guard canEdit, !dirty, passphrase.count >= 12 else { return }
         recoveryHolding = true
-        busy = "正在保存并核验完整备份…"
-        error = nil
+        beginAction("正在保存并核验完整备份…")
         do { recoveryPreview = try await bridge.read(.publisherRecoveryPrepare, arguments: ["passphrase": .string(passphrase)]) }
         catch {
             self.error = desktopErrorMessage(error)
@@ -229,7 +236,7 @@ final class PublisherModel: ObservableObject {
 
     func cancelRecovery() async {
         guard recoveryHolding, busy == nil, !recoveryRefreshPending else { return }
-        busy = "正在取消恢复…"
+        beginAction("正在取消恢复…", replacesOutcome: true)
         do {
             _ = try await bridge.invoke(.publisherRecoveryCancel)
             recoveryPreview = nil
@@ -241,18 +248,18 @@ final class PublisherModel: ObservableObject {
 
     func confirmRecovery() async {
         guard recoveryHolding, busy == nil, let preview = recoveryPreview else { return }
-        busy = "正在确认恢复并重新读取资料…"
+        beginAction("正在确认恢复并重新读取资料…", replacesOutcome: true)
+        recoveryFailure = nil
         recoveryPreview = nil
-        error = nil
         do { outcome = try await bridge.read(.publisherRecoveryConfirm, arguments: ["digest": .string(preview.digest)]) }
-        catch { self.error = desktopErrorMessage(error) }
+        catch { recoveryFailure = desktopErrorMessage(error); self.error = recoveryFailure }
         await refreshAfterRecovery()
         busy = nil
     }
 
     func retryRecoveryRefresh() async {
         guard recoveryHolding, recoveryRefreshPending, busy == nil else { return }
-        busy = "正在重新读取恢复结果…"
+        beginAction("正在重新读取恢复结果…")
         await refreshAfterRecovery()
         busy = nil
     }
@@ -262,15 +269,18 @@ final class PublisherModel: ObservableObject {
             try await reload()
             recoveryRefreshPending = false
             recoveryHolding = false
+            error = recoveryFailure
+            recoveryFailure = nil
         } catch {
             recoveryRefreshPending = true
-            self.error = "读取最新发布资料失败，请重试。"
+            let refreshError = "读取最新发布资料失败，请重试。"
+            self.error = recoveryFailure.map { "\($0)\n\(refreshError)" } ?? refreshError
         }
     }
 
     func readRetained() async {
         guard canEdit else { return }
-        busy = "正在读取保留资料…"
+        beginAction("正在读取保留资料…")
         do { retained = try await bridge.read(.publisherRetainedList) }
         catch { self.error = desktopErrorMessage(error) }
         busy = nil
@@ -293,10 +303,11 @@ final class PublisherModel: ObservableObject {
 
     func restoreBackup(_ bytes: Data, passphrase: String) async {
         guard canEdit, !dirty, passphrase.count >= 12, !bytes.isEmpty, bytes.count <= 67_108_864 else { return }
-        busy = "正在恢复加密备份…"
+        beginAction("正在恢复加密备份…", replacesOutcome: true)
+        recoveryFailure = nil
         recoveryHolding = true
         do { outcome = try await bridge.read(.restorePublisherBackup, arguments: ["bytes": byteArguments(bytes), "passphrase": .string(passphrase)]) }
-        catch { self.error = desktopErrorMessage(error) }
+        catch { recoveryFailure = desktopErrorMessage(error); self.error = recoveryFailure }
         await refreshAfterRecovery()
         busy = nil
     }
@@ -306,7 +317,7 @@ final class PublisherModel: ObservableObject {
     func previewCleanup(retain: Int, releaseResolution: Bool) async {
         guard canEdit, (0...256).contains(retain) else { return }
         clearMaintenance()
-        busy = "正在核对本机历史与素材引用…"
+        beginAction("正在核对本机历史与素材引用…")
         do { cleanup = try await bridge.read(.previewPublisherCleanup, arguments: ["retain": .number(Double(retain)), "releaseResolution": .bool(releaseResolution)]) }
         catch { self.error = desktopErrorMessage(error) }
         busy = nil
@@ -322,7 +333,7 @@ final class PublisherModel: ObservableObject {
     func previewGC() async {
         guard canEdit else { return }
         clearMaintenance()
-        busy = "正在核对本批可回收文件…"
+        beginAction("正在核对本批可回收文件…")
         do { gc = try await bridge.read(.previewPublisherGC) }
         catch { self.error = desktopErrorMessage(error) }
         busy = nil

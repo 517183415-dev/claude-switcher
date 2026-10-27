@@ -121,7 +121,7 @@ struct PublisherPage: View {
                                     let currentSlot = selected, currentPeriod = period
                                     Task { await model.importImage(bytes, slot: currentSlot, period: currentPeriod) }
                                 }
-                            } catch { model.error = "图片读取失败或超过 1 MiB。" }
+                            } catch { model.reportFileError("图片读取失败或超过 1 MiB。") }
                         }
                     }
                     HStack {
@@ -227,7 +227,7 @@ struct PublisherPage: View {
                 Button("恢复加密备份") {
                     let secret = passphrase; passphrase = ""
                     do { if let data = try PublisherFilePicker.read(limit: 67_108_864) { Task { await model.restoreBackup(data, passphrase: secret) } } }
-                    catch { model.error = "备份读取失败或超过 64 MiB。" }
+                    catch { model.reportFileError("备份读取失败或超过 64 MiB。") }
                 }.disabled(!model.canEdit || model.dirty || passphrase.count < 12)
             }
         }.font(.system(size: 12)).panel().onDisappear { passphrase = "" }

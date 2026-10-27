@@ -75,6 +75,116 @@ func publisherRecoveryStaysLockedUntilBothFreshReadsSucceed() async {
     transport.replies["publisher_status"] = reply(publisherStatus)
     await model.retryRecoveryRefresh()
     #expect(!model.recoveryHolding && !model.recoveryRefreshPending)
+    #expect(model.error == nil)
+}
+
+@Test @MainActor
+func publisherRecoveryKeepsOperationFailureAcrossRefreshRetries() async {
+    for fromBackup in [false, true] {
+        let (model, transport) = publisherSetup()
+        await model.load()
+        if !fromBackup { await model.prepareRecovery(passphrase: "test-passphrase") }
+        let command = fromBackup ? "restore_publisher_backup" : "publisher_recovery_confirm"
+        transport.replies[command] = #"{"ok":false,"error":"恢复操作失败"}"#
+        transport.replies["publisher_status"] = #"{"ok":false,"error":"状态读取失败"}"#
+        if fromBackup { await model.restoreBackup(Data([1]), passphrase: "test-passphrase") }
+        else { await model.confirmRecovery() }
+        #expect(model.recoveryHolding && model.recoveryRefreshPending)
+        #expect(model.error?.contains("恢复操作失败") == true)
+        #expect(model.error?.contains("读取最新发布资料失败") == true)
+
+        await model.retryRecoveryRefresh()
+        #expect(model.recoveryHolding && model.recoveryRefreshPending)
+        #expect(model.error?.contains("恢复操作失败") == true)
+        transport.replies["publisher_status"] = reply(publisherStatus)
+        await model.retryRecoveryRefresh()
+        #expect(!model.recoveryHolding && !model.recoveryRefreshPending)
+        #expect(model.error == "恢复操作失败")
+        #expect(model.outcome == nil)
+    }
+}
+
+@Test @MainActor
+func publisherRestoreReplacesPreviousFailureAndSuccess() async {
+    let (model, transport) = publisherSetup()
+    await model.load()
+    transport.replies["restore_publisher_backup"] = #"{"ok":false,"error":"备份无效"}"#
+    await model.restoreBackup(Data([1]), passphrase: "test-passphrase")
+    #expect(model.error == "备份无效")
+    #expect(model.outcome == nil)
+
+    transport.replies["restore_publisher_backup"] = reply(#"{"completed":false,"message":"恢复完成，尚未发布","recovery":null}"#)
+    await model.restoreBackup(Data([2]), passphrase: "test-passphrase")
+    #expect(model.error == nil)
+    #expect(model.outcome?.message == "恢复完成，尚未发布")
+    #expect(model.canEdit && !model.recoveryRefreshPending)
+
+    transport.replies["restore_publisher_backup"] = #"{"ok":false,"error":"备份损坏"}"#
+    await model.restoreBackup(Data([3]), passphrase: "test-passphrase")
+    #expect(model.error == "备份损坏")
+    #expect(model.outcome == nil)
+}
+
+@Test @MainActor
+func publisherFileReadFailureReplacesPreviousOutcome() async {
+    let (model, _) = publisherSetup()
+    for message in ["图片读取失败或超过 1 MiB。", "备份读取失败或超过 64 MiB。", "归档读取失败或超过 64 MiB。"] {
+        model.outcome = OperationOutcome(completed: true, message: "先前操作成功", recovery: nil)
+        model.reportFileError(message)
+        #expect(model.error == message)
+        #expect(model.outcome == nil)
+    }
+}
+
+@Test @MainActor
+func publisherOutcomeActionReplacesPreviousSuccessOnFailure() async {
+    let (model, transport) = publisherSetup()
+    transport.replies["export_publisher_backup"] = reply(#"{"completed":true,"message":"备份已保存","recovery":null}"#)
+    await model.exportBackup(passphrase: "test-passphrase")
+    #expect(model.outcome?.message == "备份已保存")
+
+    transport.replies["export_publisher_backup"] = #"{"ok":false,"error":"备份失败"}"#
+    await model.exportBackup(passphrase: "test-passphrase")
+    #expect(model.error == "备份失败")
+    #expect(model.outcome == nil)
+}
+
+@Test @MainActor
+func publisherPauseReplacesPreviousFailureAndSuccess() async {
+    let (model, transport) = publisherSetup()
+    await model.load()
+    transport.replies["pause_ad"] = #"{"ok":false,"error":"暂停失败"}"#
+    await model.pause(nil)
+    #expect(model.error == "暂停失败")
+    transport.replies["pause_ad"] = reply(publisherDraft)
+    await model.pause(nil)
+    #expect(model.error == nil)
+    #expect(model.outcome?.completed == true)
+    transport.replies["pause_ad"] = #"{"ok":false,"error":"再次暂停失败"}"#
+    await model.pause(nil)
+    #expect(model.error == "再次暂停失败")
+    #expect(model.outcome == nil)
+}
+
+@Test @MainActor
+func publisherReadsClearPreviousErrorAfterRetry() async {
+    let (model, transport) = publisherSetup()
+    let cleanup = #"{"digest":"approved","retain":128,"history_before":0,"history_after":0,"assets_before":0,"assets_after":0,"candidate_bytes":0,"pending_blocks_commit":false,"release_resolution":false,"replaces_checkpoint":false,"retained_history":[],"removed_history_records":[],"protected_assets":[],"candidate_assets":[],"message":"确认"}"#
+    let gc = #"{"batch_id":"batch","digest":"digest","eligible":[],"already_missing":[],"blocked":[],"referenced":[],"eligible_bytes":0,"pending_blocks_commit":false,"blocked_details":[],"message":"确认"}"#
+    let cases: [(String, String, @MainActor () async -> Void)] = [
+        ("publisher_remote_read", #"{"preview":null,"production":null,"targets":[],"unavailable_targets":[]}"#, { await model.readRemote() }),
+        ("publisher_retained_list", "[]", { await model.readRetained() }),
+        ("preview_publisher_cleanup", cleanup, { await model.previewCleanup(retain: 128, releaseResolution: false) }),
+        ("preview_publisher_gc", gc, { await model.previewGC() })
+    ]
+    for (command, success, action) in cases {
+        transport.replies[command] = #"{"ok":false,"error":"读取失败"}"#
+        await action()
+        #expect(model.error == "读取失败")
+        transport.replies[command] = reply(success)
+        await action()
+        #expect(model.error == nil, "\(command) retained an old error")
+    }
 }
 
 @Test @MainActor

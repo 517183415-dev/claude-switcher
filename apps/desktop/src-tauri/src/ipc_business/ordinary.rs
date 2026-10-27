@@ -3,6 +3,37 @@
 use crate::publisher::{security::ManagedVault, test_support::MemoryVault};
 use std::sync::Arc;
 
+#[cfg(feature = "personal")]
+fn prepare_valid_large_backup() {
+    if std::env::var("NATIVE_UI_FIXTURE_VALID_LARGE_BACKUP").as_deref() != Ok("1") {
+        return;
+    }
+    use crate::publisher::{Publisher, backup};
+    let tmp = std::env::temp_dir().canonicalize().expect("fixture TMPDIR");
+    let mut publisher = Publisher::open(
+        &tmp.join("large-backup-source"),
+        "ads-personal-v1",
+        None,
+        switcher_core::checks::unix_now(),
+    )
+    .expect("isolated publisher");
+    let mut vault = MemoryVault::default();
+    publisher
+        .generate_signing_key(&mut vault, Vec::new(), Vec::new())
+        .expect("synthetic signing key");
+    let password = b"synthetic-passphrase";
+    let backup = publisher.export_backup(password, &vault).expect("backup");
+    let mut plaintext = backup::open(&backup, password).expect("backup plaintext");
+    let envelope_size = backup.len() - plaintext.len();
+    // JSON whitespace creates an authenticated boundary-sized container without
+    // claiming to represent a 64 MiB corpus of user assets.
+    plaintext.resize(backup::LIMIT - envelope_size, b' ');
+    let large = backup::seal(&plaintext, password).expect("large backup");
+    assert_eq!(large.len(), backup::LIMIT);
+    switcher_core::storage::atomic_write(&tmp.join("valid-large.csbackup"), &large)
+        .expect("isolated backup file");
+}
+
 pub(super) fn run() {
     assert!(
         std::env::var("IPC_ORDINARY_PUBLISHER_OPT_IN").as_deref()
@@ -19,6 +50,8 @@ pub(super) fn run() {
     eprintln!(
         "ORDINARY_PUBLISHER_FIXTURE synthetic-memory-vault-only; shared product registry; test frontend"
     );
+    #[cfg(feature = "personal")]
+    prepare_valid_large_backup();
     let builder = tauri::Builder::default().manage(Arc::new(state));
     #[cfg(feature = "personal")]
     let builder = builder

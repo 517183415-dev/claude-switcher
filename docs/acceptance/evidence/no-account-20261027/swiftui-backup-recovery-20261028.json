@@ -1,0 +1,240 @@
+{
+  "date": "2026-10-28",
+  "baseline_commit": "f3e582be",
+  "platform": "macOS 27.0.1 arm64",
+  "scope": "isolated Personal native fixture, synthetic MemoryVault, network denied",
+  "tests": {
+    "red_state": "4 tests failed, 6 issues before fix",
+    "red_reads": "1 test failed, 4 issues before fix",
+    "swift_final": "28 passed",
+    "rust_fixture_rustfmt_check": "passed",
+    "red_recovery_failure": "1 test failed, 6 issues before fix",
+    "red_file_errors": "1 test failed, 3 issues before fix"
+  },
+  "large_backup": {
+    "status": "PASS",
+    "bytes": 67108864,
+    "fixture_binary_sha256": "7be9274a540503f220625afd0f8be88572ad8359547a6bb6a8b9c09c1e816c23",
+    "checks": {
+      "workspace": true,
+      "mounted": true,
+      "bridge_page": true,
+      "swift_gate": true,
+      "screenshot": true,
+      "publisher": true,
+      "binary_input": true,
+      "valid_backup_at_limit": true
+    },
+    "data": "normal small encrypted snapshot padded with JSON whitespace",
+    "source_sha256": {
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopBridge.swift": "b894343c3cc178d78e55311ec8c0faac3075a498a96867627f7951c967b31694",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopCommand.swift": "86dc4abe46d1ee15fc71e1a34a715d16f78aedb35621ae2930779229aa248188",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/JSONValue.swift": "a4412c5392eac9be21a958a9f74d319bf9d38978e0a207777d32635e17f60b87",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModel.swift": "2ca0848cc52abcc89daa15d00cbbdbce872fe5695f42c3461027ef190562c34a",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModels.swift": "3bf38bbd836da4583a0b6d972a8b4296123b4a72d1b1a0819d199424d726c0ce",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/TauriWebViewTransport.swift": "a51edc6f958c294e5fcdb81af7ec6ef7e87a657abc3f99927a567f17a032987a",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModel.swift": "7ca48357d388dd6cf7525bcc5d6ba6945bffc5dc5fea331a40da004a393e7622",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModels.swift": "2ec473725540eefa1cd20889efe347a0d06265458c7185f3151a8eda2aa79ddb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/GlassSurface.swift": "28cb1bda35eee204db91f7c3c8ff9f87d69a6d069e3c6e7dbb394d98f6258093",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/SwitcherShell.swift": "c85fe5c7f0ba09ed2e5a599937f53ed0328b8ea05e5377e177dccbfc76ccf11f",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeFixture.swift": "4e5a920c24b180fdde0176a0d474bc273b31b6e6f036269de0bef95de904668c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeHost.swift": "b6c6e60c9900042e7abd412ac6be7a5e96372c13d01d5892613ae40c6c85bb8c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/AdCard.swift": "6a95dacba932734a94c10b5cf121e66c190e95b0c95346b4d0541b5f76532315",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/BasicPages.swift": "76fb8c3ed8d3785fc319879189ec1b64b0a98635a92b503f4b0b38bc01f41ff8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/OverviewView.swift": "5ab9d2934ec5e80d255682e58c9d2815615e67b590f8e9f32edc2c7936fbe425",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherFilePicker.swift": "6cd0426041d622a8b2a956c9f56256726fd42941007efbd6e8b25f140351a524",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherMaintenancePanel.swift": "e3b5e6c2bcce11856eab2d5a8fca8deed4e11055922c48a299131ad69c0729cb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherPage.swift": "eb2c7a934b0338c60a77b89b8d55172869eb6e248d9273c4bbefb250a08aa3d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherRecoveryPanel.swift": "3ad9dd68c0e2c18cccc85c442298d3ae4304cd9fc69151fdbc8a60aef66977b9",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RegionPanel.swift": "973a3105b9b46f6698a69d3a0321a98dc8f80292dc586392a9215695e52fd9d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RemotePublisherPanel.swift": "f099ca931392a769702ffd3200cd82f6bbb631dd7400adebf066ca1902882b9b",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/WorkspaceView.swift": "1d2bd7978ed92b3929130f30df49d49bf9c752bb7a3fd4494d56df24a0e1e13f",
+      "apps/desktop/src-tauri/src/native_host.rs": "cb71042b629e074ad29a33e008b7b39225ee24df0429259d11d7c52b2615b140",
+      "apps/desktop/src-tauri/build.rs": "46c6cb9984d36da418ef6f6405a1991493e387aae32d585ebf28a4a8fdbbc609",
+      "apps/desktop/src-tauri/src/ipc_business/ordinary.rs": "82277f8b4be6200b6446860f60eddd98c9d595a15060a4b2cde2a8a808d5b1e8",
+      "apps/desktop/src-tauri/src/publisher_commands.rs": "0179f785754de0bae3fb57ba2f288056d1f609248e7c99f46e8f4c7688b638e9",
+      "apps/desktop/src-tauri/src/publisher_recovery_commands.rs": "89e18d43de7ee8332153d65933c1052f094e0c21ff90adf3d62ee64b68da26cd",
+      "apps/desktop/public/native-bridge.html": "e91254a2fd2e59d32deddbfea0be5e69eceb59b1990db3946aa9f3cb9b1f61ed",
+      "apps/desktop/swiftui/Tests/NativeWorkspaceFixture/run.py": "19e4637d63360dcd665fd3182002957ef9206524f1bf5ef2623568d128e0f0a8"
+    },
+    "timing": "before subsequent recovery error retention fix"
+  },
+  "small_backup_historical": {
+    "status": "PASS",
+    "fixture_binary_sha256": "a36e558e9b514243bef54f348b81096962db7946b7b011f08754c002cb9538ee",
+    "checks": {
+      "workspace": true,
+      "mounted": true,
+      "bridge_page": true,
+      "swift_gate": true,
+      "screenshot": true,
+      "publisher": true,
+      "binary_input": true,
+      "backup_recovery": true
+    },
+    "source_sha256": {
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopBridge.swift": "b894343c3cc178d78e55311ec8c0faac3075a498a96867627f7951c967b31694",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopCommand.swift": "86dc4abe46d1ee15fc71e1a34a715d16f78aedb35621ae2930779229aa248188",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/JSONValue.swift": "a4412c5392eac9be21a958a9f74d319bf9d38978e0a207777d32635e17f60b87",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModel.swift": "0d117f3ee3dee7b1a4fd3892c8dca39e22e9e0e6ac7345938e312cc95b522492",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModels.swift": "3bf38bbd836da4583a0b6d972a8b4296123b4a72d1b1a0819d199424d726c0ce",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/TauriWebViewTransport.swift": "a51edc6f958c294e5fcdb81af7ec6ef7e87a657abc3f99927a567f17a032987a",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModel.swift": "7ca48357d388dd6cf7525bcc5d6ba6945bffc5dc5fea331a40da004a393e7622",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModels.swift": "2ec473725540eefa1cd20889efe347a0d06265458c7185f3151a8eda2aa79ddb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/GlassSurface.swift": "28cb1bda35eee204db91f7c3c8ff9f87d69a6d069e3c6e7dbb394d98f6258093",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/SwitcherShell.swift": "c85fe5c7f0ba09ed2e5a599937f53ed0328b8ea05e5377e177dccbfc76ccf11f",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeFixture.swift": "3f26245a145ffc12478f0ee29a837c0a33a42690d41dd12730bb722a1ba9a68c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeHost.swift": "b6c6e60c9900042e7abd412ac6be7a5e96372c13d01d5892613ae40c6c85bb8c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/AdCard.swift": "6a95dacba932734a94c10b5cf121e66c190e95b0c95346b4d0541b5f76532315",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/BasicPages.swift": "76fb8c3ed8d3785fc319879189ec1b64b0a98635a92b503f4b0b38bc01f41ff8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/OverviewView.swift": "5ab9d2934ec5e80d255682e58c9d2815615e67b590f8e9f32edc2c7936fbe425",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherFilePicker.swift": "6cd0426041d622a8b2a956c9f56256726fd42941007efbd6e8b25f140351a524",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherMaintenancePanel.swift": "e3b5e6c2bcce11856eab2d5a8fca8deed4e11055922c48a299131ad69c0729cb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherPage.swift": "eb2c7a934b0338c60a77b89b8d55172869eb6e248d9273c4bbefb250a08aa3d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherRecoveryPanel.swift": "3ad9dd68c0e2c18cccc85c442298d3ae4304cd9fc69151fdbc8a60aef66977b9",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RegionPanel.swift": "973a3105b9b46f6698a69d3a0321a98dc8f80292dc586392a9215695e52fd9d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RemotePublisherPanel.swift": "f099ca931392a769702ffd3200cd82f6bbb631dd7400adebf066ca1902882b9b",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/WorkspaceView.swift": "1d2bd7978ed92b3929130f30df49d49bf9c752bb7a3fd4494d56df24a0e1e13f",
+      "apps/desktop/src-tauri/src/native_host.rs": "cb71042b629e074ad29a33e008b7b39225ee24df0429259d11d7c52b2615b140",
+      "apps/desktop/src-tauri/build.rs": "46c6cb9984d36da418ef6f6405a1991493e387aae32d585ebf28a4a8fdbbc609",
+      "apps/desktop/src-tauri/src/ipc_business/ordinary.rs": "0c7e1f1c1d13fae7fed8fca82d286c3d43d981702a3aca9db10b1675b370e5ec",
+      "apps/desktop/src-tauri/src/publisher_commands.rs": "0179f785754de0bae3fb57ba2f288056d1f609248e7c99f46e8f4c7688b638e9",
+      "apps/desktop/src-tauri/src/publisher_recovery_commands.rs": "89e18d43de7ee8332153d65933c1052f094e0c21ff90adf3d62ee64b68da26cd",
+      "apps/desktop/public/native-bridge.html": "e91254a2fd2e59d32deddbfea0be5e69eceb59b1990db3946aa9f3cb9b1f61ed",
+      "apps/desktop/swiftui/Tests/NativeWorkspaceFixture/run.py": "fe53828cd2499e357a30ff2f1f76c4496fa2d8aded015407b58bdd947348790f"
+    }
+  },
+  "files": {
+    "red_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/red.log",
+      "sha256": "68ba802f334c210d562609f8dac40c1a361f648ae196aef8af18ee47352012ae"
+    },
+    "read_retry_red_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/read-retry-red.log",
+      "sha256": "e92024621ce7b9c3cc622eea744ab0f154406b04480eb7a810374147ef1a0f79"
+    },
+    "swift_tests_final_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/swift-tests-final.log",
+      "sha256": "0fafe8cb5a86f85fff92c2df49825e97fb7a4cd76f3f0bf52962a24b0ad46dcf"
+    },
+    "valid_large_result": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/valid-large-final/result.json",
+      "sha256": "2a3091cb12721c09b9e5e721d55d206b5dbba3164172db1de67b1bd12d133864"
+    },
+    "valid_large_runtime_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/valid-large-final/runtime.log",
+      "sha256": "dccd4fae886990b899886305b05f8dc8ebff4f4900b70058c17ec01a8dc2c599"
+    },
+    "small_backup_result_historical": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/fixture/result.json",
+      "sha256": "bfaddceaf95980ecf59d37ed9d4ca10a2f6eb3cf27b3e6ebf9ec6e1e30fe900e"
+    },
+    "publisher_model": {
+      "path": "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModel.swift",
+      "sha256": "c7e9a78f3ff7bfb7ae97833a45f13ad950467da15fffccc1920380b4169c7c5b"
+    },
+    "publisher_model_tests": {
+      "path": "apps/desktop/swiftui/Tests/SwitcherUITests/PublisherModelTests.swift",
+      "sha256": "312db0e19b04af3e56ea4d35ebd6ff4480f5e283124da357af51648cf844df16"
+    },
+    "native_fixture": {
+      "path": "apps/desktop/swiftui/Sources/SwitcherUI/NativeFixture.swift",
+      "sha256": "4e5a920c24b180fdde0176a0d474bc273b31b6e6f036269de0bef95de904668c"
+    },
+    "native_fixture_runner": {
+      "path": "apps/desktop/swiftui/Tests/NativeWorkspaceFixture/run.py",
+      "sha256": "19e4637d63360dcd665fd3182002957ef9206524f1bf5ef2623568d128e0f0a8"
+    },
+    "rust_fixture": {
+      "path": "apps/desktop/src-tauri/src/ipc_business/ordinary.rs",
+      "sha256": "82277f8b4be6200b6446860f60eddd98c9d595a15060a4b2cde2a8a808d5b1e8"
+    },
+    "recovery_failure_red_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/recovery-failure-red.log",
+      "sha256": "b56575809a5b14608cce55de1bc9c3e9316fd61bccb757a5209b6f30930eaf34"
+    },
+    "swift_tests_current_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/swift-tests-current.log",
+      "sha256": "8d8a97bfb1fc0184b13f7f807eee68ff9453b3784ffed05fcabff5cc1b25ebc6"
+    },
+    "small_backup_current_result": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/small-current/result.json",
+      "sha256": "1f99ac82a25ed9c670a1ab4a54efb0addc29fb6f332b74f15277dd55493231c9"
+    },
+    "small_backup_current_runtime_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/small-current/runtime.log",
+      "sha256": "ccceeb758fcfa0f251e55fe5c45f234c14dba7cc99bede4d9c133a9d78621008"
+    },
+    "publisher_page": {
+      "path": "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherPage.swift",
+      "sha256": "b77b753a389c92be4d036a0efbdcf891ff65d23492279f16555dc9c405a9b4ac"
+    },
+    "publisher_recovery_panel": {
+      "path": "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherRecoveryPanel.swift",
+      "sha256": "c4de5c4ca982a69d6661387b6c6cb78c9df803bc0f2bf76b25f6cb2c01cef02e"
+    },
+    "file_error_red_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/file-error-red.log",
+      "sha256": "3e5342481a6d274debf60c7d63f31cd95cdff4da40ab179f1b10b327d4234522"
+    },
+    "swift_tests_28_log": {
+      "path": "output/no-account-20261027/swiftui-restore-20261028.AWyPC9/swift-tests-28.log",
+      "sha256": "f3bbb2da3691ad68590929c496d914af9379b302fe8064ebe7f2fb31de6600be"
+    }
+  },
+  "not_tested": [
+    "native file chooser interaction",
+    "default Keychain",
+    "real Claude",
+    "real R2/CDN",
+    "64 MiB real assets",
+    "macOS 13-25 or Intel",
+    "long-running acceptance"
+  ],
+  "small_backup_after_recovery_fix": {
+    "status": "PASS",
+    "fixture_binary_sha256": "c569b91a3275ad45b9a9ecf556644665c470ab216551f009a1c2134deb0e19c6",
+    "checks": {
+      "workspace": true,
+      "mounted": true,
+      "bridge_page": true,
+      "swift_gate": true,
+      "screenshot": true,
+      "publisher": true,
+      "binary_input": true,
+      "backup_recovery": true
+    },
+    "source_sha256": {
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopBridge.swift": "b894343c3cc178d78e55311ec8c0faac3075a498a96867627f7951c967b31694",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/DesktopCommand.swift": "86dc4abe46d1ee15fc71e1a34a715d16f78aedb35621ae2930779229aa248188",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/JSONValue.swift": "a4412c5392eac9be21a958a9f74d319bf9d38978e0a207777d32635e17f60b87",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModel.swift": "414d4ff5b8fd66d307ae9e535dad2e7a7160608f57a627f8a05c3225ffe471b2",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/PublisherModels.swift": "3bf38bbd836da4583a0b6d972a8b4296123b4a72d1b1a0819d199424d726c0ce",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/TauriWebViewTransport.swift": "a51edc6f958c294e5fcdb81af7ec6ef7e87a657abc3f99927a567f17a032987a",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModel.swift": "7ca48357d388dd6cf7525bcc5d6ba6945bffc5dc5fea331a40da004a393e7622",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Bridge/WorkspaceModels.swift": "2ec473725540eefa1cd20889efe347a0d06265458c7185f3151a8eda2aa79ddb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/GlassSurface.swift": "28cb1bda35eee204db91f7c3c8ff9f87d69a6d069e3c6e7dbb394d98f6258093",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Design/SwitcherShell.swift": "c85fe5c7f0ba09ed2e5a599937f53ed0328b8ea05e5377e177dccbfc76ccf11f",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeFixture.swift": "4e5a920c24b180fdde0176a0d474bc273b31b6e6f036269de0bef95de904668c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/NativeHost.swift": "b6c6e60c9900042e7abd412ac6be7a5e96372c13d01d5892613ae40c6c85bb8c",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/AdCard.swift": "6a95dacba932734a94c10b5cf121e66c190e95b0c95346b4d0541b5f76532315",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/BasicPages.swift": "76fb8c3ed8d3785fc319879189ec1b64b0a98635a92b503f4b0b38bc01f41ff8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/OverviewView.swift": "5ab9d2934ec5e80d255682e58c9d2815615e67b590f8e9f32edc2c7936fbe425",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherFilePicker.swift": "6cd0426041d622a8b2a956c9f56256726fd42941007efbd6e8b25f140351a524",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherMaintenancePanel.swift": "e3b5e6c2bcce11856eab2d5a8fca8deed4e11055922c48a299131ad69c0729cb",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherPage.swift": "eb2c7a934b0338c60a77b89b8d55172869eb6e248d9273c4bbefb250a08aa3d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/PublisherRecoveryPanel.swift": "3ad9dd68c0e2c18cccc85c442298d3ae4304cd9fc69151fdbc8a60aef66977b9",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RegionPanel.swift": "973a3105b9b46f6698a69d3a0321a98dc8f80292dc586392a9215695e52fd9d8",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/RemotePublisherPanel.swift": "f099ca931392a769702ffd3200cd82f6bbb631dd7400adebf066ca1902882b9b",
+      "apps/desktop/swiftui/Sources/SwitcherUI/Pages/WorkspaceView.swift": "1d2bd7978ed92b3929130f30df49d49bf9c752bb7a3fd4494d56df24a0e1e13f",
+      "apps/desktop/src-tauri/src/native_host.rs": "cb71042b629e074ad29a33e008b7b39225ee24df0429259d11d7c52b2615b140",
+      "apps/desktop/src-tauri/build.rs": "46c6cb9984d36da418ef6f6405a1991493e387aae32d585ebf28a4a8fdbbc609",
+      "apps/desktop/src-tauri/src/ipc_business/ordinary.rs": "82277f8b4be6200b6446860f60eddd98c9d595a15060a4b2cde2a8a808d5b1e8",
+      "apps/desktop/src-tauri/src/publisher_commands.rs": "0179f785754de0bae3fb57ba2f288056d1f609248e7c99f46e8f4c7688b638e9",
+      "apps/desktop/src-tauri/src/publisher_recovery_commands.rs": "89e18d43de7ee8332153d65933c1052f094e0c21ff90adf3d62ee64b68da26cd",
+      "apps/desktop/public/native-bridge.html": "e91254a2fd2e59d32deddbfea0be5e69eceb59b1990db3946aa9f3cb9b1f61ed",
+      "apps/desktop/swiftui/Tests/NativeWorkspaceFixture/run.py": "19e4637d63360dcd665fd3182002957ef9206524f1bf5ef2623568d128e0f0a8"
+    },
+    "timing": "after recovery error retention fix, before file error prompt fix"
+  }
+}
