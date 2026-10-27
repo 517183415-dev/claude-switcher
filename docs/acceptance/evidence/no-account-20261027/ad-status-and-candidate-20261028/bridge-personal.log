@@ -1,0 +1,48 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.35s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 1 test
+test bridge::ad_status_tests::failed_refresh_reports_separately_and_preserves_cached_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 256 filtered out; finished in 0.00s
+
+     Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-bea34db55f9a917b)
+
+running 1 test
+test bridge::ad_status_tests::failed_refresh_reports_separately_and_preserves_cached_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 39 filtered out; finished in 0.00s
+
+     Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-94320da14056e1f2)
+
+running 1 test
+test bridge::ad_status_tests::failed_refresh_reports_separately_and_preserves_cached_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 0.00s
+
+     Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-b085b883bd291e1c)
+
+running 1 test
+test bridge::ad_status_tests::failed_refresh_reports_separately_and_preserves_cached_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 35 filtered out; finished in 0.00s
+
+     Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-864558bede95ed13)
+
+running 1 test
+test bridge::ad_status_tests::failed_refresh_reports_separately_and_preserves_cached_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 35 filtered out; finished in 0.00s
+

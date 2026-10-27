@@ -1,0 +1,58 @@
+{
+  "source_commit": "afce48da1b179ca3b05b0ec58dbc4cae3fb5b694",
+  "git_archive_sha256": "c24786df1d51c3549fdde11e8a3be26468b09f88deeeff082b51b713841ebb56",
+  "source_file_sha256": {
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "apps/desktop/src-tauri/src/bridge.rs": "747a2603ea5f87770086237b6a7a393b8aba32749e17158610f08706cd92020b",
+    "crates/switcher-core/src/ad_runtime.rs": "60bc62b24c316b8b49dcd8c05415e1b6620c7c5d7f2e5d08d09532db94ff65e8",
+    "crates/switcher-core/src/ad_runtime/tests.rs": "98974cd9874044562353c163c0d2b3453b6a4b9d7adecc2572f21091d18214a5"
+  },
+  "archive_only_build_change": "swiftc -disable-sandbox; compiler nested sandbox bypassed while outer account-free sandbox remains active",
+  "environment": "offline Cargo; account-free sandbox; no production release source",
+  "build_log": "build.log",
+  "products": [
+    {
+      "edition": "Personal",
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/candidate-afce48da.vISjcE/products/Claude 切换器 Personal.app",
+      "bundle_id": "local.claudeswitcher.personal",
+      "version": "0.2.0",
+      "minimum_macos": "13.0",
+      "architectures": [
+        "arm64"
+      ],
+      "executable_sha256": "9e9e1520ed8d6a215a7d478d96ec1b928e61a3f93c7623f8c5a2eb2068048e9b",
+      "signature": "ad hoc; verified before and after copy"
+    },
+    {
+      "edition": "Public",
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/candidate-afce48da.vISjcE/products/Claude 切换器 Public.app",
+      "bundle_id": "local.claudeswitcher.public",
+      "version": "0.2.0",
+      "minimum_macos": "13.0",
+      "architectures": [
+        "arm64"
+      ],
+      "executable_sha256": "ea186d52e7cc36320e6f9ffe80e9bbaa56369b245cc906df34e695cae2dd8021",
+      "signature": "ad hoc; verified before and after copy"
+    }
+  ],
+  "isolated_window_smoke": {
+    "personal": {
+      "process_running": true,
+      "own_window_found": true
+    },
+    "public": {
+      "process_running": true,
+      "own_window_found": true
+    }
+  },
+  "not_run": [
+    "window business interaction for this build",
+    "installation",
+    "default Keychain",
+    "real Claude",
+    "real R2/CDN",
+    "notarization",
+    "48h/7d"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "personal": {
+    "process_running": true,
+    "own_window_found": true
+  },
+  "public": {
+    "process_running": true,
+    "own_window_found": true
+  }
+}

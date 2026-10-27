@@ -1,0 +1,29 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.65s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 1 test
+
+thread 'ad_runtime::tests::background_refresh_failure_remains_visible_until_verified_recovery' (36207117) panicked at crates/switcher-core/src/ad_runtime/tests.rs:1019:13:
+assertion failed: failed.refresh_failed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test ad_runtime::tests::background_refresh_failure_remains_visible_until_verified_recovery ... FAILED
+
+failures:
+
+failures:
+    ad_runtime::tests::background_refresh_failure_remains_visible_until_verified_recovery
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 460 filtered out; finished in 0.18s
+
+error: test failed, to rerun pass `-p switcher-core --lib`
