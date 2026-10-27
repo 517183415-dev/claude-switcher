@@ -1,0 +1,16 @@
+{
+  "command": "cargo test -p switcher-desktop --bin switcher-desktop publisher::tests::",
+  "sandbox": "account-free.sb",
+  "passed": 75,
+  "failed": 0,
+  "regressions": [
+    "pending_publication_blocks_other_channel_before_source_access",
+    "restore_rejects_same_revision_with_different_authenticated_payloads"
+  ],
+  "raw_log_sha256": "2f33871b27be3d80e41450e225144be677de20e981d0ef5071c4e2fd0208ced0",
+  "red_log_sha256": {
+    "channel": "b2e7c3f697546e1aad36b701198d098f6a4d11fc6c84f988a1e0dbe7005bda67",
+    "backup": "bf9f27fcb7fb29436ef4905afb454394fe74143ced86a0fda5f06285565c1974"
+  },
+  "scope": "Synthetic fixtures and isolated local stores; no real R2 or real Claude account."
+}

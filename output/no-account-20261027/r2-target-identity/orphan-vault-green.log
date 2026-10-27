@@ -1,0 +1,27 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.19s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 9 tests
+test publisher::tests::multi_target_backup_vault_failure_preserves_active_generation_after_restart ... ok
+test publisher::tests::multi_target_backup_vault_read_failure_is_not_treated_as_missing_item ... ok
+test publisher::tests::multi_target_backup_restores_into_fresh_publisher_without_credentials ... ok
+test publisher::tests::multi_target_backup_unbound_existing_credentials_cannot_be_overwritten ... ok
+test publisher::tests::multi_target_backup_credential_conflict_preserves_generation_and_secrets ... ok
+test publisher::tests::multi_target_backup_preserves_vault_item_without_trust_file ... ok
+test publisher::tests::multi_target_backup_conflicting_inactive_pending_is_preserved ... ok
+test publisher::tests::multi_target_backup_conflicting_watermark_preserves_local_generation_and_vault ... ok
+test publisher::tests::multi_target_backup_merges_publication_history_and_watermarks_after_restart ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 171 filtered out; finished in 4.48s
+

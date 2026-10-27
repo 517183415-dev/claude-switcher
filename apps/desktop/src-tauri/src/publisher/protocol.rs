@@ -22,6 +22,10 @@ pub enum StoreError {
 /// object create-if-absent, and CAS via If-Match / If-None-Match. Its credential
 /// must have write access only to this environment's advertisement directory.
 pub trait ObjectStore {
+    /// Trusted implementation identity; unknown providers are never publishable.
+    fn target_identity(&self) -> Option<String> {
+        None
+    }
     fn channel(&self) -> AdChannel;
     fn requires_credentials(&self) -> bool {
         true
@@ -64,6 +68,37 @@ pub fn prefix(channel: AdChannel) -> &'static str {
     match channel {
         AdChannel::Preview => "preview",
         AdChannel::Production => "production",
+    }
+}
+
+/// Restrict object access to the channel and product-generated key shapes.
+pub(crate) fn validate_key(channel: AdChannel, key: &str) -> std::result::Result<(), StoreError> {
+    let prefix = format!("{}/", prefix(channel));
+    let suffix = key.strip_prefix(&prefix).ok_or(StoreError::Permission)?;
+    let valid = suffix == "current.json"
+        || suffix.strip_prefix("assets/").is_some_and(|name| {
+            name.rsplit_once('.').is_some_and(|(hash, extension)| {
+                hash.len() == 64
+                    && hash
+                        .bytes()
+                        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+                    && matches!(extension, "png" | "jpg")
+            })
+        })
+        || suffix
+            .strip_prefix("versions/")
+            .and_then(|name| name.strip_suffix(".json"))
+            .is_some_and(|id| {
+                !id.is_empty()
+                    && id.len() <= 128
+                    && id
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_'))
+            });
+    if valid {
+        Ok(())
+    } else {
+        Err(StoreError::Permission)
     }
 }
 

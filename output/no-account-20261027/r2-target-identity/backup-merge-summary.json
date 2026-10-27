@@ -1,0 +1,22 @@
+{
+  "scope": "isolated publisher tests using synthetic vault and object store",
+  "results": {
+    "publisher_before_last_test": "133 passed; 0 failed",
+    "multi_target_backup": "7 passed; 0 failed",
+    "unbound_credential_regression_before_fix": "failed as expected"
+  },
+  "unverified": [
+    "real Cloudflare R2",
+    "real Keychain",
+    "product target selection",
+    "multi-target cleanup"
+  ],
+  "sha256": {
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "5adfadc1efcaaa89934ef9abdc18eda460a56fea82cbe22a3813128a65364aaa",
+    "apps/desktop/src-tauri/src/publisher/target_backup.rs": "ce2ad447bbfbc450930fcb000a598deb81ef9077aae4fbf026ef1af3528dc2f6",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "1816099841730cd2ba17d2d0b60b57985c33e4abb9f591cbbf94a5af8a9dd7ba",
+    "output/no-account-20261027/r2-target-identity/unbound-credentials-red.log": "6e9452e50578a8756d651fd50af6f790f59bbdf27a770e68a95da4efeffe016e",
+    "output/no-account-20261027/r2-target-identity/merge-publisher-final.log": "cf97265afd64401e6553384bc8f194f2c4fc5c730f9ec0d581e409bdf9b743ed",
+    "output/no-account-20261027/r2-target-identity/merge-target-final.log": "317d5e8e6138502ce3495f0d069d67dee8fb9184a840db3ea41972bbc6aaa124"
+  }
+}

@@ -37,6 +37,7 @@ base64 = "=0.22.1"
 tauri = "=2.12.5"
 tauri-build = "=2.7.4"
 tauri-plugin-updater = "=2.14.0"
+aws-sdk-s3 = { version = "=1.155.0", default-features = false, features = ["rt-tokio", "default-https-client", "rustls"] }
 
 [profile.release]
 # macOS 27 dyld rejects the stripped proc-macro LINKEDIT string pool.

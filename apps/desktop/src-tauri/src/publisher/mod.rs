@@ -6,8 +6,12 @@ mod cleanup_tests;
 #[cfg(test)]
 mod image_boundary_tests;
 pub mod local_store;
+#[cfg(test)]
+mod migration;
 pub mod protocol;
+pub mod r2_store;
 pub mod security;
+mod target_backup;
 #[cfg(any(test, feature = "ipc-business"))]
 pub(crate) mod test_support;
 
@@ -17,9 +21,10 @@ use protocol::{ObjectStore, Pending, Phase, StoreError};
 use security::{Secrets, Vault};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::BTreeMap,
     fs::{self, OpenOptions},
     io::Read,
-    os::unix::fs::{MetadataExt, OpenOptionsExt},
+    os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
 };
 use switcher_core::{ads, signed, storage};
@@ -52,6 +57,7 @@ impl From<std::io::Error> for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Invalid("migration_active_outcome_unknown") => f.write_str("迁移结果尚未确认。请重新打开软件并检查当前状态；两代数据均已保留，请勿重复确认原预览。"),
             Self::Invalid(reason) => write!(f, "发布数据无效：{reason}"),
             Self::Io(_) => f.write_str("本地发布数据读写失败"),
             Self::SecretUnavailable => f.write_str("Keychain 凭据不可用或访问被取消"),
@@ -82,6 +88,7 @@ impl std::error::Error for Error {}
 const STATE_LIMIT: usize = 16 * 1024 * 1024;
 const HISTORY_LIMIT: usize = 256;
 const ASSET_LIMIT: usize = 128;
+const TARGET_LIMIT: usize = 16;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -131,6 +138,12 @@ thread_local! {
 #[serde(deny_unknown_fields)]
 struct State {
     schema: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    target: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    other_targets: BTreeMap<String, TargetLedger>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    draft_only_recovery: bool,
     draft: AdManifest,
     history: Vec<HistoryRecord>,
     assets: Vec<ImageAsset>,
@@ -141,6 +154,64 @@ struct State {
     last_resolution: Option<Resolution>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     cleanup: Option<cleanup::CleanupBatch>,
+}
+
+/// Publication evidence belongs to a particular target; draft and assets are shared.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TargetLedger {
+    history: Vec<HistoryRecord>,
+    sequences: [signed::Sequence; 2],
+    pending: Option<Pending>,
+    recovery_required: bool,
+    last_resolution: Option<Resolution>,
+}
+
+impl State {
+    fn has_publication_evidence(&self) -> bool {
+        self.pending.is_some()
+            || self.last_resolution.is_some()
+            || !self.history.is_empty()
+            || self.recovery_required
+            || self
+                .sequences
+                .iter()
+                .any(|sequence| sequence.highest != 0 || sequence.payload_hash.is_some())
+    }
+
+    fn active_ledger(&self) -> TargetLedger {
+        TargetLedger {
+            history: self.history.clone(),
+            sequences: self.sequences.clone(),
+            pending: self.pending.clone(),
+            recovery_required: self.recovery_required,
+            last_resolution: self.last_resolution.clone(),
+        }
+    }
+
+    fn apply_ledger(&mut self, ledger: TargetLedger) {
+        self.history = ledger.history;
+        self.sequences = ledger.sequences;
+        self.pending = ledger.pending;
+        self.recovery_required = ledger.recovery_required;
+        self.last_resolution = ledger.last_resolution;
+    }
+}
+
+fn valid_target_identity(target: &str, remote: bool) -> bool {
+    let hash = target.strip_prefix("local:").or_else(|| {
+        if remote {
+            target.strip_prefix("r2:")
+        } else {
+            None
+        }
+    });
+    hash.is_some_and(|hash| {
+        hash.len() == 64
+            && hash
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    })
 }
 
 #[derive(Serialize, Deserialize)]
@@ -315,6 +386,9 @@ impl Publisher {
                     .map_err(Error::Invalid)?;
                 let state = State {
                     schema: 1,
+                    target: None,
+                    other_targets: BTreeMap::new(),
+                    draft_only_recovery: false,
                     draft,
                     history: vec![],
                     assets: vec![],
@@ -402,11 +476,44 @@ impl Publisher {
     }
     fn validate_state_with_key(&self, state: &State, key: Option<&VerifyingKey>) -> Result<()> {
         cleanup::validate_batch(state.cleanup.as_ref(), &self.generation)?;
-        if state.schema != 1
-            || state.history.len() > HISTORY_LIMIT
-            || state.assets.len() > ASSET_LIMIT
+        let target_valid = match (state.schema, state.target.as_deref()) {
+            (1, None) => !state.draft_only_recovery && state.other_targets.is_empty(),
+            (2, None) => {
+                state.draft_only_recovery
+                    && state.other_targets.is_empty()
+                    && state.recovery_required
+                    && state.pending.is_none()
+                    && state.last_resolution.is_none()
+                    && state.history.is_empty()
+                    && state
+                        .sequences
+                        .iter()
+                        .all(|sequence| sequence.highest == 0 && sequence.payload_hash.is_none())
+            }
+            (2, Some(target)) if !state.draft_only_recovery => {
+                state.other_targets.is_empty() && valid_target_identity(target, false)
+            }
+            (3, Some(target)) if !state.draft_only_recovery => {
+                valid_target_identity(target, true)
+                    && state.other_targets.len() < TARGET_LIMIT
+                    && !state.other_targets.contains_key(target)
+            }
+            _ => false,
+        };
+        if !target_valid || state.history.len() > HISTORY_LIMIT || state.assets.len() > ASSET_LIMIT
         {
             return Err(Error::Invalid("publisher_state"));
+        }
+        for (target, ledger) in &state.other_targets {
+            if !valid_target_identity(target, true) {
+                return Err(Error::Invalid("publisher_target"));
+            }
+            let mut view = state.clone();
+            view.target = Some(target.clone());
+            view.other_targets.clear();
+            view.cleanup = None;
+            view.apply_ledger(ledger.clone());
+            self.validate_state_with_key(&view, key)?;
         }
         ads::validate_manifest(
             &state.draft,
@@ -603,6 +710,43 @@ impl Publisher {
     pub fn draft_read(&self) -> AdManifest {
         self.state.draft.clone()
     }
+
+    /// Select an already authenticated store without assigning legacy evidence to it.
+    /// Remote use remains gated until backup and cleanup support every ledger.
+    #[allow(dead_code)]
+    pub(crate) fn select_target(&mut self, source: &dyn ObjectStore) -> Result<()> {
+        let target = source
+            .target_identity()
+            .ok_or(Error::Invalid("publisher_target_unavailable"))?;
+        if !valid_target_identity(&target, true) {
+            return Err(Error::Invalid("publisher_target_unavailable"));
+        }
+        self.validate_state(&self.state)?;
+        if self.state.target.as_ref() == Some(&target) {
+            return Ok(());
+        }
+        if self.state.cleanup.is_some() {
+            return Err(Error::Invalid("cleanup_finish_gc_before_target_change"));
+        }
+        if self.state.draft_only_recovery
+            || (self.state.target.is_none() && self.state.has_publication_evidence())
+        {
+            return Err(Error::Invalid("legacy_target_unknown"));
+        }
+        let mut state = self.state.clone();
+        if let Some(previous) = state.target.clone() {
+            state.other_targets.insert(previous, state.active_ledger());
+        }
+        let ledger = state.other_targets.remove(&target).unwrap_or_default();
+        if state.other_targets.len() >= TARGET_LIMIT {
+            return Err(Error::Invalid("publisher_target_capacity"));
+        }
+        state.apply_ledger(ledger);
+        state.schema = 3;
+        state.target = Some(target);
+        self.persist(state)
+    }
+
     pub fn draft_save(&mut self, mut manifest: AdManifest, now: u64) -> Result<AdManifest> {
         if self
             .state
@@ -612,16 +756,21 @@ impl Publisher {
         {
             return Err(Error::PendingOperation);
         }
-        let next = self
-            .state
-            .sequences
-            .iter()
-            .map(|sequence| sequence.highest)
-            .chain([self.state.draft.content_revision])
-            .max()
-            .unwrap_or_default()
-            .checked_add(1)
-            .ok_or(Error::Invalid("revision_overflow"))?;
+        let next =
+            self.state
+                .sequences
+                .iter()
+                .map(|sequence| sequence.highest)
+                .chain(
+                    self.state.other_targets.values().flat_map(|ledger| {
+                        ledger.sequences.iter().map(|sequence| sequence.highest)
+                    }),
+                )
+                .chain([self.state.draft.content_revision])
+                .max()
+                .unwrap_or_default()
+                .checked_add(1)
+                .ok_or(Error::Invalid("revision_overflow"))?;
         manifest.content_revision = next;
         manifest.release_id = random_id()?;
         manifest.issued_at = now;
@@ -809,6 +958,15 @@ impl Publisher {
         source: &mut dyn ObjectStore,
         now: u64,
     ) -> Result<Option<protocol::Object>> {
+        let recovery_target = if self.state.draft_only_recovery {
+            Some(
+                source
+                    .target_identity()
+                    .ok_or(Error::Invalid("publisher_target_unavailable"))?,
+            )
+        } else {
+            None
+        };
         let current = source.current()?;
         let channel = source.channel();
         let mut state = self.state.clone();
@@ -828,7 +986,20 @@ impl Publisher {
                 "remote_current_missing_after_authenticated_release",
             ));
         }
-        if channel == AdChannel::Production {
+        if state.draft_only_recovery {
+            let target = recovery_target.ok_or(Error::Invalid("publisher_target_unavailable"))?;
+            if !target.starts_with("local:") || source.target_identity().as_ref() != Some(&target) {
+                return Err(Error::Invalid("publisher_target_unavailable"));
+            }
+            state.target = Some(target);
+            state.draft_only_recovery = false;
+        }
+        if channel == AdChannel::Production
+            || state
+                .target
+                .as_deref()
+                .is_some_and(|target| target.starts_with("r2:"))
+        {
             state.recovery_required = false;
         }
         self.persist(state)?;
@@ -852,8 +1023,53 @@ impl Publisher {
         protocol::require_scope(source, channel)?;
         self.verifying_key()?;
         self.validate_state(&self.state)?;
-        if self.state.recovery_required && channel != AdChannel::Production {
+        if self
+            .state
+            .pending
+            .as_ref()
+            .is_some_and(|pending| pending.manifest.channel != channel)
+        {
+            return Err(Error::PendingOperation);
+        }
+        if self.state.recovery_required
+            && channel != AdChannel::Production
+            && !self
+                .state
+                .target
+                .as_deref()
+                .is_some_and(|target| target.starts_with("r2:"))
+        {
             return Err(Error::RecoveryReadRequired);
+        }
+        // Remote namespaces are intentionally disabled until backup and cleanup
+        // account for every target. Never infer the owner of a legacy pending.
+        let target = source
+            .target_identity()
+            .ok_or(Error::Invalid("publisher_target_unavailable"))?;
+        if !target.starts_with("local:") {
+            return Err(Error::Invalid("publisher_target_unavailable"));
+        }
+        if self
+            .state
+            .target
+            .as_ref()
+            .is_some_and(|bound| bound != &target)
+        {
+            return Err(Error::Invalid("publisher_target_mismatch"));
+        }
+        if self.state.target.is_none() {
+            if self.state.pending.is_some() {
+                return Err(Error::Invalid("legacy_pending_target_unknown"));
+            }
+            if self.state.has_publication_evidence() && !self.state.draft_only_recovery {
+                return Err(Error::Invalid("legacy_target_unknown"));
+            }
+            if !self.state.draft_only_recovery {
+                let mut state = self.state.clone();
+                state.schema = 2;
+                state.target = Some(target);
+                self.persist(state)?;
+            }
         }
         if self.state.recovery_required {
             self.read_remote(source, now)?;
@@ -991,7 +1207,13 @@ impl Publisher {
         if pending.manifest.expires_at <= now {
             return Err(Error::Invalid("pending_expired_uncommitted"));
         }
-        if matches!(pending.phase, Phase::CommitUnknown | Phase::ReadbackFailed) {
+        let version_required =
+            matches!(pending.phase, Phase::CommitUnknown | Phase::ReadbackFailed);
+        // Legacy recovery could persist Uploading after an unknown CAS. A fresh
+        // interrupted upload may have no version yet, so only the CAS safety
+        // decision treats Uploading as uncertain.
+        let previously_uncertain = version_required || pending.phase == Phase::Uploading;
+        if version_required {
             let version = source.public_read(
                 &protocol::version_key(&pending.manifest),
                 ads::MAX_MANIFEST_BYTES,
@@ -1000,7 +1222,11 @@ impl Publisher {
                 return Err(Error::Store(StoreError::OutcomeUnknown));
             }
         }
-        self.set_phase(Phase::Uploading)?;
+        // A prior CAS may still be in flight. Keep that uncertainty durable
+        // while repairing immutable objects and across upload failures.
+        if !previously_uncertain {
+            self.set_phase(Phase::Uploading)?;
+        }
         for campaign in pending
             .manifest
             .slots
@@ -1017,6 +1243,19 @@ impl Publisher {
         match source.commit_current(pending.expected_etag.as_deref(), &pending.wire) {
             Ok(()) => self.finish_readback(source, now),
             Err(StoreError::Conflict) => {
+                if previously_uncertain {
+                    // An earlier request can commit after the preflight read,
+                    // causing this retry to lose its CAS against our own wire.
+                    // An absent or different object does not prove that the
+                    // earlier request is no longer in flight.
+                    let current = self.read_remote(source, now)?;
+                    if let Some(object) = &current
+                        && object.bytes == pending.wire
+                    {
+                        return self.repair_committed(source, object, now);
+                    }
+                    return Err(Error::Store(StoreError::OutcomeUnknown));
+                }
                 self.set_phase(Phase::Conflict)?;
                 Err(Error::Store(StoreError::Conflict))
             }
@@ -1247,6 +1486,7 @@ impl Publisher {
         let plaintext = backup::open(bytes, passphrase)?;
         let mut snapshot: Snapshot =
             signed::strict_json(&plaintext, backup::LIMIT).map_err(Error::Invalid)?;
+        let multi_target = self.state.schema == 3 || snapshot.state.schema == 3;
         if snapshot.schema != 1
             || snapshot.key_id != self.key_id
             || self
@@ -1273,6 +1513,35 @@ impl Publisher {
         }
         snapshot.state.cleanup = None;
         self.validate_state_with_key(&snapshot.state, Some(&restored_key))?;
+        if !multi_target
+            && self.state.target.is_none()
+            && self.state.has_publication_evidence()
+            && !self.state.draft_only_recovery
+        {
+            return Err(Error::Invalid("legacy_target_unknown"));
+        }
+        if !multi_target
+            && self.state.target.is_some()
+            && self.state.target != snapshot.state.target
+        {
+            // A legacy draft-only backup has no target-specific publication evidence.
+            // Preserve the current target without attributing any historical release.
+            let draft_only = snapshot.state.target.is_none()
+                && snapshot.state.pending.is_none()
+                && snapshot.state.last_resolution.is_none()
+                && snapshot.state.history.is_empty()
+                && snapshot
+                    .state
+                    .sequences
+                    .iter()
+                    .all(|sequence| sequence.highest == 0);
+            if !draft_only {
+                return Err(Error::Invalid("backup_target_mismatch"));
+            }
+            snapshot.state.schema = 2;
+            snapshot.state.target = self.state.target.clone();
+            snapshot.state.draft_only_recovery = false;
+        }
         if snapshot.assets.len() != snapshot.state.assets.len() {
             return Err(Error::Invalid("backup_asset_index"));
         }
@@ -1284,47 +1553,116 @@ impl Publisher {
             }
             ads::validate_image(&asset.bytes, &asset.asset).map_err(Error::Invalid)?;
         }
-        if let Some(local) = &self.state.last_resolution {
-            if snapshot
-                .state
-                .last_resolution
-                .as_ref()
-                .is_some_and(|restored| {
-                    encode(restored, STATE_LIMIT).ok() != encode(local, STATE_LIMIT).ok()
-                })
-            {
-                return Err(Error::ResolutionOccupied);
+        if multi_target {
+            // Credentials can exist before a target or trust record is saved.
+            // Only an explicit vault not-found result is safe to treat as empty.
+            let local = vault.load_optional(&self.generation)?;
+            if self.state.target.is_some() && local.is_none() {
+                return Err(Error::SecretUnavailable);
             }
-            snapshot.state.last_resolution = Some(local.clone());
-        }
-        // Keep the local replay watermark when restoring an older backup.
-        for index in 0..2 {
-            let local = &self.state.sequences[index];
-            if local.highest >= snapshot.state.sequences[index].highest {
-                snapshot.state.sequences[index] = local.clone();
+            if let Some(local) = local {
+                if local.signing_seed != snapshot.secrets.signing_seed {
+                    return Err(Error::Invalid("backup_secret_key_mismatch"));
+                }
+                for (current, restored) in [
+                    (
+                        &local.preview_credential,
+                        &mut snapshot.secrets.preview_credential,
+                    ),
+                    (
+                        &local.production_credential,
+                        &mut snapshot.secrets.production_credential,
+                    ),
+                ] {
+                    if !current.is_empty() && !restored.is_empty() && current != restored {
+                        return Err(Error::Invalid("backup_credential_conflict"));
+                    }
+                    if restored.is_empty() {
+                        restored.clone_from(current);
+                    }
+                }
+            }
+            for asset in &self.state.assets {
+                let bytes = self.image_bytes(asset)?;
+                if let Some(existing) = snapshot
+                    .assets
+                    .iter()
+                    .find(|existing| existing.asset.sha256 == asset.sha256)
+                {
+                    if existing.asset != *asset || existing.bytes != bytes {
+                        return Err(Error::Invalid("backup_asset_conflict"));
+                    }
+                } else {
+                    snapshot.state.assets.push(asset.clone());
+                    snapshot.assets.push(BackupAsset {
+                        asset: asset.clone(),
+                        bytes,
+                    });
+                }
+            }
+            target_backup::merge(self, &mut snapshot.state)?;
+        } else {
+            if let Some(local) = &self.state.last_resolution {
+                if snapshot
+                    .state
+                    .last_resolution
+                    .as_ref()
+                    .is_some_and(|restored| {
+                        encode(restored, STATE_LIMIT).ok() != encode(local, STATE_LIMIT).ok()
+                    })
+                {
+                    return Err(Error::ResolutionOccupied);
+                }
+                snapshot.state.last_resolution = Some(local.clone());
+            }
+            // Keep the local replay watermark when restoring an older backup.
+            for index in 0..2 {
+                let local = &self.state.sequences[index];
+                let restored = &snapshot.state.sequences[index];
+                if local.highest != 0
+                    && local.highest == restored.highest
+                    && local.payload_hash != restored.payload_hash
+                {
+                    return Err(Error::Invalid("backup_sequence_conflict"));
+                }
+                if local.highest >= snapshot.state.sequences[index].highest {
+                    snapshot.state.sequences[index] = local.clone();
+                }
             }
         }
+        let draft_only_recovery = self.state.target.is_none()
+            && (!self.state.has_publication_evidence() || self.state.draft_only_recovery)
+            && snapshot.state.target.is_none()
+            && (!snapshot.state.has_publication_evidence() || snapshot.state.draft_only_recovery);
         snapshot.state.recovery_required = true;
+        if draft_only_recovery {
+            snapshot.state.schema = 2;
+            snapshot.state.draft_only_recovery = true;
+        }
         if snapshot.state.pending.is_none() {
             // A previous installation may already have used this draft's ID.
             snapshot.state.draft.release_id = random_id()?;
-            snapshot.state.draft.content_revision = snapshot
-                .state
-                .sequences
-                .iter()
-                .map(|sequence| sequence.highest)
-                .chain([snapshot.state.draft.content_revision])
-                .max()
-                .unwrap_or_default()
-                .checked_add(1)
-                .ok_or(Error::Invalid("revision_overflow"))?;
+            snapshot.state.draft.content_revision =
+                snapshot
+                    .state
+                    .sequences
+                    .iter()
+                    .map(|sequence| sequence.highest)
+                    .chain(snapshot.state.other_targets.values().flat_map(|ledger| {
+                        ledger.sequences.iter().map(|sequence| sequence.highest)
+                    }))
+                    .chain([snapshot.state.draft.content_revision])
+                    .max()
+                    .unwrap_or_default()
+                    .checked_add(1)
+                    .ok_or(Error::Invalid("revision_overflow"))?;
         }
         self.validate_state_with_key(&snapshot.state, Some(&restored_key))?;
         let generation = random_id()?;
         Self::write_generation(&self.root, &generation, &snapshot.state, &snapshot.assets)?;
         // Both old active state and old Keychain item remain valid on any failure.
         // New files and the new secret item become reachable in one pointer rename.
-        vault.store(&generation, &snapshot.secrets)?;
+        vault.create(&generation, &snapshot.secrets)?;
         if self.public_key.is_none() {
             storage::atomic_write(
                 &self.root.join("trust.json"),
@@ -1363,6 +1701,7 @@ impl Publisher {
         assets: &[BackupAsset],
     ) -> Result<()> {
         let directory = root.join(generation);
+        fs::DirBuilder::new().mode(0o700).create(&directory)?;
         storage::create_private_directory(&directory)?;
         let asset_directory = directory.join("assets");
         storage::create_private_directory(&asset_directory)?;

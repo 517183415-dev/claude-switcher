@@ -8,7 +8,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     ffi::CString,
     fs::{self, File, OpenOptions},
-    io::Read,
+    io::{Read, Write},
     os::fd::{AsRawFd, FromRawFd},
     os::unix::fs::{MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
@@ -19,10 +19,33 @@ use switcher_domain::ads::{AdChannel, AdManifest, ImageAsset};
 pub(crate) const DEFAULT_RETAIN: usize = 128;
 pub(super) const CHECKPOINT_FILE: &str = "cleanup-checkpoint.json";
 
+#[cfg(test)]
+thread_local! {
+    pub(super) static ARCHIVE_ENUM_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = std::cell::RefCell::new(None);
+    pub(super) static CREATE_CHILD_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = std::cell::RefCell::new(None);
+    pub(super) static CREATE_CHILD_SYNC_FAULT: std::cell::Cell<u8> = const { std::cell::Cell::new(0) };
+    pub(super) static CREATE_FILE_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = std::cell::RefCell::new(None);
+    pub(super) static CREATE_FILE_SYNC_FAULT: std::cell::Cell<u8> = const { std::cell::Cell::new(0) };
+}
+
 /// The production adapter must hold ONE publication-tree lifecycle lock for
 /// this pair and the entire preview/commit operation. Never open two stores.
 pub(crate) trait FixedCurrents {
+    fn target_identity(&self) -> Option<String> {
+        None
+    }
     fn read_currents(&mut self) -> std::result::Result<[Option<Object>; 2], StoreError>;
+    /// Implementations returning true must hold every target's publication lock
+    /// for the entire maintenance call, and return exactly the requested targets.
+    fn supports_multiple_targets(&self) -> bool {
+        false
+    }
+    fn read_other_currents(
+        &mut self,
+        _targets: &[String],
+    ) -> Result<BTreeMap<String, [Option<Object>; 2]>> {
+        Err(Error::Invalid("multi_target_cleanup_not_supported"))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -109,12 +132,14 @@ pub(crate) struct CleanupPreview {
     pub candidate_bytes: u64,
     pub pending_blocks_commit: bool,
     pub currents: [Option<CurrentStamp>; 2],
+    pub other_currents: BTreeMap<String, [Option<CurrentStamp>; 2]>,
     pub previous_checkpoint: Option<FileStamp>,
 }
 
 pub(super) struct Retention {
     pub preview: CleanupPreview,
     pub sequences: [signed::Sequence; 2],
+    pub other_sequences: BTreeMap<String, [signed::Sequence; 2]>,
 }
 
 fn registered<'a>(publisher: &'a Publisher, asset: &ImageAsset) -> Result<&'a ImageAsset> {
@@ -154,6 +179,29 @@ fn protect(
     Ok(())
 }
 
+fn verified_current(
+    publisher: &Publisher,
+    object: &Object,
+    channel: AdChannel,
+    now: u64,
+) -> Result<(AdManifest, String, CurrentStamp)> {
+    if object.etag.is_empty()
+        || object.etag.len() > 1024
+        || object.etag.chars().any(char::is_control)
+    {
+        return Err(Error::Invalid("cleanup_current_etag"));
+    }
+    let (manifest, hash) = publisher.authenticated_manifest(&object.bytes, channel, now)?;
+    Ok((
+        manifest,
+        hash,
+        CurrentStamp {
+            wire_hash: signed::digest(&object.bytes),
+            etag: object.etag.clone(),
+        },
+    ))
+}
+
 /// Read-only index planning. It deliberately does not open asset files or
 /// export a backup: malformed material must not make index repair impossible.
 pub(super) fn retention(
@@ -178,22 +226,13 @@ pub(super) fn retention(
             }
             continue;
         };
-        if object.etag.is_empty()
-            || object.etag.len() > 1024
-            || object.etag.chars().any(char::is_control)
-        {
-            return Err(Error::Invalid("cleanup_current_etag"));
-        }
         // Authentication uses issued_at for expiry validation, but rejects a
         // future issue time. Expired/disabled current still pins its references.
-        let (manifest, hash) = publisher.authenticated_manifest(&object.bytes, channel, now)?;
+        let (manifest, hash, stamp) = verified_current(publisher, object, channel, now)?;
         sequences[index]
             .remember(manifest.content_revision, hash.clone())
             .map_err(Error::Invalid)?;
-        currents[index] = Some(CurrentStamp {
-            wire_hash: signed::digest(&object.bytes),
-            etag: object.etag.clone(),
-        });
+        currents[index] = Some(stamp);
         protect(
             publisher,
             &manifest,
@@ -259,6 +298,45 @@ pub(super) fn retention(
             protect(publisher, &current, "resolution_current", &mut protected)?;
         }
     }
+    // Inactive targets retain all their history and resolution evidence. The
+    // active target's retention options cannot release another target's data.
+    for ledger in publisher.state.other_targets.values() {
+        for record in &ledger.history {
+            protect(
+                publisher,
+                &record.manifest,
+                "inactive_history",
+                &mut protected,
+            )?;
+        }
+        if let Some(pending) = &ledger.pending {
+            protect(
+                publisher,
+                &pending.manifest,
+                "inactive_pending",
+                &mut protected,
+            )?;
+        }
+        if let Some(resolution) = &ledger.last_resolution {
+            protect(
+                publisher,
+                &resolution.pending.manifest,
+                "inactive_resolution_pending",
+                &mut protected,
+            )?;
+            let (current, _) = publisher.authenticated_manifest(
+                &resolution.current_wire,
+                resolution.pending.manifest.channel,
+                resolution.resolved_at,
+            )?;
+            protect(
+                publisher,
+                &current,
+                "inactive_resolution_current",
+                &mut protected,
+            )?;
+        }
+    }
     let candidates: Vec<_> = publisher
         .state
         .assets
@@ -277,8 +355,14 @@ pub(super) fn retention(
         protected_assets: protected.into_values().collect(),
         candidate_bytes: candidates.iter().map(|asset| u64::from(asset.bytes)).sum(),
         candidates,
-        pending_blocks_commit: publisher.state.pending.is_some(),
+        pending_blocks_commit: publisher.state.pending.is_some()
+            || publisher
+                .state
+                .other_targets
+                .values()
+                .any(|ledger| ledger.pending.is_some()),
         currents,
+        other_currents: BTreeMap::new(),
         previous_checkpoint: None,
     };
     // Hash the existing State separately to avoid doubling the bounded JSON
@@ -288,7 +372,11 @@ pub(super) fn retention(
         &(&publisher.generation, state_hash, &preview),
         STATE_LIMIT,
     )?);
-    Ok(Retention { preview, sequences })
+    Ok(Retention {
+        preview,
+        sequences,
+        other_sequences: BTreeMap::new(),
+    })
 }
 
 /// GC-only inspection. No recursive paths, image decode, or deletion. The
@@ -298,14 +386,169 @@ pub(super) fn inspect_candidate(directory: &Path, asset: &ImageAsset) -> Result<
     inspect_at(&PrivateDirectory::open(directory)?, &asset.sha256, asset)
 }
 
-struct PrivateDirectory {
+pub(super) struct PrivateDirectory {
     file: File,
     path: PathBuf,
     dev: u64,
     ino: u64,
 }
 impl PrivateDirectory {
-    fn open(path: &Path) -> Result<Self> {
+    #[cfg(test)]
+    pub(super) fn replace_file(&self, name: &str, bytes: &[u8]) -> Result<()> {
+        Self::file_component(name)?;
+        self.check()?;
+        storage::atomic_write_in(&self.file, &self.path.join(name), bytes)?;
+        self.check()
+    }
+    fn file_component(name: &str) -> Result<CString> {
+        if name.is_empty()
+            || name.len() > 100
+            || name == "."
+            || name == ".."
+            || !name
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'.')
+        {
+            return Err(Error::Invalid("archive_file_name"));
+        }
+        CString::new(name).map_err(|_| Error::Invalid("archive_file_name"))
+    }
+
+    pub(super) fn create_verified_file(
+        &self,
+        name: &str,
+        bytes: &[u8],
+        limit: usize,
+    ) -> Result<()> {
+        let component = Self::file_component(name)?;
+        if bytes.len() > limit {
+            return Err(Error::Invalid("archive_file_size"));
+        }
+        self.check()?;
+        let fd = unsafe {
+            libc::openat(
+                self.file.as_raw_fd(),
+                component.as_ptr(),
+                libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+                0o600,
+            )
+        };
+        if fd < 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let mut file = unsafe { File::from_raw_fd(fd) };
+        let metadata = file.metadata()?;
+        if !metadata.is_file()
+            || metadata.uid() != unsafe { libc::geteuid() }
+            || metadata.mode() & 0o7777 != 0o600
+            || metadata.nlink() != 1
+        {
+            return Err(Error::Invalid("archive_file_metadata"));
+        }
+        file.write_all(bytes)?;
+        #[cfg(test)]
+        if CREATE_FILE_SYNC_FAULT.with(|fault| fault.get() == 1) {
+            CREATE_FILE_SYNC_FAULT.with(|fault| fault.set(0));
+            return Err(std::io::Error::other("synthetic file sync failure").into());
+        }
+        file.sync_all()?;
+        #[cfg(test)]
+        CREATE_FILE_HOOK.with(|slot| {
+            if let Some(hook) = slot.borrow_mut().take() {
+                hook();
+            }
+        });
+        if self.read_archive_file(name, limit)? != bytes {
+            return Err(Error::Invalid("archive_file_changed"));
+        }
+        let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+        if unsafe {
+            libc::fstatat(
+                self.file.as_raw_fd(),
+                component.as_ptr(),
+                stat.as_mut_ptr(),
+                libc::AT_SYMLINK_NOFOLLOW,
+            )
+        } != 0
+        {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let stat = unsafe { stat.assume_init() };
+        if (stat.st_dev as u64, stat.st_ino) != (metadata.dev(), metadata.ino()) {
+            return Err(Error::Invalid("archive_file_changed"));
+        }
+        #[cfg(test)]
+        if CREATE_FILE_SYNC_FAULT.with(|fault| fault.replace(0) == 2) {
+            return Err(std::io::Error::other("synthetic directory sync failure").into());
+        }
+        self.file.sync_all()?;
+        self.check()?;
+        Ok(())
+    }
+    fn component(name: &str) -> Result<CString> {
+        if name.is_empty()
+            || name.len() > 100
+            || name == "."
+            || name == ".."
+            || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+        {
+            return Err(Error::Invalid("archive_directory_name"));
+        }
+        CString::new(name).map_err(|_| Error::Invalid("archive_directory_name"))
+    }
+
+    pub(super) fn create_child(&self, name: &str) -> Result<Self> {
+        let component = Self::component(name)?;
+        self.check()?;
+        if unsafe { libc::mkdirat(self.file.as_raw_fd(), component.as_ptr(), 0o700) } != 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+        if unsafe {
+            libc::fstatat(
+                self.file.as_raw_fd(),
+                component.as_ptr(),
+                stat.as_mut_ptr(),
+                libc::AT_SYMLINK_NOFOLLOW,
+            )
+        } != 0
+        {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let stat = unsafe { stat.assume_init() };
+        if stat.st_mode & libc::S_IFMT != libc::S_IFDIR
+            || stat.st_uid != unsafe { libc::geteuid() }
+            || stat.st_mode & 0o7777 != 0o700
+            || stat.st_dev as u64 != self.dev
+        {
+            return Err(Error::Invalid("archive_directory_metadata"));
+        }
+        #[cfg(test)]
+        CREATE_CHILD_HOOK.with(|slot| {
+            if let Some(hook) = slot.borrow_mut().take() {
+                hook();
+            }
+        });
+        let child = self.child(name)?;
+        if (child.dev, child.ino) != (stat.st_dev as u64, stat.st_ino) {
+            return Err(Error::Invalid("archive_directory_changed"));
+        }
+        #[cfg(test)]
+        if CREATE_CHILD_SYNC_FAULT.with(|fault| fault.get() == 1) {
+            CREATE_CHILD_SYNC_FAULT.with(|fault| fault.set(0));
+            return Err(std::io::Error::other("synthetic directory sync failure").into());
+        }
+        child.file.sync_all()?;
+        #[cfg(test)]
+        if CREATE_CHILD_SYNC_FAULT.with(|fault| fault.replace(0) == 2) {
+            return Err(std::io::Error::other("synthetic directory sync failure").into());
+        }
+        self.file.sync_all()?;
+        self.check()?;
+        child.check()?;
+        Ok(child)
+    }
+    pub(super) fn open(path: &Path) -> Result<Self> {
         storage::validate_no_symlinks(path)?;
         let file = OpenOptions::new()
             .read(true)
@@ -327,7 +570,7 @@ impl PrivateDirectory {
         directory.check()?;
         Ok(directory)
     }
-    fn check(&self) -> Result<()> {
+    pub(super) fn check(&self) -> Result<()> {
         storage::validate_no_symlinks(&self.path)?;
         let actual = fs::symlink_metadata(&self.path)?;
         if !actual.is_dir()
@@ -338,6 +581,190 @@ impl PrivateDirectory {
             return Err(Error::Invalid("cleanup_directory_changed"));
         }
         Ok(())
+    }
+
+    pub(super) fn child(&self, name: &str) -> Result<Self> {
+        let component = Self::component(name)?;
+        self.check()?;
+        let fd = unsafe {
+            libc::openat(
+                self.file.as_raw_fd(),
+                component.as_ptr(),
+                libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+            )
+        };
+        if fd < 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let file = unsafe { File::from_raw_fd(fd) };
+        let metadata = file.metadata()?;
+        if !metadata.is_dir()
+            || metadata.uid() != unsafe { libc::geteuid() }
+            || metadata.mode() & 0o7777 != 0o700
+        {
+            return Err(Error::Invalid("archive_directory_metadata"));
+        }
+        let child = Self {
+            file,
+            path: self.path.join(name),
+            dev: metadata.dev(),
+            ino: metadata.ino(),
+        };
+        self.check()?;
+        child.check()?;
+        Ok(child)
+    }
+
+    pub(super) fn names(&self, limit: usize) -> Result<Vec<String>> {
+        self.check()?;
+        let before = self.file.metadata()?;
+        let first = self.names_once(limit)?;
+        let second = self.names_once(limit)?;
+        let after = self.file.metadata()?;
+        self.check()?;
+        let stamp = |m: &fs::Metadata| {
+            (
+                m.dev(),
+                m.ino(),
+                m.uid(),
+                m.mode(),
+                m.mtime(),
+                m.mtime_nsec(),
+                m.ctime(),
+                m.ctime_nsec(),
+            )
+        };
+        if stamp(&before) != stamp(&after) || first != second {
+            return Err(Error::Invalid("archive_directory_changed"));
+        }
+        Ok(first)
+    }
+
+    fn names_once(&self, limit: usize) -> Result<Vec<String>> {
+        self.check()?;
+        let dot = c".";
+        // A separate file description gives the enumeration its own cursor.
+        let fd = unsafe {
+            libc::openat(
+                self.file.as_raw_fd(),
+                dot.as_ptr(),
+                libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+            )
+        };
+        if fd < 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+        let dir = unsafe { libc::fdopendir(fd) };
+        if dir.is_null() {
+            let error = std::io::Error::last_os_error();
+            unsafe {
+                libc::close(fd);
+            }
+            return Err(error.into());
+        }
+        struct Directory(*mut libc::DIR);
+        impl Drop for Directory {
+            fn drop(&mut self) {
+                unsafe {
+                    libc::closedir(self.0);
+                }
+            }
+        }
+        let dir = Directory(dir);
+        let mut names = Vec::new();
+        loop {
+            #[cfg(target_os = "macos")]
+            let errno = unsafe { libc::__error() };
+            #[cfg(not(target_os = "macos"))]
+            let errno = unsafe { libc::__errno_location() };
+            unsafe {
+                *errno = 0;
+            }
+            let entry = unsafe { libc::readdir(dir.0) };
+            if entry.is_null() {
+                if unsafe { *errno } != 0 {
+                    return Err(std::io::Error::last_os_error().into());
+                }
+                break;
+            }
+            let name = unsafe { std::ffi::CStr::from_ptr((*entry).d_name.as_ptr()) };
+            let name = name
+                .to_str()
+                .map_err(|_| Error::Invalid("archive_file_name"))?;
+            if name == "." || name == ".." {
+                continue;
+            }
+            if names.len() >= limit {
+                return Err(Error::Invalid("archive_entry_limit"));
+            }
+            names.push(name.to_owned());
+        }
+        self.check()?;
+        names.sort();
+        #[cfg(test)]
+        ARCHIVE_ENUM_HOOK.with(|hook| {
+            if let Some(action) = hook.borrow_mut().take() {
+                action();
+            }
+        });
+        Ok(names)
+    }
+
+    pub(super) fn read_archive_file(&self, name: &str, limit: usize) -> Result<Vec<u8>> {
+        let name = Self::file_component(name)?;
+        self.check()?;
+        let open = || -> Result<File> {
+            let fd = unsafe {
+                libc::openat(
+                    self.file.as_raw_fd(),
+                    name.as_ptr(),
+                    libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC,
+                )
+            };
+            if fd < 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+            Ok(unsafe { File::from_raw_fd(fd) })
+        };
+        let file = open()?;
+        let before = file.metadata()?;
+        if !before.is_file()
+            || before.uid() != unsafe { libc::geteuid() }
+            || before.nlink() != 1
+            || before.mode() & 0o7777 != 0o600
+            || before.len() > limit as u64
+        {
+            return Err(Error::Invalid("archive_file_metadata"));
+        }
+        let mut bytes = Vec::new();
+        let read_limit = (limit as u64)
+            .checked_add(1)
+            .ok_or(Error::Invalid("archive_file_size"))?;
+        (&file).take(read_limit).read_to_end(&mut bytes)?;
+        if bytes.len() > limit {
+            return Err(Error::Invalid("archive_file_size"));
+        }
+        let stamp = |m: &fs::Metadata| {
+            (
+                m.dev(),
+                m.ino(),
+                m.uid(),
+                m.mode(),
+                m.nlink(),
+                m.len(),
+                m.mtime(),
+                m.mtime_nsec(),
+                m.ctime(),
+                m.ctime_nsec(),
+            )
+        };
+        if stamp(&before) != stamp(&file.metadata()?)
+            || stamp(&before) != stamp(&open()?.metadata()?)
+        {
+            return Err(Error::Invalid("archive_file_changed"));
+        }
+        self.check()?;
+        Ok(bytes)
     }
 }
 fn relative_name(name: &str) -> Result<CString> {
@@ -665,6 +1092,92 @@ impl Publisher {
         )))
     }
 
+    fn require_cleanup_target(&self, source: &dyn FixedCurrents) -> Result<()> {
+        if !self.state.other_targets.is_empty() && !source.supports_multiple_targets() {
+            return Err(Error::Invalid("multi_target_cleanup_not_supported"));
+        }
+        if self.state.target.is_none() && self.state.has_publication_evidence() {
+            return Err(Error::Invalid("legacy_cleanup_target_unknown"));
+        }
+        if let Some(target) = &self.state.target
+            && source.target_identity().as_ref() != Some(target)
+        {
+            return Err(Error::Invalid("publisher_target_mismatch"));
+        }
+        Ok(())
+    }
+
+    fn read_cleanup_retention(
+        &self,
+        source: &mut dyn FixedCurrents,
+        options: CleanupOptions,
+        now: u64,
+    ) -> Result<Retention> {
+        self.require_cleanup_target(source)?;
+        let targets: Vec<_> = self.state.other_targets.keys().cloned().collect();
+        let other_objects = if targets.is_empty() {
+            BTreeMap::new()
+        } else {
+            source.read_other_currents(&targets)?
+        };
+        if other_objects.len() != targets.len()
+            || targets
+                .iter()
+                .any(|target| !other_objects.contains_key(target))
+        {
+            return Err(Error::Invalid("cleanup_target_set_mismatch"));
+        }
+        let mut result = retention(self, &source.read_currents()?, options, now)?;
+        let mut protected: BTreeMap<_, _> = result
+            .preview
+            .protected_assets
+            .into_iter()
+            .map(|item| (item.asset.sha256.clone(), item))
+            .collect();
+        for (target, objects) in other_objects {
+            let ledger = &self.state.other_targets[&target];
+            let mut sequences = ledger.sequences.clone();
+            let mut stamps = [None, None];
+            for channel in [AdChannel::Preview, AdChannel::Production] {
+                let index = channel_index(channel);
+                let Some(object) = &objects[index] else {
+                    if sequences[index].highest != 0 {
+                        return Err(Error::Invalid("cleanup_current_missing"));
+                    }
+                    continue;
+                };
+                let (manifest, hash, stamp) = verified_current(self, object, channel, now)?;
+                sequences[index]
+                    .remember(manifest.content_revision, hash.clone())
+                    .map_err(Error::Invalid)?;
+                for record in &ledger.history {
+                    if record.manifest.channel == channel
+                        && record.manifest.release_id == manifest.release_id
+                        && (record.payload_hash != hash || record.manifest != manifest)
+                    {
+                        return Err(Error::Invalid("cleanup_current_history_conflict"));
+                    }
+                }
+                protect(self, &manifest, "inactive_current", &mut protected)?;
+                stamps[index] = Some(stamp);
+            }
+            result.other_sequences.insert(target.clone(), sequences);
+            result.preview.other_currents.insert(target, stamps);
+        }
+        result
+            .preview
+            .candidates
+            .retain(|asset| !protected.contains_key(&asset.sha256));
+        result.preview.candidate_bytes = result
+            .preview
+            .candidates
+            .iter()
+            .map(|asset| u64::from(asset.bytes))
+            .sum();
+        result.preview.protected_assets = protected.into_values().collect();
+        Ok(result)
+    }
+
     fn prepare_cleanup(
         &self,
         source: &mut dyn FixedCurrents,
@@ -675,7 +1188,7 @@ impl Publisher {
         if self.state.cleanup.is_some() {
             return Err(Error::Invalid("cleanup_finish_existing_batch"));
         }
-        let mut result = retention(self, &source.read_currents()?, options, now)?;
+        let mut result = self.read_cleanup_retention(source, options, now)?;
         result.preview.previous_checkpoint = self.checkpoint()?.map(|(_, stamp)| stamp);
         result.preview.digest.clear();
         result.preview.digest = signed::digest(&encode(
@@ -730,6 +1243,12 @@ impl Publisher {
         next.assets
             .retain(|asset| !candidates.contains(&asset.sha256));
         next.sequences = prepared.sequences;
+        for (target, sequences) in prepared.other_sequences {
+            next.other_targets
+                .get_mut(&target)
+                .ok_or(Error::Invalid("cleanup_target_set_mismatch"))?
+                .sequences = sequences;
+        }
         if preview.options.release_resolution {
             next.last_resolution = None;
         }
@@ -783,15 +1302,15 @@ impl Publisher {
 
     pub(crate) fn gc_preview(&self, source: &mut dyn FixedCurrents, now: u64) -> Result<GcPreview> {
         self.cleanup_lock()?;
+        self.require_cleanup_target(source)?;
         self.bound_checkpoint()?;
         let batch = self
             .state
             .cleanup
             .as_ref()
             .ok_or(Error::Invalid("cleanup_batch_missing"))?;
-        let references = retention(
-            self,
-            &source.read_currents()?,
+        let references = self.read_cleanup_retention(
+            source,
             CleanupOptions {
                 retain: HISTORY_LIMIT,
                 release_resolution: false,
@@ -814,7 +1333,7 @@ impl Publisher {
             referenced: vec![],
             blocked_reasons: vec![],
             eligible_bytes: 0,
-            pending_blocks_commit: self.state.pending.is_some(),
+            pending_blocks_commit: references.preview.pending_blocks_commit,
             identities: vec![],
         };
         let assets_directory = PrivateDirectory::open(&self.directory().join("assets"))?;
@@ -888,6 +1407,7 @@ impl Publisher {
                 &self.generation,
                 signed::digest(&encode(&self.state, STATE_LIMIT)?),
                 references.preview.currents,
+                references.preview.other_currents,
                 &preview,
                 &preview.identities,
                 self.checkpoint()?.map(|(_, stamp)| stamp),
@@ -946,9 +1466,9 @@ impl Publisher {
             self.cleanup_lock()?;
             // Both lifecycle locks remain held. Authenticate again before each
             // candidate, including a slot left by an interrupted earlier run.
-            let live = retention(
-                self,
-                &source.read_currents()?,
+            self.require_cleanup_target(source)?;
+            let live = self.read_cleanup_retention(
+                source,
                 CleanupOptions {
                     retain: HISTORY_LIMIT,
                     release_resolution: false,

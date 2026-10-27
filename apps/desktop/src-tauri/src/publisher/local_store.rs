@@ -4,9 +4,10 @@ use super::{
     protocol::{self, Object, ObjectStore, StoreError},
 };
 use std::{
+    collections::{BTreeMap, BTreeSet},
     ffi::CString,
     fs, io,
-    os::unix::ffi::OsStrExt,
+    os::unix::{ffi::OsStrExt, fs::MetadataExt},
     path::{Path, PathBuf},
 };
 use switcher_core::{
@@ -68,31 +69,7 @@ impl LocalObjectStore {
             return Err(StoreError::Permission);
         }
         validate_directory(&self.root).map_err(|_| StoreError::Permission)?;
-        let prefix = format!("{}/", protocol::prefix(self.channel));
-        let suffix = key.strip_prefix(&prefix).ok_or(StoreError::Permission)?;
-        let valid = suffix == "current.json"
-            || suffix.strip_prefix("assets/").is_some_and(|name| {
-                name.rsplit_once('.').is_some_and(|(hash, extension)| {
-                    hash.len() == 64
-                        && hash
-                            .bytes()
-                            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-                        && matches!(extension, "png" | "jpg")
-                })
-            })
-            || suffix
-                .strip_prefix("versions/")
-                .and_then(|name| name.strip_suffix(".json"))
-                .is_some_and(|id| {
-                    !id.is_empty()
-                        && id.len() <= 128
-                        && id
-                            .bytes()
-                            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_'))
-                });
-        if !valid {
-            return Err(StoreError::Permission);
-        }
+        protocol::validate_key(self.channel, key)?;
         let path = self.root.join(key);
         validate_directory(&self.root.join(protocol::prefix(self.channel)))
             .map_err(|_| StoreError::Permission)?;
@@ -116,6 +93,18 @@ impl LocalObjectStore {
     }
 }
 impl ObjectStore for LocalObjectStore {
+    fn target_identity(&self) -> Option<String> {
+        if !self.lock.protects(&self.root) {
+            return None;
+        }
+        validate_directory(&self.root).ok()?;
+        let root = self.root.canonicalize().ok()?;
+        let metadata = fs::metadata(&root).ok()?;
+        let mut identity = root.as_os_str().as_bytes().to_vec();
+        identity.extend_from_slice(&metadata.dev().to_be_bytes());
+        identity.extend_from_slice(&metadata.ino().to_be_bytes());
+        Some(format!("local:{}", signed::digest(&identity)))
+    }
     fn channel(&self) -> AdChannel {
         self.channel
     }
@@ -200,6 +189,9 @@ impl ObjectStore for LocalObjectStore {
 }
 
 impl super::cleanup::FixedCurrents for LocalObjectStore {
+    fn target_identity(&self) -> Option<String> {
+        ObjectStore::target_identity(self)
+    }
     fn read_currents(&mut self) -> std::result::Result<[Option<Object>; 2], StoreError> {
         // This one object retains the publication-tree lifecycle lock for both
         // reads and for the caller's complete maintenance operation.
@@ -213,5 +205,69 @@ impl super::cleanup::FixedCurrents for LocalObjectStore {
         })();
         self.channel = original;
         result
+    }
+}
+
+/// Holds every local publication lock until the entire cleanup operation ends.
+/// Callers supply already opened stores from trusted application configuration.
+#[allow(dead_code)]
+pub(crate) struct MultiLocalSources {
+    active: LocalObjectStore,
+    others: BTreeMap<String, LocalObjectStore>,
+}
+
+#[allow(dead_code)]
+impl MultiLocalSources {
+    pub(crate) fn new(active: LocalObjectStore, others: Vec<LocalObjectStore>) -> Result<Self> {
+        let active_id = ObjectStore::target_identity(&active)
+            .ok_or(Error::Invalid("publisher_target_unavailable"))?;
+        let mut indexed = BTreeMap::new();
+        for source in others {
+            let identity = ObjectStore::target_identity(&source)
+                .ok_or(Error::Invalid("publisher_target_unavailable"))?;
+            if identity == active_id || indexed.insert(identity, source).is_some() {
+                return Err(Error::Invalid("cleanup_duplicate_target"));
+            }
+        }
+        Ok(Self {
+            active,
+            others: indexed,
+        })
+    }
+}
+
+impl super::cleanup::FixedCurrents for MultiLocalSources {
+    fn target_identity(&self) -> Option<String> {
+        ObjectStore::target_identity(&self.active)
+    }
+    fn read_currents(&mut self) -> std::result::Result<[Option<Object>; 2], StoreError> {
+        super::cleanup::FixedCurrents::read_currents(&mut self.active)
+    }
+    fn supports_multiple_targets(&self) -> bool {
+        true
+    }
+    fn read_other_currents(
+        &mut self,
+        targets: &[String],
+    ) -> Result<BTreeMap<String, [Option<Object>; 2]>> {
+        if targets.len() != self.others.len()
+            || targets.iter().collect::<BTreeSet<_>>().len() != targets.len()
+            || targets
+                .iter()
+                .any(|target| !self.others.contains_key(target))
+        {
+            return Err(Error::Invalid("cleanup_target_set_mismatch"));
+        }
+        let mut result = BTreeMap::new();
+        for (identity, source) in &mut self.others {
+            if ObjectStore::target_identity(source).as_ref() != Some(identity) {
+                return Err(Error::Invalid("publisher_target_mismatch"));
+            }
+            result.insert(
+                identity.clone(),
+                super::cleanup::FixedCurrents::read_currents(source)?,
+            );
+        }
+        Ok(result)
     }
 }

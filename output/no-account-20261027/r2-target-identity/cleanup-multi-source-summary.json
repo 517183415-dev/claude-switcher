@@ -1,0 +1,13 @@
+{
+  "scope": "synthetic multi-target sources; no production multi-target adapter",
+  "cleanup_suite": "39 passed before final test extension",
+  "extended_gc_test": "1 passed",
+  "clippy": "exit 0; 7 dead-code warnings",
+  "sha256": {
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "4af63fae9c65dc91190cdd3eda4e49335a678f2551ade5253505b6f2c8b40f2a",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "b1aa3374636d17fbc80e3ac8c248ddd4b0d8a46cb15baa3b07238a62661b1749",
+    "output/no-account-20261027/r2-target-identity/cleanup-multi-source-suite.log": "28b50aef3d2a3af93c932a485999d68c572ee71bcbb3860ece58c781bfc76761",
+    "output/no-account-20261027/r2-target-identity/cleanup-targets-gc.log": "575193457c758cd59fae0d87e59e518652c6500a92b1ae273c379b5a729a0b22",
+    "output/no-account-20261027/r2-target-identity/cleanup-multi-source-clippy.log": "90d6899dc16569013e716cec7dad6e952fd84a36b0fb39651c315343557fdf6a"
+  }
+}

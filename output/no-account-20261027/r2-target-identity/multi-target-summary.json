@@ -1,0 +1,18 @@
+{
+  "scope": "Synthetic local target switches; target selection has no product entry point and remote publishing remains disabled.",
+  "publisher_suite": {
+    "passed": 125,
+    "note": "Run before two additional target-ledger tests were added.",
+    "sha256": "c0eb6a56e86adc5ea712e53d5108b427e9f660308d91765b8a0be798cdbae593"
+  },
+  "target_ledger_tests": {
+    "passed": 5,
+    "sha256": "2113b3c1e5b4802c5907b1516edf4239b75061d658b995d3439548d05f3cdd33"
+  },
+  "clippy": {
+    "exit": 0,
+    "strict": false,
+    "warning_note": "Existing unused unfinished adapter and cleanup code warnings.",
+    "sha256": "19a71193bf51e6e24804a29ba1d805333211d88730b0f066da7fd87d2a217e9a"
+  }
+}

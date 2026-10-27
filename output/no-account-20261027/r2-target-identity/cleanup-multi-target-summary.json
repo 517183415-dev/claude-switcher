@@ -1,0 +1,13 @@
+{
+  "scope": "isolated synthetic cleanup tests; multi-target execution gate remains closed",
+  "targeted": "2 passed",
+  "cleanup_suite": "37 passed",
+  "regression_before_fix": "failed as expected",
+  "sha256": {
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "13bbd6a9a22e50cd4956bb1d5462452dc19df2d2e32d3f3a6b0e9806a3b8bbcb",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "9e063a6d6207d1a5b16e3140e594ac4721a3698851121fc31140fbea76d21e23",
+    "output/no-account-20261027/r2-target-identity/cleanup-inactive-red.log": "955637d048d9a9db01f9158fafaa9b9c62965080920c810ccfee4b7d32531d5b",
+    "output/no-account-20261027/r2-target-identity/cleanup-inactive-green.log": "dfc354cfb850171b400114c0cd3d7912cc2562959e87a91f49a385425ac2414f",
+    "output/no-account-20261027/r2-target-identity/cleanup-suite-final.log": "26814c22e3877a9e23e3d0e1d5eb26bed64c285ccfb9e9eead49df065abdffc8"
+  }
+}

@@ -1,10 +1,22 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：密钥恢复验证与本地阶段提交
+
+密钥已写入而信任文件缺失时，恢复仍须保护现有凭据。仅明确的密钥不存在结果可视为空；读取失败须中止恢复。[验证回执](../../output/no-account-20261027/r2-target-identity/orphan-vault-summary.json)复用 9 项回归和 141 项发布器测试通过日志，本轮只补 Clippy（退出码 0，7 条未使用代码警告）和图谱同步。真实 Keychain、远程 R2 及产品接线仍未验证。此提交保存当前本地实现，不表示远程发布功能完成。
+
 ## 2026-10-27：R2 发布目标标识
 
-`publisher/r2_store.rs` 从账号、存储桶、公开域名和渠道生成目标标识，凭据不参与计算。`publisher/mod.rs` 仍拒绝远程目标；预览与正式渠道的独立状态、备份恢复和接线尚未完成。[隔离测试摘要](../../output/no-account-20261027/r2-target-identity/summary.json)为 8 项通过，并记录本机原始日志的 SHA256。代码仍在未提交工作树中。
+`publisher/r2_store.rs` 从账号、存储桶、公开域名和渠道生成目标标识，凭据不参与计算。`publisher/mod.rs` 仍拒绝远程目标；产品接线及真实远端验证尚未完成。[隔离测试摘要](../../output/no-account-20261027/r2-target-identity/summary.json)为 8 项通过，并记录本机原始日志的 SHA256。代码仍在未提交工作树中。
 
-本轮 CodeGraph 同步后为 214 文件、5746 节点、23001 条边，索引完成且无待处理变更。
+`publisher/mod.rs` 在跨渠道未完成事务和备份版本冲突时停止；[发布器回归摘要](../../output/no-account-20261027/r2-target-identity/publisher-summary.json)记录 75 项通过。代码仍在未提交工作树中。
+
+工作树的 `TargetLedger` 为每个目标保存发布历史、水位和未完成事务，并保留共享草稿和素材。`publisher/target_backup.rs` 合并目标历史和水位；冲突时保留原状态。恢复后各目标需要重新核对。多目标备份的 7 项隔离回归通过，[测试摘要](../../output/no-account-20261027/r2-target-identity/backup-merge-summary.json)记录范围。`select_target` 尚无产品入口；多目标清理仍拒绝，远程发布仍被门禁阻止。
+
+`publisher/security.rs` 在恢复前区分密钥不存在和读取失败。即使信任文件尚未写入，已有密钥也不会被恢复静默替换。该边界已在合成密钥库中复现并修复；9 项多目标备份测试通过。真实 Keychain 权限和错误行为尚未实测。
+
+`publisher/cleanup.rs` 的引用计算保护其他目标的历史、待发布、恢复证据及经过验证的当前版本所引用的素材。多目标接口要求来源覆盖全部目标并在操作期间持有所有发布锁。`publisher/local_store.rs` 的 `MultiLocalSources` 可持有多个真实本地目录锁，并重新核对各目录身份；隔离测试覆盖目录替换、锁竞争和垃圾回收。产品命令尚未接入多目标来源，远程目标也尚无多目标锁方案；产品中的多目标清理门禁保持关闭。
+
+本轮 CodeGraph 同步后为 214 文件、5761 节点、23121 条边，索引完成且无待处理变更。
 
 ## 本轮增量：恢复门禁和隔离证据
 

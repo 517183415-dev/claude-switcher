@@ -1,0 +1,48 @@
+{
+  "scope": "多目标发布状态、备份恢复与密钥库缺失项保护；本地阶段验证",
+  "verification": {
+    "regression_red": "已复用失败复现日志",
+    "targeted_tests": "已复用 9 passed / 0 failed 日志",
+    "publisher_tests": "已复用 141 passed / 0 failed 日志；本轮未重复运行",
+    "clippy": "本轮执行，exit 0，7 条 dead_code 警告",
+    "codegraph": {
+      "state": "complete",
+      "pendingChanges": {
+        "added": 0,
+        "modified": 0,
+        "removed": 0
+      }
+    }
+  },
+  "evidence_boundary": "源码哈希于本次核对时采集，不冒充历史测试运行时采集；本轮未修改业务源码。",
+  "not_verified": [
+    "真实 Keychain 错误与权限行为",
+    "真实 R2 服务和生产接线",
+    "普通 App、动态 ACL、真实账号和长期运行"
+  ],
+  "source_sha256": {
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "apps/desktop/src-tauri/Cargo.toml": "3db210dee5d051ce7a85d896de5bc4178194298608a5816fbff96073f5926a60",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "4af63fae9c65dc91190cdd3eda4e49335a678f2551ade5253505b6f2c8b40f2a",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "74a3b755428d391d295efa9039986816968d0fb45c89d5ca391b73ab3978843f",
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "0931735a76a80479bd1d5ea7cdebe91e2a6cd665c0b31ecf6f0193b1a54edb96",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "fbd7c4a8affefebd45d391eba14ef045c44f7e06d8cc70495c4f819a3afcad3b",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "9f7350402151460d5639c81de6f717346d83ce4ee0b3bfb28b87832691c81e24",
+    "apps/desktop/src-tauri/src/publisher/security.rs": "f5d0fd699f0681692d745a8ee3bf2abb1000ca96dbc17c4a9579969f25435dfa",
+    "apps/desktop/src-tauri/src/publisher/test_support.rs": "1313e780ef10f442268b3355f93f53f26ed79111efe3619f82e47d45f3bca135",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "b89470a21d68369d8d415522fed0117eacc5f254ae4dbfcd114f2ca7e2755a2c",
+    "crates/switcher-core/src/storage.rs": "7ccb202c9e69d77415b1cc569972fdeea0160a32bf0b88e1fd1819f9ddb6bd1c",
+    "apps/desktop/src-tauri/src/publisher/migration.rs": "08c44f7cf7bdcc1b8b88640f8a27e7388b8cee10e4556782ea4100be9243e70b",
+    "apps/desktop/src-tauri/src/publisher/target_backup.rs": "ce2ad447bbfbc450930fcb000a598deb81ef9077aae4fbf026ef1af3528dc2f6",
+    "apps/desktop/src-tauri/src/publisher/r2_store.rs": "52321f922aff99d4316a93ec36551b76ff2d9d909c05fd7953a01fc680a7297f",
+    "apps/desktop/src-tauri/src/publisher/r2_store/tests.rs": "bdc414dc15efd933d149e1185e022d786982384f7fdc7d4097a2d37d02dda22d"
+  },
+  "sha256": {
+    "orphan-vault-red.log": "5164c15fd6472a945137eb15cae2bd265409b6f65385e4a9c60add4e976987b1",
+    "orphan-vault-green.log": "b7c3e65049bddb32d61ae1083e4d3d0251f5288859f00f7b446366293272099a",
+    "orphan-vault-suite.log": "d63d7b5eb81b4732844606708bd405894d0fa093fb267e4bb13a1d4c91332a4c",
+    "orphan-vault-clippy.log": "463e34bb54142e6b292d40032a2a63b37090bc5df65f42e5e7b80fc03e84aab4",
+    "orphan-vault-codegraph.json": "742d8e0c7471e203785bd4959bf1732876f2096a72b785f06fd2d791e1b218d8"
+  }
+}

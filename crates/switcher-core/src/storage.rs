@@ -325,8 +325,17 @@ impl std::error::Error for PostCommitError {
 
 /// The rename is the commit point. The file and its parent are both synchronized.
 pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
-    let (parent, name) = open_parent(path)?;
-    verify_parent_identity(path, &parent, false)?;
+    let (parent, _) = open_parent(path)?;
+    atomic_write_in(&parent, path, bytes)
+}
+
+/// Write using a held parent descriptor, rejecting a changed path identity.
+pub fn atomic_write_in(parent: &File, path: &Path, bytes: &[u8]) -> io::Result<()> {
+    let name = path
+        .file_name()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing filename"))?;
+    let name = path_component(name)?;
+    verify_parent_identity(path, parent, false)?;
     let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
     let status = unsafe {
         libc::fstatat(
@@ -374,7 +383,7 @@ pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
         file.sync_all()?;
         #[cfg(test)]
         tests::before_rename();
-        verify_parent_identity(path, &parent, false)?;
+        verify_parent_identity(path, parent, false)?;
         if unsafe {
             libc::renameat(
                 parent.as_raw_fd(),
@@ -395,7 +404,7 @@ pub fn atomic_write(path: &Path, bytes: &[u8]) -> io::Result<()> {
         parent
             .sync_all()
             .map_err(|error| io::Error::new(error.kind(), PostCommitError(error)))?;
-        verify_parent_identity(path, &parent, true)
+        verify_parent_identity(path, parent, true)
     })();
     if result.is_err() && !committed {
         unsafe {
@@ -675,6 +684,57 @@ mod tests {
             });
             let _ = fs::remove_dir_all(&self.0);
         }
+    }
+
+    #[test]
+    fn fixed_parent_write_requires_same_parent_and_retains_commit_semantics() {
+        let root = RaceRoot::new();
+        let path = root.0.join("parent/state");
+        let parent = File::open(root.0.join("parent")).unwrap();
+        atomic_write_in(&parent, &path, b"first").unwrap();
+        atomic_write_in(&parent, &path, b"second").unwrap();
+        assert_eq!(fs::read(&path).unwrap(), b"second");
+        fs::rename(root.0.join("parent"), root.0.join("moved")).unwrap();
+        fs::rename(root.0.join("decoy"), root.0.join("parent")).unwrap();
+        assert!(atomic_write_in(&parent, &path, b"third").is_err());
+        assert!(!path.exists());
+        assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"second");
+    }
+
+    #[test]
+    fn fixed_parent_write_rejects_links_and_foreign_parent() {
+        let root = RaceRoot::new();
+        let parent = File::open(root.0.join("parent")).unwrap();
+        let foreign = root.0.join("decoy/state");
+        atomic_write(&foreign, b"keep").unwrap();
+        assert!(atomic_write_in(&parent, &foreign, b"overwrite").is_err());
+        let link = root.0.join("parent/link");
+        std::os::unix::fs::symlink(&foreign, &link).unwrap();
+        assert!(atomic_write_in(&parent, &link, b"overwrite").is_err());
+        assert_eq!(fs::read(&foreign).unwrap(), b"keep");
+        let hard = root.0.join("parent/hard");
+        fs::hard_link(&foreign, &hard).unwrap();
+        assert!(atomic_write_in(&parent, &hard, b"overwrite").is_err());
+        assert_eq!(fs::read(&foreign).unwrap(), b"keep");
+    }
+
+    #[test]
+    fn fixed_parent_write_reports_possible_commit_after_directory_swap() {
+        let root = RaceRoot::new();
+        let path = root.0.join("parent/state");
+        let parent = File::open(root.0.join("parent")).unwrap();
+        atomic_write_in(&parent, &path, b"old").unwrap();
+        let base = root.0.clone();
+        COMMIT_HOOK.with(|slot| {
+            *slot.borrow_mut() = Some(Box::new(move || {
+                fs::rename(base.join("parent"), base.join("moved")).unwrap();
+                std::os::unix::fs::symlink(base.join("decoy"), base.join("parent")).unwrap();
+            }))
+        });
+        let error = atomic_write_in(&parent, &path, b"new").unwrap_err();
+        assert!(error.to_string().contains("may have committed"));
+        assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"new");
+        assert!(!root.0.join("decoy/state").exists());
     }
 
     #[test]

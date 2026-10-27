@@ -20,13 +20,18 @@ impl Drop for CleanupRoot {
 }
 
 fn cleanup_publisher(root: &CleanupRoot) -> Publisher {
-    Publisher::open(
+    let mut publisher = Publisher::open(
         &root.0,
         "cleanup-test",
         Some(cleanup_signer().verifying_key()),
         1000,
     )
-    .unwrap()
+    .unwrap();
+    let mut state = publisher.state.clone();
+    state.schema = 2;
+    state.target = Some(format!("local:{}", "a".repeat(64)));
+    publisher.persist(state).unwrap();
+    publisher
 }
 fn cleanup_signer() -> SigningKey {
     SigningKey::from_bytes(&[0x37; 32])
@@ -284,12 +289,660 @@ fn f17_candidate_identity_is_bounded_no_follow_and_content_bound() {
 
 struct CleanupCurrents([Option<protocol::Object>; 2]);
 impl FixedCurrents for CleanupCurrents {
+    fn target_identity(&self) -> Option<String> {
+        Some(format!("local:{}", "a".repeat(64)))
+    }
     fn read_currents(
         &mut self,
     ) -> std::result::Result<[Option<protocol::Object>; 2], protocol::StoreError> {
         Ok(self.0.clone())
     }
 }
+
+struct MultiCleanupCurrents {
+    active: [Option<protocol::Object>; 2],
+    others: BTreeMap<String, [Option<protocol::Object>; 2]>,
+}
+impl FixedCurrents for MultiCleanupCurrents {
+    fn target_identity(&self) -> Option<String> {
+        Some(format!("local:{}", "a".repeat(64)))
+    }
+    fn read_currents(
+        &mut self,
+    ) -> std::result::Result<[Option<protocol::Object>; 2], protocol::StoreError> {
+        Ok(self.active.clone())
+    }
+    fn supports_multiple_targets(&self) -> bool {
+        true
+    }
+    fn read_other_currents(
+        &mut self,
+        _targets: &[String],
+    ) -> Result<BTreeMap<String, [Option<protocol::Object>; 2]>> {
+        Ok(self.others.clone())
+    }
+}
+
+#[test]
+fn multi_target_cleanup_checks_complete_sources_and_binds_current_to_confirmation() {
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    publisher.state.schema = 3;
+    let target = format!("local:{}", "b".repeat(64));
+    publisher
+        .state
+        .other_targets
+        .insert(target.clone(), TargetLedger::default());
+    let pinned = cleanup_asset(b"inactive-current");
+    let unused = cleanup_asset(b"unreferenced");
+    publisher.state.assets = vec![pinned.clone(), unused.clone()];
+    let unused_path = publisher.directory().join("assets").join(&unused.sha256);
+    storage::atomic_write(&unused_path, b"unreferenced").unwrap();
+    let manifest = cleanup_manifest(
+        &publisher,
+        pinned.clone(),
+        "other-current",
+        7,
+        AdChannel::Preview,
+    );
+    let mut source = MultiCleanupCurrents {
+        active: [None, None],
+        others: BTreeMap::new(),
+    };
+    assert!(matches!(
+        publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000),
+        Err(Error::Invalid("cleanup_target_set_mismatch"))
+    ));
+    source
+        .others
+        .insert(target.clone(), [Some(cleanup_object(&manifest)), None]);
+    let preview = publisher
+        .cleanup_preview(&mut source, CleanupOptions::default(), 1000)
+        .unwrap();
+    assert_eq!(preview.candidates, vec![unused.clone()]);
+    source.others.get_mut(&target).unwrap()[0]
+        .as_mut()
+        .unwrap()
+        .etag = "changed-etag".into();
+    assert!(matches!(
+        publisher.cleanup_commit(
+            &mut source,
+            CleanupOptions::default(),
+            &preview.digest,
+            1000
+        ),
+        Err(Error::Invalid("cleanup_stale_preview"))
+    ));
+    let preview = publisher
+        .cleanup_preview(&mut source, CleanupOptions::default(), 1000)
+        .unwrap();
+    publisher
+        .cleanup_commit(
+            &mut source,
+            CleanupOptions::default(),
+            &preview.digest,
+            1000,
+        )
+        .unwrap();
+    assert!(publisher.state.assets.contains(&pinned));
+    assert!(!publisher.state.assets.contains(&unused));
+    assert_eq!(
+        publisher.state.other_targets[&target].sequences[0].highest,
+        7
+    );
+    source.others.get_mut(&target).unwrap()[0] = None;
+    assert!(matches!(
+        publisher.gc_preview(&mut source, 1000),
+        Err(Error::Invalid("cleanup_current_missing"))
+    ));
+    let changed = cleanup_manifest(
+        &publisher,
+        unused.clone(),
+        "new-reference",
+        8,
+        AdChannel::Preview,
+    );
+    source.others.get_mut(&target).unwrap()[0] = Some(cleanup_object(&changed));
+    assert!(matches!(
+        publisher.gc_preview(&mut source, 1000),
+        Err(Error::Invalid("cleanup_unregistered_reference"))
+    ));
+    assert!(unused_path.exists());
+    source.others.get_mut(&target).unwrap()[0] = Some(cleanup_object(&manifest));
+    let gc = publisher.gc_preview(&mut source, 1000).unwrap();
+    let outcome = publisher.gc_commit(&mut source, &gc.digest, 1000).unwrap();
+    assert!(outcome.deleted.contains(&unused.sha256));
+    assert!(!unused_path.exists());
+}
+
+#[test]
+fn multi_target_cleanup_rejects_inactive_rollback_conflict_and_tampering() {
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    publisher.state.schema = 3;
+    let target = format!("local:{}", "b".repeat(64));
+    let image = cleanup_asset(b"other-current");
+    publisher.state.assets.push(image.clone());
+    let current = cleanup_manifest(&publisher, image.clone(), "current", 10, AdChannel::Preview);
+    let mut ledger = TargetLedger::default();
+    ledger.sequences[0] = signed::Sequence {
+        highest: 10,
+        payload_hash: Some(signed::digest(
+            &encode(&current, ads::MAX_MANIFEST_BYTES).unwrap(),
+        )),
+    };
+    publisher.state.other_targets.insert(target.clone(), ledger);
+    let mut older = current.clone();
+    older.content_revision = 9;
+    let mut source = MultiCleanupCurrents {
+        active: [None, None],
+        others: BTreeMap::from([(target.clone(), [Some(cleanup_object(&older)), None])]),
+    };
+    assert!(matches!(
+        publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000),
+        Err(Error::Invalid("old_sequence"))
+    ));
+    let mut conflict = current.clone();
+    conflict.release_id = "different-current".into();
+    source.others.get_mut(&target).unwrap()[0] = Some(cleanup_object(&conflict));
+    assert!(matches!(
+        publisher.cleanup_preview(&mut source, CleanupOptions::default(), 1000),
+        Err(Error::Invalid("sequence_conflict"))
+    ));
+    let mut tampered = cleanup_object(&current);
+    tampered.bytes[0] = b'!';
+    source.others.get_mut(&target).unwrap()[0] = Some(tampered);
+    assert!(
+        publisher
+            .cleanup_preview(&mut source, CleanupOptions::default(), 1000)
+            .is_err()
+    );
+    assert_eq!(
+        publisher.state.other_targets[&target].sequences[0].highest,
+        10
+    );
+    assert!(publisher.state.cleanup.is_none());
+}
+
+#[test]
+fn local_multi_source_holds_locks_and_checks_each_real_target_identity() {
+    use super::local_store::{LocalObjectStore, MultiLocalSources};
+    use super::protocol::ObjectStore;
+    use switcher_core::ad_runtime::local::{LocalTrust, directory};
+    let root = CleanupRoot::new();
+    let a_root = CleanupRoot::new();
+    let b_root = CleanupRoot::new();
+    let mut publisher = Publisher::open(
+        &root.0,
+        "ads-personal-v1",
+        Some(cleanup_signer().verifying_key()),
+        1000,
+    )
+    .unwrap();
+    for path in [&a_root.0, &b_root.0] {
+        storage::create_private_directory(path).unwrap();
+        storage::create_private_directory(&path.join("v2")).unwrap();
+    }
+    let trust = LocalTrust {
+        schema: 1,
+        key_id: "ads-personal-v1".into(),
+        public_key: cleanup_signer().verifying_key().to_bytes(),
+    };
+    let a = LocalObjectStore::open(&a_root.0, AdChannel::Preview, &trust).unwrap();
+    let mut b = LocalObjectStore::open(&b_root.0, AdChannel::Preview, &trust).unwrap();
+    let a_id = ObjectStore::target_identity(&a).unwrap();
+    let b_id = ObjectStore::target_identity(&b).unwrap();
+    publisher.state.schema = 3;
+    publisher.state.target = Some(a_id);
+    publisher
+        .state
+        .other_targets
+        .insert(b_id.clone(), TargetLedger::default());
+    let pinned = cleanup_asset(b"local-other-current");
+    let unused = cleanup_asset(b"local-unused");
+    publisher.state.assets = vec![pinned.clone(), unused.clone()];
+    let unused_path = publisher.directory().join("assets").join(&unused.sha256);
+    storage::atomic_write(&unused_path, b"local-unused").unwrap();
+    let current = cleanup_manifest(
+        &publisher,
+        pinned.clone(),
+        "local-b-current",
+        3,
+        AdChannel::Preview,
+    );
+    b.commit_current(None, &cleanup_object(&current).bytes)
+        .unwrap();
+    let mut sources = MultiLocalSources::new(a, vec![b]).unwrap();
+    assert!(LocalObjectStore::open(&a_root.0, AdChannel::Preview, &trust).is_err());
+    assert!(LocalObjectStore::open(&b_root.0, AdChannel::Preview, &trust).is_err());
+    let preview = publisher
+        .cleanup_preview(&mut sources, CleanupOptions::default(), 1000)
+        .unwrap();
+    assert_eq!(preview.candidates, vec![unused.clone()]);
+    assert_eq!(preview.other_currents.len(), 1);
+    publisher
+        .cleanup_commit(
+            &mut sources,
+            CleanupOptions::default(),
+            &preview.digest,
+            1000,
+        )
+        .unwrap();
+    assert_eq!(publisher.state.other_targets[&b_id].sequences[0].highest, 3);
+    let original = directory(&b_root.0);
+    let moved = b_root.0.join("displaced-publication-tree");
+    fs::rename(&original, &moved).unwrap();
+    storage::create_private_directory(&original).unwrap();
+    assert!(publisher.gc_preview(&mut sources, 1000).is_err());
+    assert!(publisher.state.assets.contains(&pinned));
+    assert!(unused_path.exists());
+    fs::remove_dir(&original).unwrap();
+    fs::rename(&moved, &original).unwrap();
+    let gc = publisher.gc_preview(&mut sources, 1000).unwrap();
+    let outcome = publisher.gc_commit(&mut sources, &gc.digest, 1000).unwrap();
+    assert!(outcome.deleted.contains(&unused.sha256));
+    assert!(!unused_path.exists());
+    drop(sources);
+    assert!(LocalObjectStore::open(&b_root.0, AdChannel::Preview, &trust).is_ok());
+}
+#[test]
+fn migration_confirmation_preserves_old_generation_and_vault() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    let old_generation = publisher.generation.clone();
+    let old_state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    let mut vault = MemoryVault::default();
+    vault
+        .store(
+            &old_generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let mut currents = CleanupCurrents([None, None]);
+    let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+    currents.0[0] = Some(cleanup_object(&publisher.state.draft));
+    assert!(
+        publisher
+            .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+            .is_err()
+    );
+    assert_eq!(publisher.generation, old_generation);
+    currents.0[0] = None;
+    publisher
+        .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+        .unwrap();
+    assert_ne!(publisher.generation, old_generation);
+    assert_eq!(
+        fs::read(root.0.join(&old_generation).join("state.json")).unwrap(),
+        old_state
+    );
+    assert!(vault.items.contains_key(&old_generation));
+    assert!(vault.items.contains_key(&publisher.generation));
+    assert_eq!(
+        publisher.state.sequences,
+        [signed::Sequence::default(), signed::Sequence::default()]
+    );
+}
+
+#[test]
+fn migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    publisher.state.schema = 1;
+    publisher.state.target = None;
+    publisher.state.pending = Some(Pending {
+        manifest: publisher.state.draft.clone(),
+        wire: cleanup_object(&publisher.state.draft).bytes,
+        expected_etag: None,
+        phase: Phase::CommitUnknown,
+    });
+    publisher.persist(publisher.state.clone()).unwrap();
+    let old_generation = publisher.generation.clone();
+    let old_state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    let mut vault = MemoryVault::default();
+    vault
+        .store(
+            &old_generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let mut currents = CleanupCurrents([
+        None,
+        Some(protocol::Object {
+            bytes: b"invalid".to_vec(),
+            etag: "tag".into(),
+        }),
+    ]);
+    assert!(publisher.migration_preview(&mut currents, 1000).is_err());
+    currents.0[1] = None;
+    let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+    vault.fail = true;
+    assert!(
+        publisher
+            .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+            .is_err()
+    );
+    assert_eq!(publisher.generation, old_generation);
+    assert_eq!(
+        fs::read(root.0.join(&old_generation).join("state.json")).unwrap(),
+        old_state
+    );
+    vault.fail = false;
+    publisher
+        .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+        .unwrap();
+    assert!(publisher.state.pending.is_none());
+    assert_eq!(
+        fs::read(root.0.join(&old_generation).join("state.json")).unwrap(),
+        old_state
+    );
+    let views = serde_json::to_value(publisher.retained_views().unwrap()).unwrap();
+    assert_eq!(views[0]["pending_target_unknown"], true);
+    assert!(views[0]["pending_release_id"].as_str().is_some());
+}
+
+#[test]
+fn migration_preserves_legacy_cleanup_and_cross_target_checkpoint() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    for legacy in [true, false] {
+        let (root, mut publisher, mut currents, _) = staged_cleanup(1);
+        let old_generation = publisher.generation.clone();
+        if legacy {
+            publisher.state.schema = 1;
+            publisher.state.target = None;
+        } else {
+            publisher.state.target = Some(format!("local:{}", "b".repeat(64)));
+        }
+        publisher.persist(publisher.state.clone()).unwrap();
+        let old_state = encode(&publisher.state, STATE_LIMIT).unwrap();
+        let checkpoint = fs::read(publisher.directory().join(CHECKPOINT_FILE)).unwrap();
+        let mut vault = MemoryVault::default();
+        vault
+            .store(
+                &old_generation,
+                &Secrets {
+                    signing_seed: vec![0x37; 32],
+                    preview_credential: vec![],
+                    production_credential: vec![],
+                },
+            )
+            .unwrap();
+        let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+        publisher
+            .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+            .unwrap();
+        assert!(publisher.state.cleanup.is_none());
+        assert_eq!(
+            fs::read(root.0.join(&old_generation).join("state.json")).unwrap(),
+            old_state
+        );
+        assert_eq!(
+            fs::read(root.0.join(old_generation).join(CHECKPOINT_FILE)).unwrap(),
+            checkpoint
+        );
+    }
+}
+
+#[test]
+fn migration_watermarks_are_only_from_verified_new_target() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    publisher.state.sequences[0].highest = 70;
+    publisher.state.sequences[0].payload_hash = Some("a".repeat(64));
+    publisher.persist(publisher.state.clone()).unwrap();
+    let mut current = publisher.state.draft.clone();
+    current.channel = AdChannel::Production;
+    current.content_revision = 20;
+    let mut currents = CleanupCurrents([None, Some(cleanup_object(&current))]);
+    let mut vault = MemoryVault::default();
+    vault
+        .store(
+            &publisher.generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+    publisher
+        .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+        .unwrap();
+    assert_eq!(publisher.state.sequences[0].highest, 0);
+    assert_eq!(publisher.state.sequences[1].highest, 20);
+    assert_eq!(publisher.state.draft.content_revision, 71);
+}
+
+#[test]
+fn migration_after_backup_restore_to_another_directory_preserves_restored_generation() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let old_root = CleanupRoot::new();
+    let source = cleanup_publisher(&old_root);
+    let mut source_vault = MemoryVault::default();
+    source_vault
+        .store(
+            &source.generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let backup = source
+        .export_backup(b"synthetic backup passphrase", &source_vault)
+        .unwrap();
+    let new_root = CleanupRoot::new();
+    let mut restored = Publisher::open(
+        &new_root.0,
+        "cleanup-test",
+        Some(cleanup_signer().verifying_key()),
+        1000,
+    )
+    .unwrap();
+    let mut vault = MemoryVault::default();
+    restored
+        .restore_backup(&backup, b"synthetic backup passphrase", &mut vault)
+        .unwrap();
+    let generation = restored.generation.clone();
+    let state = encode(&restored.state, STATE_LIMIT).unwrap();
+    struct OtherTarget;
+    impl FixedCurrents for OtherTarget {
+        fn target_identity(&self) -> Option<String> {
+            Some(format!("local:{}", "b".repeat(64)))
+        }
+        fn read_currents(
+            &mut self,
+        ) -> std::result::Result<[Option<protocol::Object>; 2], protocol::StoreError> {
+            Ok([None, None])
+        }
+    }
+    let mut currents = OtherTarget;
+    let preview = restored.migration_preview(&mut currents, 1000).unwrap();
+    restored
+        .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+        .unwrap();
+    assert_eq!(
+        fs::read(new_root.0.join(&generation).join("state.json")).unwrap(),
+        state
+    );
+    assert!(vault.items.contains_key(&generation));
+}
+
+#[test]
+fn migration_post_commit_fault_reports_unknown_and_restart_keeps_both_generations() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    let old_generation = publisher.generation.clone();
+    let old_state = encode(&publisher.state, STATE_LIMIT).unwrap();
+    let mut vault = MemoryVault::default();
+    vault
+        .store(
+            &old_generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let mut currents = CleanupCurrents([None, None]);
+    let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+    super::migration::ACTIVE_AFTER_COMMIT_FAULT.with(|fault| fault.set(true));
+    assert!(matches!(
+        publisher.migration_commit(&mut currents, &preview.digest, 1000, &mut vault),
+        Err(Error::Invalid("migration_active_outcome_unknown"))
+    ));
+    let new_generation = publisher.generation.clone();
+    assert_ne!(new_generation, old_generation);
+    assert!(
+        publisher
+            .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+            .is_err()
+    );
+    drop(publisher);
+    let reopened = Publisher::open(
+        &root.0,
+        "cleanup-test",
+        Some(cleanup_signer().verifying_key()),
+        1000,
+    )
+    .unwrap();
+    assert_eq!(reopened.generation, new_generation);
+    assert_eq!(
+        fs::read(root.0.join(&old_generation).join("state.json")).unwrap(),
+        old_state
+    );
+    assert!(vault.items.contains_key(&old_generation));
+    assert!(vault.items.contains_key(&new_generation));
+}
+
+#[test]
+fn retained_generation_export_rejects_unexpected_files_without_mutating_state() {
+    use super::security::{Secrets, Vault};
+    use super::test_support::MemoryVault;
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    let old_generation = publisher.generation.clone();
+    let mut vault = MemoryVault::default();
+    vault
+        .store(
+            &old_generation,
+            &Secrets {
+                signing_seed: vec![0x37; 32],
+                preview_credential: vec![],
+                production_credential: vec![],
+            },
+        )
+        .unwrap();
+    let mut currents = CleanupCurrents([None, None]);
+    let preview = publisher.migration_preview(&mut currents, 1000).unwrap();
+    publisher
+        .migration_commit(&mut currents, &preview.digest, 1000, &mut vault)
+        .unwrap();
+    let active = publisher.generation.clone();
+    let archive = publisher
+        .export_retained_generation(&old_generation, b"synthetic backup passphrase", &vault)
+        .unwrap();
+    assert!(backup::open(&archive, b"wrong synthetic passphrase").is_err());
+    assert!(backup::open(&archive, b"synthetic backup passphrase").is_ok());
+    let destination = CleanupRoot::new();
+    let target = cleanup_publisher(&destination);
+    let active_before = target.generation.clone();
+    let mut target_vault = MemoryVault::default();
+    assert!(
+        target
+            .import_retained_generation(&archive, b"wrong synthetic passphrase", &mut target_vault)
+            .is_err()
+    );
+    target
+        .import_retained_generation(&archive, b"synthetic backup passphrase", &mut target_vault)
+        .unwrap();
+    assert_eq!(target.generation, active_before);
+    assert_eq!(
+        fs::read(destination.0.join(&old_generation).join("state.json")).unwrap(),
+        fs::read(root.0.join(&old_generation).join("state.json")).unwrap()
+    );
+    assert!(target_vault.items.contains_key(&old_generation));
+    assert!(
+        target
+            .import_retained_generation(&archive, b"synthetic backup passphrase", &mut target_vault)
+            .is_err()
+    );
+    for fault in [1, 2] {
+        let partial_root = CleanupRoot::new();
+        let partial = cleanup_publisher(&partial_root);
+        let active = partial.generation.clone();
+        let mut partial_vault = MemoryVault::default();
+        if fault == 1 {
+            CREATE_CHILD_SYNC_FAULT.with(|slot| slot.set(1));
+        } else {
+            partial_vault.fail = true;
+        }
+        assert!(
+            partial
+                .import_retained_generation(
+                    &archive,
+                    b"synthetic backup passphrase",
+                    &mut partial_vault
+                )
+                .is_err()
+        );
+        assert_eq!(partial.generation, active);
+        let marker = format!("retain-{}-{}.json", old_generation, active);
+        assert!(partial_root.0.join(&marker).is_file());
+        drop(partial);
+        let reopened = Publisher::open(
+            &partial_root.0,
+            "cleanup-test",
+            Some(cleanup_signer().verifying_key()),
+            1000,
+        )
+        .unwrap();
+        assert_eq!(reopened.generation, active);
+        assert!(partial_root.0.join(marker).is_file());
+        assert!(
+            reopened
+                .import_retained_generation(
+                    &archive,
+                    b"synthetic backup passphrase",
+                    &mut partial_vault
+                )
+                .is_err()
+        );
+    }
+    storage::atomic_write(
+        &root.0.join(&old_generation).join("unexpected"),
+        b"unexpected",
+    )
+    .unwrap();
+    assert!(
+        publisher
+            .export_retained_generation(&old_generation, b"synthetic backup passphrase", &vault)
+            .is_err()
+    );
+    assert_eq!(publisher.generation, active);
+}
+
 #[test]
 fn f17_confirmed_index_cleanup_reopens_full_asset_capacity() {
     let root = CleanupRoot::new();
@@ -710,6 +1363,119 @@ fn cleanup_manifest(
     manifest.slots[0].campaigns = vec![cleanup_campaign(asset)];
     manifest
 }
+
+#[test]
+fn multi_target_retention_protects_inactive_history_and_pending() {
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    let assets: Vec<_> = (0..3)
+        .map(|i| cleanup_asset(format!("inactive-target-{i}").as_bytes()))
+        .collect();
+    publisher.state.assets = assets.clone();
+    publisher.state.schema = 3;
+    let history = cleanup_manifest(
+        &publisher,
+        assets[0].clone(),
+        "inactive-history",
+        3,
+        AdChannel::Preview,
+    );
+    let pending = cleanup_manifest(
+        &publisher,
+        assets[1].clone(),
+        "inactive-pending",
+        4,
+        AdChannel::Preview,
+    );
+    let ledger = TargetLedger {
+        history: vec![HistoryRecord {
+            payload_hash: signed::digest(&encode(&history, ads::MAX_MANIFEST_BYTES).unwrap()),
+            manifest: history,
+            published_at: 1000,
+        }],
+        pending: Some(Pending {
+            wire: cleanup_object(&pending).bytes,
+            manifest: pending,
+            expected_etag: None,
+            phase: Phase::Prepared,
+        }),
+        ..TargetLedger::default()
+    };
+    publisher
+        .state
+        .other_targets
+        .insert(format!("local:{}", "b".repeat(64)), ledger);
+    let preview = retention(&publisher, &[None, None], CleanupOptions::default(), 1000)
+        .unwrap()
+        .preview;
+    assert_eq!(preview.candidates, vec![assets[2].clone()]);
+    assert!(preview.pending_blocks_commit);
+}
+
+#[test]
+fn multi_target_retention_preserves_inactive_resolution_and_rejects_missing_asset() {
+    let root = CleanupRoot::new();
+    let mut publisher = cleanup_publisher(&root);
+    let assets: Vec<_> = (0..3)
+        .map(|i| cleanup_asset(format!("inactive-resolution-{i}").as_bytes()))
+        .collect();
+    publisher.state.assets = assets.clone();
+    publisher.state.schema = 3;
+    let previous = cleanup_manifest(
+        &publisher,
+        assets[0].clone(),
+        "inactive-before",
+        9,
+        AdChannel::Preview,
+    );
+    let current = cleanup_manifest(
+        &publisher,
+        assets[1].clone(),
+        "inactive-current",
+        10,
+        AdChannel::Preview,
+    );
+    let watermark = signed::Sequence {
+        highest: 10,
+        payload_hash: Some(signed::digest(
+            &encode(&current, ads::MAX_MANIFEST_BYTES).unwrap(),
+        )),
+    };
+    let mut ledger = TargetLedger::default();
+    ledger.sequences[0] = watermark.clone();
+    ledger.last_resolution = Some(Resolution {
+        pending: Pending {
+            wire: cleanup_object(&previous).bytes,
+            manifest: previous,
+            expected_etag: None,
+            phase: Phase::CommitUnknown,
+        },
+        current_wire: cleanup_object(&current).bytes,
+        current_etag: "inactive-current".into(),
+        kind: ResolutionKind::Superseded,
+        resolved_at: 1000,
+        watermark,
+        unavailable_assets: vec![],
+    });
+    publisher
+        .state
+        .other_targets
+        .insert(format!("local:{}", "b".repeat(64)), ledger);
+    let options = CleanupOptions {
+        retain: 0,
+        release_resolution: true,
+    };
+    let preview = retention(&publisher, &[None, None], options.clone(), 1000)
+        .unwrap()
+        .preview;
+    assert_eq!(preview.candidates, vec![assets[2].clone()]);
+    publisher.state.assets.retain(|asset| asset != &assets[0]);
+    assert!(matches!(
+        retention(&publisher, &[None, None], options, 1000),
+        Err(Error::Invalid("cleanup_unregistered_reference"))
+    ));
+}
+
 #[test]
 fn f17_reference_union_resolution_release_and_checkpoint_evidence() {
     let root = CleanupRoot::new();
@@ -830,6 +1596,16 @@ fn f17_reference_union_resolution_release_and_checkpoint_evidence() {
 #[derive(Default)]
 struct CleanupVault(std::collections::HashMap<String, Vec<u8>>);
 impl Vault for CleanupVault {
+    fn create(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
+        use std::collections::hash_map::Entry;
+        match self.0.entry(generation.into()) {
+            Entry::Vacant(entry) => {
+                entry.insert(encode(secrets, 32768)?);
+                Ok(())
+            }
+            Entry::Occupied(_) => Err(Error::SecretUnavailable),
+        }
+    }
     fn load(&self, generation: &str) -> Result<Secrets> {
         signed::strict_json(
             self.0.get(generation).ok_or(Error::SecretUnavailable)?,
@@ -1159,4 +1935,260 @@ fn f17_pending_gc_commit_preserves_files_and_index() {
         reopened.state.cleanup.as_ref().unwrap().phase,
         CleanupPhase::Indexed
     );
+}
+#[test]
+fn archive_directory_handle_detects_replacement_and_symlink() {
+    use std::os::unix::fs::symlink;
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("archive-source");
+    storage::create_private_directory(&path).unwrap();
+    storage::atomic_write(&path.join("state.json"), b"synthetic").unwrap();
+    let handle = cleanup::PrivateDirectory::open(&path).unwrap();
+    assert_eq!(handle.names(4).unwrap(), vec!["state.json"]);
+    storage::create_private_directory(&path.join("assets")).unwrap();
+    let child = handle.child("assets").unwrap();
+    symlink(path.join("assets"), path.join("alias")).unwrap();
+    assert!(handle.child("alias").is_err());
+    fs::remove_file(path.join("alias")).unwrap();
+    fs::rename(path.join("assets"), path.join("assets-old")).unwrap();
+    storage::create_private_directory(&path.join("assets")).unwrap();
+    assert!(child.names(4).is_err());
+    assert_eq!(
+        handle.read_archive_file("state.json", 32).unwrap(),
+        b"synthetic"
+    );
+    assert!(handle.read_archive_file("state.json", 2).is_err());
+    symlink(path.join("state.json"), path.join("link.json")).unwrap();
+    assert!(handle.read_archive_file("link.json", 32).is_err());
+    fs::hard_link(path.join("state.json"), path.join("hard.json")).unwrap();
+    assert!(handle.read_archive_file("state.json", 32).is_err());
+    assert!(handle.read_archive_file("hard.json", 32).is_err());
+    fs::remove_file(path.join("hard.json")).unwrap();
+    fs::remove_file(path.join("link.json")).unwrap();
+    let fifo = std::ffi::CString::new(path.join("fifo").as_os_str().as_encoded_bytes()).unwrap();
+    assert_eq!(unsafe { libc::mkfifo(fifo.as_ptr(), 0o600) }, 0);
+    assert!(handle.read_archive_file("fifo", 32).is_err());
+    assert!(handle.names(1).is_err());
+    fs::remove_file(path.join("fifo")).unwrap();
+    let moved = root.0.join("archive-old");
+    fs::rename(&path, &moved).unwrap();
+    storage::create_private_directory(&path).unwrap();
+    assert!(handle.names(4).is_err());
+    fs::remove_dir(&path).unwrap();
+    symlink(&moved, &path).unwrap();
+    assert!(cleanup::PrivateDirectory::open(&path).is_err());
+    assert!(handle.names(4).is_err());
+}
+
+#[test]
+fn archive_directory_enumeration_rejects_concurrent_insert_and_delete() {
+    use std::sync::{Arc, Barrier};
+    for insert in [true, false] {
+        let root = CleanupRoot::new();
+        let _publisher = cleanup_publisher(&root);
+        let path = root.0.join("archive-source");
+        storage::create_private_directory(&path).unwrap();
+        let item = path.join("item");
+        if !insert {
+            storage::atomic_write(&item, b"synthetic").unwrap();
+        }
+        let handle = cleanup::PrivateDirectory::open(&path).unwrap();
+        let begin = Arc::new(Barrier::new(2));
+        let done = Arc::new(Barrier::new(2));
+        let worker_begin = begin.clone();
+        let worker_done = done.clone();
+        let worker = std::thread::spawn(move || {
+            worker_begin.wait();
+            if insert {
+                storage::atomic_write(&item, b"synthetic").unwrap();
+            } else {
+                fs::remove_file(&item).unwrap();
+            }
+            worker_done.wait();
+        });
+        cleanup::ARCHIVE_ENUM_HOOK.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move || {
+                begin.wait();
+                done.wait();
+            }));
+        });
+        assert!(handle.names(8).is_err());
+        worker.join().unwrap();
+    }
+}
+
+#[test]
+fn fixed_parent_child_creation_is_exclusive_and_private() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("archive-create");
+    storage::create_private_directory(&path).unwrap();
+    let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+    let child = parent.create_child("new-generation").unwrap();
+    assert!(child.names(1).unwrap().is_empty());
+    assert_eq!(
+        fs::metadata(path.join("new-generation")).unwrap().mode() & 0o7777,
+        0o700
+    );
+    storage::atomic_write(&path.join("new-generation/keep"), b"keep").unwrap();
+    assert!(parent.create_child("new-generation").is_err());
+    assert_eq!(fs::read(path.join("new-generation/keep")).unwrap(), b"keep");
+    fs::write(path.join("file"), b"keep").unwrap();
+    assert!(parent.create_child("file").is_err());
+    symlink(path.join("new-generation"), path.join("link")).unwrap();
+    assert!(parent.create_child("link").is_err());
+    assert!(parent.create_child("../escape").is_err());
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(parent.create_child("denied").is_err());
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
+    assert!(!path.join("denied").exists());
+}
+
+#[test]
+fn fixed_parent_child_creation_rejects_parent_swap_and_sync_failure() {
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("archive-create");
+    let moved = root.0.join("archive-moved");
+    storage::create_private_directory(&path).unwrap();
+    let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+    let hook_path = path.clone();
+    let hook_moved = moved.clone();
+    cleanup::CREATE_CHILD_HOOK.with(|slot| {
+        *slot.borrow_mut() = Some(Box::new(move || {
+            fs::rename(&hook_path, &hook_moved).unwrap();
+            storage::create_private_directory(&hook_path).unwrap();
+        }))
+    });
+    assert!(parent.create_child("new").is_err());
+    assert!(moved.join("new").is_dir());
+    assert!(!path.join("new").exists());
+    let replacement = cleanup::PrivateDirectory::open(&path).unwrap();
+    for (fault_stage, name) in [(1, "uncertain-child"), (2, "uncertain-parent")] {
+        cleanup::CREATE_CHILD_SYNC_FAULT.with(|fault| fault.set(fault_stage));
+        assert!(replacement.create_child(name).is_err());
+        assert!(path.join(name).is_dir());
+        assert!(replacement.create_child(name).is_err());
+    }
+}
+
+#[test]
+fn fixed_parent_child_creation_rejects_child_replacement_before_open() {
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("archive-create");
+    storage::create_private_directory(&path).unwrap();
+    let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+    let hook_path = path.clone();
+    cleanup::CREATE_CHILD_HOOK.with(|slot| {
+        *slot.borrow_mut() = Some(Box::new(move || {
+            fs::rename(hook_path.join("new"), hook_path.join("created-original")).unwrap();
+            storage::create_private_directory(&hook_path.join("new")).unwrap();
+        }))
+    });
+    assert!(parent.create_child("new").is_err());
+    assert!(path.join("created-original").is_dir());
+    assert!(path.join("new").is_dir());
+}
+
+#[test]
+fn fixed_child_file_creation_is_exclusive_and_verifies_content() {
+    use std::os::unix::fs::symlink;
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("file-parent");
+    storage::create_private_directory(&path).unwrap();
+    let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+    parent
+        .create_verified_file("state.json", b"first", 32)
+        .unwrap();
+    assert_eq!(
+        parent.read_archive_file("state.json", 32).unwrap(),
+        b"first"
+    );
+    assert!(
+        parent
+            .create_verified_file("state.json", b"second", 32)
+            .is_err()
+    );
+    assert_eq!(fs::read(path.join("state.json")).unwrap(), b"first");
+    symlink(path.join("state.json"), path.join("link")).unwrap();
+    assert!(parent.create_verified_file("link", b"changed", 32).is_err());
+    assert!(parent.create_verified_file("../escape", b"x", 32).is_err());
+    assert!(parent.create_verified_file("oversize", b"123", 2).is_err());
+    assert!(!path.join("oversize").exists());
+}
+
+#[test]
+fn fixed_child_file_creation_detects_replacement_and_sync_errors() {
+    for scenario in 0..4 {
+        let root = CleanupRoot::new();
+        let _publisher = cleanup_publisher(&root);
+        let path = root.0.join("file-parent");
+        storage::create_private_directory(&path).unwrap();
+        let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+        if scenario < 2 {
+            let hook_path = path.clone();
+            cleanup::CREATE_FILE_HOOK.with(|slot| {
+                *slot.borrow_mut() = Some(Box::new(move || {
+                    if scenario == 0 {
+                        fs::rename(hook_path.join("state"), hook_path.join("original")).unwrap();
+                        fs::write(hook_path.join("state"), b"decoy").unwrap();
+                        fs::set_permissions(
+                            hook_path.join("state"),
+                            fs::Permissions::from_mode(0o600),
+                        )
+                        .unwrap();
+                    } else {
+                        fs::rename(&hook_path, hook_path.with_file_name("moved")).unwrap();
+                        storage::create_private_directory(&hook_path).unwrap();
+                    }
+                }))
+            });
+        } else {
+            cleanup::CREATE_FILE_SYNC_FAULT.with(|fault| fault.set((scenario - 1) as u8));
+        }
+        assert!(
+            parent
+                .create_verified_file("state", b"original", 32)
+                .is_err()
+        );
+        match scenario {
+            0 => assert_eq!(fs::read(path.join("original")).unwrap(), b"original"),
+            1 => assert_eq!(fs::read(root.0.join("moved/state")).unwrap(), b"original"),
+            _ => assert_eq!(fs::read(path.join("state")).unwrap(), b"original"),
+        }
+    }
+}
+
+#[test]
+fn fixed_child_file_creation_has_one_winner_under_concurrency() {
+    use std::sync::{Arc, Barrier};
+    let root = CleanupRoot::new();
+    let _publisher = cleanup_publisher(&root);
+    let path = root.0.join("file-parent");
+    storage::create_private_directory(&path).unwrap();
+    let barrier = Arc::new(Barrier::new(2));
+    let threads: Vec<_> = (0..2)
+        .map(|i| {
+            let path = path.clone();
+            let barrier = barrier.clone();
+            std::thread::spawn(move || {
+                let parent = cleanup::PrivateDirectory::open(&path).unwrap();
+                barrier.wait();
+                parent.create_verified_file("state", &[i], 1).is_ok()
+            })
+        })
+        .collect();
+    assert_eq!(
+        threads
+            .into_iter()
+            .map(|thread| thread.join().unwrap())
+            .filter(|ok| *ok)
+            .count(),
+        1
+    );
+    assert_eq!(fs::read(path.join("state")).unwrap().len(), 1);
 }

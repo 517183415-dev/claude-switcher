@@ -1,0 +1,12 @@
+{
+  "scope": "isolated local stores with synthetic signing key; product entry not wired",
+  "cleanup_suite": "40 passed",
+  "clippy": "exit 0, 7 existing dead-code warnings",
+  "sha256": {
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "0931735a76a80479bd1d5ea7cdebe91e2a6cd665c0b31ecf6f0193b1a54edb96",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "4af63fae9c65dc91190cdd3eda4e49335a678f2551ade5253505b6f2c8b40f2a",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "74a3b755428d391d295efa9039986816968d0fb45c89d5ca391b73ab3978843f",
+    "output/no-account-20261027/r2-target-identity/cleanup-local-suite.log": "c56d8b4354815ec4953d7af66544e9feccf335001d78079cdaf20bb6d82ccd66",
+    "output/no-account-20261027/r2-target-identity/cleanup-local-clippy.log": "d655aebef4bd71ad005315edc8825a2e9138e7cf263e938be9a9b7aa4441c91f"
+  }
+}

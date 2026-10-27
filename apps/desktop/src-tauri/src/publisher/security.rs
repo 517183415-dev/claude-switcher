@@ -37,26 +37,70 @@ impl Drop for Secrets {
 /// Implementations must not log, format or persist unencrypted secret bytes.
 pub trait Vault {
     fn load(&self, generation: &str) -> Result<Secrets>;
+    /// Return None only when the vault can prove that the item is absent.
+    fn load_optional(&self, generation: &str) -> Result<Option<Secrets>> {
+        self.load(generation).map(Some)
+    }
     fn store(&mut self, generation: &str, secrets: &Secrets) -> Result<()>;
+    /// Create a new item without replacing an existing one. Unsupported vaults fail closed.
+    fn create(&mut self, _generation: &str, _secrets: &Secrets) -> Result<()> {
+        Err(Error::SecretUnavailable)
+    }
 }
 
 pub struct KeychainVault;
 
 impl Vault for KeychainVault {
-    fn load(&self, generation: &str) -> Result<Secrets> {
+    fn create(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
+        secrets.validate()?;
         #[cfg(target_os = "macos")]
         {
+            use core_foundation::data::CFData;
+            use security_framework::item::{ItemAddOptions, ItemAddValue, ItemClass};
             let bytes = zeroize::Zeroizing::new(
-                security_framework::passwords::get_generic_password(
-                    "com.claude-switcher.personal.publisher",
-                    generation,
-                )
-                .map_err(|_| Error::SecretUnavailable)?,
+                serde_json::to_vec(secrets).map_err(|_| Error::Invalid("secret_encoding"))?,
             );
+            if bytes.len() > SECRET_LIMIT {
+                return Err(Error::Invalid("secret_size"));
+            }
+            let mut item = ItemAddOptions::new(ItemAddValue::Data {
+                class: ItemClass::generic_password(),
+                data: CFData::from_buffer(&bytes),
+            });
+            item.set_service("com.claude-switcher.personal.publisher")
+                .set_account_name(generation);
+            item.add().map_err(|_| Error::SecretUnavailable)
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = generation;
+            Err(Error::SecretUnavailable)
+        }
+    }
+
+    fn load(&self, generation: &str) -> Result<Secrets> {
+        self.load_optional(generation)?
+            .ok_or(Error::SecretUnavailable)
+    }
+
+    fn load_optional(&self, generation: &str) -> Result<Option<Secrets>> {
+        #[cfg(target_os = "macos")]
+        {
+            // Security.framework's errSecItemNotFound. Other Keychain errors
+            // (including access denial) must never be treated as absence.
+            const KEYCHAIN_ITEM_NOT_FOUND: i32 = -25300;
+            let bytes = match security_framework::passwords::get_generic_password(
+                "com.claude-switcher.personal.publisher",
+                generation,
+            ) {
+                Ok(bytes) => zeroize::Zeroizing::new(bytes),
+                Err(error) if error.code() == KEYCHAIN_ITEM_NOT_FOUND => return Ok(None),
+                Err(_) => return Err(Error::SecretUnavailable),
+            };
             let secrets: Secrets =
                 switcher_core::signed::strict_json(&bytes, SECRET_LIMIT).map_err(Error::Invalid)?;
             secrets.validate()?;
-            Ok(secrets)
+            Ok(Some(secrets))
         }
         #[cfg(not(target_os = "macos"))]
         {
