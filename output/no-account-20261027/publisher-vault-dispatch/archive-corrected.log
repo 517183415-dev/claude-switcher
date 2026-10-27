@@ -1,0 +1,19 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.46s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 1 test
+test ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 235 filtered out; finished in 13.43s
+

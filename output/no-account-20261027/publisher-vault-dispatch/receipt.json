@@ -1,0 +1,194 @@
+{
+  "status": "VERIFIED_SCOPED_WITH_EXISTING_DEDICATED_SANDBOX_CASE_IGNORED",
+  "new_unique_test_names": 3,
+  "input_count": 294,
+  "input_changes_after_full_verification": [],
+  "checks": {
+    "personal-full": {
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--",
+        "--test-threads=1"
+      ],
+      "edition": "personal",
+      "exit": 0,
+      "duration_seconds": 285.172,
+      "log_sha256": "548f80dec7f89f18f8420a57375eb96ce8cd05859d3c12f5090c539f90e388d4",
+      "test_targets": [
+        {
+          "target": "Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)",
+          "passed": 236,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-bea34db55f9a917b)",
+          "passed": 31,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-94320da14056e1f2)",
+          "passed": 42,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-b085b883bd291e1c)",
+          "passed": 34,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-864558bede95ed13)",
+          "passed": 33,
+          "failed": 0,
+          "ignored": 1
+        }
+      ]
+    },
+    "public-full": {
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--",
+        "--test-threads=1"
+      ],
+      "edition": "public",
+      "exit": 0,
+      "duration_seconds": 24.245,
+      "log_sha256": "b03b7c2067ef7d32b3b9728e12a906fc308d00441920cc863fd4305c42861437",
+      "test_targets": [
+        {
+          "target": "Running unittests src/main.rs (target/debug/deps/switcher_desktop-820c85b830ef89e6)",
+          "passed": 35,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-41b5d233a58f6ef3)",
+          "passed": 31,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-17d39b7ac0d3a787)",
+          "passed": 42,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-4f4119df2e385c3a)",
+          "passed": 34,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "target": "Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-b6e341933732ef6a)",
+          "passed": 33,
+          "failed": 0,
+          "ignored": 1
+        }
+      ]
+    },
+    "personal-clippy": {
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--all-targets"
+      ],
+      "edition": "personal",
+      "exit": 0,
+      "duration_seconds": 3.964,
+      "log_sha256": "55b7f5daa21d583181f61afe410dee0f1d1b8e1adc0a28629b80ee6e06246527"
+    },
+    "public-clippy": {
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--all-targets"
+      ],
+      "edition": "public",
+      "exit": 0,
+      "duration_seconds": 2.661,
+      "log_sha256": "420d915010cb564568d6c0b2234263a6ebe444a2e331ce9874bd0512d0be954f"
+    },
+    "format": {
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "apps/desktop/src-tauri/src/main.rs",
+        "apps/desktop/src-tauri/src/publisher/security.rs",
+        "apps/desktop/src-tauri/src/publisher_commands.rs",
+        "apps/desktop/src-tauri/src/publisher_recovery_commands.rs",
+        "apps/desktop/src-tauri/src/ipc_dispatch_tests.rs",
+        "apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.273,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "scope": "ordinary product dispatcher + MemoryVault + private LocalObjectStore; App-state reconstruction",
+  "not_proven": [
+    "native Keychain",
+    "WKWebView",
+    "OS process restart",
+    "real R2/CDN/client propagation",
+    "system installation",
+    "long-duration acceptance"
+  ],
+  "not_repeated": [
+    "prior core/helper/Python suites",
+    "frontend checks/builds",
+    "ordinary App packages",
+    "native locked-screen attempts"
+  ],
+  "existing_ignored_case": "activity_write_denial_returns_error_after_preferences_commit_both_editions; dedicated single-layer account-free Seatbelt runner required; unchanged source",
+  "new_product_bugs_found": 0
+}

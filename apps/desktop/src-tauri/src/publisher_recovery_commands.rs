@@ -5,9 +5,8 @@ use crate::{
         self,
         local_store::LocalObjectStore,
         migration::recovery::{PreparedRecovery, RecoveryPreview},
-        security::KeychainVault,
     },
-    publisher_commands,
+    publisher_commands::{self, PublisherVault},
 };
 use std::sync::{Arc, Mutex};
 use switcher_domain::{ads::AdChannel, desktop::OperationOutcome};
@@ -38,15 +37,16 @@ pub async fn publisher_retained_list(
 #[tauri::command]
 pub async fn publisher_retained_export(
     state: State<'_, Arc<DesktopState>>,
+    vault: PublisherVault<'_>,
     generation: String,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
     let passphrase = zeroize::Zeroizing::new(passphrase);
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        publisher_commands::with_publisher(&state, |p| {
-            let bytes =
-                p.export_retained_generation(&generation, passphrase.as_bytes(), &KeychainVault)?;
+        publisher_commands::with_publisher_vault(&state, &vault, |p, vault| {
+            let bytes = p.export_retained_generation(&generation, passphrase.as_bytes(), vault)?;
             publisher::migration::recovery::save_retained_archive(p, &generation, &bytes)?;
             Ok(bridge::completed(
                 "保留资料已加密导出到备份目录；原资料和当前代次继续保留。",
@@ -60,6 +60,7 @@ pub async fn publisher_retained_export(
 #[tauri::command]
 pub async fn publisher_recovery_prepare(
     state: State<'_, Arc<DesktopState>>,
+    vault: PublisherVault<'_>,
     sessions: Sessions<'_>,
     passphrase: String,
 ) -> Result<RecoveryPreview, String> {
@@ -78,6 +79,7 @@ pub async fn publisher_recovery_prepare(
         guard.epoch
     };
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
         let result = (|| {
             let publisher = publisher_commands::open_publisher(&state)?;
@@ -91,14 +93,17 @@ pub async fn publisher_recovery_prepare(
             };
             let source = LocalObjectStore::open(&state.root, AdChannel::Preview, &trust)
                 .map_err(|e| e.to_string())?;
-            PreparedRecovery::prepare(
-                publisher,
-                source,
-                passphrase,
-                &KeychainVault,
-                switcher_core::checks::unix_now(),
-            )
-            .map_err(|e| e.to_string())
+            vault
+                .with(|vault| {
+                    PreparedRecovery::prepare(
+                        publisher,
+                        source,
+                        passphrase,
+                        vault,
+                        switcher_core::checks::unix_now(),
+                    )
+                })
+                .map_err(|e| e.to_string())
         })();
         let mut guard = sessions
             .0
@@ -119,6 +124,7 @@ pub async fn publisher_recovery_prepare(
 
 #[tauri::command]
 pub async fn publisher_recovery_confirm(
+    vault: PublisherVault<'_>,
     sessions: Sessions<'_>,
     digest: String,
 ) -> Result<OperationOutcome, String> {
@@ -129,8 +135,9 @@ pub async fn publisher_recovery_confirm(
         .prepared
         .take()
         .ok_or("恢复会话不存在，请重新准备")?;
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        let view = session.confirm(&digest, switcher_core::checks::unix_now(), &mut KeychainVault).map_err(|e| e.to_string())?;
+        let view = vault.with(|vault| session.confirm(&digest, switcher_core::checks::unix_now(), vault)).map_err(|e| e.to_string())?;
         Ok(bridge::completed(format!("已建立新的本机发布代次。旧资料和旧密钥继续保留。完整加密备份：{}。尚未发布，请核对草稿后明确发布。", view.backup_filename)))
     }).await.map_err(|_| "恢复确认被中断，请重新读取状态；不要假定切换失败".to_owned())?
 }
@@ -150,6 +157,7 @@ pub fn publisher_recovery_cancel(sessions: Sessions<'_>) -> Result<(), String> {
 #[tauri::command]
 pub async fn publisher_archive_import(
     state: State<'_, Arc<DesktopState>>,
+    vault: PublisherVault<'_>,
     bytes: Vec<u8>,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
@@ -158,9 +166,10 @@ pub async fn publisher_archive_import(
         return Err("备份文件超过 64 MiB 上限".into());
     }
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        publisher_commands::with_publisher(&state, |p| {
-            p.import_retained_generation(&bytes, passphrase.as_bytes(), &mut KeychainVault)?;
+        publisher_commands::with_publisher_vault(&state, &vault, |p, vault| {
+            p.import_retained_generation(&bytes, passphrase.as_bytes(), vault)?;
             Ok(bridge::completed(
                 "完整归档已导入保留目录。当前代次保持原样；旧发布事务不会自动重放。",
             ))

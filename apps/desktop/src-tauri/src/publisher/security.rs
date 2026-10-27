@@ -50,6 +50,27 @@ pub trait Vault {
 
 pub struct KeychainVault;
 
+/// Personal application boundary. A poisoned secret store fails closed.
+pub(crate) struct ManagedVault(std::sync::Mutex<Box<dyn Vault + Send>>);
+
+impl Default for ManagedVault {
+    fn default() -> Self {
+        Self(std::sync::Mutex::new(Box::new(KeychainVault)))
+    }
+}
+
+impl ManagedVault {
+    pub(crate) fn with<T>(&self, run: impl FnOnce(&mut dyn Vault) -> Result<T>) -> Result<T> {
+        let mut vault = self.0.lock().map_err(|_| Error::SecretUnavailable)?;
+        run(vault.as_mut())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn synthetic(vault: impl Vault + Send + 'static) -> Self {
+        Self(std::sync::Mutex::new(Box::new(vault)))
+    }
+}
+
 impl Vault for KeychainVault {
     fn create(&mut self, generation: &str, secrets: &Secrets) -> Result<()> {
         secrets.validate()?;
@@ -130,6 +151,24 @@ impl Vault for KeychainVault {
         {
             let _ = generation;
             Err(Error::SecretUnavailable)
+        }
+    }
+}
+
+#[cfg(test)]
+mod managed_tests {
+    use super::*;
+
+    #[test]
+    fn poisoned_managed_vault_never_runs_another_secret_operation() {
+        let vault = ManagedVault::synthetic(super::super::test_support::MemoryVault::default());
+        let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _: Result<()> = vault.with(|_| panic!("synthetic secret-store interruption"));
+        }));
+        assert!(panic.is_err());
+        for _ in 0..2 {
+            let result: Result<()> = vault.with(|_| panic!("poisoned vault must fail closed"));
+            assert!(matches!(result, Err(Error::SecretUnavailable)));
         }
     }
 }

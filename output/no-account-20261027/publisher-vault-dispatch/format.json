@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "--check",
+    "apps/desktop/src-tauri/src/main.rs",
+    "apps/desktop/src-tauri/src/publisher/security.rs",
+    "apps/desktop/src-tauri/src/publisher_commands.rs",
+    "apps/desktop/src-tauri/src/publisher_recovery_commands.rs",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests.rs",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs"
+  ],
+  "exit": 0,
+  "duration_seconds": 0.273,
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

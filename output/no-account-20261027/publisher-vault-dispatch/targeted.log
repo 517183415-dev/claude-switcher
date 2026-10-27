@@ -1,0 +1,43 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.70s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 2 tests
+test ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current ... FAILED
+test ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data ... FAILED
+
+failures:
+
+---- ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current stdout ----
+
+thread 'ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current' (34255861) panicked at apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs:68:9:
+assertion `left == right` failed
+  left: [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 16, 73, 68, 65, 84, 120, 1, 1, 5, 0, 250, 255, 0, 17, 34, 51, 255, 2, 20, 1, 102, 185, 225, 250, 193, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]
+ right: [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 30, 116, 69, 88, 116, 70, 105, 120, 116, 117, 114, 101, 0, 83, 89, 78, 84, 72, 69, 84, 73, 67, 95, 80, 78, 71, 95, 77, 69, 84, 65, 68, 65, 84, 65, 248, 236, 137, 181, 0, 0, 0, 13, 73, 68, 65, 84, 120, 156, 99, 16, 84, 50, 254, 15, 0, 2, 20, 1, 102, 4, 224, 222, 127, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data stdout ----
+
+thread 'ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data' (34255873) panicked at apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs:267:5:
+assertion `left == right` failed
+  left: Null
+ right: "complete-generation-v1"
+
+
+failures:
+    ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current
+    ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 234 filtered out; finished in 9.17s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

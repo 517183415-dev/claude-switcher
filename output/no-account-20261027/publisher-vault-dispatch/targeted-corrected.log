@@ -1,0 +1,33 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.83s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 2 tests
+test ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current ... ok
+test ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data ... FAILED
+
+failures:
+
+---- ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data stdout ----
+
+thread 'ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data' (34257610) panicked at apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs:308:10:
+called `Result::unwrap()` on an `Err` value: String("发布数据无效：archive_generation_exists")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 234 filtered out; finished in 14.30s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

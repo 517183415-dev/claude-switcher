@@ -1,5 +1,7 @@
 # 无真实账号功能覆盖审查索引
 
+AD-10 补充[生产运营 IPC 成功路径](../../../../output/no-account-20261027/publisher-vault-dispatch/README.md)：应用级 Vault 默认 Keychain；测试注入 MemoryVault，使用共享产品注册表核对备份恢复/续发、准备与确认、另一个隔离安装归档导入。另补锁中毒失败关闭测试。AD-07 仅增加暂停与备份续发的交叉证据，不升级历史恢复。旧表计数保留原映射口径，不累加执行次数或宣称原生通过。
+
 AD-10 新增[普通恢复拒绝证据](../../../../output/no-account-20261027/recovery-dispatch/README.md)：一个测试名、两入口各八类拒绝，目录内容/权限与状态重建回读不变。相关 IPC 集合 7 项通过；不升级为成功恢复或原生验收。
 
 PR-07/08、AD-01/09 补充：MockRuntime 与普通产品共用完整注册表；两版拒绝矩阵及偏好/脱敏导出通过，Personal 草稿闭环保留。完整桌面 Personal 230 / Public 35 项通过，不能替代真实窗口及全部业务分支。见[证据](../../../../output/no-account-20261027/ordinary-registry/receipt.json)。

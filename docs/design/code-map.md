@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：生产运营 IPC 共享密钥边界与成功恢复闭环
+
+Personal 的 Tauri Builder 单独注册 ManagedVault，默认使用 KeychainVault。15 个需要凭据的生产命令经 Tauri State 注入同一服务，复用 Publisher→Vault 锁顺序；DesktopState 保持独立。前端 JSON、命令名、ACL 和 Public 运营隔离不变。合成 Vault 仅测试可构造。
+
+新增两项共享产品分发表测试覆盖：密钥生成与重复拒绝、三槽六期、两渠道发布、备份导出与旧备份恢复、较高序号续发；恢复准备/取消/确认、旧代次导出与另一隔离安装导入。独立核对签名、immutable/current、规范化素材、0600 文件、旧代次/旧密钥和当前状态；恢复与归档导入均不自动发布。另补 Vault 锁中毒后失败关闭测试。
+
+[计划](../plans/生产运营IPC密钥边界与备份闭环-2026-10-27.md)与[证据](../../output/no-account-20261027/publisher-vault-dispatch/README.md)。阶段末 Personal 主程序 236 项、Public 主程序 35 项通过；两版四个集成目标各 140 次通过，同一专用 Seatbelt 用例各按原配置忽略一次，不计为通过。两版 all-target Clippy 和六个变更文件格式检查通过，保留三条既有 Personal 迁移风格警告及 ts-rs 提示。294 个源码/构建/测试输入在完整验证后无漂移。CodeGraph complete、pending 0：241 文件、6373 节点、26801 条边。本轮仍是 MockRuntime/MemoryVault；真实 Keychain、WebView、R2 传播和系统验收继续待验。UI 最后执行，沿用当前布局和非蓝紫色配色；注册、部署、付款暂停。
+
 ## 2026-10-27：恢复拒绝的共享注册表测试
 
 `ipc::handler → restore_publisher_backup → spawn_blocking → Publisher::restore_backup` 与 `ipc::handler → publisher_archive_import → spawn_blocking → import_retained_generation` 新增同一隔离测试。两入口各八类拒绝，独立递归核对磁盘状态并重建 App 回读；产品调用链未改。[证据与 MockRuntime 范围](../../output/no-account-20261027/recovery-dispatch/README.md)。CodeGraph complete、pending 0：240 文件、6350 节点、26499 条边。

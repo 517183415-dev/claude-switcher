@@ -38,11 +38,22 @@ impl SyntheticRoot {
                 switcher_domain::Edition::Public
             },
         );
+        self.build_app(
+            state,
+            #[cfg(feature = "personal")]
+            Arc::new(crate::publisher::security::ManagedVault::default()),
+        )
+    }
+    fn build_app(
+        &self,
+        state: DesktopState,
+        #[cfg(feature = "personal")] vault: Arc<crate::publisher::security::ManagedVault>,
+    ) -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
         let mut context = mock_context(noop_assets());
         *context.runtime_authority_mut() = crate::ipc_policy_tests::ordinary_policy().0;
         let builder = mock_builder().manage(Arc::new(state));
         #[cfg(feature = "personal")]
-        let builder = builder.manage(Arc::new(
+        let builder = builder.manage(vault).manage(Arc::new(
             crate::publisher_recovery_commands::RecoverySessions::default(),
         ));
         let app = builder
@@ -53,6 +64,17 @@ impl SyntheticRoot {
             .build()
             .unwrap();
         (app, window)
+    }
+    #[cfg(feature = "personal")]
+    fn app_with_vault(
+        &self,
+        vault: Arc<crate::publisher::security::ManagedVault>,
+    ) -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
+        let state = DesktopState::isolated_activity_fixture(
+            self.0.clone(),
+            switcher_domain::Edition::Personal,
+        );
+        self.build_app(state, vault)
     }
     #[cfg(feature = "personal")]
     fn state_path(&self) -> PathBuf {
@@ -378,21 +400,7 @@ fn ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft()
             .unwrap()
             .starts_with("data:image/png;base64,")
     );
-    let mut draft = initial.clone();
-    let now = switcher_core::checks::unix_now();
-    for (i, slot) in draft["slots"]
-        .as_array_mut()
-        .unwrap()
-        .iter_mut()
-        .enumerate()
-    {
-        slot["campaigns"] = Value::Array((0..2).map(|j| json!({
-            "campaign_id": format!("synthetic-{i}-{j}"), "merchant_id": "synthetic-merchant",
-            "merchant_name": "合成商家", "title": format!("合成广告 {i}/{j}"), "description": "仅本机测试",
-            "image": image["asset"], "button_text": "查看", "target_url": "https://synthetic.example.com/",
-            "starts_at": now + j * 3600, "ends_at": now + (j + 1) * 3600, "enabled": true
-        })).collect());
-    }
+    let draft = six_campaigns(initial.clone(), &image["asset"]);
     let saved = invoke(&window, "ad_draft_save", json!({"manifest":draft})).unwrap();
     assert_eq!(saved["slots"], draft["slots"]);
     assert!(
@@ -486,3 +494,26 @@ fn ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft() {
         assert_eq!(fs::read(&state).unwrap(), b"{invalid synthetic state");
     }
 }
+
+#[cfg(feature = "personal")]
+fn six_campaigns(initial: Value, asset: &Value) -> Value {
+    let mut draft = initial;
+    let now = switcher_core::checks::unix_now();
+    for (i, slot) in draft["slots"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .enumerate()
+    {
+        slot["campaigns"] = Value::Array((0..2).map(|j| json!({
+            "campaign_id": format!("synthetic-{i}-{j}"), "merchant_id": "synthetic-merchant",
+            "merchant_name": "合成商家", "title": format!("合成广告 {i}/{j}"), "description": "仅本机测试",
+            "image": asset, "button_text": "查看", "target_url": "https://synthetic.example.com/",
+            "starts_at": now + j * 3600, "ends_at": now + (j + 1) * 3600, "enabled": true
+        })).collect());
+    }
+    draft
+}
+
+#[cfg(feature = "personal")]
+mod publisher_backup;

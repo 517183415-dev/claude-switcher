@@ -1,7 +1,11 @@
 //! Compiled into Personal only. Remote settings require an explicit operator action.
 use crate::{
     bridge::{self, DesktopState},
-    publisher::{self, Publisher, cleanup::CleanupOptions, security::KeychainVault},
+    publisher::{
+        self, Publisher,
+        cleanup::CleanupOptions,
+        security::{ManagedVault, Vault},
+    },
 };
 use std::sync::Arc;
 use switcher_domain::{
@@ -12,12 +16,21 @@ use switcher_domain::{
 use tauri::State;
 
 type Desktop<'a> = State<'a, Arc<DesktopState>>;
+pub(crate) type PublisherVault<'a> = State<'a, Arc<ManagedVault>>;
 pub(crate) fn with_publisher<T>(
     state: &DesktopState,
     run: impl FnOnce(&mut Publisher) -> publisher::Result<T>,
 ) -> Result<T, String> {
     let mut publisher = open_publisher(state)?;
     run(&mut publisher).map_err(|e| e.to_string())
+}
+
+pub(crate) fn with_publisher_vault<T>(
+    state: &DesktopState,
+    vault: &ManagedVault,
+    run: impl FnOnce(&mut Publisher, &mut dyn Vault) -> publisher::Result<T>,
+) -> Result<T, String> {
+    with_publisher(state, |publisher| vault.with(|vault| run(publisher, vault)))
 }
 pub(crate) fn open_publisher(state: &DesktopState) -> Result<Publisher, String> {
     state.prepare_directory()?;
@@ -398,7 +411,7 @@ pub(crate) fn publish_local(
     root: &std::path::Path,
     channel: AdChannel,
     now: u64,
-    vault: &dyn publisher::security::Vault,
+    vault: &dyn Vault,
 ) -> publisher::Result<OperationOutcome> {
     let public_key = publisher
         .configured_public_key()
@@ -414,16 +427,18 @@ pub(crate) fn publish_local(
 #[tauri::command]
 pub async fn publish_ad(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     channel: AdChannel,
 ) -> Result<OperationOutcome, String> {
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        with_publisher(&state, |p| {
+        with_publisher_vault(&state, &vault, |p, vault| {
             publication_outcome(p.publish_configured(
                 &state.root,
                 channel,
                 switcher_core::checks::unix_now(),
-                &KeychainVault,
+                vault,
             ))
         })
     })
@@ -433,10 +448,12 @@ pub async fn publish_ad(
 #[tauri::command]
 pub async fn publisher_remote_read(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
 ) -> Result<publisher::connection::RemoteSettings, String> {
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        with_publisher(&state, |p| p.remote_settings(&KeychainVault))
+        with_publisher_vault(&state, &vault, |p, vault| p.remote_settings(vault))
     })
     .await
     .map_err(|_| "远程发布配置读取被中断".to_owned())?
@@ -445,6 +462,7 @@ pub async fn publisher_remote_read(
 #[tauri::command]
 pub async fn publisher_remote_save(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     channel: AdChannel,
     config: Option<publisher::r2_store::R2Config>,
     access_key: String,
@@ -453,9 +471,10 @@ pub async fn publisher_remote_save(
     let access_key = zeroize::Zeroizing::new(access_key);
     let secret_key = zeroize::Zeroizing::new(secret_key);
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        with_publisher(&state, |p| {
-            p.configure_r2(channel, config, access_key, secret_key, &mut KeychainVault)
+        with_publisher_vault(&state, &vault, |p, vault| {
+            p.configure_r2(channel, config, access_key, secret_key, vault)
         })
     })
     .await
@@ -464,13 +483,15 @@ pub async fn publisher_remote_save(
 #[tauri::command]
 pub async fn publisher_remote_select(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     channel: AdChannel,
     target: String,
 ) -> Result<publisher::connection::RemoteSettings, String> {
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        with_publisher(&state, |p| {
-            p.select_retained_r2(channel, &target, &mut KeychainVault)
+        with_publisher_vault(&state, &vault, |p, vault| {
+            p.select_retained_r2(channel, &target, vault)
         })
     })
     .await
@@ -479,6 +500,7 @@ pub async fn publisher_remote_select(
 
 async fn with_cleanup_source<T: Send + 'static>(
     state: Arc<DesktopState>,
+    vault: Arc<ManagedVault>,
     run: impl FnOnce(
         &mut Publisher,
         &mut dyn publisher::cleanup::FixedCurrents,
@@ -488,8 +510,8 @@ async fn with_cleanup_source<T: Send + 'static>(
     + 'static,
 ) -> Result<T, String> {
     tokio::task::spawn_blocking(move || {
-        with_publisher(&state, |publisher| {
-            publisher.with_configured_currents(&state.root, &KeychainVault, |publisher, source| {
+        with_publisher_vault(&state, &vault, |publisher, vault| {
+            publisher.with_configured_currents(&state.root, vault, |publisher, source| {
                 run(publisher, source, switcher_core::checks::unix_now())
             })
         })
@@ -524,10 +546,11 @@ fn protection_label(reason: &str) -> &str {
 #[tauri::command]
 pub async fn preview_publisher_cleanup(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     retain: u32,
     release_resolution: bool,
 ) -> Result<PublisherCleanupPreview, String> {
-    with_cleanup_source(state.inner().clone(), move |publisher, source, now| {
+    with_cleanup_source(state.inner().clone(), vault.inner().clone(), move |publisher, source, now| {
         let preview = publisher.cleanup_preview(source, CleanupOptions { retain: retain as usize, release_resolution }, now)?;
         let history = publisher.status().history;
         let retained: std::collections::HashSet<_> = preview.keep_history.iter().copied().collect();
@@ -553,34 +576,42 @@ pub async fn preview_publisher_cleanup(
 #[tauri::command]
 pub async fn commit_publisher_cleanup(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     retain: u32,
     release_resolution: bool,
     digest: String,
 ) -> Result<OperationOutcome, String> {
-    with_cleanup_source(state.inner().clone(), move |publisher, source, now| {
-        let result = publisher.cleanup_commit(
-            source,
-            CleanupOptions {
-                retain: retain as usize,
-                release_resolution,
-            },
-            &digest,
-            now,
-        )?;
-        Ok(OperationOutcome {
-            completed: true,
-            message: format!(
-                "索引整理已完成：移除 {} 条历史和 {} 条素材索引。文件回收仍待单独确认。",
-                result.removed_history, result.removed_assets
-            ),
-            recovery: Some("请点击“预览本批文件回收”，核对文件后再次确认。".into()),
-        })
-    })
+    with_cleanup_source(
+        state.inner().clone(),
+        vault.inner().clone(),
+        move |publisher, source, now| {
+            let result = publisher.cleanup_commit(
+                source,
+                CleanupOptions {
+                    retain: retain as usize,
+                    release_resolution,
+                },
+                &digest,
+                now,
+            )?;
+            Ok(OperationOutcome {
+                completed: true,
+                message: format!(
+                    "索引整理已完成：移除 {} 条历史和 {} 条素材索引。文件回收仍待单独确认。",
+                    result.removed_history, result.removed_assets
+                ),
+                recovery: Some("请点击“预览本批文件回收”，核对文件后再次确认。".into()),
+            })
+        },
+    )
     .await
 }
 #[tauri::command]
-pub async fn preview_publisher_gc(state: Desktop<'_>) -> Result<PublisherGcPreview, String> {
-    with_cleanup_source(state.inner().clone(), |publisher, source, now| {
+pub async fn preview_publisher_gc(
+    state: Desktop<'_>,
+    vault: PublisherVault<'_>,
+) -> Result<PublisherGcPreview, String> {
+    with_cleanup_source(state.inner().clone(), vault.inner().clone(), |publisher, source, now| {
         let preview = publisher.gc_preview(source, now)?;
         Ok(PublisherGcPreview {
             batch_id: preview.batch_id, digest: preview.digest,
@@ -596,9 +627,10 @@ pub async fn preview_publisher_gc(state: Desktop<'_>) -> Result<PublisherGcPrevi
 #[tauri::command]
 pub async fn commit_publisher_gc(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     digest: String,
 ) -> Result<OperationOutcome, String> {
-    with_cleanup_source(state.inner().clone(), move |publisher, source, now| {
+    with_cleanup_source(state.inner().clone(), vault.inner().clone(), move |publisher, source, now| {
         let result = publisher.gc_commit(source, &digest, now)?;
         Ok(OperationOutcome {
             completed: result.batch_finished,
@@ -635,9 +667,12 @@ pub fn restore_ad_history(state: Desktop<'_>, release_id: String) -> Result<AdMa
     })
 }
 #[tauri::command]
-pub fn create_ad_signing_key(state: Desktop<'_>) -> Result<OperationOutcome, String> {
-    with_publisher(&state, |p| {
-        let key = p.generate_signing_key(&mut KeychainVault, Vec::new(), Vec::new())?;
+pub fn create_ad_signing_key(
+    state: Desktop<'_>,
+    vault: PublisherVault<'_>,
+) -> Result<OperationOutcome, String> {
+    with_publisher_vault(&state, &vault, |p, vault| {
+        let key = p.generate_signing_key(vault, Vec::new(), Vec::new())?;
         let hex: String = key.iter().map(|byte| format!("{byte:02x}")).collect();
         Ok(bridge::completed(format!(
             "广告签名私钥已保存到本机钥匙串。公开验证公钥：{hex}"
@@ -647,13 +682,15 @@ pub fn create_ad_signing_key(state: Desktop<'_>) -> Result<OperationOutcome, Str
 #[tauri::command]
 pub async fn export_publisher_backup(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
         let passphrase = zeroize::Zeroizing::new(passphrase);
-        with_publisher(&state, |p| {
-            let bytes = p.export_backup(passphrase.as_bytes(), &KeychainVault)?;
+        with_publisher_vault(&state, &vault, |p, vault| {
+            let bytes = p.export_backup(passphrase.as_bytes(), vault)?;
             let directory = state.directory().join("publisher/backups");
             switcher_core::storage::create_private_directory(&directory)?;
             let digest = switcher_core::signed::digest(&bytes);
@@ -674,14 +711,16 @@ pub async fn export_publisher_backup(
 #[tauri::command]
 pub async fn restore_publisher_backup(
     state: Desktop<'_>,
+    vault: PublisherVault<'_>,
     bytes: Vec<u8>,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
     let state = state.inner().clone();
+    let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
         restore_publisher_backup_body(&bytes, passphrase, |bytes, passphrase| {
-            with_publisher(&state, |p| {
-                p.restore_backup(bytes, passphrase, &mut KeychainVault)
+            with_publisher_vault(&state, &vault, |p, vault| {
+                p.restore_backup(bytes, passphrase, vault)
             })
         })
     })

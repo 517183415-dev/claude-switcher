@@ -168,9 +168,13 @@ fn main() {
         Ok(())
     });
     #[cfg(feature = "personal")]
-    let builder = builder.manage(std::sync::Arc::new(
-        publisher_recovery_commands::RecoverySessions::default(),
-    ));
+    let builder = builder
+        .manage(std::sync::Arc::new(
+            publisher::security::ManagedVault::default(),
+        ))
+        .manage(std::sync::Arc::new(
+            publisher_recovery_commands::RecoverySessions::default(),
+        ));
     #[cfg(feature = "ipc-smoke")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::runtime_info,
