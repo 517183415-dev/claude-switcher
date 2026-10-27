@@ -1,5 +1,7 @@
 # Claude 切换器当前代码图谱
 
+两版最新候选包基于 `f34f9b9a` 构建，包含下列广告来源修复。构建和签名校验通过；当前包的原生窗口业务尚未验证。[构建证据](../acceptance/evidence/no-account-20261027/candidate-f34f9b9a-20261028.md)。
+
 ## 2026-10-28：广告手动刷新命令链
 
 `refresh_ad_content → DesktopState::refresh_ads → AdRuntime::refresh_if_due → 签名校验与缓存`。桌面命令测试使用 Tauri MockRuntime、合成资料和测试专用时钟。生产代码继续读取系统时钟。两版构建验证关闭与缺少来源；签名成功、篡改拒绝及恢复在 Personal 测试程序的两版状态中验证。[证据和边界](../acceptance/evidence/no-account-20261027/ad-refresh-dispatch-20261028.md)。
