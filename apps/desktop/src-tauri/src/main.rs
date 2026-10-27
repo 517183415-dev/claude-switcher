@@ -30,6 +30,16 @@ mod publisher_commands;
 mod publisher_recovery_commands;
 mod update_runtime;
 
+#[cfg(all(
+    test,
+    not(any(
+        feature = "ipc-smoke",
+        feature = "ipc-limits",
+        feature = "ipc-business"
+    ))
+))]
+mod ipc_policy_tests;
+
 #[cfg(feature = "ipc-smoke")]
 #[tauri::command]
 fn forbidden_probe() {

@@ -1,5 +1,13 @@
 # Claude 切换器 Rust 重写 PRD
 
+## 2026-10-27：普通发行 IPC 权限策略证据
+
+普通 Personal/Public 的 capability 必须与命令注册表一致；授权限定本地 main 窗口。Public 不授予 Personal 的 25 个运营命令。新增测试直接使用 Tauri 权限解析器检查实际配置与生成 manifest，不执行命令处理函数。
+
+2 个测试名在两版执行共 4 次通过；Personal 48、Public 23 个授权匹配。两版 Clippy 与格式检查通过，保留既有警告；只修正导入顺序后复用有效测试。[阶段回执](../../output/no-account-20261027/ordinary-ipc-policy/receipt.json)不代表完整普通 App 动态 IPC、真实 Keychain/R2 或远程传播通过。
+
+UI 重写仍排在最后。保留当前 UI 布局、导航与功能位置；效果图只作为原生 SwiftUI 玻璃材质参考，背景继续遵守非蓝紫色要求。注册、部署、付款暂停。
+
 ## 2026-10-27：远程发布校验与说明一致性
 
 R2 公开来源必须使用 HTTPS 域名；IPv4 和 IPv6 字面量均拒绝。修复遗漏 IPv6 回环地址的问题，新增三个 IPv6 回归输入。配置保存、目标身份和传输打开共用同一校验。

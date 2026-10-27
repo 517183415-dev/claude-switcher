@@ -1,0 +1,130 @@
+{
+  "base_commit": "f705048c68a0236ff3ce9211f2f22ba4aa49b823",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "inputs_before": {
+    "manifest": "source-inputs.json",
+    "overrides": {
+      "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "2099b1c9cc0e3a47e873e371b40dd165e2e77768021633ef69e4553b001bb849"
+    },
+    "removed": []
+  },
+  "checks": [
+    {
+      "name": "personal-tests",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--bin",
+        "switcher-desktop",
+        "ipc_policy_tests",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.58
+    },
+    {
+      "name": "personal-clippy",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.42
+    },
+    {
+      "name": "public-tests",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--bin",
+        "switcher-desktop",
+        "ipc_policy_tests",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.49
+    },
+    {
+      "name": "public-clippy",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.95
+    },
+    {
+      "name": "fixture-exclusion",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal,ipc-business",
+        "--bin",
+        "switcher-desktop",
+        "ipc_policy_tests",
+        "--",
+        "--list"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.61
+    },
+    {
+      "name": "format",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.38
+    }
+  ],
+  "inputs_after": {
+    "manifest": "source-inputs.json",
+    "overrides": {
+      "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "2099b1c9cc0e3a47e873e371b40dd165e2e77768021633ef69e4553b001bb849"
+    },
+    "removed": []
+  },
+  "inputs_unchanged": true
+}

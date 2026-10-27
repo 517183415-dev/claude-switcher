@@ -1,0 +1,71 @@
+{
+  "scope": "ordinary Tauri capability policy only; no WebView invocation or business handler execution",
+  "base_commit": "f705048c68a0236ff3ce9211f2f22ba4aa49b823",
+  "test_names": [
+    "ordinary_capabilities_match_registration_and_reject_other_windows_and_remote_origins",
+    "ordinary_capabilities_reject_fixture_unknown_and_cross_edition_commands"
+  ],
+  "distinct_test_names": 2,
+  "test_executions": 4,
+  "passed": 4,
+  "failed": 0,
+  "editions": {
+    "personal": {
+      "registered_and_granted": 48
+    },
+    "public": {
+      "registered_and_granted": 23,
+      "personal_only_commands_denied": 25
+    }
+  },
+  "verified": [
+    "generated manifests and shipped edition capability selection through Tauri Resolved::resolve and RuntimeAuthority::resolve_access",
+    "all allowed grants use Local context and exact main window; no separate webview grants",
+    "other windows, representative remote origins, fixture commands, unknown commands and ungranted plugin commands denied",
+    "ordinary test module excluded from ipc-business fixture; earlier valid check reused"
+  ],
+  "not_verified": [
+    "ordinary WKWebView message delivery and complete dynamic IPC matrix",
+    "command business handlers, native Keychain and system services",
+    "real Claude accounts, R2 deployment, remote client propagation"
+  ],
+  "verification": "verification.json",
+  "reused_fixture_check": "verification-before-scope-assertion.json",
+  "formatting_correction": {
+    "change": "rustfmt import order only; function bodies unchanged",
+    "tested_source_sha256": "b2ddd247fd782b5fa7ec6b7fd097e90a323aeb380113c074b509ea3936a543f8",
+    "final_source_sha256": "8498cf2f8e56ce0856ef014df07409a1462845008f57c64b16e5a81e829d984f",
+    "failed_format_check": "verification-before-format.json",
+    "tests_reused": true
+  },
+  "warnings": [
+    "existing Personal migration collapsible_if warnings (3)",
+    "existing ts-rs serde-attribute parse warnings"
+  ],
+  "local_log_sha256": {
+    "personal-tests-final.log": "77eb26ae7180b323e2b169f5a8158ac88d39e40efa67b2b1a400711c5a3cf24c",
+    "personal-clippy.log": "b8e6f191d9b6821c4a2a339bbe5de99c9605d1b9446fdb0001016328bef2a8f3",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "personal-tests.log": "38d2ef3f91702720fb63a80897f52744916d88075d136ef0004df3f301d3bd8e",
+    "format-final.log": "4e295dedf5b8b0c995496988fa413c8945072ec6aeca413a46f4004859989d17",
+    "public-clippy.log": "67e6073ee9b0b41497cac9021f7d20b2c096aaf5cbca120f2e0276019251a283",
+    "public-tests-final.log": "c99e430878e796c66bdf8b95bc0ea2a15c1c8212b2d765e3055ada4c3fae3417",
+    "public-r1.log": "fdc84c646a001f3f692879bdd0cc1b9e9885e27e20c6dd57bd588efe78fd9951",
+    "format-fixed.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "personal-r1.log": "50895583700db278a49b99b425e0c829b5e58fc9c6d276ad66b5ed2af337992b",
+    "public-tests.log": "f0048b7f984a43f7097810da95d5fd6304a2a76036a29a13d4732367216bfe88",
+    "personal-clippy-final.log": "a1d5a6060d8b2e1ec84c54bb952e46c9419285dc4567ea083b630a97d1e2ddad",
+    "fixture-exclusion.log": "060e3c3d9688e5cb77bc898f7550911c0ed026ca68506e7575b514f2bb645398",
+    "public-clippy-final.log": "d47af3b376d05ea865f169791198412ef92b2b26440723bba519a3f278246bb7"
+  },
+  "codegraph": {
+    "state": "complete",
+    "pending_refs": 0,
+    "files": 228,
+    "nodes": 6110,
+    "edges": 25110
+  },
+  "registration_deployment_payment": "paused",
+  "ui": "native SwiftUI rewrite last; retain current layout; reference glass material only; no blue-purple background",
+  "final_source_inputs_manifest": "source-inputs.json"
+}

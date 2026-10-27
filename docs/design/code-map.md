@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：普通发行 IPC 权限策略
+
+`main.rs` 的普通测试入口 → `ipc_policy_tests.rs` → 构建生成 manifest/capability + 两版实际配置 → Tauri `Resolved::resolve` → `RuntimeAuthority::resolve_access`。无需增加依赖或产品测试后门；夹具 feature 排除本模块。
+
+2 个测试名在两版执行共 4 次通过。Personal 48、Public 23 个授权与注册表一致；全部授权限定本地 main 窗口。覆盖远程来源、其他窗口、夹具/未知/插件命令拒绝，以及 Public 拒绝 25 个运营命令。两版 Clippy 和格式检查通过，保留既有警告。[证据](../../output/no-account-20261027/ordinary-ipc-policy/README.md)明确区分策略测试与未完成的普通 App 动态 IPC 验收。
+
+CodeGraph 自动同步为 complete、pending 0：228 文件、6110 节点、25110 条边。UI 布局未改。原生 SwiftUI 重写仍排最后，保留当前布局，只参考图片玻璃效果，沿用非蓝紫色配色。
+
 ## 2026-10-27：R2 IP 字面量拒绝与发布说明修复
 
 `publisher_remote_save` → `configure_r2` → `R2Config::validate`；同一校验也用于目标身份计算及 `R2Store::open`。原字符串 IP 解析漏掉带方括号的 IPv6。现改用 URL 解析器的域名类型，统一拒绝 IPv4/IPv6 字面量，不新增依赖或重复校验入口。

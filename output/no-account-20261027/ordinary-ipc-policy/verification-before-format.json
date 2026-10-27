@@ -1,0 +1,121 @@
+{
+  "base_commit": "f705048c68a0236ff3ce9211f2f22ba4aa49b823",
+  "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "inputs_before": {
+    "manifest": "source-inputs.json",
+    "overrides": {
+      "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "b2ddd247fd782b5fa7ec6b7fd097e90a323aeb380113c074b509ea3936a543f8"
+    },
+    "removed": []
+  },
+  "checks": [
+    {
+      "name": "personal-tests",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--bin",
+        "switcher-desktop",
+        "ipc_policy_tests",
+        "--",
+        "--nocapture"
+      ],
+      "log": "personal-tests-final.log",
+      "exit_code": 0,
+      "elapsed_seconds": 5.62
+    },
+    {
+      "name": "personal-clippy",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "personal",
+        "--all-targets"
+      ],
+      "log": "personal-clippy-final.log",
+      "exit_code": 0,
+      "elapsed_seconds": 2.28
+    },
+    {
+      "name": "public-tests",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--bin",
+        "switcher-desktop",
+        "ipc_policy_tests",
+        "--",
+        "--nocapture"
+      ],
+      "log": "public-tests-final.log",
+      "exit_code": 0,
+      "elapsed_seconds": 2.18
+    },
+    {
+      "name": "public-clippy",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--no-default-features",
+        "--features",
+        "public",
+        "--all-targets"
+      ],
+      "log": "public-clippy-final.log",
+      "exit_code": 0,
+      "elapsed_seconds": 1.2
+    },
+    {
+      "name": "format",
+      "command": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "format-final.log",
+      "exit_code": 1,
+      "elapsed_seconds": 0.39
+    }
+  ],
+  "inputs_after": {
+    "manifest": "source-inputs.json",
+    "overrides": {
+      "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "b2ddd247fd782b5fa7ec6b7fd097e90a323aeb380113c074b509ea3936a543f8"
+    },
+    "removed": []
+  },
+  "inputs_unchanged": true,
+  "reused_checks": [
+    {
+      "name": "fixture-exclusion",
+      "from": "verification-before-scope-assertion.json",
+      "reason": "main.rs feature gate unchanged; added assertions are excluded from ipc-business compilation"
+    }
+  ]
+}
