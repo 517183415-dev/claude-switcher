@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-remote-select"
+description = "Enables the publisher_remote_select command without any pre-configured scope."
+commands.allow = ["publisher_remote_select"]
+
+[[permission]]
+identifier = "deny-publisher-remote-select"
+description = "Denies the publisher_remote_select command without any pre-configured scope."
+commands.deny = ["publisher_remote_select"]

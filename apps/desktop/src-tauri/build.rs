@@ -96,6 +96,7 @@ fn main() {
             "publish_ad",
             "publisher_remote_read",
             "publisher_remote_save",
+            "publisher_remote_select",
             "publisher_recovery_prepare",
             "publisher_recovery_confirm",
             "publisher_recovery_cancel",

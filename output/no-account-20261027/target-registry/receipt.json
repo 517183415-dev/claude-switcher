@@ -1,0 +1,102 @@
+{
+  "scope": "Retain and reselect per-target R2 configuration; prerequisite for multi-target remote cleanup, not remote-lock implementation",
+  "base_commit": "80f338343843b665864b4a1449aa1b8f0fbee17f",
+  "no_subagents": true,
+  "no_registration_deployment_payment": true,
+  "bug_red": {
+    "passed_names": 0,
+    "failed_names": [
+      "publisher::connection::tests::changing_remote_target_keeps_previous_access_material"
+    ],
+    "summaries": [
+      "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 198 filtered out; finished in 0.07s"
+    ]
+  },
+  "targeted_tests": {
+    "passed_names": 14,
+    "failed_names": [],
+    "summaries": [
+      "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 191 filtered out; finished in 7.48s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s"
+    ]
+  },
+  "publisher_stage_suite": {
+    "passed_names": 174,
+    "failed_names": [],
+    "summaries": [
+      "test result: ok. 174 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 235.67s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s"
+    ]
+  },
+  "counts": "14 targeted tests are included in the final publisher suite; do not add counts",
+  "verification_relationship": "Final publisher suite includes all behavioral changes. A single unused import was removed after compilation; final Clippy compiled final source. No behavioral test repeated for that import-only cleanup.",
+  "svelte": "0 errors, 0 warnings",
+  "frontend_builds": [
+    "personal",
+    "public"
+  ],
+  "public_check": "exit 0",
+  "clippy": "exit 0; 3 pre-existing migration collapsible_if warnings plus ts-rs serde-attribute diagnostics",
+  "fmt": "exit 0",
+  "permissions": "permissions.json; static only, not dynamic ACL proof",
+  "test_boundary": "Existing Seatbelt profile denies external networking, real credential directories and privileged mutation commands; permits loopback test servers. Synthetic MemoryVault only.",
+  "sandbox_profile": "output/no-account-20261027/storage-directory-race/account-free.sb",
+  "sandbox_profile_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+  "graph": {
+    "fileCount": 223,
+    "nodeCount": 6009,
+    "edgeCount": 24577,
+    "pendingChanges": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    },
+    "index": {
+      "builtWithVersion": "1.6.0",
+      "builtWithExtractionVersion": 25,
+      "currentExtractionVersion": 25,
+      "reindexRecommended": false,
+      "state": "complete",
+      "pendingRefs": 0
+    }
+  },
+  "remaining": [
+    "remote lock protocol and all-target cleanup product wiring",
+    "ordinary App dynamic IPC acceptance",
+    "real Keychain and R2 compatibility",
+    "production signing/install and end-to-end delivery"
+  ],
+  "not_run": [
+    "real Claude account",
+    "registration",
+    "deployment",
+    "payment",
+    "ordinary App dynamic IPC",
+    "real Keychain",
+    "real R2"
+  ],
+  "evidence_sha256": {
+    "clippy-final.log": "920cd456d049d96b98c775eca83cb0367ba4431bd92187e68a4a64627f3256db",
+    "clippy.log": "89b8494bb6d01af5748ba83ac7458f834789f9804a9556de58fdd38aaf3624ca",
+    "codegraph-status.json": "c07ce95fcfdd0621f86dfbf654660db675e918fbc4db04ba6aa0859dec091d92",
+    "codegraph-sync-final.log": "f6acc1917f9229b1a23cd5ee1fa3938ad70f24eb477db5dfa895e9c8e90664fc",
+    "codegraph-sync.log": "f6acc1917f9229b1a23cd5ee1fa3938ad70f24eb477db5dfa895e9c8e90664fc",
+    "connection-r1.log": "c3ad8d77939f6368da44572e7b397c86e1ee2786066cde51d0b8ac6bd2f16e8b",
+    "fmt-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "permissions.json": "29bd128d601cff56eaa15eae86a55e8469ae4751c71b77d16e74a856291453cd",
+    "personal-build.log": "877574b8575bd5c8351211d5cacf5b90a944072989ec9bab387e4eaa755930eb",
+    "public-build.log": "5b1103b26a97033f5bc3be09b528c2dc4a57a65fd6517ad217379bd35a8e0ab4",
+    "public-check.log": "f3ca9da1ce8b8151507ca7729e1545390d4936e0961f24cbb7b4c38fad650bf0",
+    "publisher-final.log": "0921c8c9065ba63a3e89b299a69ecea54a40137345fd6787f5afca76217eeaec",
+    "red.log": "e7f881d6777183bbca50b90711403880c42fa374019feebd5b330066f0294ecc",
+    "source-inputs.json": "a97bfe4996556d3a46ad345d70ae89f2c6b4453e907ca38cc809854ec05c8dff",
+    "svelte.log": "9b56c79abb8f278c6390ccec9dbe23d378e79be013ec591288ae33ae0becdf78"
+  }
+}

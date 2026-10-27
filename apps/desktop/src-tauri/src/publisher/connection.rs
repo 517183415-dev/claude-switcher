@@ -1,6 +1,6 @@
 //! Personal operator settings share the atomic, encrypted Vault secret bundle.
 use super::{
-    Error, Publication, Publisher, Result, encode,
+    Error, Publication, Publisher, Result,
     local_store::LocalObjectStore,
     protocol::ObjectStore,
     r2_store::{R2Config, R2Store},
@@ -12,11 +12,22 @@ use switcher_domain::ads::AdChannel;
 use zeroize::{Zeroize, Zeroizing};
 
 const CONNECTION_LIMIT: usize = 16 * 1024;
+mod registry;
+use registry::Registry;
+
+#[derive(Serialize)]
+pub struct RemoteTarget {
+    pub target: String,
+    pub config: R2Config,
+    pub selected: bool,
+}
 
 #[derive(Default, Serialize)]
 pub struct RemoteSettings {
     pub preview: Option<R2Config>,
     pub production: Option<R2Config>,
+    pub targets: Vec<RemoteTarget>,
+    pub unavailable_targets: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -36,16 +47,6 @@ impl Drop for Connection {
 }
 
 impl Connection {
-    fn read(bytes: &[u8], channel: AdChannel) -> Result<Option<Self>> {
-        if bytes.is_empty() {
-            return Ok(None);
-        }
-        let connection: Self = switcher_core::signed::strict_json(bytes, CONNECTION_LIMIT)
-            .map_err(|_| Error::Invalid("r2_configuration"))?;
-        connection.validate(channel)?;
-        Ok(Some(connection))
-    }
-
     fn validate(&self, channel: AdChannel) -> Result<()> {
         if self.schema != 1
             || self.config.channel != channel
@@ -70,16 +71,37 @@ fn credential(secrets: &Secrets, channel: AdChannel) -> &[u8] {
     }
 }
 
-fn settings(secrets: &Secrets) -> Result<RemoteSettings> {
-    Ok(RemoteSettings {
-        preview: Connection::read(&secrets.preview_credential, AdChannel::Preview)?
-            .map(|c| c.config.clone()),
-        production: Connection::read(&secrets.production_credential, AdChannel::Production)?
-            .map(|c| c.config.clone()),
-    })
+fn registries(secrets: &Secrets) -> Result<[Registry; 2]> {
+    let preview = Registry::read(&secrets.preview_credential, AdChannel::Preview)?;
+    let production = Registry::read(&secrets.production_credential, AdChannel::Production)?;
+    preview.check_separation(&production)?;
+    Ok([preview, production])
 }
 
 impl Publisher {
+    fn settings(&self, secrets: &Secrets) -> Result<RemoteSettings> {
+        let [preview, production] = registries(secrets)?;
+        let unavailable_targets = self
+            .state
+            .target
+            .iter()
+            .chain(self.state.other_targets.keys())
+            .filter(|target| {
+                target.starts_with("r2:")
+                    && !preview.contains(target)
+                    && !production.contains(target)
+            })
+            .cloned()
+            .collect();
+        let mut targets = preview.public_targets();
+        targets.extend(production.public_targets());
+        Ok(RemoteSettings {
+            preview: preview.active().map(|c| c.config.clone()),
+            production: production.active().map(|c| c.config.clone()),
+            targets,
+            unavailable_targets,
+        })
+    }
     pub fn active_target(&self) -> Option<&str> {
         self.state.target.as_deref()
     }
@@ -89,7 +111,7 @@ impl Publisher {
             return Ok(RemoteSettings::default());
         };
         self.check_signer(&secrets)?;
-        settings(&secrets)
+        self.settings(&secrets)
     }
 
     /// None explicitly returns this channel to local publication. Pending targets
@@ -105,7 +127,7 @@ impl Publisher {
         self.verifying_key()?;
         let mut secrets = vault.load(&self.generation)?;
         self.check_signer(&secrets)?;
-        let previous = Connection::read(credential(&secrets, channel), channel)?;
+        let mut registry = Registry::read(credential(&secrets, channel), channel)?;
         let next = config.map(|config| Connection {
             schema: 1,
             config,
@@ -114,53 +136,61 @@ impl Publisher {
         });
         if let Some(next) = &next {
             next.validate(channel)?;
-            let other_channel = match channel {
-                AdChannel::Preview => AdChannel::Production,
-                AdChannel::Production => AdChannel::Preview,
-            };
-            if let Some(other) =
-                Connection::read(credential(&secrets, other_channel), other_channel)?
-                && ((next
-                    .config
-                    .account_id
-                    .eq_ignore_ascii_case(&other.config.account_id)
-                    && next.config.bucket == other.config.bucket)
-                    || next.access_key == other.access_key)
-            {
-                return Err(Error::Invalid(
-                    "r2_channels_require_separate_buckets_and_keys",
-                ));
-            }
         } else if !access_key.is_empty() || !secret_key.is_empty() {
             return Err(Error::Invalid("r2_configuration"));
         }
-        if let Some(previous) = previous {
-            let target = previous.config.identity()?;
-            let next_target = next.as_ref().map(|c| c.config.identity()).transpose()?;
-            let pending = if self.state.target.as_ref() == Some(&target) {
+        match next {
+            Some(next) => registry.insert(next)?,
+            None => registry.select(None)?,
+        }
+        self.save_remote_registry(channel, registry, &mut secrets, vault)
+    }
+
+    /// Selecting a retained target reuses its Vault credential without returning it over IPC.
+    pub fn select_retained_r2(
+        &mut self,
+        channel: AdChannel,
+        target: &str,
+        vault: &mut dyn Vault,
+    ) -> Result<RemoteSettings> {
+        self.verifying_key()?;
+        let mut secrets = vault.load(&self.generation)?;
+        self.check_signer(&secrets)?;
+        let mut registry = Registry::read(credential(&secrets, channel), channel)?;
+        registry.select(Some(target))?;
+        self.save_remote_registry(channel, registry, &mut secrets, vault)
+    }
+
+    fn save_remote_registry(
+        &mut self,
+        channel: AdChannel,
+        registry: Registry,
+        secrets: &mut Secrets,
+        vault: &mut dyn Vault,
+    ) -> Result<RemoteSettings> {
+        let previous = Registry::read(credential(secrets, channel), channel)?;
+        if let Some(target) = previous.selected() {
+            let pending = if self.state.target.as_deref() == Some(target) {
                 self.state.pending.is_some()
             } else {
                 self.state
                     .other_targets
-                    .get(&target)
+                    .get(target)
                     .is_some_and(|s| s.pending.is_some())
             };
-            if pending && next_target.as_ref() != Some(&target) {
+            if pending && registry.selected() != Some(target) {
                 return Err(Error::PendingOperation);
             }
         }
-        let bytes = match next {
-            Some(next) => Zeroizing::new(encode(&next, CONNECTION_LIMIT)?),
-            None => Zeroizing::new(Vec::new()),
-        };
+        let bytes = registry.encode(channel)?;
         let destination = match channel {
             AdChannel::Preview => &mut secrets.preview_credential,
             AdChannel::Production => &mut secrets.production_credential,
         };
         destination.zeroize();
         *destination = bytes.to_vec();
-        let view = settings(&secrets)?;
-        self.credentials_save(vault, &secrets)?;
+        let view = self.settings(secrets)?;
+        self.credentials_save(vault, secrets)?;
         Ok(view)
     }
 
@@ -186,7 +216,13 @@ impl Publisher {
     ) -> Result<Publication> {
         let secrets = vault.load(&self.generation)?;
         self.check_signer(&secrets)?;
-        let connection = Connection::read(credential(&secrets, channel), channel)?;
+        // Parse both registries before any store access, including retained credentials.
+        let [preview, production] = registries(&secrets)?;
+        let registry = match channel {
+            AdChannel::Preview => preview,
+            AdChannel::Production => production,
+        };
+        let connection = registry.active();
         let is_remote = connection.is_some();
         let mut source: Box<dyn ObjectStore> = match connection {
             Some(connection) => remote(

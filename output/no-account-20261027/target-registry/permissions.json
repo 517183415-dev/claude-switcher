@@ -1,0 +1,8 @@
+{
+  "scope": "static permission configuration only",
+  "personal_permission_present": true,
+  "public_permission_absent": true,
+  "public_handler_absent": true,
+  "generated_permission_present": true,
+  "dynamic_ipc": "NOT_RUN"
+}

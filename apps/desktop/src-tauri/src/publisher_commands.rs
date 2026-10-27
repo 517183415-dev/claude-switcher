@@ -422,6 +422,22 @@ pub async fn publisher_remote_save(
     .await
     .map_err(|_| "远程发布配置保存被中断，请重新读取配置".to_owned())?
 }
+#[tauri::command]
+pub async fn publisher_remote_select(
+    state: Desktop<'_>,
+    channel: AdChannel,
+    target: String,
+) -> Result<publisher::connection::RemoteSettings, String> {
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || {
+        with_publisher(&state, |p| {
+            p.select_retained_r2(channel, &target, &mut KeychainVault)
+        })
+    })
+    .await
+    .map_err(|_| "发布目标切换被中断，请重新读取配置".to_owned())?
+}
+
 async fn with_cleanup_source<T: Send + 'static>(
     state: Arc<DesktopState>,
     run: impl FnOnce(&mut Publisher, &mut LocalObjectStore, u64) -> publisher::Result<T>

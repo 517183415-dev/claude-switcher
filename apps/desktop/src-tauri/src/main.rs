@@ -210,6 +210,7 @@ fn main() {
         publisher_commands::publish_ad,
         publisher_commands::publisher_remote_read,
         publisher_commands::publisher_remote_save,
+        publisher_commands::publisher_remote_select,
         publisher_recovery_commands::publisher_recovery_prepare,
         publisher_recovery_commands::publisher_recovery_confirm,
         publisher_recovery_commands::publisher_recovery_cancel,

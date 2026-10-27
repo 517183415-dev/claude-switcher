@@ -262,6 +262,17 @@ fn configured_channels_route_and_reopen_with_separate_target_histories() {
 #[test]
 fn pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate() {
     let (root, mut p, mut v) = fixture();
+    let mut alternative = config(AdChannel::Preview);
+    alternative.bucket = "alternative-preview".into();
+    let alternative_id = alternative.identity().unwrap();
+    p.configure_r2(
+        AdChannel::Preview,
+        Some(alternative),
+        Zeroizing::new("alternative-key".into()),
+        Zeroizing::new("alternative-secret".into()),
+        &mut v,
+    )
+    .unwrap();
     configure(&mut p, &mut v, AdChannel::Preview, "preview-key").unwrap();
     assert!(
         p.publish_configured_with(&root.0, AdChannel::Preview, 1001, &v, |c, _, _| remote(
@@ -283,6 +294,10 @@ fn pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate() {
     })
     .unwrap();
     let before = v.items.clone();
+    assert!(matches!(
+        p.select_retained_r2(AdChannel::Preview, &alternative_id, &mut v),
+        Err(Error::PendingOperation)
+    ));
     assert!(matches!(
         p.configure_r2(
             AdChannel::Preview,
@@ -317,6 +332,36 @@ fn pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate() {
 }
 
 #[test]
+fn changing_remote_target_keeps_previous_access_material() {
+    let (_root, mut p, mut v) = fixture();
+    configure(&mut p, &mut v, AdChannel::Preview, "old-private-key").unwrap();
+    let mut next = config(AdChannel::Preview);
+    next.bucket = "replacement-preview".into();
+    p.configure_r2(
+        AdChannel::Preview,
+        Some(next),
+        Zeroizing::new("next-private-key".into()),
+        Zeroizing::new("next-private-secret".into()),
+        &mut v,
+    )
+    .unwrap();
+    let secrets = v.load(&p.generation).unwrap();
+    let bytes = String::from_utf8_lossy(&secrets.preview_credential);
+    assert!(
+        bytes.contains("ads-preview"),
+        "old target configuration was discarded"
+    );
+    assert!(
+        bytes.contains("old-private-key"),
+        "old target credential was discarded"
+    );
+    assert_eq!(
+        p.remote_settings(&v).unwrap().preview.unwrap().bucket,
+        "replacement-preview"
+    );
+}
+
+#[test]
 fn encrypted_backup_restores_remote_settings_into_the_new_generation() {
     let (_source, mut p, mut v) = fixture();
     configure(&mut p, &mut v, AdChannel::Preview, "preview-key").unwrap();
@@ -334,5 +379,279 @@ fn encrypted_backup_restores_remote_settings_into_the_new_generation() {
             .unwrap()
             .bucket,
         "ads-preview"
+    );
+}
+
+#[test]
+fn retained_target_can_be_selected_after_restart_and_local_selection() {
+    let (root, mut p, mut v) = fixture();
+    let old = config(AdChannel::Preview).identity().unwrap();
+    configure(&mut p, &mut v, AdChannel::Preview, "old-private-key").unwrap();
+    p.publish_configured_with(&root.0, AdChannel::Preview, 1001, &v, |c, _, _| {
+        remote(&root.0, c, false)
+    })
+    .unwrap();
+    let old_history = p.state.history.clone();
+    let mut next = config(AdChannel::Preview);
+    next.bucket = "next-preview".into();
+    p.configure_r2(
+        AdChannel::Preview,
+        Some(next),
+        Zeroizing::new("next-key".into()),
+        Zeroizing::new("next-secret".into()),
+        &mut v,
+    )
+    .unwrap();
+    p.configure_r2(
+        AdChannel::Preview,
+        None,
+        Zeroizing::new(String::new()),
+        Zeroizing::new(String::new()),
+        &mut v,
+    )
+    .unwrap();
+    drop(p);
+    let mut p = Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1002).unwrap();
+    let view = p.remote_settings(&v).unwrap();
+    assert!(view.preview.is_none());
+    assert_eq!(view.targets.len(), 2);
+    assert!(view.targets.iter().all(|target| !target.selected));
+    assert!(view.unavailable_targets.is_empty());
+    let view = p
+        .select_retained_r2(AdChannel::Preview, &old, &mut v)
+        .unwrap();
+    assert_eq!(view.preview.unwrap().bucket, "ads-preview");
+    p.publish_configured_with(&root.0, AdChannel::Preview, 1003, &v, |c, key, secret| {
+        assert_eq!(key, "old-private-key");
+        assert_eq!(secret, "secret-old-private-key");
+        remote(&root.0, c, false)
+    })
+    .unwrap();
+    assert_eq!(p.state.history[0].manifest, old_history[0].manifest);
+    assert_eq!(p.active_target(), Some(old.as_str()));
+}
+
+#[test]
+fn retained_target_selection_rejects_wrong_channel_unknown_identity_and_vault_failure() {
+    let (_root, mut p, mut v) = fixture();
+    configure(&mut p, &mut v, AdChannel::Preview, "preview-key").unwrap();
+    let target = config(AdChannel::Preview).identity().unwrap();
+    for (channel, target) in [
+        (AdChannel::Production, target.as_str()),
+        (AdChannel::Preview, "r2:unknown"),
+        (AdChannel::Preview, "https://untrusted.example.com"),
+    ] {
+        let before = v.items.clone();
+        assert!(p.select_retained_r2(channel, target, &mut v).is_err());
+        assert_eq!(v.items, before);
+    }
+    p.configure_r2(
+        AdChannel::Preview,
+        None,
+        Zeroizing::new(String::new()),
+        Zeroizing::new(String::new()),
+        &mut v,
+    )
+    .unwrap();
+    let before = v.items.clone();
+    v.fail = true;
+    assert!(
+        p.select_retained_r2(AdChannel::Preview, &target, &mut v)
+            .is_err()
+    );
+    assert_eq!(v.items, before);
+}
+
+#[test]
+fn retained_target_registry_migrates_legacy_and_rejects_malformed_records_atomically() {
+    let (root, mut p, mut v) = fixture();
+    let legacy = serde_json::json!({"schema":1,"config":config(AdChannel::Preview),"access_key":"legacy-private-key","secret_key":"legacy-private-secret"});
+    let mut secrets = v.load(&p.generation).unwrap();
+    secrets.preview_credential = serde_json::to_vec(&legacy).unwrap();
+    p.credentials_save(&mut v, &secrets).unwrap();
+    assert_eq!(p.remote_settings(&v).unwrap().targets.len(), 1);
+    p.configure_r2(
+        AdChannel::Preview,
+        None,
+        Zeroizing::new(String::new()),
+        Zeroizing::new(String::new()),
+        &mut v,
+    )
+    .unwrap();
+    let valid = serde_json::from_slice::<serde_json::Value>(
+        &v.load(&p.generation).unwrap().preview_credential,
+    )
+    .unwrap();
+    let id = config(AdChannel::Preview).identity().unwrap();
+    for case in 0..8 {
+        let mut invalid = valid.clone();
+        match case {
+            0 => invalid["schema"] = 99.into(),
+            1 => invalid["selected"] = "r2:unknown".into(),
+            2 => {
+                invalid.as_object_mut().unwrap().remove("selected");
+            }
+            3 => invalid["unexpected"] = true.into(),
+            4 => invalid["targets"][&id]["schema"] = 2.into(),
+            5 => invalid["targets"][&id]["config"]["bucket"] = "tampered-preview".into(),
+            6 => invalid["targets"][&id]["config"]["channel"] = "production".into(),
+            _ => invalid["targets"][&id]["secret_key"] = "bad\nsecret".into(),
+        }
+        secrets.preview_credential = serde_json::to_vec(&invalid).unwrap();
+        p.credentials_save(&mut v, &secrets).unwrap();
+        let before = v.items.clone();
+        assert!(p.remote_settings(&v).is_err(), "case {case}");
+        assert!(configure(&mut p, &mut v, AdChannel::Preview, "replacement-key").is_err());
+        assert!(
+            p.publish_configured_with(&root.0, AdChannel::Preview, 1001, &v, |_, _, _| panic!(
+                "invalid registry must not open a source"
+            ))
+            .is_err()
+        );
+        assert_eq!(v.items, before);
+    }
+}
+
+#[test]
+fn retained_registry_rotation_backup_and_cross_channel_separation() {
+    let (_root, mut p, mut v) = fixture();
+    configure(&mut p, &mut v, AdChannel::Preview, "old-private-key").unwrap();
+    configure(&mut p, &mut v, AdChannel::Preview, "rotated-private-key").unwrap();
+    assert_eq!(p.remote_settings(&v).unwrap().targets.len(), 1);
+    assert!(
+        !String::from_utf8_lossy(&v.load(&p.generation).unwrap().preview_credential)
+            .contains("old-private-key")
+    );
+    p.configure_r2(
+        AdChannel::Preview,
+        None,
+        Zeroizing::new(String::new()),
+        Zeroizing::new(String::new()),
+        &mut v,
+    )
+    .unwrap();
+    let before = v.items.clone();
+    assert!(configure(&mut p, &mut v, AdChannel::Production, "rotated-private-key").is_err());
+    let mut wrong = config(AdChannel::Production);
+    wrong.bucket = "ads-preview".into();
+    assert!(
+        p.configure_r2(
+            AdChannel::Production,
+            Some(wrong),
+            Zeroizing::new("other-key".into()),
+            Zeroizing::new("other-secret".into()),
+            &mut v
+        )
+        .is_err()
+    );
+    assert_eq!(v.items, before);
+    let bytes = p.export_backup(b"synthetic-backup-password", &v).unwrap();
+    let (_dest, mut restored, mut dest_vault) = fixture();
+    restored
+        .restore_backup(&bytes, b"synthetic-backup-password", &mut dest_vault)
+        .unwrap();
+    assert!(
+        restored
+            .remote_settings(&dest_vault)
+            .unwrap()
+            .preview
+            .is_none()
+    );
+    restored
+        .select_retained_r2(
+            AdChannel::Preview,
+            &config(AdChannel::Preview).identity().unwrap(),
+            &mut dest_vault,
+        )
+        .unwrap();
+    assert_eq!(
+        restored.remote_settings(&dest_vault).unwrap().targets.len(),
+        1
+    );
+    let response = serde_json::to_string(&restored.remote_settings(&dest_vault).unwrap()).unwrap();
+    assert!(!response.contains("rotated-private-key") && !response.contains("secret-"));
+}
+
+#[test]
+fn retained_registry_capacity_and_serialized_byte_limit_preserve_previous_vault() {
+    let (_root, mut p, mut v) = fixture();
+    for i in 0..super::super::TARGET_LIMIT {
+        let mut c = config(AdChannel::Preview);
+        c.bucket = format!("preview-{i}");
+        p.configure_r2(
+            AdChannel::Preview,
+            Some(c),
+            Zeroizing::new(format!("key-{i}")),
+            Zeroizing::new("private-secret".into()),
+            &mut v,
+        )
+        .unwrap();
+    }
+    let before = v.items.clone();
+    assert!(configure(&mut p, &mut v, AdChannel::Preview, "overflow-key").is_err());
+    assert_eq!(v.items, before);
+    let mut same = config(AdChannel::Preview);
+    same.bucket = "preview-0".into();
+    p.configure_r2(
+        AdChannel::Preview,
+        Some(same),
+        Zeroizing::new("rotation-at-capacity".into()),
+        Zeroizing::new("rotated-secret".into()),
+        &mut v,
+    )
+    .unwrap();
+    assert_eq!(
+        p.remote_settings(&v).unwrap().targets.len(),
+        super::super::TARGET_LIMIT
+    );
+    let (_root2, mut q, mut w) = fixture();
+    for i in 0..3 {
+        let mut c = config(AdChannel::Preview);
+        c.bucket = format!("large-preview-{i}");
+        q.configure_r2(
+            AdChannel::Preview,
+            Some(c),
+            Zeroizing::new(format!("key-{i}")),
+            Zeroizing::new("s".repeat(4096)),
+            &mut w,
+        )
+        .unwrap();
+    }
+    let before = w.items.clone();
+    let mut c = config(AdChannel::Preview);
+    c.bucket = "large-preview-overflow".into();
+    assert!(
+        q.configure_r2(
+            AdChannel::Preview,
+            Some(c),
+            Zeroizing::new("overflow-key".into()),
+            Zeroizing::new("s".repeat(4096)),
+            &mut w
+        )
+        .is_err()
+    );
+    assert_eq!(w.items, before);
+}
+
+#[test]
+fn missing_historical_target_is_reported_and_original_configuration_repairs_coverage() {
+    let (root, mut p, mut v) = fixture();
+    configure(&mut p, &mut v, AdChannel::Preview, "preview-key").unwrap();
+    p.publish_configured_with(&root.0, AdChannel::Preview, 1001, &v, |c, _, _| {
+        remote(&root.0, c, false)
+    })
+    .unwrap();
+    let id = p.active_target().unwrap().to_owned();
+    let mut secrets = v.load(&p.generation).unwrap();
+    // A pre-registry backup can legitimately contain ledger evidence but no access material.
+    secrets.preview_credential.clear();
+    p.credentials_save(&mut v, &secrets).unwrap();
+    assert_eq!(p.remote_settings(&v).unwrap().unavailable_targets, vec![id]);
+    configure(&mut p, &mut v, AdChannel::Preview, "recovered-key").unwrap();
+    assert!(
+        p.remote_settings(&v)
+            .unwrap()
+            .unavailable_targets
+            .is_empty()
     );
 }

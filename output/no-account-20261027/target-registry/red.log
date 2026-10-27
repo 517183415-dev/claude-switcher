@@ -1,0 +1,32 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.94s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 1 test
+test publisher::connection::tests::changing_remote_target_keeps_previous_access_material ... FAILED
+
+failures:
+
+---- publisher::connection::tests::changing_remote_target_keeps_previous_access_material stdout ----
+
+thread 'publisher::connection::tests::changing_remote_target_keeps_previous_access_material' (33735840) panicked at apps/desktop/src-tauri/src/publisher/connection/tests.rs:332:5:
+old target configuration was discarded
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    publisher::connection::tests::changing_remote_target_keeps_previous_access_material
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 198 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

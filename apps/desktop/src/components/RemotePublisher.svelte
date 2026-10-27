@@ -4,7 +4,8 @@ import type {AdChannel} from '../generated/AdChannel';
 import {errorMessage} from '../ui';
 
 type R2Config={account_id:string;bucket:string;public_origin:string;channel:AdChannel};
-type RemoteSettings={preview:R2Config|null;production:R2Config|null};
+type RemoteTarget={target:string;config:R2Config;selected:boolean};
+type RemoteSettings={preview:R2Config|null;production:R2Config|null;targets:RemoteTarget[];unavailable_targets:string[]};
 let {fixture=false,disabled=false}:{fixture?:boolean;disabled?:boolean}=$props();
 let settings=$state<RemoteSettings|null>(null),channel=$state<AdChannel>('preview');
 let useRemote=$state(false),account=$state(''),bucket=$state(''),origin=$state('');
@@ -21,6 +22,11 @@ async function save(){
   settings=await invoke<RemoteSettings>('publisher_remote_save',{channel,config:useRemote?{account_id:account.trim(),bucket:bucket.trim(),public_origin:origin.trim(),channel}:null,accessKey:useRemote?accessKey:'',secretKey:useRemote?secretKey:''});
   fill();message='配置已保存。此操作没有连接远程服务；请通过发布操作完成上传和公开回读。';
  }catch(e){error=errorMessage(e);}finally{accessKey='';secretKey='';running=false;}
+}
+async function selectTarget(target:string){
+ if(running||disabled||fixture||!settings)return;running=true;error='';message='';
+ try{settings=await invoke<RemoteSettings>('publisher_remote_select',{channel,target});fill();message='已选回保留的发布目标。此操作没有连接远程服务。';}
+ catch(e){error=errorMessage(e);}finally{running=false;}
 }
 </script>
 
@@ -41,6 +47,11 @@ async function save(){
   {/if}
  </div>
  <button class="outline" disabled={running||disabled||fixture||(useRemote&&(!account||!bucket||!origin||!accessKey||!secretKey))} onclick={save}>保存该渠道配置</button>
+ <p>更换来源或选择本机目录会保留旧目标及其凭据。保留目标和当前目标的凭据轮换均需重新输入密钥。</p>
+ {#each settings.targets.filter(item=>item.config.channel===channel&&!item.selected) as item (item.target)}
+ <p>{item.config.bucket} · {item.config.public_origin} <button class="outline" disabled={running||disabled||fixture} onclick={()=>selectTarget(item.target)}>选回此目标</button></p>
+ {/each}
+ {#if settings.unavailable_targets.length}<div class="notice danger" role="alert">有 {settings.unavailable_targets.length} 个旧发布目标缺少访问配置。请重新保存对应配置；完整核对前无法执行多目标清理。</div>{/if}
  {/if}
  {#if running}<p role="status">正在处理发布配置…</p>{/if}
  {#if message}<p role="status">{message}</p>{/if}
