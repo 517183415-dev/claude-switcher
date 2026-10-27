@@ -35,7 +35,15 @@
             "allow-pause-ad",
             "allow-ipc-business-draft-snapshot",
             "allow-import-ad-image",
-            "allow-ad-image-preview"
+            "allow-ad-image-preview",
+            "allow-ipc-business-publish-init",
+            "allow-ipc-business-publish",
+            "allow-publisher-status",
+            "allow-restore-ad-history",
+            "allow-preview-publisher-cleanup",
+            "allow-commit-publisher-cleanup",
+            "allow-preview-publisher-gc",
+            "allow-commit-publisher-gc"
           ]
         }
       ]

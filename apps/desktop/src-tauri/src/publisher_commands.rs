@@ -2,8 +2,10 @@
 use crate::{
     bridge::{self, DesktopState},
     publisher::{
-        self, Publisher, cleanup::CleanupOptions, local_store::LocalObjectStore,
-        security::KeychainVault,
+        self, Publisher,
+        cleanup::CleanupOptions,
+        local_store::LocalObjectStore,
+        security::{KeychainVault, Vault},
     },
 };
 use std::sync::Arc;
@@ -15,7 +17,7 @@ use switcher_domain::{
 use tauri::State;
 
 type Desktop<'a> = State<'a, Arc<DesktopState>>;
-fn with_publisher<T>(
+pub(crate) fn with_publisher<T>(
     state: &DesktopState,
     run: impl FnOnce(&mut Publisher) -> publisher::Result<T>,
 ) -> Result<T, String> {
@@ -344,6 +346,24 @@ mod f16_feedback_tests {
         );
     }
 }
+pub(crate) fn publish_local(
+    publisher: &mut Publisher,
+    root: &std::path::Path,
+    channel: AdChannel,
+    now: u64,
+    vault: &dyn Vault,
+) -> publisher::Result<OperationOutcome> {
+    let public_key = publisher
+        .configured_public_key()
+        .ok_or(publisher::Error::MissingSigningKey)?;
+    let trust = switcher_core::ad_runtime::local::LocalTrust {
+        schema: 1,
+        key_id: "ads-personal-v1".into(),
+        public_key,
+    };
+    let mut source = LocalObjectStore::open(root, channel, &trust)?;
+    publication_outcome(publisher.publish(channel, now, Some(&mut source), vault))
+}
 #[tauri::command]
 pub async fn publish_ad(
     state: Desktop<'_>,
@@ -352,21 +372,13 @@ pub async fn publish_ad(
     let state = state.inner().clone();
     tokio::task::spawn_blocking(move || {
         with_publisher(&state, |p| {
-            let public_key = p
-                .configured_public_key()
-                .ok_or(publisher::Error::MissingSigningKey)?;
-            let trust = switcher_core::ad_runtime::local::LocalTrust {
-                schema: 1,
-                key_id: "ads-personal-v1".into(),
-                public_key,
-            };
-            let mut source = LocalObjectStore::open(&state.root, channel, &trust)?;
-            publication_outcome(p.publish(
+            publish_local(
+                p,
+                &state.root,
                 channel,
                 switcher_core::checks::unix_now(),
-                Some(&mut source),
                 &KeychainVault,
-            ))
+            )
         })
     })
     .await

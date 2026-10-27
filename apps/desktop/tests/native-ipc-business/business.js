@@ -2,6 +2,7 @@ import { verifyDenial } from './denials.mjs';
 import { runDraft } from './draft.mjs';
 import { runDraftPersistence } from './draft-persistence.mjs';
 import { runImages } from './images.mjs';
+import { runPublish } from './publish.mjs';
 // This page is embedded only in the compile-time ipc-business fixture.
 (async () => {
   const invoke = window.__TAURI_INTERNALS__.invoke;
@@ -17,7 +18,9 @@ import { runImages } from './images.mjs';
       catch (reason) { denials.push(verifyDenial(command, reason, command === 'ipc_business_forbidden')); continue; }
       throw new Error(`unexpectedly allowed: ${command}`);
     }
-    if (info.backup_persistence === 'read') {
+    if (info.publish_phase) {
+      await runPublish(invoke, info.edition, info.publish_phase, responses);
+    } else if (info.backup_persistence === 'read') {
       const draft = await invoke('ad_draft_read');
       const campaigns = draft.slots.flatMap(slot => slot.campaigns);
       if (campaigns.length !== 1) throw new Error('restored image reference missing');

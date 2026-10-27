@@ -11,6 +11,8 @@ use switcher_domain::{Edition, desktop::ActivityEntry};
 
 #[cfg(feature = "personal")]
 mod backup;
+#[cfg(feature = "personal")]
+mod publish;
 
 struct Fixture {
     backup: bool,
@@ -18,6 +20,7 @@ struct Fixture {
     draft: bool,
     images: bool,
     preflight: bool,
+    publish_phase: Option<&'static str>,
     preferences: bool,
     persistence: Option<&'static str>,
     draft_persistence: Option<&'static str>,
@@ -34,7 +37,7 @@ fn ipc_business_info(
         None
     };
     Ok(
-        json!({"fixture": "ipc-business", "preflight": fixture.preflight,
+        json!({"fixture": "ipc-business", "preflight": fixture.preflight, "publish_phase": fixture.publish_phase,
         "edition": if cfg!(feature = "personal") { "personal" } else { "public" },
         "ordinary_runtime": false, "draft": fixture.draft, "images": fixture.images, "backup": fixture.backup, "backup_persistence": fixture.backup_persistence, "preferences": fixture.preferences, "persistence": fixture.persistence, "draft_persistence": fixture.draft_persistence, "saved": saved}),
     )
@@ -86,7 +89,10 @@ fn ipc_business_draft_snapshot(
     fixture: tauri::State<'_, Fixture>,
     label: String,
 ) -> Result<Value, String> {
-    if !(fixture.draft || fixture.images) || label.len() > 80 || !label.is_ascii() {
+    if !(fixture.draft || fixture.images || fixture.publish_phase.is_some())
+        || label.len() > 80
+        || !label.is_ascii()
+    {
         return Err("invalid_draft_snapshot".into());
     }
     fn visit(
@@ -196,6 +202,9 @@ pub fn run() {
         || !matches!(
             args[0].as_str(),
             "--preflight"
+                | "--publish-write"
+                | "--publish-read"
+                | "--publish-resume"
                 | "--backup"
                 | "--backup-persistence-restore"
                 | "--backup-persistence-read"
@@ -216,6 +225,12 @@ pub fn run() {
         std::process::exit(64);
     }
     let preflight = args[0] == "--preflight";
+    let publish_phase = match args[0].as_str() {
+        "--publish-write" => Some("write"),
+        "--publish-read" => Some("read"),
+        "--publish-resume" => Some("resume"),
+        _ => None,
+    };
     let persistence = match args[0].as_str() {
         "--persistence-write" => Some("write"),
         "--persistence-read" => Some("read"),
@@ -241,6 +256,7 @@ pub fn run() {
     };
     let state = DesktopState::isolated_activity_fixture(synthetic_root(), edition);
     if !preflight
+        && publish_phase.is_none()
         && persistence.is_none()
         && draft_persistence.is_none()
         && backup_persistence.is_none()
@@ -252,6 +268,7 @@ pub fn run() {
         .manage(Arc::new(state))
         .manage(Fixture {
             preflight,
+            publish_phase,
             backup: args[0] == "--backup" || backup_persistence == Some("restore"),
             backup_persistence,
             draft: args[0] == "--draft",
@@ -275,11 +292,20 @@ pub fn run() {
             crate::publisher_commands::ad_draft_save,
             crate::publisher_commands::pause_ad,
             ipc_business_draft_snapshot,
+            publish::ipc_business_publish_init,
+            publish::ipc_business_publish,
+            crate::publisher_commands::publisher_status,
+            crate::publisher_commands::restore_ad_history,
+            crate::publisher_commands::preview_publisher_cleanup,
+            crate::publisher_commands::commit_publisher_cleanup,
+            crate::publisher_commands::preview_publisher_gc,
+            crate::publisher_commands::commit_publisher_gc,
             backup::ipc_business_backup_export,
             backup::ipc_business_backup_restore,
             ipc_business_forbidden
         ])
-        .manage(backup::BackupFixture::new(backup_persistence.is_some()));
+        .manage(backup::BackupFixture::new(backup_persistence.is_some()))
+        .manage(publish::PublishFixture::default());
     #[cfg(feature = "public")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         crate::commands::activity_log,
