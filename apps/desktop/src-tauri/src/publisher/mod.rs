@@ -3,6 +3,8 @@ pub mod backup;
 pub(crate) mod cleanup;
 #[cfg(test)]
 mod cleanup_tests;
+#[cfg(test)]
+mod image_boundary_tests;
 pub mod local_store;
 pub mod protocol;
 pub mod security;
