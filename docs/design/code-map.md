@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：SwiftUI 快照乱序保护
+
+`SwitcherWorkspaceView` 定时调用 `WorkspaceModel.refresh → DesktopBridge → workspace_snapshot`。`WorkspaceModel` 用快照代次丢弃较早的异步读取；通过 `beginAction` 启动的操作也会使先前快照失效。检查报告继续由独立的检查代次保护。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-snapshot-order-20261028.md)。
+
+本次 CodeGraph 状态 complete、pending 0：303 文件、7471 节点、29751 条边。索引统计不代表测试覆盖率。
+
 ## 2026-10-28：正式渠道备份恢复与远程续发
 
 `Publisher::restore_backup → Publisher::open → publish_configured_with → R2Store / AWS SDK → 回环模拟对象存储 → ContentSource / AdCache`。恢复不自动发布；显式续发先验证远程 current，再补传缺失素材、条件写入新版本并匿名回读。接收端验签后采用版本。[测试和边界](../acceptance/evidence/no-account-20261027/r2-backup-resume-20261028.md)。
