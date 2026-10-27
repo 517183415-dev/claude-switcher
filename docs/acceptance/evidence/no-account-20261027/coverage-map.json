@@ -6577,7 +6577,8 @@
           "requirement_checklist": "N：只对旧意图中依赖平台的部分补本机证据；系统动作按 S"
         }
       ],
-      "next_review": "固定意图→符号→用例映射，运行审查后全部适用核心用例"
+      "next_review": "21 项已逐一映射；复用历史通过记录。共享源码有后续变化，当前整项及平台验收仍需按候选证据分别确认。",
+      "intent_mapping": "docs/acceptance/evidence/no-account-20261027/f01-intent-map.md"
     },
     {
       "id": "F-02",

@@ -1,5 +1,9 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：旧测试意图导航
+
+CLI 账号切换：`Invocation::valid_business_arguments → lifecycle::switch_checked → switch_with → launch_expected_with`。首次检查失败不切换；切换后重新检查，再决定能否启动。诊断由 `network` 和 `diagnostics` 负责；无 TUN 写入门禁由 helper 的 `platform` 执行。21 项旧测试到现行测试的导航见 [F-01 映射](../acceptance/evidence/no-account-20261027/f01-intent-map.md)。
+
 ## 2026-10-27：广告失败退避时间修复
 
 `AdRuntime::refresh_if_due → refresh_locked → RefreshSchedule::complete_failure`。失败后按结束时钟安排重试；结束时钟不可用时按已用单调时间估算。相关运行时 38 项通过。[证据](../../output/no-account-20261027/ad-scheduled-recovery/README.md)。
