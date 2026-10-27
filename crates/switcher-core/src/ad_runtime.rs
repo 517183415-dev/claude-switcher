@@ -7,7 +7,11 @@ use crate::{
 };
 use ed25519_dalek::VerifyingKey;
 use serde::{Deserialize, Serialize};
-use std::{io::Read, path::PathBuf, time::Duration};
+use std::{
+    io::Read,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 use switcher_domain::{
     AdSlot, Edition,
     ads::{AdChannel, AdManifest, AdPreferences, ImageAsset, MerchantConsent},
@@ -27,9 +31,101 @@ struct ContentPins {
     local: bool,
 }
 impl ContentPins {
-    fn production() -> Option<Self> {
-        None
-    } // Await the user's actual hosting and public-key materials.
+    fn production() -> Result<Option<Self>> {
+        Self::configured_release([
+            option_env!("SWITCHER_AD_SOURCE"),
+            option_env!("SWITCHER_AD_PUBLIC_KEY_HEX"),
+            option_env!("SWITCHER_AD_KEY_ID"),
+            option_env!("SWITCHER_AD_CHANNEL"),
+        ])
+    }
+
+    fn configured_release(materials: [Option<&str>; 4]) -> Result<Option<Self>> {
+        if materials.iter().all(Option::is_none) {
+            return Ok(None);
+        }
+        Self::release_material(materials[0], materials[1], materials[2], materials[3])
+            .map(Some)
+            .ok_or("ad_release_materials")
+    }
+
+    /// Values are embedded by the release build, never read from process state.
+    fn release_material(
+        source: Option<&str>,
+        public_key_hex: Option<&str>,
+        key_id: Option<&str>,
+        channel: Option<&str>,
+    ) -> Option<Self> {
+        let (source, public_key_hex, key_id, channel) =
+            (source?, public_key_hex?, key_id?, channel?);
+        if key_id.is_empty()
+            || key_id.len() > 128
+            || !key_id
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_'))
+        {
+            return None;
+        }
+        let channel = match channel {
+            "production" => AdChannel::Production,
+            "preview" => AdChannel::Preview,
+            _ => return None,
+        };
+        let bytes = public_key_hex.as_bytes();
+        if bytes.len() != 64 {
+            return None;
+        }
+        let mut key_bytes = [0u8; 32];
+        for (out, pair) in key_bytes.iter_mut().zip(bytes.chunks_exact(2)) {
+            let digit = |b: u8| match b {
+                b'0'..=b'9' => Some(b - b'0'),
+                b'a'..=b'f' => Some(b - b'a' + 10),
+                _ => None,
+            };
+            *out = digit(pair[0])? * 16 + digit(pair[1])?;
+        }
+        let key = VerifyingKey::from_bytes(&key_bytes).ok()?;
+        if key.is_weak() {
+            return None;
+        }
+        Some(Self {
+            source: ContentSource::new(source).ok()?,
+            key,
+            key_id: key_id.to_owned(),
+            channel,
+            local: false,
+        })
+    }
+}
+
+/// Validate the trust material embedded in an explicitly formal Public build.
+pub fn validate_public_release_materials() -> Result<()> {
+    validate_public_release_pins(ContentPins::production()?)
+}
+
+fn validate_public_release_pins(pins: Option<ContentPins>) -> Result<()> {
+    match pins {
+        Some(pins) if pins.channel == AdChannel::Production => {
+            let preferences = AdPreferences {
+                slots_enabled: [true; 3],
+                request_purpose_acknowledged: true,
+            };
+            let url = pins
+                .source
+                .manifest_request(&preferences, pins.channel)
+                .ok_or("ad_release_materials")?;
+            let host = url
+                .host_str()
+                .ok_or("ad_release_materials")?
+                .trim_end_matches('.')
+                .to_ascii_lowercase();
+            if host == "r2.dev" || host.ends_with(".r2.dev") {
+                return Err("ad_release_materials");
+            }
+            Ok(())
+        }
+        _ => Err("ad_release_materials"),
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -189,8 +285,9 @@ fn write_changed(path: &std::path::Path, bytes: &[u8]) -> Result<()> {
 
 impl AdRuntime {
     pub fn new(root: PathBuf, edition: Edition) -> Self {
-        let (pins, local_error) = match local::pins(&root) {
-            Ok(pins) => (pins.or_else(ContentPins::production), None),
+        let (pins, local_error) = match Self::select_pins(&root, edition, ContentPins::production())
+        {
+            Ok(pins) => (pins, None),
             Err(error) => (None, Some(error)),
         };
         Self {
@@ -200,6 +297,24 @@ impl AdRuntime {
             local_error,
             sample_clock: time::sample,
         }
+    }
+
+    fn select_pins(
+        root: &Path,
+        edition: Edition,
+        release: Result<Option<ContentPins>>,
+    ) -> Result<Option<ContentPins>> {
+        if edition == Edition::Personal {
+            if let Some(local) = local::pins(root)? {
+                return Ok(Some(local));
+            }
+            return release;
+        }
+        let release = release?;
+        if edition == Edition::Public && release.is_some() {
+            return Ok(release);
+        }
+        Ok(local::pins(root)?.or(release))
     }
 
     /// Supplies the clock at the Rust composition boundary. Production uses `time::sample`.
@@ -221,6 +336,95 @@ impl AdRuntime {
     fn ads_directory(&self) -> PathBuf {
         self.directory().join("ads")
     }
+    fn state_path(&self) -> Result<PathBuf> {
+        let Some(pins) = &self.pins else {
+            return Ok(self.ads_directory().join("state.json"));
+        };
+        let preferences = AdPreferences {
+            slots_enabled: [true; 3],
+            request_purpose_acknowledged: true,
+        };
+        let url = pins
+            .source
+            .manifest_request(&preferences, pins.channel)
+            .ok_or("ad_source_identity")?;
+        let identity = serde_json::to_vec(&(
+            url.as_str(),
+            pins.key.to_bytes(),
+            &pins.key_id,
+            pins.channel,
+            pins.local,
+        ))
+        .map_err(|_| "ad_source_identity")?;
+        Ok(self
+            .ads_directory()
+            .join(format!("state-{}.json", signed::digest(&identity))))
+    }
+
+    fn legacy_local_state(&self) -> Result<Option<Persistent>> {
+        let Some(pins) = self.pins.as_ref().filter(|pins| pins.local) else {
+            return Ok(None);
+        };
+        let bytes = match storage::read_private_bytes(
+            &self.ads_directory().join("state.json"),
+            STATE_LIMIT,
+        ) {
+            Ok(bytes) => bytes,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(_) => return Err("ad_legacy_state_read"),
+        };
+        let mut state: Persistent = signed::strict_json(&bytes, STATE_LIMIT)?;
+        if state.schema != 1 {
+            return Err("ad_legacy_state_shape");
+        }
+        if state.cache.highest_revision > state.sequence.highest {
+            return Err("ad_legacy_state_unverified");
+        }
+        if state.sequence.highest != 0 {
+            let hash = state
+                .sequence
+                .payload_hash
+                .as_deref()
+                .ok_or("ad_legacy_state_unverified")?;
+            if hash.len() != 64
+                || !hash
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            {
+                return Err("ad_legacy_state_unverified");
+            }
+            // The old watermark may outlive its signed cache, for example when
+            // an asset download failed or the local signing key changed. Keep it
+            // only as a conservative floor; never treat the old cache as trusted
+            // under the new key or lower the floor to make a refresh succeed.
+            let cache_matches = state.cache.cached_wire.as_deref().is_some_and(|wire| {
+                signed::verify::<AdManifest>(wire, &pins.key, ads::MAX_MANIFEST_BYTES).is_ok_and(
+                    |(manifest, digest)| {
+                        manifest.channel == pins.channel
+                            && manifest.key_id == pins.key_id
+                            && manifest.content_revision == state.sequence.highest
+                            && digest == hash
+                            && state.cache.highest_revision == state.sequence.highest
+                            && state.cache.highest_payload_hash.as_deref() == Some(hash)
+                    },
+                )
+            });
+            if !cache_matches {
+                state.cache = AdCache::default();
+                state.schedule = RefreshSchedule::default();
+                state.confirmations.clear();
+                state.local_wire_hash = None;
+                state.local_attempt_hash = None;
+            }
+        } else if state.sequence.payload_hash.is_some()
+            || state.cache.highest_revision != 0
+            || state.cache.highest_payload_hash.is_some()
+            || state.cache.cached_wire.is_some()
+        {
+            return Err("ad_legacy_state_unverified");
+        }
+        Ok(Some(state))
+    }
     fn lock(&self) -> Result<storage::LifecycleLock> {
         if let Some(error) = self.local_error {
             return Err(error);
@@ -238,10 +442,12 @@ impl AdRuntime {
         Ok(lock)
     }
     fn load(&self, sample: &ClockSample) -> Result<(Persistent, ClockState)> {
-        let path = self.ads_directory().join("state.json");
+        let path = self.state_path()?;
         let mut state: Persistent = match storage::read_private_bytes(&path, STATE_LIMIT) {
             Ok(bytes) => signed::strict_json(&bytes, STATE_LIMIT)?,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Persistent::new(),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                self.legacy_local_state()?.unwrap_or_else(Persistent::new)
+            }
             Err(_) => return Err("ad_state_read"),
         };
         if state.schema != 1
@@ -281,7 +487,7 @@ impl AdRuntime {
         if bytes.len() > STATE_LIMIT {
             return Err("ad_state_size");
         }
-        write_changed(&self.ads_directory().join("state.json"), &bytes)?;
+        write_changed(&self.state_path()?, &bytes)?;
         write_changed(
             &self.directory().join("clock.json"),
             &serde_json::to_vec(clock).map_err(|_| "ad_clock_json")?,

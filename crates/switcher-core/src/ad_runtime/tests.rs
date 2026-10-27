@@ -41,6 +41,158 @@ fn prefs() -> AdPreferences {
 fn signer() -> SigningKey {
     SigningKey::from_bytes(&[0x55; 32])
 }
+
+#[test]
+fn release_materials_require_complete_valid_fixed_configuration() {
+    let public_key = signer()
+        .verifying_key()
+        .to_bytes()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    let valid = [
+        Some("https://ads.example.com/content/"),
+        Some(public_key.as_str()),
+        Some("synthetic-key"),
+        Some("production"),
+    ];
+    assert!(
+        ContentPins::configured_release([None; 4])
+            .unwrap()
+            .is_none()
+    );
+    let pins = ContentPins::configured_release(valid).unwrap().unwrap();
+    assert!(!pins.local);
+    assert_eq!(pins.key, signer().verifying_key());
+    assert_eq!(pins.channel, AdChannel::Production);
+    for index in 0..4 {
+        let mut incomplete = valid;
+        incomplete[index] = None;
+        assert!(ContentPins::configured_release(incomplete).is_err());
+    }
+    for (index, value) in [
+        (0, "http://ads.example.com/content/"),
+        (0, "https://ads.example.com/content/?query=1"),
+        (1, "not-a-key"),
+        (
+            1,
+            "0000000000000000000000000000000000000000000000000000000000000000",
+        ),
+        (2, "key with spaces"),
+        (3, "unknown"),
+    ] {
+        let mut invalid = valid;
+        invalid[index] = Some(value);
+        assert!(ContentPins::configured_release(invalid).is_err());
+    }
+}
+
+#[test]
+fn formal_public_build_rejects_r2_development_domains() {
+    let public_key = signer()
+        .verifying_key()
+        .to_bytes()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    for source in [
+        "https://r2.dev/content/",
+        "https://bucket.r2.dev/content/",
+        "https://BUCKET.R2.DEV./content/",
+        "https://nested.bucket.r2.dev./content/",
+    ] {
+        let pins = ContentPins::configured_release([
+            Some(source),
+            Some(&public_key),
+            Some("synthetic-key"),
+            Some("production"),
+        ])
+        .unwrap();
+        assert!(
+            validate_public_release_pins(pins).is_err(),
+            "accepted {source}"
+        );
+    }
+    let pins = ContentPins::configured_release([
+        Some("https://not-r2.dev/content/"),
+        Some(&public_key),
+        Some("synthetic-key"),
+        Some("production"),
+    ])
+    .unwrap();
+    assert!(validate_public_release_pins(pins).is_ok());
+}
+
+#[test]
+fn release_and_local_trust_selection_respects_edition_and_invalid_configuration() {
+    let root = Root::new();
+    let directory = local::directory(&root.0);
+    storage::create_private_directory(&root.0).unwrap();
+    storage::create_private_directory(&root.0.join("v2")).unwrap();
+    storage::create_private_directory(&directory).unwrap();
+    storage::atomic_json(
+        &directory.join("trust.json"),
+        &local::LocalTrust {
+            schema: 1,
+            key_id: "ads-personal-v1".into(),
+            public_key: signer().verifying_key().to_bytes(),
+        },
+    )
+    .unwrap();
+    let release = || {
+        Some(ContentPins {
+            source: ContentSource::new("https://ads.example.com/content/").unwrap(),
+            key: signer().verifying_key(),
+            key_id: "synthetic-key".into(),
+            channel: AdChannel::Production,
+            local: false,
+        })
+    };
+    for edition in [Edition::Personal, Edition::Public] {
+        assert!(
+            AdRuntime::select_pins(&root.0, edition, Ok(None))
+                .unwrap()
+                .unwrap()
+                .local
+        );
+        let result = AdRuntime::select_pins(&root.0, edition, Err("ad_release_materials"));
+        if edition == Edition::Personal {
+            assert!(result.unwrap().unwrap().local);
+        } else {
+            assert!(result.is_err());
+        }
+    }
+    assert!(
+        AdRuntime::select_pins(&root.0, Edition::Personal, Ok(release()))
+            .unwrap()
+            .unwrap()
+            .local
+    );
+    assert!(
+        !AdRuntime::select_pins(&root.0, Edition::Public, Ok(release()))
+            .unwrap()
+            .unwrap()
+            .local
+    );
+    storage::atomic_write(&directory.join("trust.json"), b"invalid").unwrap();
+    assert!(
+        !AdRuntime::select_pins(&root.0, Edition::Public, Ok(release()))
+            .unwrap()
+            .unwrap()
+            .local
+    );
+    assert!(AdRuntime::select_pins(&root.0, Edition::Personal, Ok(release())).is_err());
+    std::fs::remove_file(directory.join("trust.json")).unwrap();
+    assert!(
+        AdRuntime::select_pins(&root.0, Edition::Personal, Err("ad_release_materials")).is_err()
+    );
+    assert!(
+        !AdRuntime::select_pins(&root.0, Edition::Personal, Ok(release()))
+            .unwrap()
+            .unwrap()
+            .local
+    );
+}
 fn configured_runtime(root: &Root) -> AdRuntime {
     AdRuntime {
         root: root.0.clone(),
@@ -104,9 +256,12 @@ fn manifest(revision: u64) -> AdManifest {
     }
 }
 fn wire(value: &AdManifest) -> Vec<u8> {
+    wire_with(value, &signer())
+}
+fn wire_with(value: &AdManifest, key: &SigningKey) -> Vec<u8> {
     let payload = serde_json::to_string(value).unwrap();
     serde_json::to_vec(&signed::Envelope {
-        signature: signer().sign(payload.as_bytes()).to_bytes().to_vec(),
+        signature: key.sign(payload.as_bytes()).to_bytes().to_vec(),
         payload,
     })
     .unwrap()
@@ -118,19 +273,22 @@ struct MemoryFetch {
 }
 impl MemoryFetch {
     fn set(&mut self, runtime: &AdRuntime, value: &AdManifest) {
+        self.set_signed(runtime, value, &signer());
+    }
+    fn set_signed(&mut self, runtime: &AdRuntime, value: &AdManifest, key: &SigningKey) {
         let pins = runtime.pins.as_ref().unwrap();
         self.objects.insert(
             pins.source
-                .manifest_request(&prefs(), AdChannel::Production)
+                .manifest_request(&prefs(), pins.channel)
                 .unwrap()
                 .to_string(),
-            (wire(value), "application/json".into()),
+            (wire_with(value, key), "application/json".into()),
         );
         for slot in &value.slots {
             for campaign in &slot.campaigns {
                 let url = pins
                     .source
-                    .asset_request(slot.slot, &campaign.image, &prefs(), AdChannel::Production)
+                    .asset_request(slot.slot, &campaign.image, &prefs(), pins.channel)
                     .unwrap()
                     .unwrap();
                 self.objects
@@ -156,6 +314,347 @@ impl Fetcher for MemoryFetch {
 fn refresh(runtime: &AdRuntime, fetcher: &mut MemoryFetch, now: i64) -> Result<RefreshResult> {
     let _lock = runtime.lock()?;
     runtime.refresh_locked(&prefs(), true, sample(now), Some(fetcher), Some(17))
+}
+
+#[test]
+fn different_release_source_does_not_inherit_old_refresh_deadline() {
+    let root = Root::new();
+    let old = configured_runtime(&root);
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&old, &manifest(99));
+    refresh(&old, &mut fetcher, 1000).unwrap();
+    let mut next = configured_runtime(&root);
+    next.pins.as_mut().unwrap().source =
+        ContentSource::new("https://new.example.com/content/").unwrap();
+    fetcher.set(&next, &manifest(1));
+    let _lock = next.lock().unwrap();
+    let result = next
+        .refresh_locked(&prefs(), false, sample(1001), Some(&mut fetcher), Some(0))
+        .unwrap();
+    assert!(result.refreshed, "{}", result.reason);
+    assert_eq!(next.load(&sample(1001)).unwrap().0.sequence.highest, 1);
+}
+
+#[test]
+fn different_release_source_does_not_inherit_old_revision() {
+    let root = Root::new();
+    let old = configured_runtime(&root);
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&old, &manifest(99));
+    refresh(&old, &mut fetcher, 1000).unwrap();
+    let mut next = configured_runtime(&root);
+    next.pins.as_mut().unwrap().source =
+        ContentSource::new("https://new.example.com/content/").unwrap();
+    fetcher.set(&next, &manifest(1));
+    assert!(refresh(&next, &mut fetcher, 1040).unwrap().refreshed);
+    let _lock = old.lock().unwrap();
+    assert_eq!(old.load(&sample(1040)).unwrap().0.sequence.highest, 99);
+}
+
+#[test]
+fn local_high_revision_does_not_delay_or_block_first_release_refresh() {
+    let root = Root::new();
+    let mut local_runtime = configured_runtime(&root);
+    local_runtime.pins.as_mut().unwrap().local = true;
+    let local_dir = local::directory(&root.0);
+    storage::create_private_directory(&root.0).unwrap();
+    storage::create_private_directory(&root.0.join("v2")).unwrap();
+    storage::create_private_directory(&local_dir).unwrap();
+    storage::create_private_directory(&local_dir.join("production")).unwrap();
+    storage::atomic_write(&local_dir.join("production/current.json"), b"local-fixture").unwrap();
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&local_runtime, &manifest(99));
+    refresh(&local_runtime, &mut fetcher, 1000).unwrap();
+    let release = configured_runtime(&root);
+    fetcher.set(&release, &manifest(1));
+    let _lock = release.lock().unwrap();
+    assert!(
+        release
+            .refresh_locked(&prefs(), false, sample(1001), Some(&mut fetcher), Some(0))
+            .unwrap()
+            .refreshed
+    );
+    assert_eq!(release.load(&sample(1001)).unwrap().0.sequence.highest, 1);
+    assert_eq!(
+        local_runtime
+            .load(&sample(1001))
+            .unwrap()
+            .0
+            .sequence
+            .highest,
+        99
+    );
+}
+
+#[test]
+fn every_trust_identity_component_has_a_separate_state_and_restores_on_return() {
+    let root = Root::new();
+    let original = configured_runtime(&root);
+    let original_path = original.state_path().unwrap();
+    let mut paths = Vec::new();
+    for index in 0..5 {
+        let mut other = configured_runtime(&root);
+        let pins = other.pins.as_mut().unwrap();
+        match index {
+            0 => pins.source = ContentSource::new("https://other.example.com/content/").unwrap(),
+            1 => pins.key = SigningKey::from_bytes(&[0x66; 32]).verifying_key(),
+            2 => pins.key_id = "other-key".into(),
+            3 => pins.channel = AdChannel::Preview,
+            _ => pins.local = true,
+        }
+        let path = other.state_path().unwrap();
+        assert_ne!(original_path, path);
+        assert!(!paths.contains(&path));
+        paths.push(path);
+    }
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&original, &manifest(99));
+    refresh(&original, &mut fetcher, 1000).unwrap();
+    let restarted = configured_runtime(&root);
+    let _lock = restarted.lock().unwrap();
+    assert_eq!(
+        restarted.load(&sample(1001)).unwrap().0.sequence.highest,
+        99
+    );
+}
+
+#[test]
+fn source_key_and_channel_changes_restore_their_own_verified_watermarks() {
+    for change in 0..3 {
+        let root = Root::new();
+        let original = configured_runtime(&root);
+        let mut fetcher = MemoryFetch::default();
+        fetcher.set(&original, &manifest(99));
+        assert!(refresh(&original, &mut fetcher, 1000).unwrap().refreshed);
+        let mut other = configured_runtime(&root);
+        let other_key = SigningKey::from_bytes(&[0x66; 32]);
+        let pins = other.pins.as_mut().unwrap();
+        match change {
+            0 => pins.source = ContentSource::new("https://other.example.com/content/").unwrap(),
+            1 => pins.key = other_key.verifying_key(),
+            _ => pins.channel = AdChannel::Preview,
+        }
+        let mut next = manifest(1);
+        next.channel = pins.channel;
+        let original_key = signer();
+        fetcher.set_signed(
+            &other,
+            &next,
+            if change == 1 {
+                &other_key
+            } else {
+                &original_key
+            },
+        );
+        assert!(refresh(&other, &mut fetcher, 1040).unwrap().refreshed);
+        let _lock = original.lock().unwrap();
+        let a = original.load(&sample(1041)).unwrap().0;
+        let b = other.load(&sample(1041)).unwrap().0;
+        assert_eq!(a.sequence.highest, 99);
+        assert_eq!(a.cache.highest_revision, 99);
+        assert_eq!(b.sequence.highest, 1);
+        assert_eq!(b.cache.highest_revision, 1);
+        assert!(a.cache.cached_wire.is_some());
+        assert!(b.cache.cached_wire.is_some());
+    }
+}
+
+#[test]
+fn legacy_local_cache_is_verified_before_migration_and_original_is_preserved() {
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    let pins = runtime.pins.as_mut().unwrap();
+    pins.local = true;
+    pins.key_id = "ads-personal-v1".into();
+    let _lock = runtime.lock().unwrap();
+    let mut m = manifest(99);
+    m.key_id = "ads-personal-v1".into();
+    let bytes = wire(&m);
+    let (_, hash): (AdManifest, _) =
+        signed::verify(&bytes, &signer().verifying_key(), ads::MAX_MANIFEST_BYTES).unwrap();
+    let mut state = Persistent::new();
+    state
+        .cache
+        .accept(
+            &bytes,
+            &signer().verifying_key(),
+            AdChannel::Production,
+            "ads-personal-v1",
+            1000,
+            true,
+        )
+        .unwrap();
+    state.sequence.remember(99, hash).unwrap();
+    let legacy = runtime.ads_directory().join("state.json");
+    storage::atomic_json(&legacy, &state).unwrap();
+    let original = std::fs::read(&legacy).unwrap();
+    let (migrated, clock) = runtime.load(&sample(1001)).unwrap();
+    assert_eq!(migrated.sequence.highest, 99);
+    runtime.save(&migrated, &clock).unwrap();
+    assert_eq!(std::fs::read(&legacy).unwrap(), original);
+    assert_ne!(runtime.state_path().unwrap(), legacy);
+    assert_eq!(runtime.load(&sample(1002)).unwrap().0.sequence.highest, 99);
+}
+
+#[test]
+fn unverified_legacy_local_watermark_is_preserved_and_rejected() {
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    runtime.pins.as_mut().unwrap().local = true;
+    let _lock = runtime.lock().unwrap();
+    let mut state = Persistent::new();
+    state.sequence.highest = 99;
+    state.sequence.payload_hash = Some("synthetic-hash".into());
+    let legacy = runtime.ads_directory().join("state.json");
+    storage::atomic_json(&legacy, &state).unwrap();
+    let original = std::fs::read(&legacy).unwrap();
+    assert!(matches!(
+        runtime.load(&sample(1000)),
+        Err("ad_legacy_state_unverified")
+    ));
+    assert_eq!(std::fs::read(&legacy).unwrap(), original);
+    assert!(!runtime.state_path().unwrap().exists());
+}
+
+#[test]
+fn legacy_local_floor_survives_key_rotation_and_failed_asset_refresh() {
+    for rotated in [false, true] {
+        let root = Root::new();
+        let mut runtime = configured_runtime(&root);
+        let pins = runtime.pins.as_mut().unwrap();
+        pins.local = true;
+        if rotated {
+            pins.key = SigningKey::from_bytes(&[0x66; 32]).verifying_key();
+        }
+        let _lock = runtime.lock().unwrap();
+        let mut state = Persistent::new();
+        let cached = wire(&manifest(if rotated { 99 } else { 1 }));
+        state
+            .cache
+            .accept(
+                &cached,
+                &signer().verifying_key(),
+                AdChannel::Production,
+                "synthetic-key",
+                1000,
+                true,
+            )
+            .unwrap();
+        let (_, hash): (AdManifest, String) = signed::verify(
+            &wire(&manifest(99)),
+            &signer().verifying_key(),
+            ads::MAX_MANIFEST_BYTES,
+        )
+        .unwrap();
+        state.sequence.remember(99, hash.clone()).unwrap();
+        let legacy = runtime.ads_directory().join("state.json");
+        storage::atomic_json(&legacy, &state).unwrap();
+        let original = std::fs::read(&legacy).unwrap();
+
+        let (migrated, clock) = runtime.load(&sample(1001)).unwrap();
+        assert_eq!(migrated.sequence.highest, 99);
+        assert_eq!(
+            migrated.sequence.payload_hash.as_deref(),
+            Some(hash.as_str())
+        );
+        assert!(migrated.cache.manifest().is_none());
+        assert_eq!(migrated.sequence.check(98, &hash), Err("old_sequence"));
+        assert_eq!(
+            migrated.sequence.check(99, "different"),
+            Err("sequence_conflict")
+        );
+        assert!(migrated.sequence.check(100, "new-signed-payload").is_ok());
+        runtime.save(&migrated, &clock).unwrap();
+        assert_eq!(std::fs::read(&legacy).unwrap(), original);
+        assert_eq!(runtime.load(&sample(1002)).unwrap().0.sequence.highest, 99);
+
+        let next_key = if rotated {
+            SigningKey::from_bytes(&[0x66; 32])
+        } else {
+            signer()
+        };
+        let current = wire_with(&manifest(100), &next_key);
+        let local_root = local::directory(&root.0);
+        storage::create_private_directory(&local_root).unwrap();
+        storage::create_private_directory(&local_root.join("production")).unwrap();
+        storage::atomic_write(&local_root.join("production/current.json"), &current).unwrap();
+        let mut fetcher = MemoryFetch::default();
+        fetcher.set_signed(&runtime, &manifest(100), &next_key);
+        assert!(
+            runtime
+                .refresh_locked(&prefs(), true, sample(1003), Some(&mut fetcher), Some(0))
+                .unwrap()
+                .refreshed
+        );
+        let updated = runtime.load(&sample(1004)).unwrap().0;
+        assert_eq!(updated.sequence.highest, 100);
+        assert_eq!(updated.cache.highest_revision, 100);
+        assert_eq!(std::fs::read(&legacy).unwrap(), original);
+    }
+}
+
+#[test]
+fn legacy_cache_cannot_authenticate_a_higher_failed_asset_watermark() {
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    runtime.pins.as_mut().unwrap().local = true;
+    let _lock = runtime.lock().unwrap();
+    let mut state = Persistent::new();
+    state
+        .cache
+        .accept(
+            &wire(&manifest(1)),
+            &signer().verifying_key(),
+            AdChannel::Production,
+            "synthetic-key",
+            1000,
+            true,
+        )
+        .unwrap();
+    state
+        .sequence
+        .remember(99, "unavailable-higher-payload".into())
+        .unwrap();
+    let legacy = runtime.ads_directory().join("state.json");
+    storage::atomic_json(&legacy, &state).unwrap();
+    let original = std::fs::read(&legacy).unwrap();
+    assert!(matches!(
+        runtime.load(&sample(1001)),
+        Err("ad_legacy_state_unverified")
+    ));
+    assert_eq!(std::fs::read(&legacy).unwrap(), original);
+}
+
+#[test]
+fn legacy_cache_signed_by_old_local_key_is_not_attributed_to_new_key() {
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    let pins = runtime.pins.as_mut().unwrap();
+    pins.local = true;
+    pins.key = SigningKey::from_bytes(&[0x66; 32]).verifying_key();
+    let _lock = runtime.lock().unwrap();
+    let bytes = wire(&manifest(99));
+    let (_, hash): (AdManifest, _) =
+        signed::verify(&bytes, &signer().verifying_key(), ads::MAX_MANIFEST_BYTES).unwrap();
+    let mut state = Persistent::new();
+    state
+        .cache
+        .accept(
+            &bytes,
+            &signer().verifying_key(),
+            AdChannel::Production,
+            "synthetic-key",
+            1000,
+            true,
+        )
+        .unwrap();
+    state.sequence.remember(99, hash).unwrap();
+    let legacy = runtime.ads_directory().join("state.json");
+    storage::atomic_json(&legacy, &state).unwrap();
+    let (migrated, _) = runtime.load(&sample(1001)).unwrap();
+    assert_eq!(migrated.sequence.highest, 99);
+    assert!(migrated.cache.cached_wire.is_none());
+    assert!(legacy.exists());
 }
 
 #[test]
@@ -229,7 +728,7 @@ fn unacknowledged_enabled_slots_never_request_content() {
                 let _lock = runtime.lock().unwrap();
                 let (state, clock) = runtime.load(&sample(1000)).unwrap();
                 runtime.save(&state, &clock).unwrap();
-                let state_path = runtime.ads_directory().join("state.json");
+                let state_path = runtime.state_path().unwrap();
                 let clock_path = runtime.directory().join("clock.json");
                 let before = (
                     passive_file_snapshot(&state_path),
@@ -557,7 +1056,7 @@ fn malformed_state_is_not_reset_and_offline_content_expires() {
     let (state, clock) = runtime.load(&sample(1000)).unwrap();
     assert!(runtime.visible(&state, &clock, &prefs(), 87400).is_none());
     storage::atomic_write(
-        &runtime.ads_directory().join("state.json"),
+        &runtime.state_path().unwrap(),
         b"{\"schema\":1,\"schema\":1}",
     )
     .unwrap();
@@ -1161,7 +1660,7 @@ fn passive_snapshots_and_images_preserve_initialized_files_both_editions() {
         runtime.snapshot(&disabled).unwrap();
         let paths = [
             runtime.directory().join("clock.json"),
-            runtime.ads_directory().join("state.json"),
+            runtime.state_path().unwrap(),
         ];
         let before = paths.each_ref().map(|p| passive_file_snapshot(p));
         for _ in 0..3 {
@@ -1196,6 +1695,7 @@ fn passive_no_work_refresh_preserves_clock_and_authenticated_history() {
             )
             .unwrap();
             runtime.pins.as_mut().unwrap().local = true;
+            refresh(&runtime, &mut fetcher, 1000).unwrap();
             let (mut state, clock) = runtime.load(&sample(1000)).unwrap();
             state.local_attempt_hash = local::current_digest(&root.0).unwrap();
             state.local_wire_hash = state.local_attempt_hash.clone();
@@ -1203,7 +1703,7 @@ fn passive_no_work_refresh_preserves_clock_and_authenticated_history() {
         }
         let paths = [
             runtime.directory().join("clock.json"),
-            runtime.ads_directory().join("state.json"),
+            runtime.state_path().unwrap(),
         ];
         let before = paths.each_ref().map(|path| passive_file_snapshot(path));
         let requests = fetcher.requests.len();
@@ -1270,7 +1770,7 @@ fn failed_clock_preserves_persisted_state_and_denies_all_entrypoints() {
     assert!(runtime.snapshot(&disabled).unwrap().is_none());
     let paths = [
         runtime.directory().join("clock.json"),
-        runtime.ads_directory().join("state.json"),
+        runtime.state_path().unwrap(),
     ];
     let before = paths.each_ref().map(|path| passive_file_snapshot(path));
     let failed = runtime.with_clock(|| Err("synthetic_clock_unavailable"));
