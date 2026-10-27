@@ -21,11 +21,7 @@ mod ipc_limits;
 
 mod bridge;
 mod commands;
-#[cfg(not(any(
-    feature = "ipc-smoke",
-    feature = "ipc-limits",
-    feature = "ipc-business"
-)))]
+#[cfg(not(any(feature = "ipc-smoke", feature = "ipc-limits")))]
 mod ipc;
 mod native_probe;
 #[cfg(feature = "personal")]

@@ -1,0 +1,25 @@
+{
+  "status": "PASS_NATIVE_WEBVIEW_PRODUCT_HANDLERS_SYNTHETIC_VAULT",
+  "responses": 17,
+  "checkpoints": [
+    "saved",
+    "paused",
+    "wrong-password",
+    "restored",
+    "republished"
+  ],
+  "signature_verifier": "independent Node crypto Ed25519",
+  "generations_preserved": true,
+  "wrong_password_preserves_state": true,
+  "restore_does_not_publish": true,
+  "resumed_above_paused_revision": true,
+  "binary_sha256": "db540ba18c84138a5d10ec7ca711a4bdc6d3394e540e749a22485afc053b1f8b",
+  "source_inputs_sha256": "ac1d30792bf0747a43ff97a75b2f483249a8589eacd6e76a024fd19efdd60670",
+  "not_proven": [
+    "user-default Keychain permission",
+    "unmodified product frontend/startup",
+    "real R2/CDN",
+    "system-managed WebKit helper cleanup",
+    "whole AD-10 and exhaustive branches"
+  ]
+}

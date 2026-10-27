@@ -93,7 +93,7 @@ impl ManagedVault {
         run(vault.as_mut())
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "ipc-business"))]
     pub(crate) fn synthetic(vault: impl Vault + Send + 'static) -> Self {
         Self(std::sync::Mutex::new(Box::new(vault)))
     }

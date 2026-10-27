@@ -1,0 +1,660 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "label": "runtime",
+      "command": "runtime_info",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "version": "0.2.0",
+        "edition": "personal",
+        "slots": [
+          "residential_broadband",
+          "account_service",
+          "kyc_service"
+        ],
+        "automatic_updates": false,
+        "ads_enabled": false
+      }
+    },
+    {
+      "label": "initial",
+      "command": "ad_draft_read",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "channel": "preview",
+        "content_revision": 1,
+        "key_id": "ads-personal-v1",
+        "issued_at": 1793090701,
+        "expires_at": 1800866701,
+        "release_id": "79dc70a12bccb95c4860db6480900b99",
+        "slots": [
+          {
+            "slot": "residential_broadband",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-0-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-0-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "account_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-1-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-1-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "kyc_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-2-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-2-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "key",
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "广告签名私钥已保存到本机钥匙串。公开验证公钥：7871dc7307e4711aad8da0fefee54086b1491fd99943311d597db74a4467e51a",
+        "recovery": null
+      }
+    },
+    {
+      "label": "duplicate-key",
+      "command": "create_ad_signing_key",
+      "ok": false,
+      "error": "发布数据无效：signing_key_already_configured"
+    },
+    {
+      "label": "image",
+      "command": "import_ad_image",
+      "ok": true,
+      "value": {
+        "asset": {
+          "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+          "mime": "image/png",
+          "bytes": 73,
+          "width": 1,
+          "height": 1
+        },
+        "preview_data_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/ABEiM/8CFAFmueH6wQAAAABJRU5ErkJggg=="
+      }
+    },
+    {
+      "label": "save",
+      "command": "ad_draft_save",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "channel": "preview",
+        "content_revision": 2,
+        "key_id": "ads-personal-v1",
+        "issued_at": 1793090702,
+        "expires_at": 1800866702,
+        "release_id": "df9262a17f899976bb51acf4dd9fd65d",
+        "slots": [
+          {
+            "slot": "residential_broadband",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-0-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-0-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "account_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-1-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-1-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "kyc_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-2-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-2-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "preview",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    },
+    {
+      "label": "production",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    },
+    {
+      "label": "backup",
+      "command": "export_publisher_backup",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "已保存加密备份：backup-1793090702-21ae77a18c10.csbackup。请打开备份目录，将备份复制到安全位置。",
+        "recovery": null
+      }
+    },
+    {
+      "label": "pause",
+      "command": "pause_ad",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "channel": "production",
+        "content_revision": 3,
+        "key_id": "ads-personal-v1",
+        "issued_at": 1793090702,
+        "expires_at": 1800866702,
+        "release_id": "c63b8a023201837422d338c743fa63dd",
+        "slots": [
+          {
+            "slot": "residential_broadband",
+            "enabled": false,
+            "campaigns": []
+          },
+          {
+            "slot": "account_service",
+            "enabled": false,
+            "campaigns": []
+          },
+          {
+            "slot": "kyc_service",
+            "enabled": false,
+            "campaigns": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "paused-production",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    },
+    {
+      "label": "wrong-password",
+      "command": "restore_publisher_backup",
+      "ok": false,
+      "error": "发布数据无效：backup_password_or_integrity"
+    },
+    {
+      "label": "restore",
+      "command": "restore_publisher_backup",
+      "ok": true,
+      "value": {
+        "completed": false,
+        "message": "已恢复加密备份中的本地资料，尚未发布",
+        "recovery": "请核对草稿后明确发布；软件将先回读所选发布目标的最高序号，并补齐缺失素材"
+      }
+    },
+    {
+      "label": "restored-draft",
+      "command": "ad_draft_read",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "channel": "production",
+        "content_revision": 4,
+        "key_id": "ads-personal-v1",
+        "issued_at": 1793090702,
+        "expires_at": 1800866702,
+        "release_id": "65de84584b185cadf97bbe9b9ff12769",
+        "slots": [
+          {
+            "slot": "residential_broadband",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-0-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-0-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 0/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "account_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-1-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-1-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 1/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          },
+          {
+            "slot": "kyc_service",
+            "enabled": true,
+            "campaigns": [
+              {
+                "campaign_id": "synthetic-2-0",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/0",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793090702,
+                "ends_at": 1793094302,
+                "enabled": true
+              },
+              {
+                "campaign_id": "synthetic-2-1",
+                "merchant_id": "synthetic-merchant",
+                "merchant_name": "合成商家",
+                "title": "合成广告 2/1",
+                "description": "仅本机测试",
+                "image": {
+                  "sha256": "0cfbae0f53c079f132b15a8be5c1a054bcb503a25ea648969574e53d7cff2516",
+                  "mime": "image/png",
+                  "bytes": 73,
+                  "width": 1,
+                  "height": 1
+                },
+                "button_text": "查看",
+                "target_url": "https://synthetic.example.com/",
+                "starts_at": 1793094302,
+                "ends_at": 1793097902,
+                "enabled": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "recovery-status",
+      "command": "publisher_status",
+      "ok": true,
+      "value": {
+        "source": "本机私有目录",
+        "status": "recovery_required",
+        "message": "本地草稿可用。签名公钥已配置。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。",
+        "history": [
+          {
+            "release_id": "df9262a17f899976bb51acf4dd9fd65d",
+            "revision": 2,
+            "channel": "preview",
+            "published_at": 1793090702,
+            "payload_hash": "7383190554369457fbd1544f56e4419ef4bc8a3452005cb8a15af0f0696fa9c1",
+            "verified": true
+          },
+          {
+            "release_id": "df9262a17f899976bb51acf4dd9fd65d",
+            "revision": 2,
+            "channel": "production",
+            "published_at": 1793090702,
+            "payload_hash": "c724672fab319688b97a2df681cea281d6f1484b805271b2a511c71ce3ec0760",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "republished",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    },
+    {
+      "label": "ready-status",
+      "command": "publisher_status",
+      "ok": true,
+      "value": {
+        "source": "本机私有目录",
+        "status": "ready_local",
+        "message": "本地草稿可用。签名公钥已配置。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。",
+        "history": [
+          {
+            "release_id": "df9262a17f899976bb51acf4dd9fd65d",
+            "revision": 2,
+            "channel": "preview",
+            "published_at": 1793090702,
+            "payload_hash": "7383190554369457fbd1544f56e4419ef4bc8a3452005cb8a15af0f0696fa9c1",
+            "verified": true
+          },
+          {
+            "release_id": "df9262a17f899976bb51acf4dd9fd65d",
+            "revision": 2,
+            "channel": "production",
+            "published_at": 1793090702,
+            "payload_hash": "c724672fab319688b97a2df681cea281d6f1484b805271b2a511c71ce3ec0760",
+            "verified": true
+          },
+          {
+            "release_id": "65de84584b185cadf97bbe9b9ff12769",
+            "revision": 4,
+            "channel": "production",
+            "published_at": 1793090702,
+            "payload_hash": "281f748096ba1f70c3535eb576ac32b8f30dc4f9da5a4b9cf1aebc293a07b399",
+            "verified": true
+          }
+        ]
+      }
+    }
+  ],
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+}

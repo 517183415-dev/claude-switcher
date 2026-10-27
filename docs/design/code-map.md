@@ -1,5 +1,15 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：真实 WebView 经正式注册表完成运营闭环
+
+`ipc-business --ordinary-publisher → ordinary::run → 正式 ipc::handler / capability → WKWebView invoke → Publisher`。独立测试前端调用正式命令；仅测试特性允许注入 MemoryVault。默认产品启动与 Keychain 路径保持原实现。显式启用参数和私有合成目录是测试入口的前置条件。
+
+原生窗口完成 17 次响应和 5 个宿主检查点：创建密钥与重复拒绝、素材规范化、三槽六期、预览/生产签名发布、加密备份、较高暂停版本、错误口令拒绝、恢复且不自动发布、显式更高序号续发。独立 Node Ed25519 验签，并核对素材摘要/尺寸/0600、current 与 immutable、旧代次保留和恢复状态。
+
+测试工具首次漏建合成目录，窗口创建前退出；已修复并补回归。复用成功构建，保留失败证据；成功原生调用不重复执行。相关 IPC 7 项和工具 8 项通过。Personal 测试特性 Clippy、Public 测试特性编译及四文件格式通过；Clippy 保留三条既有迁移风格警告。完整 236 项与 ACL 142 次拒绝沿用旧有效证据。CodeGraph complete、pending 0：249 文件、6543 节点、27309 条边。[计划](../plans/WebView正式运营成功路径-2026-10-27.md)与[证据](../../output/no-account-20261027/native-publisher/README.md)。
+
+范围是正式处理函数、真实 WKWebView、测试前端和合成密钥库。默认 Keychain 权限、普通产品前端、R2/CDN、原生两次确认及 AD-10 整项仍待验。UI 最后，保留当前布局和非蓝紫色背景；注册、部署、付款暂停。
+
 ## 2026-10-27：私有 Keychain 的跨进程恢复通过
 
 `native_keychain_process_tests 协调器 → 写入 worker → wait 回收 → 新读 worker → Publisher::open / KeychainVault::isolated`。两个 worker 使用同一编译测试二进制、不同 OS 进程；写入者退出后才启动读者。读者验证恢复代次、recovery_required、旧密钥与恢复密钥、旧状态摘要及无自动发布。协调器按精确清单清理条目，删除私有库，核对偏好快照。

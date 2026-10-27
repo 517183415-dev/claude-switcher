@@ -12,6 +12,8 @@ use switcher_domain::{Edition, desktop::ActivityEntry};
 #[cfg(feature = "personal")]
 mod backup;
 #[cfg(feature = "personal")]
+mod ordinary;
+#[cfg(feature = "personal")]
 mod publish;
 
 struct Fixture {
@@ -198,6 +200,11 @@ fn seed_activity(state: &DesktopState) {
 
 pub fn run() {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    #[cfg(feature = "personal")]
+    if args == ["--ordinary-publisher"] {
+        ordinary::run();
+        return;
+    }
     if args.len() != 1
         || !matches!(
             args[0].as_str(),

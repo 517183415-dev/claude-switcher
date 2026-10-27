@@ -1,0 +1,4 @@
+
+thread 'main' (34447903) panicked at apps/desktop/src-tauri/src/ipc_business.rs:176:42:
+fixture root must not contain links: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

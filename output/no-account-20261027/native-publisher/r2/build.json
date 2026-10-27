@@ -1,0 +1,22 @@
+{
+  "exit": 0,
+  "command": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "build",
+    "--release",
+    "--offline",
+    "--locked",
+    "--target",
+    "aarch64-apple-darwin",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "personal,ipc-business,custom-protocol"
+  ],
+  "log_sha256": "aace011857fda73cdd655ee14a538beda69cd41e378877c320768e819f67db28",
+  "reused_from": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-publisher/r1",
+  "binary_sha256": "db540ba18c84138a5d10ec7ca711a4bdc6d3394e540e749a22485afc053b1f8b"
+}

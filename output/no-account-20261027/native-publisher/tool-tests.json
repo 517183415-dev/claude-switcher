@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "execution": "terminal output retained in this chat; no separate raw test log was captured",
+  "runner_tests": 3,
+  "verifier_tests": 5,
+  "fixture": "r2",
+  "commands": [
+    "python3 -m unittest discover -s apps/desktop/tests/native-publisher -p test_runner.py -v",
+    "python3 apps/desktop/tests/native-publisher/test_verifier.py --fixture output/no-account-20261027/native-publisher/r2 -v"
+  ],
+  "format": {
+    "edition": 2024,
+    "skip_children": true,
+    "files": 4,
+    "exit": 0
+  },
+  "initial_format_check": {
+    "edition": 2021,
+    "exit": 1,
+    "cause": "wrong edition selected for a Rust 2024 project; check only, no files changed"
+  },
+  "replay_portability": "Only a disposable replay copy reconstructs 0600/0700 because Git cannot preserve these bits; live native verifier checked original permissions.",
+  "verifier_final_run": "5 tests passed after this copy-only portability change; no native calls or Rust tests repeated."
+}
