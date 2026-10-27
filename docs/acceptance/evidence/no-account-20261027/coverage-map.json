@@ -8171,7 +8171,14 @@
           "requirement_checklist": "N：真实WebView备份边界、原生两次确认和重启；E受控/实源：认证回读、补传、下一序号；专用测试密钥存储，不读用户Keychain"
         }
       ],
-      "next_review": "先跑A01/A02/A03全部适用回归，再做备份恢复→续发→整理/GC闭环"
+      "next_review": "恢复备份/导入归档八类拒绝和状态重建已补 MockRuntime 证据；保持已有效检查。成功生产备份导出/恢复、真实 Keychain 与 WebView、两次确认和既有清理分支仍按各自证据核对。",
+      "ordinary_recovery_rejection_evidence": {
+        "path": "output/no-account-20261027/recovery-dispatch/receipt.json",
+        "status": "MOCK_PRODUCT_RECOVERY_REJECTION_VERIFIED_NOT_NATIVE_OR_SUCCESSFUL_RESTORE",
+        "new_test_names": 1,
+        "responses": 16,
+        "related_tests_passed": 7
+      }
     },
     {
       "id": "PF-01",

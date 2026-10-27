@@ -1,5 +1,9 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：恢复拒绝的共享注册表测试
+
+`ipc::handler → restore_publisher_backup → spawn_blocking → Publisher::restore_backup` 与 `ipc::handler → publisher_archive_import → spawn_blocking → import_retained_generation` 新增同一隔离测试。两入口各八类拒绝，独立递归核对磁盘状态并重建 App 回读；产品调用链未改。[证据与 MockRuntime 范围](../../output/no-account-20261027/recovery-dispatch/README.md)。CodeGraph complete、pending 0：240 文件、6350 节点、26499 条边。
+
 ## 2026-10-27：发布反馈的目标范围修正
 
 `publisher_status → publisher_view` 的未完成发布提示改为所选发布目标；`restore_publisher_backup → restore_publisher_backup_body` 明确本地恢复尚未发布。调用链与上传/恢复事务不变。新增两项反馈回归，发布命令单元集合 10 项通过；[证据](../../output/no-account-20261027/publication-feedback/README.md)。CodeGraph complete、pending 0：240 文件、6347 节点、26460 条边。

@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "--check",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests.rs"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.02,
+  "inputs_sha256": "5b1d0bc1c69c61d383b73384a9718990845e42785784ea95341c5d022c5f3892",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

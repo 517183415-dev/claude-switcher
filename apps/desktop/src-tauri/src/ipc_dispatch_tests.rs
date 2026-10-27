@@ -255,6 +255,102 @@ fn read(window: &tauri::WebviewWindow<MockRuntime>) -> Value {
     invoke(window, "ad_draft_read", json!({})).unwrap()
 }
 
+#[cfg(feature = "personal")]
+fn publisher_tree(
+    root: &std::path::Path,
+) -> std::collections::BTreeMap<PathBuf, (bool, u32, Vec<u8>)> {
+    fn collect(
+        root: &std::path::Path,
+        directory: &std::path::Path,
+        files: &mut std::collections::BTreeMap<PathBuf, (bool, u32, Vec<u8>)>,
+    ) {
+        for entry in fs::read_dir(directory).unwrap() {
+            let path = entry.unwrap().path();
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(!metadata.is_symlink());
+            let is_directory = metadata.is_dir();
+            let bytes = if is_directory {
+                Vec::new()
+            } else {
+                fs::read(&path).unwrap()
+            };
+            files.insert(
+                path.strip_prefix(root).unwrap().to_owned(),
+                (is_directory, metadata.permissions().mode(), bytes),
+            );
+            if is_directory {
+                collect(root, &path, files);
+            }
+        }
+    }
+    let mut files = std::collections::BTreeMap::new();
+    collect(root, root, &mut files);
+    files
+}
+
+#[test]
+#[cfg(feature = "personal")]
+fn ordinary_dispatch_recovery_rejects_invalid_backups_without_changing_publisher_tree() {
+    use crate::publisher::backup;
+    let root = SyntheticRoot::new();
+    let (app, main) = root.app();
+    read(&main);
+    let imported = invoke(&main, "import_ad_image", json!({"bytes":include_bytes!("../../tests/native-ipc-business/backup-source.png").as_slice()})).unwrap();
+    let draft = invoke(&main, "pause_ad", json!({"slot":"residential_broadband"})).unwrap();
+    let directory = root.0.join("v2/personal/publisher");
+    let before = publisher_tree(&directory);
+    assert!(
+        before
+            .keys()
+            .any(|p| p.file_name().unwrap() == imported["asset"]["sha256"].as_str().unwrap())
+    );
+    let passphrase = "synthetic-backup-passphrase";
+    let sealed = backup::seal(b"{}", passphrase.as_bytes()).unwrap();
+    assert_eq!(
+        backup::open(&sealed, passphrase.as_bytes())
+            .unwrap()
+            .as_slice(),
+        b"{}"
+    );
+    let mut bad_magic = sealed.clone();
+    bad_magic[0] ^= 1;
+    let mut bad_kdf = sealed.clone();
+    bad_kdf[8] ^= 1;
+    let mut tampered = sealed.clone();
+    *tampered.last_mut().unwrap() ^= 1;
+    let cases = [
+        (Vec::new(), passphrase, "backup_header"),
+        (bad_magic, passphrase, "backup_header"),
+        (sealed[..75].to_vec(), passphrase, "backup_header"),
+        (bad_kdf, passphrase, "backup_kdf_parameters"),
+        (
+            sealed.clone(),
+            "synthetic-wrong-passphrase",
+            "backup_password_or_integrity",
+        ),
+        (sealed.clone(), "short", "backup_passphrase_length"),
+        (tampered, passphrase, "backup_password_or_integrity"),
+        (sealed, passphrase, "payload_json"),
+    ];
+    for command in ["restore_publisher_backup", "publisher_archive_import"] {
+        for (bytes, password, expected) in &cases {
+            let error =
+                invoke(&main, command, json!({"bytes":bytes,"passphrase":password})).unwrap_err();
+            assert!(
+                error.as_str().unwrap().contains(expected),
+                "{command}: expected {expected}, got {error}"
+            );
+            assert_eq!(publisher_tree(&directory), before, "{command}: {expected}");
+            assert_eq!(read(&main), draft);
+        }
+    }
+    drop(main);
+    drop(app);
+    let (_app, main) = root.app();
+    assert_eq!(read(&main), draft);
+    assert_eq!(publisher_tree(&directory), before);
+}
+
 #[test]
 #[cfg(feature = "personal")]
 fn ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft() {

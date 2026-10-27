@@ -1,0 +1,50 @@
+{
+  "status": "MOCK_PRODUCT_RECOVERY_REJECTION_VERIFIED_NOT_NATIVE_OR_SUCCESSFUL_RESTORE",
+  "base_commit": "6d755ae31d9e3d9d4e923913a5ec63356dba52fc",
+  "scope": {
+    "new_test_names": 1,
+    "related_tests_passed": 7,
+    "commands": [
+      "restore_publisher_backup",
+      "publisher_archive_import"
+    ],
+    "rejected_cases_per_command": 8,
+    "responses": 16,
+    "cases": [
+      "empty",
+      "wrong magic",
+      "truncated",
+      "unsupported KDF parameters",
+      "wrong passphrase",
+      "short passphrase",
+      "tampered authentication tag",
+      "authenticated invalid snapshot JSON"
+    ],
+    "tree_checks": "All descendant paths, directory/file kinds, modes and file bytes after each rejection and App state rebuild",
+    "positive_controls": [
+      "Production image import and pause command persist nonempty state",
+      "Production encryption output decrypts to its known synthetic plaintext before malformed snapshot rejection"
+    ]
+  },
+  "inputs_sha256": "5b1d0bc1c69c61d383b73384a9718990845e42785784ea95341c5d022c5f3892",
+  "source_unchanged_during_validation": true,
+  "tests": "Personal ipc_ group once; Personal all-target Clippy; changed file formatting",
+  "not_repeated": [
+    "Unchanged Public tests",
+    "Unchanged frontend tests",
+    "Full desktop suite",
+    "64 MiB boundary already covered separately"
+  ],
+  "not_verified": [
+    "Native WKWebView",
+    "Successful backup export or restore through production handlers",
+    "Native Keychain",
+    "OS process restart",
+    "Actual R2 storage and propagation"
+  ],
+  "paused": [
+    "registration",
+    "deployment",
+    "payment"
+  ]
+}
