@@ -99,8 +99,12 @@ pub async fn diagnose_proxy(config: ProxyConfig) -> Result<DiagnosticReport, &'s
 
 /// Apply the same redaction to preview, persistence and export. Avoid raw platform output in the first place.
 pub fn redact(text: &str) -> String {
+    let mut sensitive_tail = false;
     text.lines()
-        .map(|line| {
+        .map_while(|line| {
+            if sensitive_tail {
+                return None;
+            }
             let lower = line.to_ascii_lowercase();
             if [
                 "authorization",
@@ -114,7 +118,9 @@ pub fn redact(text: &str) -> String {
             .iter()
             .any(|key| lower.contains(key))
             {
-                return "[敏感字段已隐藏]".into();
+                // A field may continue on later lines, including nested objects.
+                sensitive_tail = true;
+                return Some("[敏感字段已隐藏]".into());
             }
             let mut line = line.to_owned();
             if let Some(home) = std::env::var_os("HOME") {
@@ -123,46 +129,50 @@ pub fn redact(text: &str) -> String {
                     line = line.replace(home.as_ref(), "[本机目录]");
                 }
             }
-            line.split_whitespace()
-                .map(|word| {
-                    if word.contains("://") {
-                        if let Ok(url) = url::Url::parse(word.trim_matches(['(', ')', ',', ';'])) {
-                            let public = matches!(
-                                url.host_str(),
-                                Some(
-                                    "claude.ai"
-                                        | "api.anthropic.com"
-                                        | "ipinfo.io"
-                                        | "ipwho.is"
-                                        | "api.ip.sb"
-                                        | "www.cloudflare.com"
-                                )
-                            );
-                            if !public
-                                || !url.username().is_empty()
-                                || url.query().is_some()
-                                || url.fragment().is_some()
+            Some(
+                line.split_whitespace()
+                    .map(|word| {
+                        if word.contains("://") {
+                            if let Ok(url) =
+                                url::Url::parse(word.trim_matches(['(', ')', ',', ';']))
                             {
+                                let public = matches!(
+                                    url.host_str(),
+                                    Some(
+                                        "claude.ai"
+                                            | "api.anthropic.com"
+                                            | "ipinfo.io"
+                                            | "ipwho.is"
+                                            | "api.ip.sb"
+                                            | "www.cloudflare.com"
+                                    )
+                                );
+                                if !public
+                                    || !url.username().is_empty()
+                                    || url.query().is_some()
+                                    || url.fragment().is_some()
+                                {
+                                    return "[网络地址已隐藏]".to_owned();
+                                }
+                            } else {
                                 return "[网络地址已隐藏]".to_owned();
                             }
-                        } else {
-                            return "[网络地址已隐藏]".to_owned();
                         }
-                    }
-                    let trimmed = word.trim_matches(['[', ']', '(', ')', ',', ';']);
-                    if trimmed.parse::<IpAddr>().is_ok()
-                        || trimmed.parse::<std::net::SocketAddr>().is_ok()
-                        || word
-                            .split(['=', '/', ',', ';', '(', ')', '→'])
-                            .any(|s| s.trim_matches(['[', ']']).parse::<IpAddr>().is_ok())
-                    {
-                        "[网络地址已隐藏]".to_owned()
-                    } else {
-                        redact_ip_literals(word)
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(" ")
+                        let trimmed = word.trim_matches(['[', ']', '(', ')', ',', ';']);
+                        if trimmed.parse::<IpAddr>().is_ok()
+                            || trimmed.parse::<std::net::SocketAddr>().is_ok()
+                            || word
+                                .split(['=', '/', ',', ';', '(', ')', '→'])
+                                .any(|s| s.trim_matches(['[', ']']).parse::<IpAddr>().is_ok())
+                        {
+                            "[网络地址已隐藏]".to_owned()
+                        } else {
+                            redact_ip_literals(word)
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            )
         })
         .collect::<Vec<_>>()
         .join("\n")
@@ -280,6 +290,34 @@ mod tests {
             assert!(!redact(input).contains("203.0.113.4"));
             assert!(!redact(input).contains("2001:db8::1"));
         }
+    }
+    #[test]
+    fn redaction_hides_multiline_sensitive_values() {
+        for (input, private_value) in [
+            (
+                "开始\nAuthorization:\n  Bearer E07_MULTILINE_A_5426\n完成",
+                "E07_MULTILINE_A_5426",
+            ),
+            (
+                "开始\n{\n  \"token\": {\n    \"value\": \"E07_MULTILINE_B_1924\"\n  }\n}",
+                "E07_MULTILINE_B_1924",
+            ),
+            (
+                "开始\nproxy_url: |\n  E07_MULTILINE_C_8731\n完成",
+                "E07_MULTILINE_C_8731",
+            ),
+        ] {
+            let output = redact(input);
+            assert!(output.starts_with("开始\n"));
+            assert!(!output.contains(private_value));
+            assert!(output.ends_with("[敏感字段已隐藏]"));
+            assert_eq!(redact(&output), output);
+        }
+        assert_eq!(
+            redact("Authorization:\n  E07_FIRST_3194\nCookie:\n  E07_SECOND_7298"),
+            "[敏感字段已隐藏]"
+        );
+        assert_eq!(redact("开始\n普通记录\n完成"), "开始\n普通记录\n完成");
     }
     #[tokio::test]
     async fn dead_proxy_does_not_fallback_or_modify_state() {

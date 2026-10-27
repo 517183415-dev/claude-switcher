@@ -232,6 +232,62 @@ fn activity_lock_serializes_separate_processes() {
 }
 
 #[test]
+fn multiline_sensitive_activity_is_hidden_in_storage_preview_and_export() {
+    let mut state = isolated("multiline-privacy");
+    let values = ["E07_MULTILINE_A_5426", "E07_MULTILINE_B_1924"];
+    let messages = [
+        "开始\nAuthorization:\n  Bearer E07_MULTILINE_A_5426\n完成",
+        "开始\n{\n  \"token\": {\n    \"value\": \"E07_MULTILINE_B_1924\"\n  }\n}",
+    ];
+    for edition in [Edition::Personal, Edition::Public] {
+        state.edition = edition;
+        for message in messages {
+            state.log("info", message).unwrap();
+        }
+        let persisted: serde_json::Value =
+            storage::read_json(&state.directory().join("activity.json")).unwrap();
+        let preview = state.activity().unwrap();
+        let (path, exported) = state.export_activity().unwrap();
+        let exported_file: serde_json::Value =
+            storage::read_json(std::path::Path::new(&path)).unwrap();
+        assert_eq!(persisted, serde_json::to_value(&preview).unwrap());
+        assert_eq!(exported_file, serde_json::to_value(&preview).unwrap());
+        assert_eq!(serde_json::to_value(exported).unwrap(), exported_file);
+        assert_eq!(preview.len(), messages.len());
+        for entry in &preview {
+            assert!(entry.message.starts_with("开始\n"));
+        }
+        let visible = exported_file.to_string();
+        for value in values {
+            assert!(!visible.contains(value));
+        }
+
+        // Previously persisted raw entries must be hidden on read and export.
+        storage::atomic_json(
+            &state.directory().join("activity.json"),
+            &serde_json::json!([{"observed_at":1,"level":"info","message":messages[1]}]),
+        )
+        .unwrap();
+        let preview = state.activity().unwrap();
+        let (path, exported) = state.export_activity().unwrap();
+        let exported_file: serde_json::Value =
+            storage::read_json(std::path::Path::new(&path)).unwrap();
+        assert_eq!(serde_json::to_value(&preview).unwrap(), exported_file);
+        assert_eq!(serde_json::to_value(exported).unwrap(), exported_file);
+        assert!(!exported_file.to_string().contains(values[1]));
+        // A later write also replaces the old stored entry with its redacted form.
+        state.log("info", "后续事件").unwrap();
+        let persisted: serde_json::Value =
+            storage::read_json(&state.directory().join("activity.json")).unwrap();
+        assert!(!persisted.to_string().contains(values[1]));
+        let entries = state.activity().unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[1].message, "后续事件");
+    }
+    std::fs::remove_dir_all(state.root).unwrap();
+}
+
+#[test]
 fn export_uses_the_same_redacted_snapshot_and_private_edition_path() {
     let mut state = isolated("content");
     for edition in [Edition::Personal, Edition::Public] {
