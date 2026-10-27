@@ -1,0 +1,108 @@
+{
+  "active": {
+    "schema": 1,
+    "generation": "78dfff22dd3470bef59ce4b17de6fcdd"
+  },
+  "state": {
+    "schema": 2,
+    "target": "local:0c4e372717c3b8cab7a63fa569240bfde480bf06a0a340036fa54f071569e60c",
+    "draft": {
+      "schema_version": 1,
+      "channel": "preview",
+      "content_revision": 2,
+      "key_id": "ads-personal-v1",
+      "issued_at": 1793101686,
+      "expires_at": 1800877686,
+      "release_id": "61cb3f4daab3a8e1dd7b5efe7c17b354",
+      "slots": [
+        {
+          "slot": "residential_broadband",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "account_service",
+          "enabled": true,
+          "campaigns": []
+        },
+        {
+          "slot": "kyc_service",
+          "enabled": true,
+          "campaigns": []
+        }
+      ]
+    },
+    "history": [
+      {
+        "manifest": {
+          "schema_version": 1,
+          "channel": "preview",
+          "content_revision": 2,
+          "key_id": "ads-personal-v1",
+          "issued_at": 1793101686,
+          "expires_at": 1800877686,
+          "release_id": "61cb3f4daab3a8e1dd7b5efe7c17b354",
+          "slots": [
+            {
+              "slot": "residential_broadband",
+              "enabled": true,
+              "campaigns": []
+            },
+            {
+              "slot": "account_service",
+              "enabled": true,
+              "campaigns": []
+            },
+            {
+              "slot": "kyc_service",
+              "enabled": true,
+              "campaigns": []
+            }
+          ]
+        },
+        "published_at": 1793101686,
+        "payload_hash": "3381a385099f74582b66bef3b3a63c6347a7bc8aa9ada04e11db326949ca9e01"
+      }
+    ],
+    "assets": [],
+    "sequences": [
+      {
+        "highest": 2,
+        "payload_hash": "3381a385099f74582b66bef3b3a63c6347a7bc8aa9ada04e11db326949ca9e01"
+      },
+      {
+        "highest": 0,
+        "payload_hash": null
+      }
+    ],
+    "pending": null,
+    "recovery_required": false,
+    "last_resolution": null
+  },
+  "states": {
+    "bc6ecbd6cba5e8c5e29d06b9ccce5ee6": "0c80f936f10ddb562092b9368ac414c71b142e38c706c8d9c9b3c0ee5b53be20",
+    "78dfff22dd3470bef59ce4b17de6fcdd": "ba490c2c27ce5700e98f95987d8153fab962792dff413464398a8e3805965cc9"
+  },
+  "public": {
+    "trust.json": {
+      "sha256": "dc7067201f75619fa5cc11ec3402d9255c1c924818e2e5e19cdf22e3855c05f2",
+      "mode": 384
+    },
+    "lifecycle.lock": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384
+    },
+    "preview/current.json": {
+      "sha256": "4fceb0e2d3e5b2338a4425b7bdb8ad67a4b7f6f703243279467ac06e855fad68",
+      "mode": 384
+    },
+    "preview/versions/d08932a8d0dca8d137caa43c67a17dca.json": {
+      "sha256": "c543bc9e40694ba0d362e5a0212cb93259338e49feb121ebe3baf8522e90bcf8",
+      "mode": 384
+    },
+    "preview/versions/61cb3f4daab3a8e1dd7b5efe7c17b354.json": {
+      "sha256": "4fceb0e2d3e5b2338a4425b7bdb8ad67a4b7f6f703243279467ac06e855fad68",
+      "mode": 384
+    }
+  }
+}

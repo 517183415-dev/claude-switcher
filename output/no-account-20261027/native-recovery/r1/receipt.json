@@ -1,0 +1,24 @@
+{
+  "status": "PASS_NATIVE_WEBVIEW_RECOVERY_CONFIRM_CANCEL_SYNTHETIC_VAULT",
+  "responses": 14,
+  "checkpoints": [
+    "baseline",
+    "prepared",
+    "canceled",
+    "rejected",
+    "confirmed",
+    "republished"
+  ],
+  "canceled_and_invalid_preserve_state": true,
+  "old_generation_preserved": true,
+  "confirmation_does_not_publish": true,
+  "republish_signature_verified": true,
+  "binary_sha256": "eaa4ed6def30d5f763a3fc2df3fdc460c7121a497113032206870aeb2258990b",
+  "inputs_sha256": "bb44f8996742f9aa552cbd37187168d4c6349f3775d61243fcde4a86b999fa4b",
+  "not_proven": [
+    "native product UI dialog",
+    "default Keychain permission",
+    "R2/CDN",
+    "whole AD-10"
+  ]
+}

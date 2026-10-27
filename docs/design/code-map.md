@@ -1,5 +1,9 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：WebView 恢复会话确认和取消
+
+`native-recovery/runner.py → native-publisher 隔离工具 → WKWebView → 正式 IPC 注册表 → RecoverySessions / PreparedRecovery`。14 次响应与 6 个检查点验证取消、重复准备和错误确认的拒绝，以及正确确认后的旧代次/备份保留、无自动发布和显式续发。宿主独立验签。测试前端、MemoryVault 和本机对象存储均为合成夹具，真实产品 UI 对话框仍待验。[证据](../../output/no-account-20261027/native-recovery/README.md)。产品代码未改；相关旧测试与 ACL 证据复用。CodeGraph complete、pending 0：252 文件、6581 节点、27393 条边。
+
 ## 2026-10-27：真实 WebView 经正式注册表完成运营闭环
 
 `ipc-business --ordinary-publisher → ordinary::run → 正式 ipc::handler / capability → WKWebView invoke → Publisher`。独立测试前端调用正式命令；仅测试特性允许注入 MemoryVault。默认产品启动与 Keychain 路径保持原实现。显式启用参数和私有合成目录是测试入口的前置条件。

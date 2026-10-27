@@ -1,0 +1,16 @@
+{
+  "files": {
+    "apps/desktop/tests/native-publisher/runner.py": "20d5307d71a1fd0d7bf5f84fd5563e56ba64c5d599da72737da3067d743bcda1",
+    "apps/desktop/tests/native-ipc-policy/run.py": "8400658c1e3ad1481899592eb8155ec8f1bb220d2661520200dcad7e0a8e98ea",
+    "output/no-account-20261027/storage-directory-race/account-free.sb": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa"
+  },
+  "tracked_base_commit": "07f77666",
+  "source_input_drift_after_execution": [],
+  "codegraph": {
+    "files": 252,
+    "nodes": 6581,
+    "edges": 27393,
+    "state": "complete",
+    "pending": 0
+  }
+}

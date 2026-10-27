@@ -8188,7 +8188,7 @@
           "requirement_checklist": "N：真实WebView备份边界、原生两次确认和重启；E受控/实源：认证回读、补传、下一序号；专用测试密钥存储，不读用户Keychain"
         }
       ],
-      "next_review": "已补正式处理函数的真实 WebView 成功业务（测试前端/MemoryVault）。继续原生两次确认与取消、默认库权限、普通产品前端、R2 传播和完整清理分支；不重复有效检查。",
+      "next_review": "已补真实 WebView 的恢复确认与取消（测试前端/MemoryVault）。继续普通产品 UI 对话框、默认 Keychain 权限、R2 传播和完整清理分支；不重复有效检查。",
       "ordinary_recovery_rejection_evidence": {
         "path": "output/no-account-20261027/recovery-dispatch/receipt.json",
         "status": "MOCK_PRODUCT_RECOVERY_REJECTION_VERIFIED_NOT_NATIVE_OR_SUCCESSFUL_RESTORE",
@@ -8245,6 +8245,15 @@
         "secret_storage": "synthetic MemoryVault",
         "frontend": "isolated test frontend",
         "signature_verifier": "independent Node crypto Ed25519",
+        "whole_requirement_complete": false
+      },
+      "native_webview_recovery_session_evidence": {
+        "path": "output/no-account-20261027/native-recovery/r1/receipt.json",
+        "status": "PASS_NATIVE_WEBVIEW_RECOVERY_CONFIRM_CANCEL_SYNTHETIC_VAULT",
+        "responses": 14,
+        "host_checkpoints": 6,
+        "frontend": "isolated test frontend",
+        "secret_storage": "synthetic MemoryVault",
         "whole_requirement_complete": false
       }
     },

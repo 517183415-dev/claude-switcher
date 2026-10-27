@@ -1,0 +1,169 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "label": "runtime",
+      "command": "runtime_info",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "version": "0.2.0",
+        "edition": "personal",
+        "slots": [
+          "residential_broadband",
+          "account_service",
+          "kyc_service"
+        ],
+        "automatic_updates": false,
+        "ads_enabled": false
+      }
+    },
+    {
+      "label": "key",
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "广告签名私钥已保存到本机钥匙串。公开验证公钥：eae99507ae490002f426e633298dac23f9f4d3899cdf3f966b017714e6d0b81a",
+        "recovery": null
+      }
+    },
+    {
+      "label": "preview",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    },
+    {
+      "label": "prepare-cancel",
+      "command": "publisher_recovery_prepare",
+      "ok": true,
+      "value": {
+        "digest": "5956957a8592c1478fcf9511f66a3935b436398bd0eedbd8aca58c715c42c9ef",
+        "backup_filename": "recovery-bc6ecbd6cba5e8c5e29d06b9ccce5ee6-f8d17d1922b4c47b512f79b416c6fe77.csbackup",
+        "generation": "bc6ecbd6cba5e8c5e29d06b9ccce5ee6"
+      }
+    },
+    {
+      "label": "duplicate-prepare",
+      "command": "publisher_recovery_prepare",
+      "ok": false,
+      "error": "已有恢复会话，请先取消或确认"
+    },
+    {
+      "label": "cancel",
+      "command": "publisher_recovery_cancel",
+      "ok": true,
+      "value": null
+    },
+    {
+      "label": "confirm-canceled",
+      "command": "publisher_recovery_confirm",
+      "ok": false,
+      "error": "恢复会话不存在，请重新准备"
+    },
+    {
+      "label": "prepare-rejected",
+      "command": "publisher_recovery_prepare",
+      "ok": true,
+      "value": {
+        "digest": "826e8c702b71bbafd1243692f24da7b1ce058d484de9096fe7001a3d88446944",
+        "backup_filename": "recovery-bc6ecbd6cba5e8c5e29d06b9ccce5ee6-fde624d4623070674dc25a05edc1de46.csbackup",
+        "generation": "bc6ecbd6cba5e8c5e29d06b9ccce5ee6"
+      }
+    },
+    {
+      "label": "confirm-invalid",
+      "command": "publisher_recovery_confirm",
+      "ok": false,
+      "error": "发布数据无效：recovery_stale_confirmation"
+    },
+    {
+      "label": "confirm-consumed",
+      "command": "publisher_recovery_confirm",
+      "ok": false,
+      "error": "恢复会话不存在，请重新准备"
+    },
+    {
+      "label": "prepare-confirmed",
+      "command": "publisher_recovery_prepare",
+      "ok": true,
+      "value": {
+        "digest": "b13b097187b1efc90784a5de39a3e8f20d8efd9485ff3f9b44ad2aea1f59980d",
+        "backup_filename": "recovery-bc6ecbd6cba5e8c5e29d06b9ccce5ee6-11cdb0fef5515bdb653f01dd3c980a75.csbackup",
+        "generation": "bc6ecbd6cba5e8c5e29d06b9ccce5ee6"
+      }
+    },
+    {
+      "label": "confirm",
+      "command": "publisher_recovery_confirm",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "已建立新的本机发布代次。旧资料和旧密钥继续保留。完整加密备份：recovery-bc6ecbd6cba5e8c5e29d06b9ccce5ee6-11cdb0fef5515bdb653f01dd3c980a75.csbackup。尚未发布，请核对草稿后明确发布。",
+        "recovery": null
+      }
+    },
+    {
+      "label": "retained",
+      "command": "publisher_retained_list",
+      "ok": true,
+      "value": [
+        {
+          "generation": "bc6ecbd6cba5e8c5e29d06b9ccce5ee6",
+          "state_verified": true,
+          "history": [
+            {
+              "manifest": {
+                "schema_version": 1,
+                "channel": "preview",
+                "content_revision": 1,
+                "key_id": "ads-personal-v1",
+                "issued_at": 1793101685,
+                "expires_at": 1800877685,
+                "release_id": "d08932a8d0dca8d137caa43c67a17dca",
+                "slots": [
+                  {
+                    "slot": "residential_broadband",
+                    "enabled": true,
+                    "campaigns": []
+                  },
+                  {
+                    "slot": "account_service",
+                    "enabled": true,
+                    "campaigns": []
+                  },
+                  {
+                    "slot": "kyc_service",
+                    "enabled": true,
+                    "campaigns": []
+                  }
+                ]
+              },
+              "published_at": 1793101685,
+              "payload_hash": "e3a8fce1574158ca53939c48cfd860d1ace95013a8b7f216a87c754c8ea18a6a"
+            }
+          ],
+          "pending_release_id": null,
+          "pending_target_unknown": true
+        }
+      ]
+    },
+    {
+      "label": "republish",
+      "command": "publish_ad",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "签名内容及素材已通过公开回读验证",
+        "recovery": null
+      }
+    }
+  ],
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+}
