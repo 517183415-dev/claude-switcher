@@ -208,6 +208,21 @@ fn configured_runtime(root: &Root) -> AdRuntime {
         }),
     }
 }
+
+#[test]
+fn source_status_distinguishes_selected_missing_and_invalid_configuration() {
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    assert_eq!(runtime.content_source_configured(), Ok(true));
+    runtime.pins = None;
+    assert_eq!(runtime.content_source_configured(), Ok(false));
+    runtime.local_error = Some("ad_release_materials");
+    assert_eq!(
+        runtime.content_source_configured(),
+        Err("ad_release_materials")
+    );
+}
+
 fn png() -> Vec<u8> {
     vec![
         137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2,

@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：广告内容来源状态
+
+`DesktopState::snapshot → AdRuntime::new → select_pins → content_source_configured`。状态使用同一个已选来源；`AdRuntime::snapshot` 单独负责可见缓存和错误。`DesktopState::refresh_ads → ad_refresh_waiting` 按等待原因生成恢复提示。来源已配置不代表已发布或已验签。[回归与边界](../acceptance/evidence/no-account-20261027/ad-source-status-20261028.md)。
+
+CodeGraph 状态 complete，待处理变更为 0：306 文件、7,543 节点、30,065 条关系。静态图不代表运行验证。
+
 ## 2026-10-28：归档选择与口令交接
 
 `PublisherRecoveryPanel / PublisherPage → PublisherFilePicker.withArchive → read → readFile → PublisherModel.importArchive / restoreBackup`。两个入口复用同一交接：取消或读取失败保留当前输入；非空文件读取成功后清空输入并提交。`readFile` 继续限制文件类型、链接和大小。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-archive-picker-20261028.md)。

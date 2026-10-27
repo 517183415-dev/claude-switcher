@@ -195,6 +195,133 @@ fn ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_wr
     );
 }
 
+const SYNTHETIC_AD_SOURCE: [Option<&str>; 4] = [
+    Some("https://ads.example.com/"),
+    Some("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"),
+    Some("synthetic-test-key"),
+    Some("production"),
+];
+
+fn synthetic_ad_source_configured(materials: [Option<&str>; 4]) -> Result<bool, &'static str> {
+    match materials {
+        [None, None, None, None] => Ok(false),
+        valid if valid == SYNTHETIC_AD_SOURCE => Ok(true),
+        _ => Err("snapshot test requires empty or designated synthetic release materials"),
+    }
+}
+
+#[test]
+fn synthetic_ad_source_materials_reject_unexpected_inputs() {
+    let valid = SYNTHETIC_AD_SOURCE;
+    assert_eq!(synthetic_ad_source_configured([None; 4]), Ok(false));
+    assert_eq!(synthetic_ad_source_configured(valid), Ok(true));
+    let mut partial = valid;
+    partial[1] = None;
+    assert!(synthetic_ad_source_configured(partial).is_err());
+    let mut unexpected = valid;
+    unexpected[0] = Some("https://other.example.com/");
+    assert!(synthetic_ad_source_configured(unexpected).is_err());
+}
+
+#[test]
+fn workspace_snapshot_reports_the_selected_ad_source() {
+    use switcher_core::{
+        ad_runtime::{self, local::LocalTrust},
+        storage,
+    };
+    use switcher_domain::Edition;
+
+    // The configured case uses a public test vector and a reserved example
+    // hostname. Network access is not needed for a workspace snapshot.
+    const KEY: [u8; 32] = [
+        0xd7, 0x5a, 0x98, 0x01, 0x82, 0xb1, 0x0a, 0xb7, 0xd5, 0x4b, 0xfe, 0xd3, 0xc9, 0x64, 0x07,
+        0x3a, 0x0e, 0xe1, 0x72, 0xf3, 0xda, 0xa6, 0x23, 0x25, 0xaf, 0x02, 0x1a, 0x68, 0xf7, 0x07,
+        0x51, 0x1a,
+    ];
+    let configured = synthetic_ad_source_configured([
+        option_env!("SWITCHER_AD_SOURCE"),
+        option_env!("SWITCHER_AD_PUBLIC_KEY_HEX"),
+        option_env!("SWITCHER_AD_KEY_ID"),
+        option_env!("SWITCHER_AD_CHANNEL"),
+    ])
+    .expect("unsupported release materials for snapshot test");
+    if configured {
+        assert!(ad_runtime::validate_public_release_materials().is_ok());
+    }
+    for edition in [Edition::Personal, Edition::Public] {
+        let root = SyntheticRoot::new();
+        let state = DesktopState::isolated_activity_fixture(root.0.clone(), edition);
+        let snapshot = state.snapshot().unwrap();
+        let missing = |messages: &[String]| {
+            messages.iter().any(|message| {
+                message.contains("广告内容来源尚未配置") || message.contains("远程广告上线未配置")
+            })
+        };
+        assert_eq!(missing(&snapshot.pending_materials), !configured);
+        assert!(snapshot.ads_manifest.is_none());
+
+        let directory = ad_runtime::local::directory(&root.0);
+        fs::DirBuilder::new()
+            .recursive(true)
+            .mode(0o700)
+            .create(&directory)
+            .unwrap();
+        let trust_path = directory.join("trust.json");
+        let mut trust = LocalTrust {
+            schema: 1,
+            key_id: "ads-personal-v1".into(),
+            public_key: KEY,
+        };
+        storage::atomic_json(&trust_path, &trust).unwrap();
+        let snapshot = state.snapshot().unwrap();
+        assert!(!missing(&snapshot.pending_materials));
+        assert!(snapshot.ads_manifest.is_none());
+
+        trust.schema = 2;
+        storage::atomic_json(&trust_path, &trust).unwrap();
+        let snapshot = state.snapshot().unwrap();
+        let uses_invalid_local = edition == Edition::Personal || !configured;
+        assert_eq!(
+            snapshot
+                .pending_materials
+                .iter()
+                .any(|message| message.contains("local_ad_trust_scope")),
+            uses_invalid_local
+        );
+        assert!(!missing(&snapshot.pending_materials));
+        assert!(snapshot.ads_manifest.is_none());
+    }
+}
+
+#[test]
+fn ad_refresh_guidance_matches_disabled_and_missing_source() {
+    use switcher_domain::Edition;
+
+    for edition in [Edition::Personal, Edition::Public] {
+        let disabled = crate::bridge::ad_refresh_waiting("ads_disabled", edition);
+        assert!(!disabled.completed);
+        assert!(disabled.message.contains("广告位已关闭"));
+        let guidance = disabled.recovery.unwrap();
+        assert!(guidance.contains("设置") && guidance.contains("开启"));
+        assert!(!guidance.contains("Personal"));
+
+        let missing = crate::bridge::ad_refresh_waiting("wait_ad_content_materials", edition);
+        assert!(!missing.completed);
+        assert!(missing.message.contains("来源") && missing.message.contains("未配置"));
+        let guidance = missing.recovery.unwrap();
+        assert!(guidance.contains(match edition {
+            Edition::Personal => "本机",
+            Edition::Public => "发布方",
+        }));
+        let delayed = crate::bridge::ad_refresh_waiting("ad_refresh_not_due_or_merged", edition);
+        assert!(!delayed.recovery.unwrap().contains("Personal"));
+        let clock = crate::bridge::ad_refresh_waiting("clock_recovery_required", edition);
+        assert!(clock.recovery.unwrap().contains("时间"));
+        let local = crate::bridge::ad_refresh_waiting("local_ad_not_published", edition);
+        assert!(local.message.contains("本机") && local.message.contains("发布"));
+    }
+}
+
 #[test]
 fn ordinary_registry_preferences_and_redacted_export_persist_on_reopen() {
     use switcher_core::storage;

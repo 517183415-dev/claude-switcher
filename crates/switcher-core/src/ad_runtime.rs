@@ -299,6 +299,14 @@ impl AdRuntime {
         }
     }
 
+    /// Reports only whether a source was selected, not whether content is available or verified.
+    pub fn content_source_configured(&self) -> Result<bool> {
+        match self.local_error {
+            Some(error) => Err(error),
+            None => Ok(self.pins.is_some()),
+        }
+    }
+
     fn select_pins(
         root: &Path,
         edition: Edition,

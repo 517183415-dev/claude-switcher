@@ -69,6 +69,39 @@ pub fn waiting(message: impl Into<String>, recovery: impl Into<String>) -> Opera
     }
 }
 
+pub(crate) fn ad_refresh_waiting(reason: &str, edition: Edition) -> OperationOutcome {
+    let (message, recovery) = match reason {
+        "wait_ad_content_materials" => (
+            "广告内容来源尚未配置".into(),
+            match edition {
+                Edition::Personal => "完成本机签名发布，或使用已配置内容来源的版本",
+                Edition::Public => "联系发布方提供已配置内容来源的版本",
+            },
+        ),
+        "local_ad_not_published" => (
+            "本机广告尚未完成首次签名发布".into(),
+            match edition {
+                Edition::Personal => "完成本机广告签名发布后重试",
+                Edition::Public => "联系发布方完成本机广告签名发布",
+            },
+        ),
+        "ads_disabled" | "all_slots_disabled" => (
+            "全部广告位已关闭，未发送广告请求".into(),
+            "在设置中开启需要的广告位，并确认广告请求用途",
+        ),
+        "ad_refresh_not_due_or_merged" => ("当前不需要刷新广告".into(), "稍后重试或等待自动刷新"),
+        "clock_recovery_required" => (
+            "时间状态需要恢复，暂时无法刷新广告".into(),
+            "检查系统时间后重新建立时间基线",
+        ),
+        _ => (
+            format!("本次没有刷新广告：{reason}"),
+            "检查广告内容来源或稍后重试",
+        ),
+    };
+    waiting(message, recovery)
+}
+
 /// Recovery guidance follows the persisted transaction, not new-operation dependencies.
 pub fn account_action_failure(action: AccountAction, error: impl Into<String>) -> OperationOutcome {
     waiting(
@@ -175,22 +208,20 @@ impl DesktopState {
     }
     pub fn snapshot(&self) -> Result<WorkspaceSnapshot, String> {
         let mut materials = Vec::new();
-        if !switcher_core::ad_runtime::local::configured(&self.root) {
-            materials.push("本机广告尚未完成首次签名发布；远程广告上线未配置".into());
+        let ad_runtime = AdRuntime::new(self.root.clone(), self.edition);
+        if matches!(ad_runtime.content_source_configured(), Ok(false)) {
+            materials.push("广告内容来源尚未配置；暂时无法接收广告内容".into());
         }
         let preferences = self.preferences()?;
         let mut runtime = switcher_core::runtime_info(self.edition);
         runtime.ads_enabled = preferences.ads.slots_enabled.iter().any(|v| *v);
-        let ads_manifest =
-            match AdRuntime::new(self.root.clone(), self.edition).snapshot(&preferences.ads) {
-                Ok(manifest) => manifest,
-                Err(reason) => {
-                    materials.push(format!(
-                        "广告已收起：{reason}。请检查 Personal 本机运营内容。"
-                    ));
-                    None
-                }
-            };
+        let ads_manifest = match ad_runtime.snapshot(&preferences.ads) {
+            Ok(manifest) => manifest,
+            Err(reason) => {
+                materials.push(format!("广告已收起：{reason}。请检查广告缓存和内容来源。"));
+                None
+            }
+        };
         Ok(WorkspaceSnapshot {
             runtime,
             accounts: self.accounts()?,
@@ -439,16 +470,7 @@ impl DesktopState {
         if result.refreshed {
             Ok(completed("已验证并刷新广告内容"))
         } else {
-            Ok(waiting(
-                match result.reason {
-                    "wait_ad_content_materials" => "本机广告尚未完成首次签名发布".into(),
-                    "ads_disabled" | "all_slots_disabled" => {
-                        "全部广告位已关闭，未发送广告请求".into()
-                    }
-                    _ => format!("本次没有刷新广告：{}", result.reason),
-                },
-                "在 Personal 中发布到本机正式目录，再开启广告位",
-            ))
+            Ok(ad_refresh_waiting(result.reason, self.edition))
         }
     }
     pub fn cached_image(
