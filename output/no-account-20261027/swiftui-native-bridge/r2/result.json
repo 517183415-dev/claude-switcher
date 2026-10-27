@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "fixture_binary_sha256": "246e1e9d20252abab9ac7160059de270474c009520590e7c516a7eb2353fed4b",
+  "fixture_library_sha256": "00aaef2021a21f012ee791c2c366fbdb1e7909c3bd221a4928a9c13f4f68f836",
+  "checks": {
+    "runtime_info": true,
+    "draft_read": true,
+    "public_gate": true,
+    "backend_error": true,
+    "unknown_command_denied": true
+  },
+  "scope": "isolated Personal Tauri fixture, synthetic data, no network"
+}

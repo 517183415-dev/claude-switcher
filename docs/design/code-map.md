@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：SwiftUI 基础与隔离桥接
+
+当前产品仍从 `App.svelte → Tauri IPC → Rust` 启动。新目录 `apps/desktop/swiftui/` 是尚未接入产品的原生迁移基础：`SwitcherPreview → SwitcherShell / OverviewView` 只显示合成数据；`DesktopBridge → TauriWebViewTransport → WKWebView → 现有 IPC` 已在隔离测试窗口验证，尚未由产品装载。
+
+原生总览保留现有布局，采用暖色玻璃；macOS 26 及以上使用系统 glassEffect，macOS 13–25 使用 SwiftUI 材质。其余五页、真实数据和操作、原生宿主及打包接线均未完成。[验证范围](../../output/no-account-20261027/swiftui-foundation/README.md)。
+
+本次 CodeGraph 状态 complete、pending 0：283 文件、6985 节点、28337 条边；这是本地索引统计，不证明业务已接通。
+
 ## 2026-10-27：恢复确认后的界面锁
 
 `PublisherRecovery.confirm → publisher_recovery_confirm → refreshAfterConfirm → Operations.reloadPublisher → ad_draft_read / publisher_status`。读取完成后才释放操作锁；读取失败时保留锁并由 `retryRefresh` 重试。[真实窗口证据](../../output/no-account-20261027/native-recovery-ui/README.md)。

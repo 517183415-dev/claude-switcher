@@ -1,0 +1,35 @@
+warning: /Users/gua/Library/org.swift.swiftpm/configuration is not accessible or not writable, disabling user-level cache features.
+warning: /Users/gua/Library/org.swift.swiftpm/security is not accessible or not writable, disabling user-level cache features.
+warning: /Users/gua/Library/Caches/org.swift.swiftpm is not accessible or not writable, disabling user-level cache features.
+warning: 'swiftui': failed loading cached manifest for 'swiftui': The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+warning: 'swiftui': failed storing manifest for 'swiftui' in cache: The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+warning: 'swiftui': failed closing manifest db cache: The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+Building for debugging...
+[Planning deferred tasks]
+[9 / 31]
+[10 / 32] SwitcherUI
+[13 / 35] SwitcherUI
+[21 / 37] SwitcherUI
+[26 / 37] SwitcherUITests-product
+[28 / 39] SwitcherUITests-product
+[34 / 43] SwitcherPreview-product
+[37 / 43] SwitcherPreview-product
+[39 / 43] SwitcherUITests-product
+Build complete! (2.96 sec)
+Test Suite 'All tests' started at 2026-10-27 21:42:15.704.
+Test Suite 'All tests' passed at 2026-10-27 21:42:15.706.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.002) seconds
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Test nonFiniteArgumentsFailBeforeTransport() started.
+◇ Test transportReceivesJSONArgumentsAndReturnsStructuredResult() started.
+◇ Test bridgeRejectsBadResponseAndReturnsBackendError() started.
+◇ Test commandGateMatchesProductManifest() started.
+◇ Test publicEditionCannotSendPersonalCommands() started.
+✔ Test nonFiniteArgumentsFailBeforeTransport() passed after 0.001 seconds.
+✔ Test transportReceivesJSONArgumentsAndReturnsStructuredResult() passed after 0.001 seconds.
+✔ Test publicEditionCannotSendPersonalCommands() passed after 0.001 seconds.
+✔ Test bridgeRejectsBadResponseAndReturnsBackendError() passed after 0.001 seconds.
+✔ Test commandGateMatchesProductManifest() passed after 0.001 seconds.
+✔ Test run with 5 tests in 0 suites passed after 0.001 seconds.

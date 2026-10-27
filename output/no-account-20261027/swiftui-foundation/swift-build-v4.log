@@ -1,0 +1,14 @@
+warning: /Users/gua/Library/org.swift.swiftpm/configuration is not accessible or not writable, disabling user-level cache features.
+warning: /Users/gua/Library/org.swift.swiftpm/security is not accessible or not writable, disabling user-level cache features.
+warning: /Users/gua/Library/Caches/org.swift.swiftpm is not accessible or not writable, disabling user-level cache features.
+warning: 'swiftui': failed loading cached manifest for 'swiftui': The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+warning: 'swiftui': failed storing manifest for 'swiftui' in cache: The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+warning: 'swiftui': failed closing manifest db cache: The file “manifests” couldn’t be saved in the folder “org.swift.swiftpm”.
+Building for debugging...
+[2 / 8] SwitcherUI
+[4 / 10] SwitcherUI
+[9 / 14] SwitcherPreview-product
+[11 / 16] SwitcherPreview-product
+[14 / 17] SwitcherPreview-product
+[16 / 17] SwitcherPreview-product
+Build complete! (3.60 sec)

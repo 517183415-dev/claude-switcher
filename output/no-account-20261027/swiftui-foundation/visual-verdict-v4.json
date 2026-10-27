@@ -1,0 +1,19 @@
+{
+  "score": 86,
+  "verdict": "revise",
+  "category_match": true,
+  "differences": [
+    "The overview keeps the existing navigation and two-column layout with a warm palette, but the glass depth is subtler than the reference.",
+    "The screenshot shows the top of the page; the added advertisement section is below the fold and is not visually verified.",
+    "The other pages and real product integration are incomplete."
+  ],
+  "suggestions": [
+    "Finish the remaining pages and connect their existing actions.",
+    "Review the completed windows including the advertisement section."
+  ],
+  "reasoning": "The native overview matches the requested layout and avoids a blue-purple background; the screenshot proves only a synthetic preview.",
+  "next_actions": [
+    "Port remaining product content and connect the existing command bridge",
+    "Review the resulting native windows"
+  ]
+}
