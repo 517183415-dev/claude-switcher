@@ -38,6 +38,7 @@ struct State {
     requests: Vec<Request>,
     version: usize,
     conflict_next_current: bool,
+    drop_current_response_after_commit: bool,
 }
 
 struct LocalS3 {
@@ -86,6 +87,32 @@ impl Drop for LocalS3 {
             }
         }
     }
+}
+
+fn publish_with_sdk(
+    publisher: &mut Publisher,
+    root: &Root,
+    vault: &MemoryVault,
+    peer: &LocalS3,
+    now: u64,
+) -> Result<Publication> {
+    publisher.publish_configured_with(
+        &root.0,
+        AdChannel::Preview,
+        now,
+        vault,
+        |config, access, secret| {
+            assert_eq!((access, secret), ("synthetic-key", "secret-synthetic-key"));
+            Ok(Box::new(
+                super::super::super::r2_store::tests::configured_store(
+                    &peer.endpoint,
+                    &config,
+                    access,
+                    secret,
+                ),
+            ))
+        },
+    )
 }
 
 fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
@@ -192,6 +219,10 @@ fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
                         etag: etag.clone(),
                     },
                 );
+                if key == "preview/current.json" && state.drop_current_response_after_commit {
+                    state.drop_current_response_after_commit = false;
+                    return;
+                }
                 ("200 OK", Vec::new(), Some(etag))
             }
         }
@@ -208,6 +239,95 @@ fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
     )
     .unwrap();
     socket.write_all(&response).unwrap();
+}
+
+#[test]
+fn configured_sdk_recovers_committed_current_after_response_is_lost() {
+    let peer = LocalS3::start();
+    let (root, mut publisher, mut vault) = fixture();
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Preview,
+        "synthetic-key",
+    )
+    .unwrap();
+    super::super::super::tests::attach_campaign(&mut publisher, 1001);
+    let publish =
+        |publisher: &mut Publisher, now| publish_with_sdk(publisher, &root, &vault, &peer, now);
+
+    peer.state
+        .lock()
+        .unwrap()
+        .drop_current_response_after_commit = true;
+    assert!(matches!(
+        publish(&mut publisher, 1002),
+        Err(Error::Store(StoreError::OutcomeUnknown))
+    ));
+    let pending_id = publisher.status().pending_release_id.unwrap();
+    assert_eq!(
+        publisher.status().phase,
+        Some(super::super::super::protocol::Phase::CommitUnknown)
+    );
+    assert!(publisher.status().history.is_empty());
+    let (wire, requests_before_recovery) = {
+        let state = peer.state.lock().unwrap();
+        let wire = state.objects["preview/current.json"].bytes.clone();
+        assert_eq!(
+            wire,
+            state.objects[&format!("preview/versions/{pending_id}.json")].bytes
+        );
+        let lock: serde_json::Value =
+            serde_json::from_slice(&state.objects["preview/publisher-lock.json"].bytes).unwrap();
+        assert!(lock["owner"].is_string());
+        (wire, state.requests.len())
+    };
+    let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
+    let manifest = checked_manifest(&wire, &public_key, 1002);
+    assert_eq!(manifest.release_id, pending_id);
+
+    drop(publisher);
+    let mut publisher =
+        Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1003).unwrap();
+    assert_eq!(
+        publisher.status().pending_release_id.as_deref(),
+        Some(pending_id.as_str())
+    );
+    let recovered = publish(&mut publisher, 1003).unwrap();
+    assert_eq!(recovered.release_id, pending_id);
+    assert_eq!(recovered.revision, manifest.content_revision);
+    assert!(publisher.status().phase.is_none());
+    assert_eq!(publisher.status().history.len(), 1);
+
+    let state = peer.state.lock().unwrap();
+    assert_eq!(state.objects["preview/current.json"].bytes, wire);
+    assert_eq!(
+        state
+            .objects
+            .keys()
+            .filter(|key| key.starts_with("preview/versions/"))
+            .count(),
+        1
+    );
+    let lock: serde_json::Value =
+        serde_json::from_slice(&state.objects["preview/publisher-lock.json"].bytes).unwrap();
+    assert!(lock["owner"].is_null());
+    for key in [
+        "preview/current.json".to_owned(),
+        format!("preview/versions/{pending_id}.json"),
+        super::super::super::protocol::asset_key(
+            AdChannel::Preview,
+            &manifest.slots[0].campaigns[0].image,
+        ),
+    ] {
+        assert!(
+            state.requests[requests_before_recovery..]
+                .iter()
+                .any(|request| {
+                    request.method == "GET" && request.key == key && !request.authenticated
+                })
+        );
+    }
 }
 
 #[test]
@@ -292,25 +412,8 @@ fn configured_publication_uses_sdk_upload_readback_and_conditional_updates() {
     )
     .unwrap();
     super::super::super::tests::attach_campaign(&mut publisher, 1001);
-    let publish = |publisher: &mut Publisher, now| {
-        publisher.publish_configured_with(
-            &root.0,
-            AdChannel::Preview,
-            now,
-            &vault,
-            |config, access, secret| {
-                assert_eq!((access, secret), ("synthetic-key", "secret-synthetic-key"));
-                Ok(Box::new(
-                    super::super::super::r2_store::tests::configured_store(
-                        &peer.endpoint,
-                        &config,
-                        access,
-                        secret,
-                    ),
-                ))
-            },
-        )
-    };
+    let publish =
+        |publisher: &mut Publisher, now| publish_with_sdk(publisher, &root, &vault, &peer, now);
     let source = ads::ContentSource::new("https://preview.example.com/").unwrap();
     let preferences = AdPreferences {
         slots_enabled: [true, false, false],

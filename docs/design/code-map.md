@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：远程写入结果未知的恢复
+
+`publish_configured_with → remote_lock → Publisher::publish_with → R2Store / AWS SDK → 模拟存储`。模拟端保存 current 后断连；重新打开 Publisher 后，现有恢复路径核对同一版本并公开回读，最后释放锁。[证据](../../output/no-account-20261027/r2-uncertain/README.md)。
+
+CodeGraph complete、pending 0：256 文件、6641 节点、27624 条边。这个测试在同一进程内重开对象，不证明应用进程重启或真实 R2。
+
 ## 2026-10-27：旧测试意图导航
 
 CLI 账号切换：`Invocation::valid_business_arguments → lifecycle::switch_checked → switch_with → launch_expected_with`。首次检查失败不切换；切换后重新检查，再决定能否启动。诊断由 `network` 和 `diagnostics` 负责；无 TUN 写入门禁由 helper 的 `platform` 执行。21 项旧测试到现行测试的导航见 [F-01 映射](../acceptance/evidence/no-account-20261027/f01-intent-map.md)。

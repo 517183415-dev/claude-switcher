@@ -7992,6 +7992,12 @@
         "sha256": "04aa44b445aad25625e4602d67095fed1aa503dd0ecde3eb481394df62efc727",
         "status": "LOCAL_SDK_TO_CLIENT_COMPONENTS_NOT_LIVE_PROPAGATION",
         "scope": "Two signed preview revisions and assets over loopback mock; client cache rejects stale or tampered content. Production HTTPS, timer and real source not tested."
+      },
+      "local_sdk_unknown_commit_evidence": {
+        "path": "output/no-account-20261027/r2-uncertain/README.md",
+        "sha256": "2fc7d52923bf0d5bb79f1565a54b2b29f06465d725ae0230f3994b96d56c0415",
+        "status": "LOCAL_SDK_COMMITTED_RESPONSE_LOST_SAME_PROCESS_REOPEN",
+        "scope": "预览发布在模拟存储保存 current 后断连；同进程重开发布器并恢复同一签名版本、公开回读及释放锁。真实 R2、进程重启及线上传播未验证。"
       }
     },
     {

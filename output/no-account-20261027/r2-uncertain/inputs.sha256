@@ -1,0 +1,8 @@
+1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae  Cargo.lock
+ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1  apps/desktop/src-tauri/Cargo.toml
+da57e9c936141db67b9baf17b3546f52e7a942a4305a69f62783b3b67f08d703  apps/desktop/src-tauri/src/publisher/connection.rs
+d33b5eaa4e2b6416f18f2dbe658e7bc04c43945de35cd5b31514fff67ad421fe  apps/desktop/src-tauri/src/publisher/connection/r2_integration_tests.rs
+b4a083fba40763818899298c8ca79485277420543c30a0821ab508f39b2914d3  apps/desktop/src-tauri/src/publisher/r2_store.rs
+e7e042fcd48a9fde2abdb2e6e1feae94a09587b27991cb3d71caa8ab87143be9  apps/desktop/src-tauri/src/publisher/r2_store/tests.rs
+aacbc239d023b4bba3bb0a6eb2ad92371baaa0325b4fc9106729900415250db5  apps/desktop/src-tauri/src/publisher/mod.rs
+40edca8fca2239bfe226cc08f325689afa460328409bfffb94ab8bd7e8133ad1  apps/desktop/src-tauri/src/publisher/remote_lock.rs
