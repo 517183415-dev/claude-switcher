@@ -2,6 +2,8 @@
 use super::*;
 use cleanup::{FixedCurrents, PrivateDirectory};
 
+pub(crate) mod recovery;
+
 #[cfg(test)]
 thread_local! { pub(super) static ACTIVE_AFTER_COMMIT_FAULT: std::cell::Cell<bool> = const { std::cell::Cell::new(false) }; }
 
@@ -57,7 +59,12 @@ impl Publisher {
             }
         }
         let mut highest = self.state.draft.content_revision;
-        for sequence in self.state.sequences.iter().chain(sequences.iter()) {
+        for sequence in self.state.sequences.iter().chain(sequences.iter()).chain(
+            self.state
+                .other_targets
+                .values()
+                .flat_map(|ledger| ledger.sequences.iter()),
+        ) {
             highest = highest.max(sequence.highest);
         }
         for record in &self.state.history {
@@ -92,12 +99,24 @@ impl Publisher {
     ) -> Result<MigrationPreview> {
         Ok(self.prepare_migration(source, now)?.preview)
     }
+    #[cfg(test)]
     pub(crate) fn migration_commit(
         &mut self,
         source: &mut dyn FixedCurrents,
         expected: &str,
         now: u64,
         vault: &mut dyn Vault,
+    ) -> Result<()> {
+        self.migration_commit_with(source, expected, now, vault, |_, _| Ok(()))
+    }
+
+    fn migration_commit_with(
+        &mut self,
+        source: &mut dyn FixedCurrents,
+        expected: &str,
+        now: u64,
+        vault: &mut dyn Vault,
+        before_switch: impl FnOnce(&Self, &dyn Vault) -> Result<()>,
     ) -> Result<()> {
         let prepared = self.prepare_migration(source, now)?;
         if prepared.preview.digest != expected {
@@ -107,6 +126,7 @@ impl Publisher {
         self.check_signer(&secrets)?;
         let mut state = self.state.clone();
         state.schema = 2;
+        state.other_targets.clear();
         state.target = Some(prepared.target.clone());
         state.draft_only_recovery = false;
         state.draft.release_id = random_id()?;
@@ -152,7 +172,7 @@ impl Publisher {
         let generation = random_id()?;
         let root = PrivateDirectory::open(&self.root)?;
         let retained = encode(
-            &serde_json::json!({"schema":1,"old_generation":self.generation,"new_generation":generation,"old_state_hash":signed::digest(&encode(&self.state, STATE_LIMIT)?),"target":prepared.target}),
+            &serde_json::json!({"schema":1,"old_generation":self.generation,"new_generation":generation,"old_state_hash":signed::digest(&root.child(&self.generation)?.read_archive_file("state.json", STATE_LIMIT)?),"target":prepared.target}),
             4096,
         )?;
         root.create_verified_file(
@@ -171,6 +191,10 @@ impl Publisher {
         }
         child.create_verified_file("state.json", &encode(&state, STATE_LIMIT)?, STATE_LIMIT)?;
         vault.create(&generation, &secrets)?;
+        before_switch(self, vault)?;
+        if self.prepare_migration(source, now)?.preview.digest != expected {
+            return Err(Error::Invalid("migration_stale_preview"));
+        }
         if !self._lock.protects(&self.root)
             || source.target_identity().as_deref() != Some(prepared.target.as_str())
         {
@@ -183,11 +207,14 @@ impl Publisher {
             },
             4096,
         )?;
-        let mut result = root.replace_file("active.json", &active);
+        let result = root.replace_file("active.json", &active);
         #[cfg(test)]
-        if result.is_ok() && ACTIVE_AFTER_COMMIT_FAULT.with(|fault| fault.replace(false)) {
-            result = Err(Error::Invalid("migration_active_outcome_unknown"));
-        }
+        let result =
+            if result.is_ok() && ACTIVE_AFTER_COMMIT_FAULT.with(|fault| fault.replace(false)) {
+                Err(Error::Invalid("migration_active_outcome_unknown"))
+            } else {
+                result
+            };
         if result.is_ok()
             || root
                 .read_archive_file("active.json", 4096)
@@ -272,11 +299,29 @@ impl Publisher {
             expected_hash = Some(index.old_state_hash);
         }
         let expected_hash = expected_hash.ok_or(Error::Invalid("archive_index_missing"))?;
-        let directory = root.child(generation)?;
-        let state_bytes = directory.read_archive_file("state.json", STATE_LIMIT)?;
+        let state_bytes = root
+            .child(generation)?
+            .read_archive_file("state.json", STATE_LIMIT)?;
         if signed::digest(&state_bytes) != expected_hash {
             return Err(Error::Invalid("archive_state_changed"));
         }
+        let archive = self.archive_generation(generation, vault)?;
+        if archive
+            .files
+            .iter()
+            .find(|f| f.directory.is_empty() && f.name == "state.json")
+            .is_none_or(|f| f.bytes != state_bytes)
+        {
+            return Err(Error::Invalid("archive_state_changed"));
+        }
+        let plaintext = Zeroizing::new(encode(&archive, backup::LIMIT - 76)?);
+        backup::seal(&plaintext, passphrase)
+    }
+
+    fn archive_generation(&self, generation: &str, vault: &dyn Vault) -> Result<GenerationArchive> {
+        let root = PrivateDirectory::open(&self.root)?;
+        let directory = root.child(generation)?;
+        let state_bytes = directory.read_archive_file("state.json", STATE_LIMIT)?;
         let state: State =
             signed::strict_json(&state_bytes, STATE_LIMIT).map_err(Error::Invalid)?;
         cleanup::validate_batch(state.cleanup.as_ref(), generation)?;
@@ -287,31 +332,53 @@ impl Publisher {
         self.check_signer(&secrets)?;
         let mut files = Vec::new();
         let mut directories = Vec::new();
-        for name in directory.names(ASSET_LIMIT + 10)? {
+        let mut total_bytes = 0usize;
+        let mut collect = |directory: String, name: String, bytes: Vec<u8>| -> Result<()> {
+            total_bytes = total_bytes
+                .checked_add(bytes.len())
+                .ok_or(Error::Invalid("archive_size"))?;
+            if total_bytes > (backup::LIMIT - 76) / 4 {
+                return Err(Error::Invalid("archive_size"));
+            }
+            files.push(ArchiveFile {
+                directory,
+                name,
+                bytes,
+            });
+            Ok(())
+        };
+        let names = directory.names(ASSET_LIMIT + 10)?;
+        for name in &names {
             match name.as_str() {
-                "state.json" | "cleanup-checkpoint.json" => files.push(ArchiveFile {
-                    directory: String::new(),
-                    name: name.clone(),
-                    bytes: directory.read_archive_file(&name, STATE_LIMIT)?,
-                }),
+                "state.json" | "cleanup-checkpoint.json" => collect(
+                    String::new(),
+                    name.clone(),
+                    directory.read_archive_file(name, STATE_LIMIT)?,
+                )?,
                 "assets" | "cleanup-gc" => {
                     directories.push(name.clone());
-                    let child = directory.child(&name)?;
-                    for file in child.names(ASSET_LIMIT + 1)? {
-                        files.push(ArchiveFile {
-                            directory: name.clone(),
-                            name: file.clone(),
-                            bytes: child.read_archive_file(&file, ads::MAX_IMAGE_BYTES)?,
-                        });
+                    let child = directory.child(name)?;
+                    let child_names = child.names(ASSET_LIMIT + 1)?;
+                    for file in &child_names {
+                        collect(
+                            name.clone(),
+                            file.clone(),
+                            child.read_archive_file(file, ads::MAX_IMAGE_BYTES)?,
+                        )?;
+                    }
+                    if child.names(ASSET_LIMIT + 1)? != child_names {
+                        return Err(Error::Invalid("archive_directory_changed"));
                     }
                 }
                 _ => return Err(Error::Invalid("archive_unknown_entry")),
             }
         }
-        if directory.read_archive_file("state.json", STATE_LIMIT)? != state_bytes {
+        if directory.names(ASSET_LIMIT + 10)? != names
+            || directory.read_archive_file("state.json", STATE_LIMIT)? != state_bytes
+        {
             return Err(Error::Invalid("archive_state_changed"));
         }
-        let archive = GenerationArchive {
+        Ok(GenerationArchive {
             schema: 1,
             generation: generation.into(),
             key_id: self.key_id.clone(),
@@ -319,34 +386,12 @@ impl Publisher {
             directories,
             files,
             secrets,
-        };
-        let plaintext = Zeroizing::new(encode(&archive, backup::LIMIT - 76)?);
-        backup::seal(&plaintext, passphrase)
+        })
     }
 }
 
 impl Publisher {
-    /// Imports only into a new inactive generation. The active pointer is never changed.
-    pub(crate) fn import_retained_generation(
-        &self,
-        bytes: &[u8],
-        passphrase: &[u8],
-        vault: &mut dyn Vault,
-    ) -> Result<()> {
-        if !self._lock.protects(&self.root) {
-            return Err(Error::Invalid("archive_lock"));
-        }
-        let plaintext = backup::open(bytes, passphrase)?;
-        let archive: GenerationArchive =
-            signed::strict_json(&plaintext, backup::LIMIT).map_err(Error::Invalid)?;
-        if archive.schema != 1
-            || !valid_generation(&archive.generation)
-            || archive.generation == self.generation
-            || archive.key_id != self.key_id
-            || archive.public_key != self.verifying_key()?.to_bytes()
-        {
-            return Err(Error::Invalid("archive_scope"));
-        }
+    fn validate_archive_contents(&self, archive: &GenerationArchive) -> Result<String> {
         self.check_signer(&archive.secrets)?;
         let mut dirs = std::collections::HashSet::new();
         for dir in &archive.directories {
@@ -410,6 +455,33 @@ impl Publisher {
                 .ok_or(Error::Invalid("archive_asset_missing"))?;
             ads::validate_image(content, asset).map_err(Error::Invalid)?;
         }
+        Ok(signed::digest(state_bytes))
+    }
+
+    /// Imports only into a new inactive generation. The active pointer is never changed.
+    pub(crate) fn import_retained_generation(
+        &self,
+        bytes: &[u8],
+        passphrase: &[u8],
+        vault: &mut dyn Vault,
+    ) -> Result<()> {
+        if !self._lock.protects(&self.root) {
+            return Err(Error::Invalid("archive_lock"));
+        }
+        let plaintext = backup::open(bytes, passphrase)?;
+        let archive: GenerationArchive = match signed::strict_json(&plaintext, backup::LIMIT) {
+            Ok(archive) => archive,
+            Err(_) => recovery::decode_archive(&plaintext)?,
+        };
+        if archive.schema != 1
+            || !valid_generation(&archive.generation)
+            || archive.generation == self.generation
+            || archive.key_id != self.key_id
+            || archive.public_key != self.verifying_key()?.to_bytes()
+        {
+            return Err(Error::Invalid("archive_scope"));
+        }
+        let state_hash = self.validate_archive_contents(&archive)?;
         let root = PrivateDirectory::open(&self.root)?;
         if root.names(4096)?.contains(&archive.generation) {
             return Err(Error::Invalid("archive_generation_exists"));
@@ -420,7 +492,7 @@ impl Publisher {
             schema: 1,
             old_generation: archive.generation.clone(),
             new_generation: self.generation.clone(),
-            old_state_hash: signed::digest(state_bytes),
+            old_state_hash: state_hash,
             target: "imported-archive".into(),
         };
         let name = format!("retain-{}-{}.json", archive.generation, self.generation);

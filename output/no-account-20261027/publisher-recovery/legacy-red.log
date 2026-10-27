@@ -1,0 +1,236 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: variable does not need to be mutable
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:207:13
+    |
+207 |         let mut result = root.replace_file("active.json", &active);
+    |             ----^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple associated items are never used
+   --> apps/desktop/src-tauri/src/publisher/cleanup.rs:396:19
+    |
+395 | impl PrivateDirectory {
+    | --------------------- associated items in this implementation
+396 |     pub(super) fn replace_file(&self, name: &str, bytes: &[u8]) -> Result<()> {
+    |                   ^^^^^^^^^^^^
+...
+402 |     fn file_component(name: &str) -> Result<CString> {
+    |        ^^^^^^^^^^^^^^
+...
+416 |     pub(super) fn create_verified_file(
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+487 |     fn component(name: &str) -> Result<CString> {
+    |        ^^^^^^^^^
+...
+499 |     pub(super) fn create_child(&self, name: &str) -> Result<Self> {
+    |                   ^^^^^^^^^^^^
+...
+585 |     pub(super) fn child(&self, name: &str) -> Result<Self> {
+    |                   ^^^^^
+...
+617 |     pub(super) fn names(&self, limit: usize) -> Result<Vec<String>> {
+    |                   ^^^^^
+...
+642 |     fn names_once(&self, limit: usize) -> Result<Vec<String>> {
+    |        ^^^^^^^^^^
+...
+712 |     pub(super) fn read_archive_file(&self, name: &str, limit: usize) -> Result<Vec<u8>> {
+    |                   ^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `MigrationPreview` is never constructed
+  --> apps/desktop/src-tauri/src/publisher/migration.rs:11:19
+   |
+11 | pub(crate) struct MigrationPreview {
+   |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `Evidence` is never constructed
+  --> apps/desktop/src-tauri/src/publisher/migration.rs:15:8
+   |
+15 | struct Evidence<'a> {
+   |        ^^^^^^^^
+
+warning: struct `Prepared` is never constructed
+  --> apps/desktop/src-tauri/src/publisher/migration.rs:21:8
+   |
+21 | struct Prepared {
+   |        ^^^^^^^^
+
+warning: methods `prepare_migration`, `migration_preview`, and `migration_commit_with` are never used
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:28:8
+    |
+ 27 | impl Publisher {
+    | -------------- methods in this implementation
+ 28 |     fn prepare_migration(&self, source: &mut dyn FixedCurrents, now: u64) -> Result<Prepared> {
+    |        ^^^^^^^^^^^^^^^^^
+...
+ 92 |     pub(crate) fn migration_preview(
+    |                   ^^^^^^^^^^^^^^^^^
+...
+110 |     fn migration_commit_with(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RetainedIndex` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:227:8
+    |
+227 | struct RetainedIndex {
+    |        ^^^^^^^^^^^^^
+
+warning: struct `ArchiveFile` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:236:8
+    |
+236 | struct ArchiveFile {
+    |        ^^^^^^^^^^^
+
+warning: struct `GenerationArchive` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:243:8
+    |
+243 | struct GenerationArchive {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: methods `export_retained_generation` and `archive_generation` are never used
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:255:19
+    |
+252 | impl Publisher {
+    | -------------- methods in this implementation
+...
+255 |     pub(crate) fn export_retained_generation(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+310 |     fn archive_generation(&self, generation: &str, vault: &dyn Vault) -> Result<GenerationArchive> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: method `import_retained_generation` is never used
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:370:19
+    |
+368 | impl Publisher {
+    | -------------- method in this implementation
+369 |     /// Imports only into a new inactive generation. The active pointer is never changed.
+370 |     pub(crate) fn import_retained_generation(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RetainedView` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:494:19
+    |
+494 | pub(crate) struct RetainedView {
+    |                   ^^^^^^^^^^^^
+
+warning: method `retained_views` is never used
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:504:19
+    |
+501 | impl Publisher {
+    | -------------- method in this implementation
+...
+504 |     pub(crate) fn retained_views(&self) -> Result<Vec<RetainedView>> {
+    |                   ^^^^^^^^^^^^^^
+
+warning: struct `Entry` is never constructed
+ --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:8:8
+  |
+8 | struct Entry {
+  |        ^^^^^
+
+warning: struct `CompleteArchive` is never constructed
+  --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:16:8
+   |
+16 | struct CompleteArchive {
+   |        ^^^^^^^^^^^^^^^
+
+warning: methods `manifest` and `validate` are never used
+  --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:23:8
+   |
+22 | impl CompleteArchive {
+   | -------------------- methods in this implementation
+23 |     fn manifest(&self) -> Result<Vec<Entry>> {
+   |        ^^^^^^^^
+...
+61 |     fn validate(&self) -> Result<()> {
+   |        ^^^^^^^^
+
+warning: function `decode_archive` is never used
+  --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:81:15
+   |
+81 | pub(super) fn decode_archive(bytes: &[u8]) -> Result<GenerationArchive> {
+   |               ^^^^^^^^^^^^^^
+
+warning: function `snapshot` is never used
+  --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:87:4
+   |
+87 | fn snapshot(publisher: &Publisher, vault: &dyn Vault) -> Result<Zeroizing<Vec<u8>>> {
+   |    ^^^^^^^^
+
+warning: struct `RecoveryPreview` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:117:19
+    |
+117 | pub(crate) struct RecoveryPreview {
+    |                   ^^^^^^^^^^^^^^^
+
+warning: struct `PreparedRecovery` is never constructed
+   --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:124:19
+    |
+124 | pub(crate) struct PreparedRecovery {
+    |                   ^^^^^^^^^^^^^^^^
+
+warning: associated items `prepare`, `preview`, `verify_parts`, `verify`, and `confirm` are never used
+   --> apps/desktop/src-tauri/src/publisher/migration/recovery.rs:137:19
+    |
+136 | impl PreparedRecovery {
+    | --------------------- associated items in this implementation
+137 |     pub(crate) fn prepare(
+    |                   ^^^^^^^
+...
+165 |     pub(crate) fn preview(&self) -> RecoveryPreview { self.preview.clone() }
+    |                   ^^^^^^^
+166 |
+167 |     fn verify_parts(
+    |        ^^^^^^^^^^^^
+...
+185 |     fn verify(&self, vault: &dyn Vault) -> Result<()> { self.verify_parts(&self.publisher, vault) }
+    |        ^^^^^^
+186 |
+187 |     pub(crate) fn confirm(self, expected: &str, now: u64, vault: &mut dyn Vault) -> Result<RecoveryPreview> {
+    |                   ^^^^^^^
+
+warning: `switcher-desktop` (bin "switcher-desktop") generated 21 warnings (run `cargo fix --bin "switcher-desktop" -p switcher-desktop` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.03s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 7 tests
+test publisher::migration::recovery::tests::cancel_releases_both_locks_and_keeps_verified_backup_and_active_generation ... ok
+test publisher::migration::recovery::tests::complete_archive_roundtrip_preserves_unindexed_files_gc_checkpoint_secrets_and_trust ... ok
+test publisher::migration::recovery::tests::complete_manifest_tampering_is_rejected_before_any_import ... ok
+test publisher::migration::recovery::tests::confirmation_rejects_stale_digest_backup_source_vault_and_directory_changes ... ok
+test publisher::migration::recovery::tests::exclusive_vault_failure_and_post_commit_unknown_preserve_old_generation ... ok
+test publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original ... FAILED
+test publisher::migration::recovery::tests::unsafe_files_missing_vault_and_invalid_password_prevent_preparation ... ok
+
+failures:
+
+---- publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original stdout ----
+
+thread 'publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original' (33696736) panicked at apps/desktop/src-tauri/src/publisher/migration/recovery/tests.rs:164:31:
+called `Result::unwrap()` on an `Err` value: Invalid("recovery_state_changed")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 187 filtered out; finished in 45.56s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

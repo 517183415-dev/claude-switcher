@@ -26,6 +26,8 @@ mod native_probe;
 mod publisher;
 #[cfg(feature = "personal")]
 mod publisher_commands;
+#[cfg(feature = "personal")]
+mod publisher_recovery_commands;
 mod update_runtime;
 
 #[cfg(feature = "ipc-smoke")]
@@ -139,6 +141,10 @@ fn main() {
         });
         Ok(())
     });
+    #[cfg(feature = "personal")]
+    let builder = builder.manage(std::sync::Arc::new(
+        publisher_recovery_commands::RecoverySessions::default(),
+    ));
     #[cfg(feature = "ipc-smoke")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::runtime_info,
@@ -204,6 +210,12 @@ fn main() {
         publisher_commands::publish_ad,
         publisher_commands::publisher_remote_read,
         publisher_commands::publisher_remote_save,
+        publisher_recovery_commands::publisher_recovery_prepare,
+        publisher_recovery_commands::publisher_recovery_confirm,
+        publisher_recovery_commands::publisher_recovery_cancel,
+        publisher_recovery_commands::publisher_archive_import,
+        publisher_recovery_commands::publisher_retained_list,
+        publisher_recovery_commands::publisher_retained_export,
         publisher_commands::pause_ad,
         publisher_commands::restore_ad_history,
         publisher_commands::create_ad_signing_key,

@@ -7,8 +7,7 @@ pub mod connection;
 #[cfg(test)]
 mod image_boundary_tests;
 pub mod local_store;
-#[cfg(test)]
-mod migration;
+pub(crate) mod migration;
 pub mod protocol;
 pub mod r2_store;
 pub mod security;

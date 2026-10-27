@@ -393,7 +393,6 @@ pub(super) struct PrivateDirectory {
     ino: u64,
 }
 impl PrivateDirectory {
-    #[cfg(test)]
     pub(super) fn replace_file(&self, name: &str, bytes: &[u8]) -> Result<()> {
         Self::file_component(name)?;
         self.check()?;

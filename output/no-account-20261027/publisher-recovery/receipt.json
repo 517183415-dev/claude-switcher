@@ -1,0 +1,104 @@
+{
+  "scope": "Personal complete encrypted legacy publisher recovery; local development validation only",
+  "base_commit": "db1a8da0f6a3e363c3f2eb33e7c8602ec7703eb7",
+  "no_subagents": true,
+  "no_registration_deployment_payment": true,
+  "verification": {
+    "publisher-tests.log": {
+      "passed_names": 166,
+      "failed_names": [],
+      "summaries": [
+        "test result: ok. 166 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 235.21s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s"
+      ]
+    },
+    "archive-final.log": {
+      "passed_names": 18,
+      "failed_names": [],
+      "summaries": [
+        "test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 84.93s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s"
+      ]
+    },
+    "missing-asset-r2.log": {
+      "passed_names": 1,
+      "failed_names": [],
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.24s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s"
+      ]
+    }
+  },
+  "verification_relationship": "The 166-test stage run preceded the final shared archive-content validation. The 18 archive/migration tests and the new missing/corrupt-image test cover that final change. Counts overlap; do not add them as distinct tests.",
+  "frontend_tests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "svelte": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "frontend_builds": [
+    "personal",
+    "public"
+  ],
+  "public_cargo_check": "exit 0",
+  "clippy_all_targets": "exit 0; 3 existing collapsible_if warnings plus ts-rs serde-attribute diagnostics; no -D warnings claim",
+  "cargo_fmt": "exit 0",
+  "source_inputs": "source-inputs.json",
+  "runtime_input_drift": [],
+  "graph": {
+    "fileCount": 222,
+    "nodeCount": 5973,
+    "edgeCount": 24263,
+    "state": "complete",
+    "pendingChanges": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    }
+  },
+  "not_run": [
+    "real Claude account",
+    "real Keychain",
+    "real R2",
+    "ordinary App dynamic IPC",
+    "production signing/install",
+    "end-to-end remote propagation"
+  ],
+  "remaining": [
+    "remote multi-target cleanup and its lock protocol",
+    "ordinary App dynamic IPC acceptance",
+    "real Keychain/R2 and release acceptance"
+  ],
+  "sandbox": "Reused existing Seatbelt policy; external network and real credential/system mutation access denied; localhost connections and bind allowed.",
+  "history": "legacy-red.log records 6 pass/1 fail for omitted-default-field compatibility; legacy-green.log records its targeted fix. Initial scaffolding failures are not product test successes.",
+  "log_sha256": {
+    "archive-final.log": "6788765c74ccb5917e54aa675bbad29990de9e39ca52c5f9eec988cf9be30c9f",
+    "clippy-final.log": "9f508453c6579df3b68eb7f0ffea3a0b692b66ff4140aa91c058d7a16ad1cffc",
+    "clippy.log": "81756a6c7a36edffe6c7bba551af8b7ffe0c33a175ec6f826169ad4d243a338d",
+    "codegraph-sync.log": "f6acc1917f9229b1a23cd5ee1fa3938ad70f24eb477db5dfa895e9c8e90664fc",
+    "fmt-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend-personal.log": "8bd1cd572785824dffdca84e0a8c231d7fa883ef77ed3ee799e6d3ec4c3c7efc",
+    "frontend-public.log": "c6fb2a83341892b334f801890c7eae6c08c1df13ecd039236379681278ebcb4a",
+    "frontend-tests.log": "891e8b970e7dbd92dfbe1b932b60682e02a571add93170da2eab1cf64c90d19b",
+    "legacy-green.log": "3fe44c0776ef1f32fc6cf2e587d1cf090717cfbc959a5a58010a2aae46e9542a",
+    "legacy-red.log": "819d2144ec349608bc277201810a8b059e454280f93aa34d8439c7a7a74a9113",
+    "missing-asset-r2.log": "450cb569ac02815e2f26d236988fc6c8c2b750e16ac2b7acb904ff0ea4d74274",
+    "missing-asset.log": "c5b069c26e3c631aa4b18d1637147ea8f87e8c652bc1a9a81e5787e18570462e",
+    "public-check.log": "0e793e1c76e84169878bd268168aa95be3d2e452b2b20b84f1729b51247d510c",
+    "publisher-tests.log": "d417de79570da8b165e274990b81de4f9d81db615b9813fc0261375989394c33",
+    "svelte.log": "9b56c79abb8f278c6390ccec9dbe23d378e79be013ec591288ae33ae0becdf78"
+  },
+  "source_git_diff_check": "exit 0 excluding original evidence logs; compiler logs retain their emitted whitespace"
+}

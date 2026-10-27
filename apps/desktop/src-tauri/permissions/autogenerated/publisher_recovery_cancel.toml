@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-recovery-cancel"
+description = "Enables the publisher_recovery_cancel command without any pre-configured scope."
+commands.allow = ["publisher_recovery_cancel"]
+
+[[permission]]
+identifier = "deny-publisher-recovery-cancel"
+description = "Denies the publisher_recovery_cancel command without any pre-configured scope."
+commands.deny = ["publisher_recovery_cancel"]

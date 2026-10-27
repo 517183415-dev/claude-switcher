@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-archive-import"
+description = "Enables the publisher_archive_import command without any pre-configured scope."
+commands.allow = ["publisher_archive_import"]
+
+[[permission]]
+identifier = "deny-publisher-archive-import"
+description = "Denies the publisher_archive_import command without any pre-configured scope."
+commands.deny = ["publisher_archive_import"]

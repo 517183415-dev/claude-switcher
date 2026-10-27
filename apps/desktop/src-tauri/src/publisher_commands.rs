@@ -19,16 +19,19 @@ pub(crate) fn with_publisher<T>(
     state: &DesktopState,
     run: impl FnOnce(&mut Publisher) -> publisher::Result<T>,
 ) -> Result<T, String> {
+    let mut publisher = open_publisher(state)?;
+    run(&mut publisher).map_err(|e| e.to_string())
+}
+pub(crate) fn open_publisher(state: &DesktopState) -> Result<Publisher, String> {
     state.prepare_directory()?;
     let directory = state.directory().join("publisher");
-    let mut publisher = Publisher::open(
+    Publisher::open(
         &directory,
         "ads-personal-v1",
         None,
         switcher_core::checks::unix_now(),
     )
-    .map_err(|e| e.to_string())?;
-    run(&mut publisher).map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

@@ -1,0 +1,81 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:559:13
+    |
+559 | /             if let Ok(directory) = root.child(&index.old_generation) {
+560 | |                 if let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT) {
+561 | |                     if signed::digest(&bytes) == index.old_state_hash {
+562 | |                         if let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
+...   |
+580 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+    = note: `#[warn(clippy::collapsible_if)]` on by default
+help: collapse nested if block
+    |
+559 ~             if let Ok(directory) = root.child(&index.old_generation)
+560 ~                 && let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT) {
+561 |                     if signed::digest(&bytes) == index.old_state_hash {
+...
+578 |                     }
+579 ~                 }
+    |
+
+warning: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:560:17
+    |
+560 | /                 if let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT) {
+561 | |                     if signed::digest(&bytes) == index.old_state_hash {
+562 | |                         if let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
+563 | |                             let mut checked = state.clone();
+...   |
+579 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+560 ~                 if let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT)
+561 ~                     && signed::digest(&bytes) == index.old_state_hash {
+562 |                         if let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
+...
+577 |                         }
+578 ~                     }
+    |
+
+warning: this `if` statement can be collapsed
+   --> apps/desktop/src-tauri/src/publisher/migration.rs:561:21
+    |
+561 | /                     if signed::digest(&bytes) == index.old_state_hash {
+562 | |                         if let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
+563 | |                             let mut checked = state.clone();
+564 | |                             checked.cleanup = None;
+...   |
+578 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+561 ~                     if signed::digest(&bytes) == index.old_state_hash
+562 ~                         && let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
+563 |                             let mut checked = state.clone();
+...
+576 |                             }
+577 ~                         }
+    |
+
+warning: `switcher-desktop` (bin "switcher-desktop") generated 3 warnings (run `cargo clippy --fix --bin "switcher-desktop" -p switcher-desktop -- ` to apply 3 suggestions)
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 3 warnings (3 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.55s

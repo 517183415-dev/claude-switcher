@@ -1,0 +1,32 @@
+✔ Taipei and Los Angeles labels match date conversion and parse (17.59025ms)
+✔ a running page retains consistent old-zone display but cannot write after TZ changes (3.773375ms)
+✔ Los Angeles to Taipei changes reject old inputs before any poll (2.068875ms)
+✔ UTC editing survives a running process timezone change (1.8035ms)
+✔ Los Angeles DST offsets use the timestamp rather than the current offset (2.650375ms)
+✔ empty or invalid input cannot become epoch zero (1.065375ms)
+✔ image handler accepts the inclusive 1 MiB boundary (28.019125ms)
+✔ image handler rejects over 1 MiB before reading or invoking (10.480875ms)
+✔ restore handler accepts the inclusive 64 MiB boundary (2.43075ms)
+✔ restore handler rejects oversized files and short passwords before invoke (4.431833ms)
+✔ real handlers report backend failure and release busy state (3.3995ms)
+✔ production defaults are 128 and no implicit evidence release; preview only reads (1.494584ms)
+✔ cancelling a preview does not execute either phase (0.395541ms)
+✔ first confirmation commits the bound index plan once and never starts GC (0.345291ms)
+✔ changed options and known pending state invalidate index execution (1.469292ms)
+✔ second preview and a separate confirmation are required for file GC (0.309375ms)
+✔ GC pending and duplicate clicks cannot bypass the confirmation gate (0.248583ms)
+✔ backend rejection clears the consumed plan and never invents completion (0.363084ms)
+✔ fixture and busy handlers perform zero IPC (0.479417ms)
+✔ production markup connects both previews, separate confirmations and cancellation (25.016333ms)
+✔ non-completed terminal outcome is delivered and status is refreshed (1.131208ms)
+✔ status refresh failure retains the delivered terminal outcome (0.313625ms)
+✔ ordinary backend failure does not become a terminal outcome (0.270541ms)
+✔ fixture, busy and missing draft do not invoke IPC (0.585083ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 555.195625

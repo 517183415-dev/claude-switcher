@@ -1,0 +1,60 @@
+    Blocking waiting for file lock on package cache
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 18 tests
+test publisher::cleanup_tests::migration_after_backup_restore_to_another_directory_preserves_restored_generation ... ok
+test publisher::cleanup_tests::migration_confirmation_preserves_old_generation_and_vault ... ok
+test publisher::cleanup_tests::migration_post_commit_fault_reports_unknown_and_restart_keeps_both_generations ... ok
+test publisher::cleanup_tests::migration_preserves_legacy_cleanup_and_cross_target_checkpoint ... ok
+test publisher::cleanup_tests::migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure ... ok
+test publisher::cleanup_tests::migration_watermarks_are_only_from_verified_new_target ... ok
+test publisher::cleanup_tests::retained_generation_export_rejects_unexpected_files_without_mutating_state ... ok
+test publisher::migration::recovery::tests::aggregate_archive_budget_rejects_oversized_generation_without_switching ... ok
+test publisher::migration::recovery::tests::backup_sync_failure_and_last_moment_source_mutation_prevent_switch ... ok
+test publisher::migration::recovery::tests::cancel_releases_both_locks_and_keeps_verified_backup_and_active_generation ... ok
+test publisher::migration::recovery::tests::complete_archive_roundtrip_preserves_unindexed_files_gc_checkpoint_secrets_and_trust ... ok
+test publisher::migration::recovery::tests::complete_manifest_tampering_is_rejected_before_any_import ... ok
+test publisher::migration::recovery::tests::confirmation_rejects_stale_digest_backup_source_vault_and_directory_changes ... ok
+test publisher::migration::recovery::tests::exclusive_vault_failure_and_post_commit_unknown_preserve_old_generation ... ok
+test publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original ... ok
+test publisher::migration::recovery::tests::missing_or_corrupt_indexed_asset_never_yields_a_ready_recovery ... ok
+test publisher::migration::recovery::tests::recovery_revision_exceeds_inactive_target_watermarks_without_copying_their_ledgers ... ok
+test publisher::migration::recovery::tests::unsafe_files_missing_vault_and_invalid_password_prevent_preparation ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 84.93s
+
+     Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-caf67ac949cd614c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s
+
+     Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-95688e69776a175b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s
+
+     Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-4577a2d3d82aa5b2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+     Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-b429c761a8f3a79e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+

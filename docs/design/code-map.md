@@ -1,6 +1,24 @@
 # Claude 切换器当前代码图谱
 
-## 2026-10-27：远程发布产品调用链
+## 2026-10-27：旧发布资料恢复产品调用链
+
+`PublisherRecovery.svelte` → Personal 专用 `publisher_recovery_commands.rs` → `PreparedRecovery`。后端会话跨准备与确认持有 Publisher 和本机发布树的生命周期锁。`RecoverySessions` 的取消代号阻止已取消的后台准备再次发布确认状态。Public 不注册或授权这六个命令。
+
+`migration/recovery.rs` 负责完整归档、加密备份写入与读回核对。`migration.rs` 复用安全目录读取和归档内容校验，保留 state、checkpoint、assets、cleanup-gc、未索引文件及 Vault；完整归档另含 trust 和路径、类型、长度、摘要清单。准备后及原子切换前重新核对源资料、目录身份、凭据、备份和两渠道签名 current。取消或异常释放会话，保留备份、旧目录和旧密钥。
+
+```text
+旧资料 → 完整加密归档 → 读回核对 → 用户确认
+                                      ↓
+                    再核对 → 新代次 → 原子更新 active.json
+                                      ↓
+                       核对新草稿 → 用户明确发布
+```
+
+新代次只带草稿所需素材，序号高于全部目标水位；旧目标账本不自动归属新目标。完整归档导入只写入未激活的保留代次。保留资料可以读取索引并重新加密导出。恢复步骤没有远程 CAS；之后的明确发布仍走原共用发布事务。
+
+回归覆盖旧 JSON 省略默认字段、原始 state 字节保留、完整清单、未索引/隔离文件、取消与锁、目录替换、来源和凭据变化、密文/口令、同步失败、最后时刻变更、密钥独占创建失败、切换结果未知、素材缺失/损坏及归档大小上限。验证结果和输入绑定见[恢复回执](../../output/no-account-20261027/publisher-recovery/receipt.json)。真实 R2、Keychain 和普通 App 动态 IPC 仍未验证；远程多目标清理仍未实现。注册、部署和付款未执行。
+
+## 历史阶段：远程发布产品调用链
 
 `Operations.svelte` → `RemotePublisher.svelte` → Personal 专用 `publisher_remote_read/save` → `Publisher::configure_r2` → 现有 Vault。读取响应不含密钥；保存配置不访问网络。
 
@@ -11,6 +29,8 @@
 本阶段桌面套件首次为 186 通过、1 失败。失败仅来自新测试的提交尝试计数断言；修正后定向 1 项通过，累计 187 个不同测试名通过，没有重跑其余 186 项。新增配置 7 项已包含在桌面结果内。前端相关 27 项、两版前端构建、Public 编译、格式检查通过；Svelte 检查为 0 错误、0 警告。默认与 ipc-business Clippy 退出码均为 0，仍有旧清理/迁移代码警告，未宣称严格零警告。图谱为 218 文件、5879 节点、23801 条边，complete、pending 0。
 
 [本阶段回执](../../output/no-account-20261027/remote-wiring/receipt.json)记录集中验证和输入摘要。[图谱状态](../../output/no-account-20261027/remote-wiring/codegraph-status.json)记录增量同步。图谱数量不代表测试覆盖率。真实服务、Keychain、普通 App 动态 IPC 和线上传播未验；旧状态完整迁移和远程多目标清理仍未完成。
+
+阶段发布器套件 166 项通过。随后抽取共用归档内容校验并补齐缺失/损坏素材保护，最终归档与迁移测试 18 项、素材保护测试 1 项通过；这些计数有重叠，不相加。前端相关 24 项、两版前端构建、Public 编译与格式检查通过，Svelte 为 0 错误/0 警告。最终 Clippy 退出码 0，保留 3 条原有嵌套条件风格警告。图谱为 222 文件、5973 节点、24263 条边，complete、pending 0。
 
 以下记录保留各历史阶段的证据和限制；“尚未接线”等描述仅适用于对应历史阶段。
 

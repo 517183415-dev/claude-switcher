@@ -1,0 +1,22 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+error: couldn't read `/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/tests/native-ipc-business/backup-source.png`: No such file or directory (os error 2)
+   --> apps/desktop/src-tauri/src/publisher/migration/recovery/tests.rs:443:17
+    |
+443 | /                 include_bytes!(concat!(
+444 | |                     env!("CARGO_MANIFEST_DIR"),
+445 | |                     "/tests/native-ipc-business/backup-source.png"
+446 | |                 )),
+    | |__________________^
+
+error: could not compile `switcher-desktop` (bin "switcher-desktop" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

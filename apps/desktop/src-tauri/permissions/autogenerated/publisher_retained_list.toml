@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-retained-list"
+description = "Enables the publisher_retained_list command without any pre-configured scope."
+commands.allow = ["publisher_retained_list"]
+
+[[permission]]
+identifier = "deny-publisher-retained-list"
+description = "Denies the publisher_retained_list command without any pre-configured scope."
+commands.deny = ["publisher_retained_list"]
