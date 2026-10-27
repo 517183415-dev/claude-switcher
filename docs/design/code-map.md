@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：远程结果未知的跨进程恢复
+
+`写入测试进程 → Publisher → R2Store / AWS SDK → 本机模拟存储 → 持久化待处理状态 → 恢复测试进程 → 公开回读与释放锁`。写入进程在记录结果未知后被终止；新进程恢复同一签名版本。[证据](../../output/no-account-20261027/r2-process-restart/README.md)。
+
+CodeGraph complete、pending 0：265 文件、6710 节点、27799 条边。完整桌面 App、默认 Keychain 和真实服务仍待验。
+
 ## 2026-10-27：保留代次的读取与验证
 
 `Publisher::retained_views → PrivateDirectory::child/read_archive_file → 状态哈希与严格 JSON → cleanup::validate_batch / validate_state → RetainedView`。缺失或损坏时保持未验证状态；仅整理等价条件并补充行为测试。[证据](../../output/no-account-20261027/storage-final-verify/current/README.md)。

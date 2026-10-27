@@ -1,0 +1,18 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)
+
+running 1 test
+test publisher::connection::tests::r2_integration_tests::configured_sdk_recovers_committed_current_after_response_is_lost ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 243 filtered out; finished in 0.69s
+

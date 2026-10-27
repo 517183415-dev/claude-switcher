@@ -1,0 +1,105 @@
+{
+  "source_sha256": "c490d0a1f176834b22834180c41f11de85c9648179ec50b5cbe5309b029137ee",
+  "source_unchanged": true,
+  "checks": [
+    {
+      "name": "same-process",
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--bin",
+        "switcher-desktop",
+        "publisher::connection::tests::r2_integration_tests::configured_sdk_recovers_committed_current_after_response_is_lost",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 1.192,
+      "log_sha256": "78ce9685fd3a6d641a5098a07361e4bfc8d6fe90b566ab45081140ba2d6c1826"
+    },
+    {
+      "name": "publication",
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--bin",
+        "switcher-desktop",
+        "publisher::connection::tests::r2_integration_tests::configured_publication_uses_sdk_upload_readback_and_conditional_updates",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 1.278,
+      "log_sha256": "6292005c127c2b27a42264a5ce2c1dce32d827edb3be66125b4077e3ecfb76af"
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--bin",
+        "switcher-desktop",
+        "--tests",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 3.076,
+      "log_sha256": "831823ac815082a2790a9c899a4196fa3a4cf35418428b6f8201e9278cb58249"
+    },
+    {
+      "name": "fmt",
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/publisher/connection/r2_integration_tests.rs"
+      ],
+      "exit": 0,
+      "seconds": 0.04,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+        "/usr/bin/git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.039,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

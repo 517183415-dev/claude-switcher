@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "publisher::connection::tests::r2_integration_tests::configured_sdk_recovers_committed_current_after_writer_process_exits",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "seconds": 8.258365332963876,
+  "source_sha256": "c490d0a1f176834b22834180c41f11de85c9648179ec50b5cbe5309b029137ee",
+  "source_unchanged": true,
+  "log_sha256": "26a11262dc1bf942330ef371d6e60062422031a1111d172f3f9e428dcfa3cf28",
+  "evidence": [
+    "{\"public_readbacks_verified\":3,\"reader_pid\":14741,\"release\":\"4bb6b1e79a0f8aebfd4a6c9fcf4d69dd\",\"remote_lock_released\":true,\"revision\":2,\"signed_current_verified\":true,\"single_immutable_version\":true,\"writer_pid\":14734,\"writer_terminated_and_reaped_before_reader\":true}"
+  ]
+}

@@ -1,10 +1,14 @@
 //! One local, stateful S3-compatible peer for the real publisher and SDK adapter.
 use super::*;
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeMap,
-    io::{Read, Write},
+    collections::{BTreeMap, HashMap},
+    io::{BufRead, BufReader, Read, Write},
     net::{TcpListener, TcpStream},
+    os::unix::process::ExitStatusExt,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
@@ -91,13 +95,13 @@ impl Drop for LocalS3 {
 
 fn publish_with_sdk(
     publisher: &mut Publisher,
-    root: &Root,
+    root: &Path,
     vault: &MemoryVault,
-    peer: &LocalS3,
+    endpoint: &str,
     now: u64,
 ) -> Result<Publication> {
     publisher.publish_configured_with(
-        &root.0,
+        root,
         AdChannel::Preview,
         now,
         vault,
@@ -105,10 +109,7 @@ fn publish_with_sdk(
             assert_eq!((access, secret), ("synthetic-key", "secret-synthetic-key"));
             Ok(Box::new(
                 super::super::super::r2_store::tests::configured_store(
-                    &peer.endpoint,
-                    &config,
-                    access,
-                    secret,
+                    endpoint, &config, access, secret,
                 ),
             ))
         },
@@ -241,64 +242,29 @@ fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
     socket.write_all(&response).unwrap();
 }
 
-#[test]
-fn configured_sdk_recovers_committed_current_after_response_is_lost() {
-    let peer = LocalS3::start();
-    let (root, mut publisher, mut vault) = fixture();
-    configure(
-        &mut publisher,
-        &mut vault,
-        AdChannel::Preview,
-        "synthetic-key",
-    )
-    .unwrap();
-    super::super::super::tests::attach_campaign(&mut publisher, 1001);
-    let publish =
-        |publisher: &mut Publisher, now| publish_with_sdk(publisher, &root, &vault, &peer, now);
-
-    peer.state
-        .lock()
-        .unwrap()
-        .drop_current_response_after_commit = true;
-    assert!(matches!(
-        publish(&mut publisher, 1002),
-        Err(Error::Store(StoreError::OutcomeUnknown))
-    ));
-    let pending_id = publisher.status().pending_release_id.unwrap();
+fn committed_unknown(peer: &LocalS3, release: &str) -> (Vec<u8>, usize, AdManifest) {
+    let state = peer.state.lock().unwrap();
+    let wire = state.objects["preview/current.json"].bytes.clone();
     assert_eq!(
-        publisher.status().phase,
-        Some(super::super::super::protocol::Phase::CommitUnknown)
+        wire,
+        state.objects[&format!("preview/versions/{release}.json")].bytes
     );
-    assert!(publisher.status().history.is_empty());
-    let (wire, requests_before_recovery) = {
-        let state = peer.state.lock().unwrap();
-        let wire = state.objects["preview/current.json"].bytes.clone();
-        assert_eq!(
-            wire,
-            state.objects[&format!("preview/versions/{pending_id}.json")].bytes
-        );
-        let lock: serde_json::Value =
-            serde_json::from_slice(&state.objects["preview/publisher-lock.json"].bytes).unwrap();
-        assert!(lock["owner"].is_string());
-        (wire, state.requests.len())
-    };
+    let lock: serde_json::Value =
+        serde_json::from_slice(&state.objects["preview/publisher-lock.json"].bytes).unwrap();
+    assert!(lock["owner"].is_string());
     let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
     let manifest = checked_manifest(&wire, &public_key, 1002);
-    assert_eq!(manifest.release_id, pending_id);
+    assert_eq!(manifest.release_id, release);
+    (wire, state.requests.len(), manifest)
+}
 
-    drop(publisher);
-    let mut publisher =
-        Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1003).unwrap();
-    assert_eq!(
-        publisher.status().pending_release_id.as_deref(),
-        Some(pending_id.as_str())
-    );
-    let recovered = publish(&mut publisher, 1003).unwrap();
-    assert_eq!(recovered.release_id, pending_id);
-    assert_eq!(recovered.revision, manifest.content_revision);
-    assert!(publisher.status().phase.is_none());
-    assert_eq!(publisher.status().history.len(), 1);
-
+fn assert_remote_recovered(
+    peer: &LocalS3,
+    release: &str,
+    wire: &[u8],
+    manifest: &AdManifest,
+    requests_before_recovery: usize,
+) {
     let state = peer.state.lock().unwrap();
     assert_eq!(state.objects["preview/current.json"].bytes, wire);
     assert_eq!(
@@ -314,7 +280,7 @@ fn configured_sdk_recovers_committed_current_after_response_is_lost() {
     assert!(lock["owner"].is_null());
     for key in [
         "preview/current.json".to_owned(),
-        format!("preview/versions/{pending_id}.json"),
+        format!("preview/versions/{release}.json"),
         super::super::super::protocol::asset_key(
             AdChannel::Preview,
             &manifest.slots[0].campaigns[0].image,
@@ -328,6 +294,239 @@ fn configured_sdk_recovers_committed_current_after_response_is_lost() {
                 })
         );
     }
+}
+
+#[test]
+fn configured_sdk_recovers_committed_current_after_response_is_lost() {
+    let peer = LocalS3::start();
+    let (root, mut publisher, mut vault) = fixture();
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Preview,
+        "synthetic-key",
+    )
+    .unwrap();
+    super::super::super::tests::attach_campaign(&mut publisher, 1001);
+    let publish = |publisher: &mut Publisher, now| {
+        publish_with_sdk(publisher, &root.0, &vault, &peer.endpoint, now)
+    };
+
+    peer.state
+        .lock()
+        .unwrap()
+        .drop_current_response_after_commit = true;
+    assert!(matches!(
+        publish(&mut publisher, 1002),
+        Err(Error::Store(StoreError::OutcomeUnknown))
+    ));
+    let pending_id = publisher.status().pending_release_id.unwrap();
+    assert_eq!(
+        publisher.status().phase,
+        Some(super::super::super::protocol::Phase::CommitUnknown)
+    );
+    assert!(publisher.status().history.is_empty());
+    let (wire, requests_before_recovery, manifest) = committed_unknown(&peer, &pending_id);
+
+    drop(publisher);
+    let mut publisher =
+        Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1003).unwrap();
+    assert_eq!(
+        publisher.status().pending_release_id.as_deref(),
+        Some(pending_id.as_str())
+    );
+    let recovered = publish(&mut publisher, 1003).unwrap();
+    assert_eq!(recovered.release_id, pending_id);
+    assert_eq!(recovered.revision, manifest.content_revision);
+    assert!(publisher.status().phase.is_none());
+    assert_eq!(publisher.status().history.len(), 1);
+
+    assert_remote_recovered(
+        &peer,
+        &pending_id,
+        &wire,
+        &manifest,
+        requests_before_recovery,
+    );
+}
+
+#[derive(Serialize, Deserialize)]
+struct RestartInput {
+    root: PathBuf,
+    endpoint: String,
+    phase: String,
+    vault_items: HashMap<String, Vec<u8>>,
+    expected_release: Option<String>,
+}
+
+fn run_restart_child(input: &RestartInput) -> serde_json::Value {
+    let mut child = Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "publisher::connection::tests::r2_integration_tests::r2_restart_child_fixture",
+            "--ignored",
+            "--nocapture",
+        ])
+        .env("SWITCHER_R2_RESTART_CHILD", "1")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    serde_json::to_writer(child.stdin.take().unwrap(), input).unwrap();
+    if input.phase == "write" {
+        let mut stdout = BufReader::new(child.stdout.take().unwrap());
+        let mut line = String::new();
+        let value = loop {
+            line.clear();
+            assert_ne!(
+                stdout.read_line(&mut line).unwrap(),
+                0,
+                "writer exited before checkpoint"
+            );
+            if let Some((_, data)) = line.split_once("R2_RESTART_CHILD ") {
+                break serde_json::from_str(data).unwrap();
+            }
+        };
+        // Only kill the subprocess we just started, after its pending record exists.
+        child.kill().unwrap();
+        assert_eq!(child.wait().unwrap().signal(), Some(libc::SIGKILL));
+        return value;
+    }
+    let output = child.wait_with_output().unwrap();
+    assert!(
+        output.status.success(),
+        "restart child failed: {} {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let value = stdout
+        .lines()
+        .find_map(|line| line.split_once("R2_RESTART_CHILD ").map(|(_, data)| data))
+        .expect("missing child receipt");
+    serde_json::from_str(value).unwrap()
+}
+
+#[test]
+#[ignore = "synthetic subprocess worker started only by the restart test"]
+fn r2_restart_child_fixture() {
+    assert_eq!(
+        std::env::var("SWITCHER_R2_RESTART_CHILD").as_deref(),
+        Ok("1")
+    );
+    let input: RestartInput = serde_json::from_reader(std::io::stdin().take(64 * 1024)).unwrap();
+    let root = input.root.canonicalize().unwrap();
+    let temp = std::env::temp_dir().canonicalize().unwrap();
+    assert_eq!(root.parent(), Some(temp.as_path()));
+    assert!(
+        root.file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("switcher-remote-")
+    );
+    let endpoint = reqwest::Url::parse(&input.endpoint).unwrap();
+    assert_eq!(endpoint.scheme(), "http");
+    assert_eq!(endpoint.host_str(), Some("127.0.0.1"));
+    assert!(endpoint.port().is_some());
+    assert_eq!(endpoint.path(), "/");
+    assert!(endpoint.username().is_empty() && endpoint.password().is_none());
+
+    let vault = MemoryVault {
+        items: input.vault_items,
+        fail: false,
+    };
+    let now = if input.phase == "write" { 1002 } else { 1003 };
+    let mut publisher =
+        Publisher::open(&root.join("publisher"), "ads-personal-v1", None, now).unwrap();
+    let receipt = match input.phase.as_str() {
+        "write" => {
+            assert!(matches!(
+                publish_with_sdk(&mut publisher, &root, &vault, &input.endpoint, now),
+                Err(Error::Store(StoreError::OutcomeUnknown))
+            ));
+            assert_eq!(
+                publisher.status().phase,
+                Some(super::super::super::protocol::Phase::CommitUnknown)
+            );
+            assert!(publisher.status().history.is_empty());
+            serde_json::json!({"pid": std::process::id(), "release": publisher.status().pending_release_id.unwrap()})
+        }
+        "recover" => {
+            assert_eq!(
+                publisher.status().pending_release_id,
+                input.expected_release
+            );
+            assert!(publisher.status().history.is_empty());
+            let publication =
+                publish_with_sdk(&mut publisher, &root, &vault, &input.endpoint, now).unwrap();
+            assert!(publisher.status().phase.is_none());
+            assert_eq!(publisher.status().history.len(), 1);
+            serde_json::json!({"pid": std::process::id(), "release": publication.release_id, "revision": publication.revision})
+        }
+        _ => panic!("unexpected fixture phase"),
+    };
+    println!("R2_RESTART_CHILD {receipt}");
+    std::io::stdout().flush().unwrap();
+    if input.phase == "write" {
+        loop {
+            thread::park();
+        }
+    }
+}
+
+#[test]
+fn configured_sdk_recovers_committed_current_after_writer_process_exits() {
+    let peer = LocalS3::start();
+    let (root, mut publisher, mut vault) = fixture();
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Preview,
+        "synthetic-key",
+    )
+    .unwrap();
+    super::super::super::tests::attach_campaign(&mut publisher, 1001);
+    drop(publisher);
+    peer.state
+        .lock()
+        .unwrap()
+        .drop_current_response_after_commit = true;
+    let mut input = RestartInput {
+        root: root.0.clone(),
+        endpoint: peer.endpoint.clone(),
+        phase: "write".into(),
+        vault_items: vault.items.clone(),
+        expected_release: None,
+    };
+    let written = run_restart_child(&input); // Terminate and reap the writer before recovery.
+    let release = written["release"].as_str().unwrap().to_owned();
+    let (wire, requests_before_recovery, manifest) = committed_unknown(&peer, &release);
+    input.phase = "recover".into();
+    input.expected_release = Some(release.clone());
+    let recovered = run_restart_child(&input);
+    assert_ne!(written["pid"], recovered["pid"]);
+    assert_eq!(recovered["release"], release);
+    assert_eq!(
+        recovered["revision"].as_u64(),
+        Some(manifest.content_revision)
+    );
+    let reopened =
+        Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1004).unwrap();
+    assert!(reopened.status().phase.is_none());
+    assert_eq!(reopened.status().history.len(), 1);
+
+    assert_remote_recovered(&peer, &release, &wire, &manifest, requests_before_recovery);
+    println!(
+        "R2_RESTART_EVIDENCE {}",
+        serde_json::json!({
+            "writer_pid": written["pid"], "reader_pid": recovered["pid"],
+            "writer_terminated_and_reaped_before_reader": true,
+            "release": release, "revision": manifest.content_revision,
+            "signed_current_verified": true, "single_immutable_version": true,
+            "public_readbacks_verified": 3, "remote_lock_released": true
+        })
+    );
 }
 
 #[test]
@@ -412,8 +611,9 @@ fn configured_publication_uses_sdk_upload_readback_and_conditional_updates() {
     )
     .unwrap();
     super::super::super::tests::attach_campaign(&mut publisher, 1001);
-    let publish =
-        |publisher: &mut Publisher, now| publish_with_sdk(publisher, &root, &vault, &peer, now);
+    let publish = |publisher: &mut Publisher, now| {
+        publish_with_sdk(publisher, &root.0, &vault, &peer.endpoint, now)
+    };
     let source = ads::ContentSource::new("https://preview.example.com/").unwrap();
     let preferences = AdPreferences {
         slots_enabled: [true, false, false],

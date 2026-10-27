@@ -8022,6 +8022,12 @@
         "sha256": "93f90d3ba35be14977a9c8d6364f94c5f1241695e7c8191b366fc97f97f4606b",
         "status": "PRODUCT_SVELTE_NATIVE_WEBVIEW_SYNTHETIC_BOOTSTRAP_VAULT",
         "scope": "产品页面执行预览与正式配置、本机切换及保留目标选择；启动快照和检查模拟，业务命令走正式 IPC/ACL。默认 Keychain、进程重启和真实 R2 未验。"
+      },
+      "local_sdk_process_restart_evidence": {
+        "path": "output/no-account-20261027/r2-process-restart/README.md",
+        "sha256": "1b560d8c3fca1a37a772c02f0f34126ff93cb71ce7f0e478476127f7e34671f2",
+        "status": "LOCAL_SDK_UNKNOWN_COMMIT_SYNTHETIC_PROCESS_RESTART",
+        "scope": "模拟存储提交后断连；写入测试进程记录待处理状态后被终止，新进程恢复同一签名版本并匿名回读。完整桌面 App、默认 Keychain、真实 R2/CDN 和线上传播未验。"
       }
     },
     {

@@ -1,0 +1,20 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.16s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)
+
+running 1 test
+test publisher::connection::tests::r2_integration_tests::configured_sdk_recovers_committed_current_after_writer_process_exits ... R2_RESTART_EVIDENCE {"public_readbacks_verified":3,"reader_pid":14741,"release":"4bb6b1e79a0f8aebfd4a6c9fcf4d69dd","remote_lock_released":true,"revision":2,"signed_current_verified":true,"single_immutable_version":true,"writer_pid":14734,"writer_terminated_and_reaped_before_reader":true}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 243 filtered out; finished in 1.70s
+
