@@ -1,0 +1,226 @@
+{
+  "scope": "Real WKWebView IPC through unchanged ordinary Rust entry and edition ACL, using a scripted test frontend and test App wrapper; not an unmodified product App acceptance",
+  "base_commit": "9283aceecb53c96adaed02b4c9877c71a59b48d6",
+  "editions": {
+    "public": {
+      "runtime": {
+        "scope": "ordinary backend and ACL with scripted test frontend",
+        "edition": "public",
+        "local_rows": 45,
+        "denied_commands": 29,
+        "remote_origin_runtime": "NOT_RUN",
+        "binary_sha256": "3594b58525104b4ab17b659cba1603a13205ce44d6b1eaa7681148f60482abfb",
+        "inputs_sha256": "d8d7b35f82b7e9bf0ee7e80d7b4cc4317e4ee607d8fa6fc8f781ae667a15f743",
+        "runtime_log_sha256": "6febd5f6ed85a77c12f0373400e9d1b81e062c3147ea78f80d1f374744c901a0",
+        "direct_process_exit": -15,
+        "preferences_match_disk": true,
+        "export_matches_disk": true,
+        "not_verified": [
+          "unmodified product frontend",
+          "remote-origin and other-window runtime matrix",
+          "native Keychain",
+          "system-managed WebKit helper termination",
+          "real accounts or remote services"
+        ],
+        "executed_binary_sha256": "5af33a2a0fb200bde25c94a27bea0aaa73c12ac5f1895520b19a1e3e09407285",
+        "binary_binding_note": "Exact executed copy hash added after execution; ad-hoc signing may change the Cargo output signature"
+      },
+      "build": {
+        "exit_code": 0,
+        "command": [
+          "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+          "build",
+          "--release",
+          "--offline",
+          "--locked",
+          "--target",
+          "aarch64-apple-darwin",
+          "-p",
+          "switcher-desktop",
+          "--bin",
+          "switcher-desktop",
+          "--no-default-features",
+          "--features",
+          "public,custom-protocol"
+        ],
+        "commit": "9283aceecb53c96adaed02b4c9877c71a59b48d6",
+        "log_sha256": "e29cfa979d2e85e2253878889bc7ba7764dbdd9a49489e95b3bc72b765fa46fb",
+        "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+        "reused_from": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-runtime/public-r6",
+        "reused_binary_sha256": "3594b58525104b4ab17b659cba1603a13205ce44d6b1eaa7681148f60482abfb"
+      },
+      "compiled_config": {
+        "productName": "Claude 切换器 Public",
+        "identifier": "local.claudeswitcher.public",
+        "build": {
+          "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-runtime/public-r6/dist"
+        }
+      },
+      "compiled_script_sha256": "c8ca78dbe0e1148a89ec3c3aa7e9b75612b0ae1ff6c90a3a63e408d1c309181e",
+      "build_inputs": "public-r6/inputs.json",
+      "runtime_inputs": "public-r7/inputs.json",
+      "local_result": "public-r7/local-result.json",
+      "local_result_sha256": "47b8d32b8651dea02167880158ccbc204fd1c40008b5a262fc14f8465e2ace1a",
+      "stopped_process": {
+        "pid": 14254,
+        "exit_code": -15
+      },
+      "log_sha256": "6febd5f6ed85a77c12f0373400e9d1b81e062c3147ea78f80d1f374744c901a0"
+    },
+    "personal": {
+      "runtime": {
+        "scope": "ordinary backend and ACL with scripted test frontend",
+        "edition": "personal",
+        "local_rows": 23,
+        "denied_commands": 4,
+        "remote_origin_runtime": "NOT_RUN",
+        "binary_sha256": "b2983c667413945c75bc04696af55242127041f8d6e04682ebd45f469b004c0c",
+        "inputs_sha256": "d8d7b35f82b7e9bf0ee7e80d7b4cc4317e4ee607d8fa6fc8f781ae667a15f743",
+        "runtime_log_sha256": "315a7302250ab125915321ca23df33a0b7515d2b7beeb83f46332259e64b15f3",
+        "direct_process_exit": -15,
+        "preferences_match_disk": true,
+        "export_matches_disk": true,
+        "not_verified": [
+          "unmodified product frontend",
+          "remote-origin and other-window runtime matrix",
+          "native Keychain",
+          "system-managed WebKit helper termination",
+          "real accounts or remote services"
+        ],
+        "executed_binary_sha256": "fc1bee00c1500dd2cb7f642f4542a4624ae112964fd5f94eec8e0acc6b0634c6",
+        "binary_binding_note": "Exact executed copy hash added after execution; ad-hoc signing may change the Cargo output signature"
+      },
+      "build": {
+        "exit_code": 0,
+        "command": [
+          "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+          "build",
+          "--release",
+          "--offline",
+          "--locked",
+          "--target",
+          "aarch64-apple-darwin",
+          "-p",
+          "switcher-desktop",
+          "--bin",
+          "switcher-desktop",
+          "--no-default-features",
+          "--features",
+          "personal,custom-protocol"
+        ],
+        "commit": "9283aceecb53c96adaed02b4c9877c71a59b48d6",
+        "log_sha256": "e3c74074bd9be278c1d815d63d9a7bdaabd30868a59ec7f080ab7df0bbc0bc36",
+        "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa"
+      },
+      "compiled_config": {
+        "productName": "Claude 切换器 Personal",
+        "identifier": "local.claudeswitcher.personal",
+        "app": {
+          "security": {
+            "capabilities": [
+              "main",
+              {
+                "identifier": "personal-operations",
+                "windows": [
+                  "main"
+                ],
+                "permissions": [
+                  "allow-ad-draft-read",
+                  "allow-ad-draft-save",
+                  "allow-import-ad-image",
+                  "allow-ad-image-preview",
+                  "allow-publisher-status",
+                  "allow-publish-ad",
+                  "allow-publisher-remote-read",
+                  "allow-publisher-remote-save",
+                  "allow-publisher-remote-select",
+                  "allow-pause-ad",
+                  "allow-restore-ad-history",
+                  "allow-create-ad-signing-key",
+                  "allow-export-publisher-backup",
+                  "allow-restore-publisher-backup",
+                  "allow-open-publisher-backup-folder",
+                  "allow-preview-publisher-cleanup",
+                  "allow-commit-publisher-cleanup",
+                  "allow-preview-publisher-gc",
+                  "allow-commit-publisher-gc",
+                  "allow-publisher-recovery-prepare",
+                  "allow-publisher-recovery-confirm",
+                  "allow-publisher-recovery-cancel",
+                  "allow-publisher-archive-import",
+                  "allow-publisher-retained-list",
+                  "allow-publisher-retained-export"
+                ]
+              }
+            ]
+          }
+        },
+        "build": {
+          "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-runtime/personal-r1/dist"
+        }
+      },
+      "compiled_script_sha256": "c8ca78dbe0e1148a89ec3c3aa7e9b75612b0ae1ff6c90a3a63e408d1c309181e",
+      "build_inputs": "personal-r1/inputs.json",
+      "runtime_inputs": "personal-r1/inputs.json",
+      "local_result": "personal-r1/local-result.json",
+      "local_result_sha256": "2fca64b1b8d78e9693b3a73d7cafe398edc7b9ff09ee1844ae92335aafca7a87",
+      "stopped_process": {
+        "pid": 14885,
+        "exit_code": -15
+      },
+      "log_sha256": "315a7302250ab125915321ca23df33a0b7515d2b7beeb83f46332259e64b15f3"
+    }
+  },
+  "counts": {
+    "business_success": 14,
+    "required_argument_rejections": 21,
+    "acl_rejections": 33,
+    "total_ipc_rows": 68,
+    "python_oracle_tests": 7,
+    "node_report_regression_tests": 1
+  },
+  "harness_final_sha256": {
+    "apps/desktop/tests/native-ipc-policy/probe.js": "c8ca78dbe0e1148a89ec3c3aa7e9b75612b0ae1ff6c90a3a63e408d1c309181e",
+    "apps/desktop/tests/native-ipc-policy/probe.test.mjs": "1f0e7494dd509e3a141ed0a35f8505674ba72388170fa824a49ee0bb92dc883c",
+    "apps/desktop/tests/native-ipc-policy/run.py": "2dd1b180f5d64a87a989fce4862c99b156bdac263047b5ee3131adc5636185c5",
+    "apps/desktop/tests/native-ipc-policy/test_receipts.py": "4e8817aec66a92ea4506b80495ae37082c9e09f28bea40f14f70b5308c18e5dc"
+  },
+  "reuse": "Rust business, Svelte checks and original UI/bundle results were not rerun; this stage builds only the scripted frontend backend context. Final harness change after runtime only adds executed-binary hash to receipts.",
+  "attempts": [
+    {
+      "attempts": [
+        "public-r1",
+        "public-r2",
+        "public-r3",
+        "public-r4",
+        "public-r5"
+      ],
+      "result": "No HTTP navigation receipt; not counted as passing. Window/JS progress observed in r3/r4; HTTP transport failure cause unproven. r2/r3/r5 reuse prior compiled binary."
+    },
+    {
+      "attempts": [
+        "public-r6"
+      ],
+      "result": "JSON page receipt obtained. Fixture intermediate directories were 755; save correctly rejected. Repaired in prepare_home with regression test. Not counted as business PASS."
+    }
+  ],
+  "regressions": [
+    "Synthetic HOME intermediate directories must all be mode 700, preferences mode 600",
+    "Local frontend reports JSON through page text without HTTP navigation",
+    "Oracle rejects missing/duplicate/reordered rows, not-found substitution, wrong edition/preferences and unexpected success"
+  ],
+  "not_run": [
+    "Remote-origin and other-window dynamic IPC matrix",
+    "All authorized business command success paths",
+    "Native Keychain/securityd isolation",
+    "Real Claude accounts, real R2, installation, deployment, payment, remote propagation",
+    "System-managed WebKit helper termination"
+  ],
+  "codegraph": {
+    "state": "complete",
+    "pending_refs": 0,
+    "files": 232,
+    "nodes": 6164,
+    "edges": 25338
+  }
+}

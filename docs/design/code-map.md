@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：普通后端真实 WebView IPC
+
+新增 `tests/native-ipc-policy`：普通 Rust main、命令处理函数、两版 capability/CSP → 测试 frontendDist → 真实 WKWebView IPC → 宿主读取页面 JSON → 独立核对合成 HOME 文件。不添加产品命令或 fixture feature；测试 App 包装与测试前端均单独标明。
+
+两版共 14 次业务成功、21 次缺参拒绝、33 次 ACL 拒绝（含 Public 全部 25 个运营命令）。共 68 条响应，不作为 68 个独立测试名。7 项 Python 校验测试和 1 项 Node 报告回归通过。修复夹具中间目录 755 问题并补回归。[阶段证据](../../output/no-account-20261027/ordinary-ipc-runtime/README.md)保留未成功尝试、有效回执和源码绑定。
+
+远程来源、其他窗口及全部业务成功路径的动态矩阵仍未完成；不升级为完整普通 App 验收。CodeGraph complete、pending 0：232 文件、6164 节点、25338 条边。产品 UI 布局未改，原生 SwiftUI 玻璃效果重写仍排最后。注册、部署、付款保持暂停。
+
 ## 2026-10-27：普通发行 IPC 权限策略
 
 `main.rs` 的普通测试入口 → `ipc_policy_tests.rs` → 构建生成 manifest/capability + 两版实际配置 → Tauri `Resolved::resolve` → `RuntimeAuthority::resolve_access`。无需增加依赖或产品测试后门；夹具 feature 排除本模块。

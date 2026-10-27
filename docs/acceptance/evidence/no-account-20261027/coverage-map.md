@@ -1,5 +1,9 @@
 # 无真实账号功能覆盖审查索引
 
+## 2026-10-27 增量：真实 WebView 到普通后端
+
+[新回执](../../../../output/no-account-20261027/ordinary-ipc-runtime/receipt.json)包含两版 68 条实际响应：14 次安全业务成功、21 次缺参拒绝、33 次 ACL 拒绝。Public 覆盖全部 25 个运营拒绝。实际后端和权限未改；使用测试前端，不能称为未经修改的产品 App 或完整动态矩阵。设置与导出已核对磁盘。夹具权限与报告传输均有回归测试。历史计数不变，远程来源、其他窗口及全部业务成功路径仍未证明。
+
 ## 2026-10-27 增量：普通 IPC 权限策略
 
 PR-08/PR-09/PR-13 相关策略新增 `ordinary_capabilities_match_registration_and_reject_other_windows_and_remote_origins`、`ordinary_capabilities_reject_fixture_unknown_and_cross_edition_commands`。2 个不同名称在 Personal/Public 共执行 4 次通过；直接解析实际能力配置，核对 48/23 个普通命令及 Public 的 25 个运营拒绝。

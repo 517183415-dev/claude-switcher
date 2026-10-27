@@ -1,0 +1,331 @@
+{
+  "phase": "local",
+  "edition": "public",
+  "rows": [
+    {
+      "command": "runtime_info",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "version": "0.2.0",
+        "edition": "public",
+        "slots": [
+          "residential_broadband",
+          "account_service",
+          "kyc_service"
+        ],
+        "automatic_updates": true,
+        "ads_enabled": false
+      }
+    },
+    {
+      "command": "cancel_check",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "当前没有进行中的检查",
+        "recovery": null
+      }
+    },
+    {
+      "command": "create_migration_backup",
+      "ok": true,
+      "value": {
+        "completed": false,
+        "message": "旧版账号切换会自动存档，无需迁移备份或隔离恢复步骤",
+        "recovery": "此接口仅保留兼容；请使用账号选择。启动前仍需通过环境检查。"
+      }
+    },
+    {
+      "command": "save_preferences",
+      "ok": true,
+      "value": {
+        "ads": {
+          "slots_enabled": [
+            false,
+            false,
+            false
+          ],
+          "request_purpose_acknowledged": true
+        },
+        "updates_paused_until": null
+      }
+    },
+    {
+      "command": "workspace_snapshot",
+      "ok": true,
+      "value": {
+        "runtime": {
+          "schema_version": 1,
+          "version": "0.2.0",
+          "edition": "public",
+          "slots": [
+            "residential_broadband",
+            "account_service",
+            "kyc_service"
+          ],
+          "automatic_updates": true,
+          "ads_enabled": false
+        },
+        "accounts": {
+          "current": "A",
+          "profiles": [
+            {
+              "id": "A",
+              "state": "current",
+              "login_evidence": "登录状态尚未通过真实登录验收"
+            },
+            {
+              "id": "B",
+              "state": "uninitialized",
+              "login_evidence": "登录状态尚未通过真实登录验收"
+            }
+          ],
+          "claude_running": true,
+          "action_blocker": null
+        },
+        "preferences": {
+          "ads": {
+            "slots_enabled": [
+              false,
+              false,
+              false
+            ],
+            "request_purpose_acknowledged": true
+          },
+          "updates_paused_until": null
+        },
+        "check_report": null,
+        "ads_manifest": null,
+        "update": {
+          "paused": null,
+          "state": "update_storage_error",
+          "message": "无法安全读取或保存更新状态。请检查 v2 更新目录的权限和恢复记录。",
+          "next_check_at": null,
+          "candidate_version": null,
+          "can_download": false,
+          "can_install": false
+        },
+        "pending_materials": [
+          "本机广告尚未完成首次签名发布；远程广告上线未配置",
+          "广告已收起：boot_id。请检查 Personal 本机运营内容。"
+        ]
+      }
+    },
+    {
+      "command": "activity_log",
+      "ok": true,
+      "value": [
+        {
+          "observed_at": 1793079301,
+          "level": "info",
+          "message": "已保存本机设置；全部广告关闭时不发送广告请求"
+        }
+      ]
+    },
+    {
+      "command": "export_activity",
+      "ok": true,
+      "value": [
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-ipc-runtime/public-r7/home/.claude-switcher/v2/public/exports/activity-redacted.json",
+        [
+          {
+            "observed_at": 1793079301,
+            "level": "info",
+            "message": "已保存本机设置；全部广告关闭时不发送广告请求"
+          }
+        ]
+      ]
+    },
+    {
+      "command": "account_action",
+      "ok": false,
+      "error": "invalid args `action` for command `account_action`: command account_action missing required key action"
+    },
+    {
+      "command": "preview_repair",
+      "ok": false,
+      "error": "invalid args `requestId` for command `preview_repair`: command preview_repair missing required key requestId"
+    },
+    {
+      "command": "execute_repair",
+      "ok": false,
+      "error": "invalid args `requestId` for command `execute_repair`: command execute_repair missing required key requestId"
+    },
+    {
+      "command": "save_preferences",
+      "ok": false,
+      "error": "invalid args `preferences` for command `save_preferences`: command save_preferences missing required key preferences"
+    },
+    {
+      "command": "software_update",
+      "ok": false,
+      "error": "invalid args `action` for command `software_update`: command software_update missing required key action"
+    },
+    {
+      "command": "open_ad_link",
+      "ok": false,
+      "error": "invalid args `slot` for command `open_ad_link`: command open_ad_link missing required key slot"
+    },
+    {
+      "command": "ad_cached_image",
+      "ok": false,
+      "error": "invalid args `slot` for command `ad_cached_image`: command ad_cached_image missing required key slot"
+    },
+    {
+      "command": "preview_region_change",
+      "ok": false,
+      "error": "invalid args `region` for command `preview_region_change`: command preview_region_change missing required key region"
+    },
+    {
+      "command": "cancel_repair",
+      "ok": false,
+      "error": "invalid args `requestId` for command `cancel_repair`: command cancel_repair missing required key requestId"
+    },
+    {
+      "command": "__unregistered__",
+      "ok": false,
+      "error": "Command __unregistered__ not allowed by ACL"
+    },
+    {
+      "command": "forbidden_probe",
+      "ok": false,
+      "error": "Command forbidden_probe not allowed by ACL"
+    },
+    {
+      "command": "finish_smoke",
+      "ok": false,
+      "error": "Command finish_smoke not allowed by ACL"
+    },
+    {
+      "command": "plugin:shell|execute",
+      "ok": false,
+      "error": "Command plugin:shell|execute not allowed by ACL"
+    },
+    {
+      "command": "ad_draft_read",
+      "ok": false,
+      "error": "Command ad_draft_read not allowed by ACL"
+    },
+    {
+      "command": "ad_draft_save",
+      "ok": false,
+      "error": "Command ad_draft_save not allowed by ACL"
+    },
+    {
+      "command": "import_ad_image",
+      "ok": false,
+      "error": "Command import_ad_image not allowed by ACL"
+    },
+    {
+      "command": "ad_image_preview",
+      "ok": false,
+      "error": "Command ad_image_preview not allowed by ACL"
+    },
+    {
+      "command": "publisher_status",
+      "ok": false,
+      "error": "Command publisher_status not allowed by ACL"
+    },
+    {
+      "command": "publish_ad",
+      "ok": false,
+      "error": "Command publish_ad not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_read",
+      "ok": false,
+      "error": "Command publisher_remote_read not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_save",
+      "ok": false,
+      "error": "Command publisher_remote_save not allowed by ACL"
+    },
+    {
+      "command": "publisher_remote_select",
+      "ok": false,
+      "error": "Command publisher_remote_select not allowed by ACL"
+    },
+    {
+      "command": "pause_ad",
+      "ok": false,
+      "error": "Command pause_ad not allowed by ACL"
+    },
+    {
+      "command": "restore_ad_history",
+      "ok": false,
+      "error": "Command restore_ad_history not allowed by ACL"
+    },
+    {
+      "command": "create_ad_signing_key",
+      "ok": false,
+      "error": "Command create_ad_signing_key not allowed by ACL"
+    },
+    {
+      "command": "export_publisher_backup",
+      "ok": false,
+      "error": "Command export_publisher_backup not allowed by ACL"
+    },
+    {
+      "command": "restore_publisher_backup",
+      "ok": false,
+      "error": "Command restore_publisher_backup not allowed by ACL"
+    },
+    {
+      "command": "open_publisher_backup_folder",
+      "ok": false,
+      "error": "Command open_publisher_backup_folder not allowed by ACL"
+    },
+    {
+      "command": "preview_publisher_cleanup",
+      "ok": false,
+      "error": "Command preview_publisher_cleanup not allowed by ACL"
+    },
+    {
+      "command": "commit_publisher_cleanup",
+      "ok": false,
+      "error": "Command commit_publisher_cleanup not allowed by ACL"
+    },
+    {
+      "command": "preview_publisher_gc",
+      "ok": false,
+      "error": "Command preview_publisher_gc not allowed by ACL"
+    },
+    {
+      "command": "commit_publisher_gc",
+      "ok": false,
+      "error": "Command commit_publisher_gc not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_prepare",
+      "ok": false,
+      "error": "Command publisher_recovery_prepare not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_confirm",
+      "ok": false,
+      "error": "Command publisher_recovery_confirm not allowed by ACL"
+    },
+    {
+      "command": "publisher_recovery_cancel",
+      "ok": false,
+      "error": "Command publisher_recovery_cancel not allowed by ACL"
+    },
+    {
+      "command": "publisher_archive_import",
+      "ok": false,
+      "error": "Command publisher_archive_import not allowed by ACL"
+    },
+    {
+      "command": "publisher_retained_list",
+      "ok": false,
+      "error": "Command publisher_retained_list not allowed by ACL"
+    },
+    {
+      "command": "publisher_retained_export",
+      "ok": false,
+      "error": "Command publisher_retained_export not allowed by ACL"
+    }
+  ]
+}
