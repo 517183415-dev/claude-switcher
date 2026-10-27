@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
+import {compile} from 'svelte/compiler';
+import {render} from 'svelte/server';
 
 const source = fs.readFileSync(new URL('../src/pages/Operations.svelte', import.meta.url), 'utf8');
 const script = source.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1];
@@ -69,4 +71,24 @@ test('fixture, busy and missing draft do not invoke IPC', async () => {
     assert.equal(h.calls.length, 0);
     assert.ok(h.outcomes.every(result => result.completed === false));
   }
+});
+
+test('publication panel explains configured remote and local sources', async () => {
+  const fragment = source.match(/<section class="panel"><h2>[^<]*签名发布与回读<\/h2>[\s\S]*?<\/section>/)?.[0];
+  const history = source.match(/<section class="panel"><h2>[^<]*发布历史与恢复<\/h2>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(fragment, 'production publication panel must be present');
+  assert.ok(history, 'production publication history must be present');
+  const file = new URL(`./.publisher-source-copy-${process.pid}.mjs`, import.meta.url);
+  fs.writeFileSync(file, compile(`<script>let {busy='',dirty=false,validation=[],publisher}=$props(); let publishChannel=null; const dateTime=String; const restore=()=>{};</script>${fragment}${history}`,
+    {generate:'server', filename:'PublicationSource.svelte'}).js.code);
+  try {
+    const {default:View} = await import(file.href);
+    const html = render(View, {props:{publisher:{history:[
+      {revision:1,channel:'preview',published_at:100,verified:true,release_id:'synthetic-preview'},
+      {revision:2,channel:'production',published_at:101,verified:false,release_id:'synthetic-production'},
+    ]}}}).body;
+    assert.match(html, /R2/);
+    assert.match(html, /本机目录/);
+    assert.doesNotMatch(html, /不向其他用户远程投放|仅供本机|正式发布供本机两个发行|本机预览|本机正式|本机签名回读|本机回读待确认/);
+  } finally { fs.unlinkSync(file); }
 });

@@ -366,6 +366,26 @@ fn production_rejects_provider_domains_even_with_dns_root_dot() {
 }
 
 #[test]
+fn production_configuration_rejects_ipv6_literal_origins() {
+    for origin in [
+        "https://[::1]",
+        "https://[::ffff:127.0.0.1]",
+        "https://[2001:db8::1]",
+    ] {
+        let config = R2Config {
+            account_id: "a".repeat(32),
+            bucket: "test-bucket".into(),
+            public_origin: origin.into(),
+            channel: AdChannel::Preview,
+        };
+        assert!(
+            matches!(config.validate(), Err(StoreError::Permission)),
+            "IP literal must not be accepted as a public domain: {origin}"
+        );
+    }
+}
+
+#[test]
 fn source_read_deadline_covers_slow_body_even_while_chunks_arrive() {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());

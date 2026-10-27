@@ -1,5 +1,15 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：R2 IP 字面量拒绝与发布说明修复
+
+`publisher_remote_save` → `configure_r2` → `R2Config::validate`；同一校验也用于目标身份计算及 `R2Store::open`。原字符串 IP 解析漏掉带方括号的 IPv6。现改用 URL 解析器的域名类型，统一拒绝 IPv4/IPv6 字面量，不新增依赖或重复校验入口。
+
+`Operations.svelte` → `publish_ad` → `publish_configured` 的调用链不变。发布卡片说明按渠道选择 R2 或本机目录；历史标签不再把远程发布标为本机发布。现有布局、导航和按钮位置不变。Svelte 回归实际编译并渲染生产发布及历史片段。
+
+两个缺陷均保留有效 RED，修复与检查见[本阶段证据](../../output/no-account-20261027/r2-origin-ip-literals/README.md)。CodeGraph 自动同步完成：227 文件、6103 节点、25094 条边，complete、pending 0。普通 App 证据仍绑定 9d6 源码，本阶段没有重复打包或重写 SwiftUI。
+
+阶段末检查：桌面后端 224 项、前端 64 项及两组 VM 回归通过；Svelte 检查 0 错误/0 警告，两版前端构建、Public 编译和格式检查通过。Clippy exit 0，保留 3 条既有迁移风格警告。R2 定向 11 项已包含在完整套件内，不累加。
+
 ## 2026-10-27：普通 App 实际业务路径与后续 UI 计划
 
 普通发行入口 → 现有 Tauri/WKWebView → 设置、活动记录及 Personal 运营页面 → 正常业务命令 → 合成 HOME 内持久文件。源码基线为 `9d6a3efcfc6e907ae7797633a843720533a94b34`；未启用 fixture feature，未注入测试 WebView。两版实际验证偏好保存、重启和脱敏导出；Personal 另验证草稿保存、重启及发布来源读取。回执见[ordinary-app-r1](../../output/no-account-20261027/ordinary-app-r1/receipt.json)。

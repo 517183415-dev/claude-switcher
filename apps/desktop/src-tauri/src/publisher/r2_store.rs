@@ -101,7 +101,7 @@ impl R2Config {
             || origin.fragment().is_some()
             || origin.path() != "/"
             || origin.port().is_some()
-            || host.parse::<std::net::IpAddr>().is_ok()
+            || origin.domain().is_none()
             || ["r2.dev", "r2.cloudflarestorage.com"].iter().any(|domain| {
                 canonical_host == *domain
                     || canonical_host

@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "base_commit": "2931582c75425ac5f2399b9797f4006637cbf3ee",
+  "scope": "R2 public-origin validation and existing operations-page publishing descriptions; local checks only",
+  "results": {
+    "r2_targeted": {
+      "passed": 11,
+      "failed": 0,
+      "log": "r2-green.log"
+    },
+    "desktop_unit_suite": {
+      "passed": 224,
+      "failed": 0,
+      "log": "desktop-tests.log"
+    },
+    "frontend_node_tests": {
+      "passed": 64,
+      "failed": 0,
+      "log": "frontend-tests.log"
+    },
+    "frontend_vm_groups": 2,
+    "svelte_check": "0 errors, 0 warnings",
+    "frontend_builds": [
+      "personal",
+      "public"
+    ],
+    "clippy": "exit 0; three existing migration.rs collapsible_if warnings, no new warning category",
+    "format": "exit 0",
+    "public_check": "exit 0"
+  },
+  "valid_red": [
+    "red-r2.log",
+    "ui-red.log"
+  ],
+  "not_a_regression_red": "red.log: cargo fingerprinting stopped before tests while trying to read Git excludes under isolation",
+  "verification": "verification.json",
+  "inputs_count": 276,
+  "inputs_unchanged": true,
+  "codegraph": {
+    "fileCount": 227,
+    "nodeCount": 6103,
+    "edgeCount": 25094,
+    "state": "complete",
+    "pendingChanges": 0,
+    "pendingRefs": 0
+  },
+  "reused_without_rerun": [
+    "Ordinary Personal/Public App runtime evidence remains bound to 9d6a3efcfc6e907ae7797633a843720533a94b34; no new ordinary bundles built",
+    "Earlier workspace/core/helper and integration results where inputs are unchanged; this stage does not claim a new full-workspace run"
+  ],
+  "not_run": [
+    "Real Claude account",
+    "Real R2/IAM/TLS/CDN/WAF/billing",
+    "Real Keychain",
+    "Complete ordinary App dynamic ACL matrix",
+    "Real client propagation",
+    "Installation and guardian acceptance",
+    "SwiftUI migration"
+  ],
+  "not_performed": [
+    "Registration",
+    "Deployment",
+    "Payment",
+    "Subagents"
+  ],
+  "logs_sha256": {
+    "clippy.log": "566e002fc8cabbb525841ea00f46250b10e899cfa6613fe51e224c2ecf0294e3",
+    "desktop-tests.log": "d4eebc1e7b30478cb364d2769efd0692065c322ecac9c1c2ae6f1fdcaa087424",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend-personal.log": "0c50c2a3aa0bc876342e7b93784897fabc0002d0ac9de6912c13de71e0ac4ac2",
+    "frontend-public.log": "b1fa0fed16947ab5b5c95e535c5ee24f8b1344bf6bd2665a4b79124c17e79f65",
+    "frontend-tests.log": "ffced1247ada35368e75bba20b66c9a78f994d711ddd4f6db335d32c026bbbf3",
+    "public-check.log": "52d79ef9337d1d3976127ad32dfcfb80caaa6985bc564b13ae4af505d7346dbf",
+    "r2-green.log": "13a228ce26950cc2cb00c50474b5a666de09c8fa93c3fe80799c30e6e9a10db2",
+    "red-r2.log": "e630b66f6c8fd6c473c55ea0aad1af0a3d14fa5f1533a47a9e8c86400cef51f1",
+    "red.log": "d9f3b5350088efdb574bb0f806276b3bfd9af1f9b4dfdb84eff4f997b35f6516",
+    "svelte-check.log": "9b56c79abb8f278c6390ccec9dbe23d378e79be013ec591288ae33ae0becdf78",
+    "ui-red.log": "060ce97a498f4c4edf3c2da60dbf4548828842ee44a2072d35c798b10693dd6c"
+  }
+}

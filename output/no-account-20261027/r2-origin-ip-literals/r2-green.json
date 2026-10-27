@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-directory-race/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--no-default-features",
+    "--features",
+    "personal",
+    "publisher::r2_store::tests",
+    "--",
+    "--nocapture"
+  ],
+  "inputs": {
+    "apps/desktop/src-tauri/src/publisher/r2_store.rs": "4eb0f587ea5cf80b47e3125d6d65caa48bc0280e197a98c05cd25dfb03e9c923",
+    "apps/desktop/src-tauri/src/publisher/r2_store/tests.rs": "9626237d7e6edede5e01eaf41646b79002f66bc238a84759845a4f01d08a3fd0"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 10.96,
+  "synthetic_home": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/r2-origin-ip-literals/synthetic-home",
+  "git_config_isolated": true
+}
