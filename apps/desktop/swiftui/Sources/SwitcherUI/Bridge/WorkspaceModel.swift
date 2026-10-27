@@ -24,6 +24,7 @@ final class WorkspaceModel: ObservableObject {
 
     let bridge: DesktopBridge
     private var checkEpoch = 0
+    private var snapshotEpoch = 0
     private var suppressReport = false
     private var repairEpoch = 0
     private var repairRequest: String?
@@ -48,9 +49,11 @@ final class WorkspaceModel: ObservableObject {
     }
 
     func refresh() async throws {
+        snapshotEpoch += 1
+        let snapshotRequest = snapshotEpoch
         let epoch = checkEpoch
         var value: WorkspaceSnapshot = try await bridge.read(.workspaceSnapshot)
-        guard epoch == checkEpoch else { return }
+        guard epoch == checkEpoch, snapshotRequest == snapshotEpoch else { return }
         guard value.runtime.edition == bridge.edition else { throw BridgeError.invalidResponse }
         if suppressReport { value.checkReport = nil }
         snapshot = value
@@ -63,6 +66,7 @@ final class WorkspaceModel: ObservableObject {
     }
 
     private func beginAction(_ label: String) {
+        snapshotEpoch += 1
         busy = label
         error = nil
         outcome = nil

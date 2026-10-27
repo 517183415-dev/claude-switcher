@@ -72,6 +72,50 @@ func earlierSnapshotCannotOverwriteNewCheck() async throws {
 }
 
 @Test @MainActor
+func earlierSnapshotCannotUndoSavedAdPreference() async throws {
+    let (model, transport) = setup()
+    let enabled = snapshot.replacingOccurrences(of: "\"ads_manifest\":null", with: "\"ads_manifest\":\(manifest)")
+        .replacingOccurrences(of: "\"slots_enabled\":[false,false,false]", with: "\"slots_enabled\":[true,false,false]")
+        .replacingOccurrences(of: "\"request_purpose_acknowledged\":false", with: "\"request_purpose_acknowledged\":true")
+    transport.replies["workspace_snapshot"] = success(enabled)
+    transport.replies["ad_cached_image"] = success(#""data:image/png;base64,AQ==""#)
+    transport.replies["save_preferences"] = success(#"{"ads":{"slots_enabled":[false,false,false],"request_purpose_acknowledged":true},"updates_paused_until":null}"#)
+    try await model.refresh()
+    #expect(!model.adImages.isEmpty)
+
+    transport.held.insert("workspace_snapshot")
+    let oldSnapshot = Task { try await model.refresh() }
+    await Task.yield()
+    #expect(transport.waiting["workspace_snapshot"] != nil)
+    await model.setAdEnabled(index: 0, enabled: false)
+    transport.release("workspace_snapshot")
+    try await oldSnapshot.value
+
+    #expect(model.snapshot?.preferences.ads.slotsEnabled == [false, false, false])
+    #expect(model.adImages.isEmpty)
+    if case .disabled = model.overview.ads[0].state {} else { Issue.record("saved disabled slot must remain disabled") }
+}
+
+@Test @MainActor
+func earlierSnapshotCannotOverwriteNewerSnapshot() async throws {
+    let (model, transport) = setup()
+    try await model.refresh()
+    transport.held.insert("workspace_snapshot")
+    let oldSnapshot = Task { try await model.refresh() }
+    await Task.yield()
+    #expect(transport.waiting["workspace_snapshot"] != nil)
+
+    transport.held.remove("workspace_snapshot")
+    transport.replies["workspace_snapshot"] = success(snapshot.replacingOccurrences(of: "\"current\":\"A\"", with: "\"current\":\"B\""))
+    try await model.refresh()
+    transport.replies["workspace_snapshot"] = success(snapshot)
+    transport.release("workspace_snapshot")
+    try await oldSnapshot.value
+
+    #expect(model.snapshot?.accounts.current == "B")
+}
+
+@Test @MainActor
 func adEnableRequiresConsentAndChangesOnlySelectedSlot() async throws {
     let (model, transport) = setup()
     try await model.refresh()
