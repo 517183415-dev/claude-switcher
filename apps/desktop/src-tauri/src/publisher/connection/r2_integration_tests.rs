@@ -34,6 +34,7 @@ struct Request {
     authenticated: bool,
     expected: Option<String>,
     absent: bool,
+    wire: Vec<u8>,
 }
 
 #[derive(Default)]
@@ -194,6 +195,7 @@ fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
         authenticated,
         expected: expected.clone(),
         absent,
+        wire: bytes[..header_end + length].to_vec(),
     });
     let (status, response, etag) = match method.as_str() {
         "GET" => match state.objects.get(key) {
@@ -548,6 +550,188 @@ fn local_s3_accepts_delayed_request_data() {
     let mut response = String::new();
     socket.read_to_string(&mut response).unwrap();
     assert!(response.starts_with("HTTP/1.1 404 Not Found\r\n"));
+}
+
+#[test]
+fn sdk_publication_keeps_local_secrets_out_of_all_requests() {
+    let (root, _, _) = fixture();
+    let home = root.0.join("synthetic-home-canary");
+    for (path, content) in [
+        (".claude.json", "synthetic-account-canary"),
+        (
+            "Library/Application Support/Claude/Local Storage/leveldb/test",
+            "synthetic-cookie-canary",
+        ),
+        (".config/proxy/private.json", "synthetic-proxy-file-canary"),
+    ] {
+        let path = home.join(path);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, content).unwrap();
+    }
+    let proxy = "http://synthetic-proxy-user:synthetic-proxy-password@192.0.2.137:18080";
+    let child = Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "publisher::connection::tests::r2_integration_tests::sdk_publication_privacy_child_fixture",
+            "--ignored",
+        ])
+        .env("HOME", &home)
+        .env("TMPDIR", &home)
+        .env("SWITCHER_SYNTHETIC_HOME", &home)
+        .env("HTTP_PROXY", proxy)
+        .env("HTTPS_PROXY", proxy)
+        .env("http_proxy", proxy)
+        .env("https_proxy", proxy)
+        .env_remove("NO_PROXY")
+        .env_remove("no_proxy")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&child.stdout);
+    assert!(
+        child.status.success() && stdout.contains("test result: ok. 1 passed;"),
+        "isolated publication fixture failed: {stdout}\n{}",
+        String::from_utf8_lossy(&child.stderr)
+    );
+}
+
+#[test]
+#[ignore = "run only from the parent with a synthetic HOME"]
+fn sdk_publication_privacy_child_fixture() {
+    let home = PathBuf::from(std::env::var_os("SWITCHER_SYNTHETIC_HOME").unwrap());
+    assert_eq!(std::env::var_os("HOME").unwrap(), home.as_os_str());
+    assert_eq!(
+        fs::read(home.join(".claude.json")).unwrap(),
+        b"synthetic-account-canary"
+    );
+    assert_eq!(
+        fs::read(home.join("Library/Application Support/Claude/Local Storage/leveldb/test"))
+            .unwrap(),
+        b"synthetic-cookie-canary"
+    );
+
+    let peer = LocalS3::start();
+    // Prove that this capture sees the request target, headers and body separately.
+    let mut control = TcpStream::connect(peer.endpoint.trim_start_matches("http://")).unwrap();
+    control
+        .write_all(b"GET /preview/probe?positive-query HTTP/1.1\r\nHost: localhost\r\nX-Test: positive-header\r\nContent-Length: 13\r\nConnection: close\r\n\r\npositive-body")
+        .unwrap();
+    let mut response = Vec::new();
+    control.read_to_end(&mut response).unwrap();
+    {
+        let mut state = peer.state.lock().unwrap();
+        assert_eq!(state.requests.len(), 1);
+        let wire = &state.requests[0].wire;
+        for marker in [
+            b"positive-query".as_slice(),
+            b"positive-header",
+            b"positive-body",
+        ] {
+            assert!(wire.windows(marker.len()).any(|part| part == marker));
+        }
+        state.requests.clear();
+    }
+
+    let (root, mut publisher, mut vault) = fixture();
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Preview,
+        "synthetic-key",
+    )
+    .unwrap();
+    super::super::super::tests::attach_campaign(&mut publisher, 1001);
+    let asset = publisher.draft_read().slots[0].campaigns[0].image.clone();
+    let asset_bytes = publisher.image_bytes(&asset).unwrap();
+    let publication =
+        publish_with_sdk(&mut publisher, &root.0, &vault, &peer.endpoint, 1002).unwrap();
+    let before_recipient = peer.state.lock().unwrap().requests.len();
+    let source = ads::ContentSource::new("https://preview.example.com/").unwrap();
+    let preferences = AdPreferences {
+        slots_enabled: [true, false, false],
+        request_purpose_acknowledged: true,
+    };
+    let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
+    let mut recipient = ads::AdCache::default();
+    recipient_refresh(
+        &peer,
+        &source,
+        &preferences,
+        &mut recipient,
+        &public_key,
+        1002,
+    )
+    .unwrap();
+    assert_eq!(recipient.highest_revision, publication.revision);
+
+    let forbidden = [
+        b"synthetic-home-canary".to_vec(),
+        b"synthetic-account-canary".to_vec(),
+        b"synthetic-cookie-canary".to_vec(),
+        b"synthetic-proxy-file-canary".to_vec(),
+        b"synthetic-proxy-user".to_vec(),
+        b"synthetic-proxy-password".to_vec(),
+        b"192.0.2.137".to_vec(),
+        b"secret-synthetic-key".to_vec(),
+        vec![42; 32],
+        serde_json::to_vec(&vec![42_u8; 32]).unwrap(),
+        "2a".repeat(32).into_bytes(),
+        b"KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKio=".to_vec(),
+    ];
+    let state = peer.state.lock().unwrap();
+    assert!(
+        state
+            .requests
+            .iter()
+            .any(|r| r.authenticated && r.method == "PUT" && r.key == "preview/current.json")
+    );
+    assert!(
+        state
+            .requests
+            .iter()
+            .any(|r| r.authenticated && r.method == "PUT" && r.wire.ends_with(&asset_bytes))
+    );
+    let recipient_requests = &state.requests[before_recipient..];
+    assert!(
+        recipient_requests
+            .iter()
+            .any(|r| !r.authenticated && r.key == "preview/current.json")
+    );
+    assert!(
+        recipient_requests
+            .iter()
+            .any(|r| !r.authenticated && r.key.starts_with("preview/assets/"))
+    );
+    for (request_index, request) in state.requests.iter().enumerate() {
+        for (marker_index, marker) in forbidden.iter().enumerate() {
+            assert!(
+                !request
+                    .wire
+                    .windows(marker.len())
+                    .any(|part| part == marker),
+                "private marker {marker_index} appeared in request {request_index}"
+            );
+        }
+        let end = request
+            .wire
+            .windows(4)
+            .position(|part| part == b"\r\n\r\n")
+            .unwrap()
+            + 4;
+        let headers = std::str::from_utf8(&request.wire[..end]).unwrap();
+        for line in headers.split("\r\n") {
+            if !line.to_ascii_lowercase().starts_with("authorization:") {
+                assert!(
+                    !line.contains("synthetic-key"),
+                    "access key outside authorization header"
+                );
+            }
+        }
+        assert!(
+            !request.wire[end..]
+                .windows(b"synthetic-key".len())
+                .any(|part| part == b"synthetic-key")
+        );
+    }
 }
 
 fn checked_manifest(wire: &[u8], public_key: &VerifyingKey, now: u64) -> AdManifest {

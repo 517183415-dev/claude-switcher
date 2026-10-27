@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：远程发布请求隐私
+
+`Publisher::publish_configured_with → R2Store / AWS S3 SDK → LocalS3`；同一模拟服务记录请求路径、请求头与请求体。接收侧经 `ContentSource → AdCache` 验签和读取素材。测试先验证捕获器能观察查询参数、请求头和正文，再检查合成账号、代理和私钥标记。[测试与边界](../acceptance/evidence/no-account-20261027/r2-publication-privacy-wire-20261028.md)。
+
+本次 CodeGraph 状态 complete、pending 0：306 文件、7528 节点、30008 条边。索引统计不代表测试覆盖率。
+
 ## 2026-10-28：活动记录并发保护
 
 `DesktopState::activity / log → ActivityLogLock → LifecycleLock::try_named → activity.json`。两版使用各自发行目录内的锁。写入在锁内读取、脱敏并追加；读取已有记录也先取锁。锁占用超过两秒返回可重试错误。[测试与边界](../acceptance/evidence/no-account-20261027/activity-concurrency-20261028.md)。
