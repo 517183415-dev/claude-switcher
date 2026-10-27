@@ -100,20 +100,25 @@ fn publish_with_sdk(
     endpoint: &str,
     now: u64,
 ) -> Result<Publication> {
-    publisher.publish_configured_with(
-        root,
-        AdChannel::Preview,
-        now,
-        vault,
-        |config, access, secret| {
-            assert_eq!((access, secret), ("synthetic-key", "secret-synthetic-key"));
-            Ok(Box::new(
-                super::super::super::r2_store::tests::configured_store(
-                    endpoint, &config, access, secret,
-                ),
-            ))
-        },
-    )
+    publish_with_sdk_for_channel(publisher, root, vault, endpoint, AdChannel::Preview, now)
+}
+
+fn publish_with_sdk_for_channel(
+    publisher: &mut Publisher,
+    root: &Path,
+    vault: &MemoryVault,
+    endpoint: &str,
+    channel: AdChannel,
+    now: u64,
+) -> Result<Publication> {
+    publisher.publish_configured_with(root, channel, now, vault, |config, access, secret| {
+        assert_eq!((access, secret), ("synthetic-key", "secret-synthetic-key"));
+        Ok(Box::new(
+            super::super::super::r2_store::tests::configured_store(
+                endpoint, &config, access, secret,
+            ),
+        ))
+    })
 }
 
 fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
@@ -169,7 +174,10 @@ fn handle(mut socket: TcpStream, shared: &Mutex<State>) {
         bytes.extend_from_slice(&chunk[..n]);
     }
     let body = &bytes[header_end..header_end + length];
-    let (authenticated, key) = if let Some(key) = path.strip_prefix("/ads-preview/") {
+    let (authenticated, key) = if let Some(key) = path
+        .strip_prefix("/ads-preview/")
+        .or_else(|| path.strip_prefix("/ads-production/"))
+    {
         let auth = authorization.as_deref().unwrap_or("");
         assert!(
             auth.starts_with("AWS4-HMAC-SHA256 ") && auth.contains("Credential=synthetic-key/")
@@ -563,6 +571,26 @@ fn recipient_refresh(
     key: &VerifyingKey,
     now: u64,
 ) -> std::result::Result<(), &'static str> {
+    recipient_refresh_for_channel(
+        peer,
+        source,
+        preferences,
+        cache,
+        key,
+        AdChannel::Preview,
+        now,
+    )
+}
+
+fn recipient_refresh_for_channel(
+    peer: &LocalS3,
+    source: &ads::ContentSource,
+    preferences: &AdPreferences,
+    cache: &mut ads::AdCache,
+    key: &VerifyingKey,
+    channel: AdChannel,
+    now: u64,
+) -> std::result::Result<(), &'static str> {
     let client = reqwest::blocking::Client::builder()
         .no_proxy()
         .build()
@@ -578,11 +606,9 @@ fn recipient_refresh(
             .bytes()
             .unwrap()
     };
-    let current = source
-        .manifest_request(preferences, AdChannel::Preview)
-        .unwrap();
+    let current = source.manifest_request(preferences, channel).unwrap();
     let wire = read(current);
-    cache.accept(&wire, key, AdChannel::Preview, "ads-personal-v1", now, true)?;
+    cache.accept(&wire, key, channel, "ads-personal-v1", now, true)?;
     let campaign = cache
         .current_campaign(AdSlot::ResidentialBroadband, now, preferences, true)
         .unwrap();
@@ -591,12 +617,209 @@ fn recipient_refresh(
             AdSlot::ResidentialBroadband,
             &campaign.image,
             preferences,
-            AdChannel::Preview,
+            channel,
         )
         .unwrap()
         .unwrap();
     ads::validate_image(&read(image), &campaign.image).unwrap();
     Ok(())
+}
+
+#[test]
+fn production_backup_restore_rechecks_remote_and_reuploads_missing_asset_with_sdk() {
+    let peer = LocalS3::start();
+    let (root, mut publisher, mut vault) = fixture();
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Production,
+        "synthetic-key",
+    )
+    .unwrap();
+    super::super::super::tests::attach_campaign(&mut publisher, 1001);
+    let original = publisher.draft_read();
+    let asset = original.slots[0].campaigns[0].image.clone();
+    let asset_key = super::super::super::protocol::asset_key(AdChannel::Production, &asset);
+    let asset_bytes = publisher.image_bytes(&asset).unwrap();
+    let publish = |publisher: &mut Publisher, now| {
+        publish_with_sdk_for_channel(
+            publisher,
+            &root.0,
+            &vault,
+            &peer.endpoint,
+            AdChannel::Production,
+            now,
+        )
+    };
+    let first = publish(&mut publisher, 1002).unwrap();
+    let backup = publisher
+        .export_backup(b"synthetic-backup-password", &vault)
+        .unwrap();
+    let mut newer_draft = publisher.draft_read();
+    newer_draft.slots[0].campaigns[0].title = "后续合成内容".into();
+    publisher.draft_save(newer_draft, 1003).unwrap();
+    let newer = publish(&mut publisher, 1004).unwrap();
+    assert!(newer.revision > first.revision);
+
+    let (target_root, mut restored, mut target_vault) = fixture();
+    let (before_wire, before_etag, restore_start) = {
+        let mut state = peer.state.lock().unwrap();
+        assert_eq!(state.objects.remove(&asset_key).unwrap().bytes, asset_bytes);
+        let current = state.objects.get("production/current.json").unwrap();
+        (
+            current.bytes.clone(),
+            current.etag.clone(),
+            state.requests.len(),
+        )
+    };
+    restored
+        .restore_backup(&backup, b"synthetic-backup-password", &mut target_vault)
+        .unwrap();
+    {
+        let state = peer.state.lock().unwrap();
+        assert_eq!(
+            state.requests.len(),
+            restore_start,
+            "restoring must not publish"
+        );
+        assert_eq!(state.objects["production/current.json"].bytes, before_wire);
+    }
+    drop(restored);
+    let mut restored = Publisher::open(
+        &target_root.0.join("publisher"),
+        "ads-personal-v1",
+        None,
+        1005,
+    )
+    .unwrap();
+    assert_eq!(restored.draft_read().slots, original.slots);
+    assert_eq!(
+        restored
+            .remote_settings(&target_vault)
+            .unwrap()
+            .production
+            .unwrap()
+            .bucket,
+        "ads-production"
+    );
+
+    let mut forged: signed::Envelope = serde_json::from_slice(&before_wire).unwrap();
+    forged.payload.push(' ');
+    let forged_wire = serde_json::to_vec(&forged).unwrap();
+    {
+        let mut state = peer.state.lock().unwrap();
+        state
+            .objects
+            .get_mut("production/current.json")
+            .unwrap()
+            .bytes = forged_wire.clone();
+    }
+    let publish_restored = |publisher: &mut Publisher| {
+        publish_with_sdk_for_channel(
+            publisher,
+            &target_root.0,
+            &target_vault,
+            &peer.endpoint,
+            AdChannel::Production,
+            1005,
+        )
+    };
+    assert!(matches!(
+        publish_restored(&mut restored),
+        Err(Error::Invalid("signature"))
+    ));
+    {
+        let mut state = peer.state.lock().unwrap();
+        assert_eq!(state.objects["production/current.json"].bytes, forged_wire);
+        assert!(!state.objects.contains_key(&asset_key));
+        assert!(!state.requests[restore_start..].iter().any(|request| {
+            request.method == "PUT"
+                && (request.key == "production/current.json"
+                    || request.key.starts_with("production/assets/")
+                    || request.key.starts_with("production/versions/"))
+        }));
+        state
+            .objects
+            .get_mut("production/current.json")
+            .unwrap()
+            .bytes = before_wire;
+    }
+    let resume_start = peer.state.lock().unwrap().requests.len();
+    let next = publish_restored(&mut restored).unwrap();
+    assert!(next.revision > newer.revision);
+    assert_ne!(next.release_id, first.release_id);
+    assert_ne!(next.release_id, newer.release_id);
+    let public_key = ed25519_dalek::SigningKey::from_bytes(&[42; 32]).verifying_key();
+    {
+        let state = peer.state.lock().unwrap();
+        let current = &state.objects["production/current.json"].bytes;
+        let (manifest, _) = ads::verify_manifest(
+            current,
+            &public_key,
+            AdChannel::Production,
+            "ads-personal-v1",
+            1005,
+            true,
+        )
+        .unwrap();
+        assert_eq!(manifest.content_revision, next.revision);
+        assert_eq!(manifest.slots, original.slots);
+        assert_eq!(state.objects[&asset_key].bytes, asset_bytes);
+        ads::validate_image(&state.objects[&asset_key].bytes, &asset).unwrap();
+        let version_key = format!("production/versions/{}.json", next.release_id);
+        assert_eq!(state.objects[&version_key].bytes, *current);
+        let requests = &state.requests[resume_start..];
+        let current_read = requests
+            .iter()
+            .position(|r| {
+                r.authenticated && r.method == "GET" && r.key == "production/current.json"
+            })
+            .unwrap();
+        let asset_write = requests
+            .iter()
+            .position(|r| r.authenticated && r.method == "PUT" && r.key == asset_key && r.absent)
+            .unwrap();
+        assert!(current_read < asset_write);
+        assert!(requests.iter().any(|r| r.authenticated
+            && r.method == "PUT"
+            && r.key == "production/current.json"
+            && r.expected.as_deref() == Some(before_etag.as_str())));
+        for key in [
+            "production/current.json",
+            version_key.as_str(),
+            asset_key.as_str(),
+        ] {
+            assert!(
+                requests
+                    .iter()
+                    .any(|r| !r.authenticated && r.method == "GET" && r.key == key)
+            );
+        }
+    }
+    let source = ads::ContentSource::new("https://ads.example.com/").unwrap();
+    let preferences = AdPreferences {
+        slots_enabled: [true, false, false],
+        request_purpose_acknowledged: true,
+    };
+    let mut recipient = ads::AdCache::default();
+    recipient_refresh_for_channel(
+        &peer,
+        &source,
+        &preferences,
+        &mut recipient,
+        &public_key,
+        AdChannel::Production,
+        1005,
+    )
+    .unwrap();
+    assert_eq!(recipient.highest_revision, next.revision);
+    assert_eq!(
+        recipient
+            .current_campaign(AdSlot::ResidentialBroadband, 1005, &preferences, true)
+            .unwrap()
+            .title,
+        original.slots[0].campaigns[0].title
+    );
 }
 
 #[test]

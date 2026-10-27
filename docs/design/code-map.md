@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：正式渠道备份恢复与远程续发
+
+`Publisher::restore_backup → Publisher::open → publish_configured_with → R2Store / AWS SDK → 回环模拟对象存储 → ContentSource / AdCache`。恢复不自动发布；显式续发先验证远程 current，再补传缺失素材、条件写入新版本并匿名回读。接收端验签后采用版本。[测试和边界](../acceptance/evidence/no-account-20261027/r2-backup-resume-20261028.md)。
+
+本次 CodeGraph 状态 complete、pending 0：303 文件、7468 节点、29730 条边。索引统计不代表测试覆盖率。
+
 ## 2026-10-28：SwiftUI 产品入口与工作区提示
 
 产品构建启用 `native-ui`：`SwitcherWorkspaceView → WorkspaceModel / PublisherModel → DesktopBridge → TauriWebViewTransport → WKWebView → Tauri IPC → Rust`。未启用该特性的开发构建仍使用 `App.svelte`。工作区的 `beginAction` 统一清理检查、普通操作、设置保存、记录导出和商家链接核验开始时的旧提示；三项新增回归验证失败与重试。
