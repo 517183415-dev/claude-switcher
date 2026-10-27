@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：广告失败退避时间修复
+
+`AdRuntime::refresh_if_due → refresh_locked → RefreshSchedule::complete_failure`。失败后按结束时钟安排重试；结束时钟不可用时按已用单调时间估算。相关运行时 38 项通过。[证据](../../output/no-account-20261027/ad-scheduled-recovery/README.md)。
+
+CodeGraph complete、pending 0：256 文件、6639 节点、27601 条边。真实休眠和线上传播未验证。
+
 ## 2026-10-27：发布内容与接收端组件联通
 
 `Publisher → R2Store / AWS SDK → 回环模拟存储 → ContentSource → AdCache → 图片校验`。现有集成测试增加接收端路径、两次版本采用、旧版本与签名篡改拒绝。测试用本机 HTTP 重定向模拟源，不运行生产 HTTPS 客户端或后台计时器。[证据](../../output/no-account-20261027/r2-recipient-integration/README.md)。

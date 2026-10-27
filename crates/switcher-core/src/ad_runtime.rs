@@ -618,6 +618,7 @@ impl AdRuntime {
         self.save(&state, &clock)?;
         let pins = self.pins.as_ref().ok_or("wait_ad_content_materials")?;
         let supplied_clock = supplied.is_some();
+        let started = std::time::Instant::now();
         let result = (|| -> Result<ClockSample> {
             let mut owned;
             let mut local_fetcher = local::LocalFetcher {
@@ -731,7 +732,25 @@ impl AdRuntime {
         let reason = match result {
             Ok(_) => "ad_refreshed",
             Err(reason) => {
-                state.schedule.complete_failure(now)?;
+                // Backoff starts when the attempt ends, not when a potentially
+                // slow network request began. Synthetic fetchers supply their
+                // own fixed sample; production samples the clock again.
+                let finished = if supplied_clock {
+                    Some(sample.clone())
+                } else {
+                    (self.sample_clock)().ok()
+                };
+                let failed_at = finished
+                    .and_then(|finished| {
+                        clock.observe(finished.clone());
+                        utc(&finished).ok()
+                    })
+                    .unwrap_or_else(|| {
+                        let elapsed = started.elapsed();
+                        now.saturating_add(elapsed.as_secs())
+                            .saturating_add(u64::from(elapsed.subsec_nanos() != 0))
+                    });
+                state.schedule.complete_failure(failed_at)?;
                 self.save(&state, &clock)?;
                 return Err(reason);
             }

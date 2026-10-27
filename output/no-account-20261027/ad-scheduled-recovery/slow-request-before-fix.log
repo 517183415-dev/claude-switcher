@@ -1,0 +1,34 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.73s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 1 test
+test ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time ... FAILED
+
+failures:
+
+---- ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time stdout ----
+
+thread 'ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time' (34851848) panicked at crates/switcher-core/src/ad_runtime/tests.rs:1061:5:
+assertion `left == right` failed
+  left: Some(1060)
+ right: Some(1180)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 454 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `-p switcher-core --lib`

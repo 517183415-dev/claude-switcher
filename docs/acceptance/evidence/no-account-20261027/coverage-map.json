@@ -8024,6 +8024,12 @@
         "sha256": "04aa44b445aad25625e4602d67095fed1aa503dd0ecde3eb481394df62efc727",
         "status": "LOCAL_SDK_TO_CLIENT_COMPONENTS_NOT_LIVE_PROPAGATION",
         "scope": "Two signed preview revisions and assets over loopback mock; client cache rejects stale or tampered content. Production HTTPS, timer and real source not tested."
+      },
+      "backoff_regression_evidence": {
+        "path": "output/no-account-20261027/ad-scheduled-recovery/README.md",
+        "sha256": "4871f1c82c0761b7f1c7ed5ff54a165369f2ad18f0fdd135e74dcf8674d9291b",
+        "status": "LOCAL_CONTROLLED_CLOCK_NOT_LIVE_PROPAGATION",
+        "scope": "Slow failed request, unavailable final clock, retry boundaries, state reload and recovery. Real sleep, remote service and propagation remain untested."
       }
     },
     {

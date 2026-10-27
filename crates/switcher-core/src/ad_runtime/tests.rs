@@ -963,6 +963,145 @@ fn scheduled_refresh_fetches_new_signed_content_and_survives_restart() {
 }
 
 #[test]
+fn scheduled_failures_back_off_across_restarts_until_verified_recovery() {
+    let root = Root::new();
+    let runtime = configured_runtime(&root);
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&runtime, &manifest(7));
+    assert!(refresh(&runtime, &mut fetcher, 1000).unwrap().refreshed);
+    let manifest_url = runtime
+        .pins
+        .as_ref()
+        .unwrap()
+        .source
+        .manifest_request(&prefs(), AdChannel::Production)
+        .unwrap();
+    fetcher.objects.remove(manifest_url.as_str());
+
+    let mut due = 1917;
+    for (index, delay) in [60, 300, 900, 1800, 3600, 3600].into_iter().enumerate() {
+        let restarted = configured_runtime(&root);
+        let _lock = restarted.lock().unwrap();
+        let before = fetcher.requests.len();
+        assert_eq!(
+            restarted
+                .refresh_locked(&prefs(), false, sample(due), Some(&mut fetcher), Some(0))
+                .unwrap_err(),
+            "synthetic_missing"
+        );
+        assert_eq!(fetcher.requests.len(), before + 1);
+        let (state, clock) = restarted.load(&sample(due)).unwrap();
+        assert_eq!(state.schedule.failures, (index + 1) as u8);
+        assert_eq!(state.schedule.next_check_at, Some((due + delay) as u64));
+        assert_eq!(state.cache.highest_revision, 7);
+        assert_eq!(state.cache.last_success, Some(1000));
+        assert_eq!(clock.last_success_utc, Some(1000));
+        assert!(
+            restarted
+                .visible(&state, &clock, &prefs(), due as u64)
+                .is_some()
+        );
+
+        let early = restarted
+            .refresh_locked(
+                &prefs(),
+                false,
+                sample(due + delay - 1),
+                Some(&mut fetcher),
+                Some(0),
+            )
+            .unwrap();
+        assert!(!early.refreshed);
+        assert_eq!(early.reason, "ad_refresh_not_due_or_merged");
+        assert_eq!(fetcher.requests.len(), before + 1);
+        due += delay;
+    }
+
+    let restarted = configured_runtime(&root);
+    fetcher.set(&restarted, &manifest(8));
+    let _lock = restarted.lock().unwrap();
+    let result = restarted
+        .refresh_locked(&prefs(), false, sample(due), Some(&mut fetcher), Some(60))
+        .unwrap();
+    assert!(result.refreshed);
+    assert_eq!(result.next_check_at, Some((due + 960) as u64));
+    let (state, clock) = restarted.load(&sample(due)).unwrap();
+    assert_eq!(state.schedule.failures, 0);
+    assert_eq!(state.cache.highest_revision, 8);
+    assert_eq!(state.cache.last_success, Some(due as u64));
+    assert_eq!(clock.last_success_utc, Some(due));
+}
+
+fn rejected_tls_peer(delay: Duration) -> (Url, std::thread::JoinHandle<()>) {
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = std::thread::spawn(move || {
+        let (connection, _) = listener.accept().unwrap();
+        std::thread::sleep(delay);
+        drop(connection);
+    });
+    (
+        Url::parse(&format!("https://{address}/content/")).unwrap(),
+        server,
+    )
+}
+
+#[test]
+fn failed_slow_request_schedules_backoff_from_failure_time() {
+    static CLOCK_READS: AtomicU64 = AtomicU64::new(0);
+    fn elapsed_clock() -> Result<ClockSample> {
+        let call = CLOCK_READS.fetch_add(1, Ordering::SeqCst);
+        Ok(sample(if call == 0 { 1000 } else { 1120 }))
+    }
+
+    CLOCK_READS.store(0, Ordering::SeqCst);
+    let (source, server) = rejected_tls_peer(Duration::ZERO);
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    runtime.sample_clock = elapsed_clock;
+    runtime.pins.as_mut().unwrap().source = ContentSource::fixture(source);
+
+    assert_eq!(
+        runtime.refresh_if_due(&prefs(), false).unwrap_err(),
+        "ad_network"
+    );
+    server.join().unwrap();
+    let (state, clock) = runtime.load(&sample(1120)).unwrap();
+    assert_eq!(state.schedule.failures, 1);
+    assert_eq!(state.schedule.next_check_at, Some(1180));
+    assert_eq!(clock.last_success_utc, None);
+}
+
+#[test]
+fn failed_request_uses_elapsed_time_when_final_clock_is_unavailable() {
+    static CLOCK_READS: AtomicU64 = AtomicU64::new(0);
+    fn unavailable_final_clock() -> Result<ClockSample> {
+        if CLOCK_READS.fetch_add(1, Ordering::SeqCst) == 0 {
+            Ok(sample(1000))
+        } else {
+            Err("synthetic_clock_unavailable")
+        }
+    }
+
+    CLOCK_READS.store(0, Ordering::SeqCst);
+    let (source, server) = rejected_tls_peer(Duration::from_millis(1100));
+    let root = Root::new();
+    let mut runtime = configured_runtime(&root);
+    runtime.sample_clock = unavailable_final_clock;
+    runtime.pins.as_mut().unwrap().source = ContentSource::fixture(source);
+
+    assert_eq!(
+        runtime.refresh_if_due(&prefs(), false).unwrap_err(),
+        "ad_network"
+    );
+    server.join().unwrap();
+    let (state, clock) = runtime.load(&sample(1002)).unwrap();
+    assert_eq!(state.schedule.failures, 1);
+    assert!(state.schedule.next_check_at.unwrap() >= 1061);
+    assert_eq!(clock.last_success_utc, None);
+}
+
+#[test]
 fn restarted_runtime_rejects_different_signed_content_with_same_revision() {
     let root = Root::new();
     let runtime = configured_runtime(&root);

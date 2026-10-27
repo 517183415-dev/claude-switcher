@@ -1,0 +1,56 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.79s
+     Running unittests src/lib.rs (target/debug/deps/switcher_core-09a5f1146e08a226)
+
+running 38 tests
+test ad_runtime::tests::clock_jump_hides_content_and_baseline_needs_signed_refresh ... ok
+test ad_runtime::tests::configured_pins_with_all_slots_off_make_zero_requests ... ok
+test ad_runtime::tests::controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases ... ok
+test ad_runtime::tests::controlled_https_capture_detects_sensitive_query_headers_and_body_positive_control ... ok
+test ad_runtime::tests::controlled_https_capture_rejects_request_body_over_4096_bytes ... ok
+test ad_runtime::tests::controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents ... ok
+test ad_runtime::tests::different_release_source_does_not_inherit_old_refresh_deadline ... ok
+test ad_runtime::tests::different_release_source_does_not_inherit_old_revision ... ok
+test ad_runtime::tests::disabled_cached_ads_stay_request_free_after_due_expiry_and_restart ... ok
+test ad_runtime::tests::every_trust_identity_component_has_a_separate_state_and_restores_on_return ... ok
+test ad_runtime::tests::failed_asset_keeps_authenticated_watermark_and_hides_old_content ... ok
+test ad_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints ... ok
+test ad_runtime::tests::failed_request_uses_elapsed_time_when_final_clock_is_unavailable ... ok
+test ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time ... ok
+test ad_runtime::tests::formal_public_build_rejects_r2_development_domains ... ok
+test ad_runtime::tests::legacy_cache_cannot_authenticate_a_higher_failed_asset_watermark ... ok
+test ad_runtime::tests::legacy_cache_signed_by_old_local_key_is_not_attributed_to_new_key ... ok
+test ad_runtime::tests::legacy_local_cache_is_verified_before_migration_and_original_is_preserved ... ok
+test ad_runtime::tests::legacy_local_floor_survives_key_rotation_and_failed_asset_refresh ... ok
+test ad_runtime::tests::local_high_revision_does_not_delay_or_block_first_release_refresh ... ok
+test ad_runtime::tests::local_trust_errors_are_explicit_and_public_open_never_creates_publication ... ok
+test ad_runtime::tests::malformed_state_is_not_reset_and_offline_content_expires ... ok
+test ad_runtime::tests::missing_pins_and_all_off_make_zero_requests ... ok
+test ad_runtime::tests::passive_disabled_and_missing_materials_preserve_initialized_clock ... ok
+test ad_runtime::tests::passive_no_work_refresh_preserves_clock_and_authenticated_history ... ok
+test ad_runtime::tests::passive_snapshots_and_images_preserve_initialized_files_both_editions ... ok
+test ad_runtime::tests::real_loopback_https_rejects_non_tls_peer_without_downgrade ... ok
+test ad_runtime::tests::release_and_local_trust_selection_respects_edition_and_invalid_configuration ... ok
+test ad_runtime::tests::release_materials_require_complete_valid_fixed_configuration ... ok
+test ad_runtime::tests::restarted_runtime_rejects_different_signed_content_with_same_revision ... ok
+test ad_runtime::tests::scheduled_failures_back_off_across_restarts_until_verified_recovery ... ok
+test ad_runtime::tests::scheduled_refresh_fetches_new_signed_content_and_survives_restart ... ok
+test ad_runtime::tests::source_key_and_channel_changes_restore_their_own_verified_watermarks ... ok
+test ad_runtime::tests::stale_confirmation_and_slot_disabled_never_open_cached_target ... ok
+test ad_runtime::tests::successful_refresh_persists_deadline_filters_slots_and_confirms_clicks ... ok
+test ad_runtime::tests::transport_bounds_body_rejects_redirect_and_sends_no_identity ... ok
+test ad_runtime::tests::unacknowledged_enabled_slots_never_request_content ... ok
+test ad_runtime::tests::unverified_legacy_local_watermark_is_preserved_and_rejected ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 418 filtered out; finished in 8.37s
+
