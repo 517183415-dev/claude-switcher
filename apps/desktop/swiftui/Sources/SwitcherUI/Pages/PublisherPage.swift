@@ -225,8 +225,12 @@ struct PublisherPage: View {
                 }.disabled(!model.canEdit || passphrase.count < 12)
                 Button("打开备份目录") { Task { await model.outcomeAction(.openPublisherBackupFolder, label: "正在打开备份目录…") } }.disabled(!model.canEdit)
                 Button("恢复加密备份") {
-                    let secret = passphrase; passphrase = ""
-                    do { if let data = try PublisherFilePicker.read(limit: 67_108_864) { Task { await model.restoreBackup(data, passphrase: secret) } } }
+                    let publisher = model
+                    do {
+                        try PublisherFilePicker.withArchive(passphrase: &passphrase) { data, secret in
+                            Task { await publisher.restoreBackup(data, passphrase: secret) }
+                        }
+                    }
                     catch { model.reportFileError("备份读取失败或超过 64 MiB。") }
                 }.disabled(!model.canEdit || model.dirty || passphrase.count < 12)
             }

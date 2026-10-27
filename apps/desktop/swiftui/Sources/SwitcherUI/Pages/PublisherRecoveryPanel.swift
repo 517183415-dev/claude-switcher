@@ -29,8 +29,12 @@ struct PublisherRecoveryPanel: View {
                         Task { await model.prepareRecovery(passphrase: secret) }
                     }.disabled(!model.canEdit || model.dirty || passphrase.count < 12)
                     Button("导入完整归档到保留目录") {
-                        let secret = passphrase; passphrase = ""
-                        do { if let data = try PublisherFilePicker.read(limit: 67_108_864) { Task { await model.importArchive(data, passphrase: secret) } } }
+                        let publisher = model
+                        do {
+                            try PublisherFilePicker.withArchive(passphrase: &passphrase) { data, secret in
+                                Task { await publisher.importArchive(data, passphrase: secret) }
+                            }
+                        }
                         catch { model.reportFileError("归档读取失败或超过 64 MiB。") }
                     }.disabled(!model.canEdit || model.dirty || passphrase.count < 12)
                     Button("读取保留资料") { Task { await model.readRetained() } }.disabled(!model.canEdit)

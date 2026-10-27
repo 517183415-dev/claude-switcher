@@ -23,3 +23,48 @@ func publisherFileReaderAcceptsOnlyBoundedRegularFiles() throws {
     #expect(mkfifo(fifo.path, 0o600) == 0)
     #expect(throws: CocoaError.self) { try PublisherFilePicker.readFile(at: fifo, limit: 3) }
 }
+
+@Test
+func publisherArchiveSelectionKeepsPassphraseOnCancel() throws {
+    var passphrase = "synthetic passphrase"
+    var submitted = false
+    try PublisherFilePicker.withArchive(passphrase: &passphrase, select: { nil }) { _, _ in submitted = true }
+    #expect(passphrase == "synthetic passphrase")
+    #expect(!submitted)
+}
+
+@Test
+func publisherArchiveSelectionKeepsPassphraseOnReadError() {
+    var passphrase = "synthetic passphrase"
+    var submitted = false
+    #expect(throws: CocoaError.self) {
+        try PublisherFilePicker.withArchive(passphrase: &passphrase, select: { throw CocoaError(.fileReadNoPermission) }) { _, _ in submitted = true }
+    }
+    #expect(passphrase == "synthetic passphrase")
+    #expect(!submitted)
+}
+
+@Test
+func publisherArchiveSelectionRejectsEmptyFile() {
+    var passphrase = "synthetic passphrase"
+    var submitted = false
+    #expect(throws: CocoaError.self) {
+        try PublisherFilePicker.withArchive(passphrase: &passphrase, select: { Data() }) { _, _ in submitted = true }
+    }
+    #expect(passphrase == "synthetic passphrase")
+    #expect(!submitted)
+}
+
+@Test
+func publisherArchiveSelectionClearsPassphraseBeforeSubmission() throws {
+    var passphrase = "synthetic passphrase"
+    var submittedData: Data?
+    var submittedPassphrase: String?
+    try PublisherFilePicker.withArchive(passphrase: &passphrase, select: { Data([1, 2, 3]) }) { data, secret in
+        submittedData = data
+        submittedPassphrase = secret
+    }
+    #expect(passphrase.isEmpty)
+    #expect(submittedData == Data([1, 2, 3]))
+    #expect(submittedPassphrase == "synthetic passphrase")
+}

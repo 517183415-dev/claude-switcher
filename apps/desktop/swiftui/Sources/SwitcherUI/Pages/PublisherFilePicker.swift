@@ -4,6 +4,18 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum PublisherFilePicker {
+    static func withArchive(
+        passphrase: inout String,
+        select: () throws -> Data? = { try read(limit: 67_108_864) },
+        use: (Data, String) -> Void
+    ) throws {
+        guard let data = try select() else { return }
+        guard !data.isEmpty else { throw CocoaError(.fileReadCorruptFile) }
+        let secret = passphrase
+        passphrase = ""
+        use(data, secret)
+    }
+
     /// Read in bounded chunks so a file that grows after selection cannot bypass the limit.
     static func read(limit: Int, image: Bool = false) throws -> Data? {
         let panel = NSOpenPanel()

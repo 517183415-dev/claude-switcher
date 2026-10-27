@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：归档选择与口令交接
+
+`PublisherRecoveryPanel / PublisherPage → PublisherFilePicker.withArchive → read → readFile → PublisherModel.importArchive / restoreBackup`。两个入口复用同一交接：取消或读取失败保留当前输入；非空文件读取成功后清空输入并提交。`readFile` 继续限制文件类型、链接和大小。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-archive-picker-20261028.md)。
+
+本次 CodeGraph 状态 complete、pending 0：306 文件、7533 节点、30020 条边。索引统计不代表测试覆盖率。
+
 ## 2026-10-28：远程发布请求隐私
 
 `Publisher::publish_configured_with → R2Store / AWS S3 SDK → LocalS3`；同一模拟服务记录请求路径、请求头与请求体。接收侧经 `ContentSource → AdCache` 验签和读取素材。测试先验证捕获器能观察查询参数、请求头和正文，再检查合成账号、代理和私钥标记。[测试与边界](../acceptance/evidence/no-account-20261027/r2-publication-privacy-wire-20261028.md)。
