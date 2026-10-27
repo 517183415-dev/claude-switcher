@@ -1,0 +1,8 @@
+{
+  "prior_commit": "33eeddf8",
+  "prior_prefix_sha256": "02fdb64551a498fa6799ee5e07365639509caa38bc6afe22e077d03999319ed5",
+  "current_prefix_sha256": "343aa93ef12f0f076f856ef28c09d197be092eadcb9f08842409de1ff2ad65c4",
+  "comparison": "only whitespace changed by rustfmt edition 2024; all non-whitespace characters equal",
+  "prior_receipt": "output/no-account-20261027/native-keychain/opt-in-guard.json",
+  "scope": "opt-in and fresh private-root checks unchanged; prior refusal not re-run"
+}

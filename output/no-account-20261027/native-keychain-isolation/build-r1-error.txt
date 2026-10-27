@@ -1,0 +1,9 @@
+error: extern blocks must be unsafe
+  --> apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs:15:1
+   |
+15 | / extern "C" {
+16 | |     fn SecKeychainCopySearchList(list: *mut CFArrayRef) -> i32;
+17 | |     fn SecKeychainDelete(keychain: CFTypeRef) -> i32;
+18 | | }
+   | |_^
+

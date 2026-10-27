@@ -48,14 +48,42 @@ pub trait Vault {
     }
 }
 
-pub struct KeychainVault;
+#[derive(Clone, Default)]
+pub struct KeychainVault {
+    #[cfg(target_os = "macos")]
+    keychain: Option<security_framework::os::macos::keychain::SecKeychain>,
+}
+
+#[cfg(target_os = "macos")]
+const KEYCHAIN_SERVICE: &str = "com.claude-switcher.personal.publisher";
+
+impl KeychainVault {
+    /// Explicit location is available only to native tests, never to product IPC.
+    #[cfg(all(test, target_os = "macos"))]
+    fn isolated(keychain: security_framework::os::macos::keychain::SecKeychain) -> Self {
+        Self {
+            keychain: Some(keychain),
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode(secrets: &Secrets) -> Result<zeroize::Zeroizing<Vec<u8>>> {
+        let bytes = zeroize::Zeroizing::new(
+            serde_json::to_vec(secrets).map_err(|_| Error::Invalid("secret_encoding"))?,
+        );
+        if bytes.len() > SECRET_LIMIT {
+            return Err(Error::Invalid("secret_size"));
+        }
+        Ok(bytes)
+    }
+}
 
 /// Personal application boundary. A poisoned secret store fails closed.
 pub(crate) struct ManagedVault(std::sync::Mutex<Box<dyn Vault + Send>>);
 
 impl Default for ManagedVault {
     fn default() -> Self {
-        Self(std::sync::Mutex::new(Box::new(KeychainVault)))
+        Self(std::sync::Mutex::new(Box::new(KeychainVault::default())))
     }
 }
 
@@ -78,18 +106,18 @@ impl Vault for KeychainVault {
         {
             use core_foundation::data::CFData;
             use security_framework::item::{ItemAddOptions, ItemAddValue, ItemClass};
-            let bytes = zeroize::Zeroizing::new(
-                serde_json::to_vec(secrets).map_err(|_| Error::Invalid("secret_encoding"))?,
-            );
-            if bytes.len() > SECRET_LIMIT {
-                return Err(Error::Invalid("secret_size"));
-            }
+            let bytes = Self::encode(secrets)?;
             let mut item = ItemAddOptions::new(ItemAddValue::Data {
                 class: ItemClass::generic_password(),
                 data: CFData::from_buffer(&bytes),
             });
-            item.set_service("com.claude-switcher.personal.publisher")
+            item.set_service(KEYCHAIN_SERVICE)
                 .set_account_name(generation);
+            if let Some(keychain) = &self.keychain {
+                item.set_location(security_framework::item::Location::FileKeychain(
+                    keychain.clone(),
+                ));
+            }
             item.add().map_err(|_| Error::SecretUnavailable)
         }
         #[cfg(not(target_os = "macos"))]
@@ -110,10 +138,17 @@ impl Vault for KeychainVault {
             // Security.framework's errSecItemNotFound. Other Keychain errors
             // (including access denial) must never be treated as absence.
             const KEYCHAIN_ITEM_NOT_FOUND: i32 = -25300;
-            let bytes = match security_framework::passwords::get_generic_password(
-                "com.claude-switcher.personal.publisher",
-                generation,
-            ) {
+            let found = if let Some(keychain) = &self.keychain {
+                security_framework::os::macos::passwords::find_generic_password(
+                    Some(std::slice::from_ref(keychain)),
+                    KEYCHAIN_SERVICE,
+                    generation,
+                )
+                .map(|(bytes, _)| bytes.to_vec())
+            } else {
+                security_framework::passwords::get_generic_password(KEYCHAIN_SERVICE, generation)
+            };
+            let bytes = match found {
                 Ok(bytes) => zeroize::Zeroizing::new(bytes),
                 Err(error) if error.code() == KEYCHAIN_ITEM_NOT_FOUND => return Ok(None),
                 Err(_) => return Err(Error::SecretUnavailable),
@@ -134,17 +169,16 @@ impl Vault for KeychainVault {
         secrets.validate()?;
         #[cfg(target_os = "macos")]
         {
-            let bytes = zeroize::Zeroizing::new(
-                serde_json::to_vec(secrets).map_err(|_| Error::Invalid("secret_encoding"))?,
-            );
-            if bytes.len() > SECRET_LIMIT {
-                return Err(Error::Invalid("secret_size"));
+            let bytes = Self::encode(secrets)?;
+            if let Some(keychain) = &self.keychain {
+                keychain.set_generic_password(KEYCHAIN_SERVICE, generation, &bytes)
+            } else {
+                security_framework::passwords::set_generic_password(
+                    KEYCHAIN_SERVICE,
+                    generation,
+                    &bytes,
+                )
             }
-            security_framework::passwords::set_generic_password(
-                "com.claude-switcher.personal.publisher",
-                generation,
-                &bytes,
-            )
             .map_err(|_| Error::SecretUnavailable)
         }
         #[cfg(not(target_os = "macos"))]

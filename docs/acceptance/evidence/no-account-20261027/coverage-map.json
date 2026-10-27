@@ -8188,7 +8188,7 @@
           "requirement_checklist": "N：真实WebView备份边界、原生两次确认和重启；E受控/实源：认证回读、补传、下一序号；专用测试密钥存储，不读用户Keychain"
         }
       ],
-      "next_review": "生产备份导出/恢复和归档成功路径已补 MockRuntime/MemoryVault 证据。继续按独立证据核对原生 Keychain/WebView、系统进程重启、R2 传播、两次确认和完整清理分支，不重复有效检查。",
+      "next_review": "独立 Keychain 的原生并发/恢复/同进程重开已补。继续核对 OS 进程重启、默认库权限、原生 WebView 成功业务、R2 传播、两次确认和完整清理分支；不重复有效检查。",
       "ordinary_recovery_rejection_evidence": {
         "path": "output/no-account-20261027/recovery-dispatch/receipt.json",
         "status": "MOCK_PRODUCT_RECOVERY_REJECTION_VERIFIED_NOT_NATIVE_OR_SUCCESSFUL_RESTORE",
@@ -8211,6 +8211,17 @@
         "positive_assertions": "NOT_REACHED",
         "default_keychain_osstatus": -25307,
         "created_owned_items": 0,
+        "whole_requirement_complete": false
+      },
+      "native_scoped_keychain_evidence": {
+        "status": "PASS_SCOPED_NATIVE_PRIVATE_KEYCHAIN_NOT_DEFAULT_KEYCHAIN_ACCEPTANCE",
+        "path": "output/no-account-20261027/native-keychain-isolation/receipt.json",
+        "native_test_names": 1,
+        "private_keychains_removed": true,
+        "preferences_unchanged_in_restricted_process": true,
+        "same_process_reopen": true,
+        "os_process_restart": "NOT_RUN",
+        "default_keychain_access_permission": "NOT_PROVEN",
         "whole_requirement_complete": false
       }
     },

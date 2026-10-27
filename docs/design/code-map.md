@@ -1,5 +1,13 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：独立 Keychain 内原生恢复通过
+
+`ManagedVault::default → KeychainVault::default` 保留默认库选择。KeychainVault 仅在测试构造器中接受私有 Keychain，前端无选择入口。创建仍走同一 SecItemAdd，服务名和编码函数集中复用；私有库读写用 SDK 显式限定位置，默认库 SDK 路径保持原样。
+
+`native_keychain_tests → 私有库 A/B → KeychainVault → Publisher` 已通过一个原生测试：跨库同名条目隔离、重复创建保护、真实双线程竞争、无效资料拒绝、备份/错误口令/恢复/旧代次与旧密钥保留、同进程重开。清理后条目清单为空、两个私有库已删除；受限进程前后偏好快照相同。Personal 236 项通过、原生用例默认忽略 1 项；Personal 全目标 Clippy、Public 全目标编译及两文件格式通过。CodeGraph complete、pending 0：242 文件、6415 节点、26991 条边。[证据](../../output/no-account-20261027/native-keychain-isolation/README.md)。
+
+前阶段默认库 -25307 的失败证据保留。此处通过的是明确指定的独立库，不升级默认库权限、OS 进程重启、成功 WebView、实源或 AD-10 整项。
+
 ## 2026-10-27：原生 Keychain 验证入口与阻断证据
 
 `security.rs → cfg(test, macOS) native_keychain_tests → OwnedVault → 正式 KeychainVault / Publisher`。测试默认忽略，必须显式启用并使用全新合成目录。OwnedVault 只允许更新本次成功创建的随机条目；竞争线程在所有权锁之外调用正式创建接口。正常与 panic 路径清理精确条目，并回查缺失。

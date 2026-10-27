@@ -1,0 +1,57 @@
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:3:1: warning: 'SecKeychainSetUserInteractionAllowed' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 1 | import Foundation
+ 2 | import Security
+ 3 | SecKeychainSetUserInteractionAllowed(false)
+   | `- warning: 'SecKeychainSetUserInteractionAllowed' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 4 | var beforeDefault: SecKeychain?
+ 5 | let beforeDefaultStatus = SecKeychainCopyDefault(&beforeDefault)
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:5:27: warning: 'SecKeychainCopyDefault' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 3 | SecKeychainSetUserInteractionAllowed(false)
+ 4 | var beforeDefault: SecKeychain?
+ 5 | let beforeDefaultStatus = SecKeychainCopyDefault(&beforeDefault)
+   |                           `- warning: 'SecKeychainCopyDefault' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 6 | var beforeList: CFArray?
+ 7 | let beforeListStatus = SecKeychainCopySearchList(&beforeList)
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:7:24: warning: 'SecKeychainCopySearchList' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 5 | let beforeDefaultStatus = SecKeychainCopyDefault(&beforeDefault)
+ 6 | var beforeList: CFArray?
+ 7 | let beforeListStatus = SecKeychainCopySearchList(&beforeList)
+   |                        `- warning: 'SecKeychainCopySearchList' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 8 | var keychain: SecKeychain?
+ 9 | let password = Array("synthetic-private-keychain-password".utf8)
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:12:32: warning: 'SecKeychainCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+10 | let path = CommandLine.arguments[1]
+11 | let created = password.withUnsafeBytes { bytes in
+12 |     path.withCString { name in SecKeychainCreate(name, UInt32(bytes.count), bytes.baseAddress, false, nil, &keychain) }
+   |                                `- warning: 'SecKeychainCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+13 | }
+14 | var add: OSStatus = -1
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:26:15: warning: 'SecKeychainDelete' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+24 |     read = SecItemCopyMatching(query as CFDictionary, &value)
+25 |     matched = (value as? Data) == secret
+26 |     removed = SecKeychainDelete(keychain)
+   |               `- warning: 'SecKeychainDelete' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+27 | }
+28 | var afterDefault: SecKeychain?
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:29:26: warning: 'SecKeychainCopyDefault' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+27 | }
+28 | var afterDefault: SecKeychain?
+29 | let afterDefaultStatus = SecKeychainCopyDefault(&afterDefault)
+   |                          `- warning: 'SecKeychainCopyDefault' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+30 | var afterList: CFArray?
+31 | let afterListStatus = SecKeychainCopySearchList(&afterList)
+
+output/no-account-20261027/native-keychain-isolation/private-probe.swift:31:23: warning: 'SecKeychainCopySearchList' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+29 | let afterDefaultStatus = SecKeychainCopyDefault(&afterDefault)
+30 | var afterList: CFArray?
+31 | let afterListStatus = SecKeychainCopySearchList(&afterList)
+   |                       `- warning: 'SecKeychainCopySearchList' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+32 | let defaultSame = beforeDefaultStatus == afterDefaultStatus && (beforeDefault == nil ? afterDefault == nil : afterDefault != nil && CFEqual(beforeDefault, afterDefault))
+33 | let listSame = beforeListStatus == afterListStatus && (beforeList == nil ? afterList == nil : afterList != nil && CFEqual(beforeList, afterList))
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>

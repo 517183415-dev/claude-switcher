@@ -1,0 +1,54 @@
+{
+  "status": "PASS_SCOPED_NATIVE_PRIVATE_KEYCHAIN_NOT_DEFAULT_KEYCHAIN_ACCEPTANCE",
+  "source_parent": "33eeddf8451fd42744ac1a6088361b5a5abd8de5",
+  "source_sha256": {
+    "apps/desktop/src-tauri/src/publisher/security.rs": "cc5a23b36e11a7f922298a8052682cb21194a2d63f50bfac0e570a48b68a8b45",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs": "63745f8d05e0a77a88aed571f91a5260341386cf956a98d9fe67df3e139b3233",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "apps/desktop/src-tauri/Cargo.toml": "ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1"
+  },
+  "validation_inputs_unchanged": true,
+  "native": {
+    "test_names": 1,
+    "passed": 1,
+    "exercise": {
+      "exercise_passed": true,
+      "owned_items_removed": true,
+      "preferences_unchanged": true,
+      "private_keychains_removed": true,
+      "scope": "native KeychainVault with explicit private keychains plus direct Publisher; same-process reopen only"
+    },
+    "scenarios": [
+      "cross-keychain same-name isolation",
+      "exclusive create preserves existing item",
+      "true two-thread SecItemAdd contention has one winner",
+      "invalid secret shapes preserve existing item",
+      "encrypted export and wrong-password refusal preserve active and old state",
+      "restore creates new generation and preserves old keys and state",
+      "same-process reopen reads restored generation and key",
+      "owned item cleanup and private-keychain deletion",
+      "preference snapshots unchanged"
+    ]
+  },
+  "final_validation": {
+    "personal_binary_passed": 236,
+    "personal_native_test_default_ignored": 1,
+    "personal_all_target_clippy": "PASS_WITH_3_EXISTING_MIGRATION_WARNINGS",
+    "public_all_target_compile": "PASS",
+    "rustfmt_changed_files": 2,
+    "opt_in_guard": "prior refusal reused after whitespace-only prefix comparison"
+  },
+  "not_proven": [
+    "user-default Keychain access permission",
+    "OS process restart",
+    "successful native WebView business",
+    "real R2/CDN propagation",
+    "whole AD-10 and complete branch coverage"
+  ],
+  "actions_paused": [
+    "registration",
+    "deployment",
+    "payment"
+  ]
+}

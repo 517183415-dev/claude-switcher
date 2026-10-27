@@ -1,0 +1,15 @@
+{
+  "SecKeychain.cpp": {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/main/OSX/libsecurity_keychain/lib/SecKeychain.cpp",
+    "download_sha256": "dabca3273002e61693d831879f0c5f9929fa7b3e9ed3f5c3f24b9b82631e9c79"
+  },
+  "StorageManager.cpp": {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/main/OSX/libsecurity_keychain/lib/StorageManager.cpp",
+    "download_sha256": "5152c7d7931d4b41cccaee2d27f496a3164c1c3c64d4dc5241ad344bfe77239f"
+  },
+  "local_sdk": {
+    "security_framework": "3.7.0",
+    "core_foundation": "0.10.1",
+    "new_dependencies": false
+  }
+}

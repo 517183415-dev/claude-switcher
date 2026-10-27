@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-keychain/native.sb",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-keychain-isolation/private-probe",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-keychain-isolation/probe-private.keychain"
+  ],
+  "exit": 0
+}
