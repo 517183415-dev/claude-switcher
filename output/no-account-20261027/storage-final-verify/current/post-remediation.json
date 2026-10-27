@@ -1,0 +1,106 @@
+{
+  "head": "7e40fb8edefd1d538bc2fdb80bbb06cd8b49907f",
+  "source_sha256": {
+    "apps/desktop/src-tauri/src/publisher/migration.rs": "0ca128c5dee8356cb8925064505dbb409e15dfec16fd362fbf30e0bff5962e4e",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "0e41f5dd0fae84b917d0b5bd8b964597b8b46de8255c4fec8b4e11972eb7e854"
+  },
+  "checks": [
+    {
+      "name": "retained-after",
+      "argv": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--bin",
+        "switcher-desktop",
+        "publisher::cleanup_tests::migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 5.19938933395315,
+      "log_sha256": "bb6d11a3604407742bfa172436864523f2bfdd2622dad006c20d3f0eb9befed5",
+      "sources_unchanged": true
+    },
+    {
+      "name": "fmt-after",
+      "argv": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.40777216700371355,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sources_unchanged": true
+    },
+    {
+      "name": "clippy-after",
+      "argv": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 3.5996165830874816,
+      "log_sha256": "4b73425932a28abbeb907361d217999fcf5e2e34a40b4ce029ae03e0e5e09edf",
+      "sources_unchanged": true
+    },
+    {
+      "name": "ipc-clippy-after-personal",
+      "argv": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "personal,ipc-business,custom-protocol",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 9.534616042044945,
+      "log_sha256": "5d349a9c00a6aae4f9c125362a46ceff3e29077e816a435bfb90bbf78e9763dc",
+      "sources_unchanged": true
+    },
+    {
+      "name": "ipc-clippy-after-public",
+      "argv": [
+        "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "switcher-desktop",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "public,ipc-business,custom-protocol",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 8.027997500030324,
+      "log_sha256": "5692d9019db2be3892848d21f285d99d063d9370ee82e2b4a53842bb3af32338",
+      "sources_unchanged": true
+    }
+  ]
+}

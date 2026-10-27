@@ -1,0 +1,32 @@
+{
+  "source_head": "7e40fb8edefd1d538bc2fdb80bbb06cd8b49907f",
+  "expected": 24,
+  "passed_names": [
+    "network::tests::authentication_and_access_do_not_assert_account_usability",
+    "explicit_environment_and_private_file_need_no_curl_or_helpers_and_never_grant_launch",
+    "invalid_arguments_and_config_do_not_echo_paths_or_secrets",
+    "network::tests::explicit_proxy_authentication_tls_and_timeout_are_distinct",
+    "status_is_readonly_reports_login_unknown_and_rejects_arguments",
+    "diagnostics::tests::explicit_proxy_validation_and_socks_dns_are_private",
+    "diagnostics::tests::dead_proxy_does_not_fallback_or_modify_state",
+    "diagnostics::tests::redaction_is_shared_and_idempotent",
+    "network::tests::socks_ipv6_uses_remote_domain_dns_without_http_connect_and_classifies_authentication",
+    "checks::tests::stun_without_valid_responses_is_unknown_with_or_without_https_egress",
+    "checks::tests::stun_partial_response_matches_egress_but_mismatch_blocks",
+    "network::tests::geo_ip_sb_fallback_and_failure_are_distinct",
+    "geo_production_lookup_reaches_third_ip_sb_source_after_failures",
+    "checks::tests::gate_requires_complete_unique_results_and_fresh_evidence",
+    "checks::tests::only_two_advisory_warnings_can_pass_the_gate",
+    "macos::tests::automatic_proxy_adapter_includes_odcloud_and_clash_verge",
+    "lifecycle::tests::preflight_failure_does_not_quit_switch_or_open",
+    "lifecycle::tests::first_b_checks_before_selection_and_again_before_open",
+    "lifecycle::tests::check_error_after_selection_preserves_target_until_fresh_launch_check",
+    "platform::no_tun_test_io::no_tun_apply_plan_never_reaches_system_or_journal_writes",
+    "platform::no_tun_test_io::no_tun_missing_boundary_fails_closed_and_unwind_resets_scope",
+    "platform::no_tun_test_io::no_tun_positive_control_trips_before_root_journal_io",
+    "platform::no_tun_test_io::no_tun_scope_is_thread_local_and_denies_unexpected_commands",
+    "unavailable_lifecycle_commands_never_start_or_modify_accounts"
+  ],
+  "missing": [],
+  "test_log_sha256": "844df261b2c462b7b0eb166c79ebdb59bffe27d6ba99aadd40c061cf0c447382"
+}

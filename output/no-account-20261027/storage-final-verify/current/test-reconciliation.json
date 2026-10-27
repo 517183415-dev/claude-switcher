@@ -1,0 +1,45 @@
+{
+  "top_level_passed_records": 931,
+  "top_level_ignored_records": 6,
+  "top_level_total_records": 937,
+  "ignored_tests": [
+    {
+      "name": "accounts::tests::native_metadata::volume::f05_native_cross_volume_round_trip_preserves_latest_trees",
+      "reason": "requires the disposable APFS volume created by tests/native_accounts/run.py",
+      "harness": "unittests src/lib.rs (target/debug/deps/switcher_core-f7bf6a32dd429f36)"
+    },
+    {
+      "name": "accounts::tests::native_metadata::volume::f05_native_full_destination_preserves_both_accounts_and_state",
+      "reason": "fills only the disposable APFS volume created by tests/native_accounts/run.py",
+      "harness": "unittests src/lib.rs (target/debug/deps/switcher_core-f7bf6a32dd429f36)"
+    },
+    {
+      "name": "publisher::security::native_keychain_tests::native_keychain_create_race_and_backup_restore_preserve_owned_items",
+      "reason": "explicit native Keychain acceptance; creates and removes only synthetic owned items",
+      "harness": "unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)"
+    },
+    {
+      "name": "publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker",
+      "reason": "worker invoked only by explicit native process acceptance",
+      "harness": "unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)"
+    },
+    {
+      "name": "publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit",
+      "reason": "explicit native Keychain process restart acceptance; synthetic owned items only",
+      "harness": "unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)"
+    },
+    {
+      "name": "activity_write_denial_returns_error_after_preferences_commit_both_editions",
+      "reason": "requires the dedicated single-layer account-free Seatbelt runner",
+      "harness": "tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-96e467b12aa2701c)"
+    }
+  ],
+  "distinct_top_level_passed_names": 815,
+  "distinct_top_level_names": 821,
+  "harness_count": 16,
+  "nested_child_passed_records": 3,
+  "per_harness_multiset_equal": true,
+  "test_log_sha256": "844df261b2c462b7b0eb166c79ebdb59bffe27d6ba99aadd40c061cf0c447382",
+  "list_log_sha256": "ff647820cdf3d6ab63517b86fdbb92213045798f193aaea3eec8cc152ecbfc86",
+  "scope": "test and list logs only; clippy failed and is excluded"
+}

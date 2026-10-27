@@ -1,0 +1,18 @@
+   Compiling tauri v2.12.5
+    Checking switcher-domain v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain)
+   Compiling tauri-macros v2.7.4
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling tauri-plugin-updater v2.14.0
+    Checking switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+    Checking switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.97s

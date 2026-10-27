@@ -1,0 +1,15 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/verify_current.py",
+        "--attempt",
+        "current"
+      ],
+      "exit": 0,
+      "seconds": 427.4591297500301
+    }
+  ]
+}

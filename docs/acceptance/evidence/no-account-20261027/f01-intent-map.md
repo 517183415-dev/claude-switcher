@@ -2,6 +2,8 @@
 
 核对日期：2026-10-27。旧测试的实际数量为 21 项：代理诊断 13 项，切换安全 8 项。下表逐项列出当前 Rust 用例。P 编号对应 [覆盖索引](coverage-map.json)。
 
+补充：`7e40fb8e` 的隔离工作区测试日志中，24 个现行测试名称也均有通过记录。[回执](../../../../output/no-account-20261027/storage-final-verify/current/f01-current.json)。此后只改动保留代次相关两个文件；真实系统验收仍待执行。
+
 这些用例的通过记录来自 [历史隔离测试日志](../../../../output/no-account-20261027/storage-final-verify/third/tests.log) 和 [回执](../../../../output/no-account-20261027/storage-final-verify/third/final-receipt.json)。已核对日志 SHA-256 与回执一致，24 个命名测试均有 `ok` 记录。没有重新运行有效检查。
 
 历史测试候选的 Git HEAD 为 `b682e0b398bcfd5e0cbd40ab999655a8cbc20996`。当前 8 个测试所在文件与该 Git HEAD 对比，7 个相同；`network.rs` 仅增加受测试配置限制的 SOCKS 测试模块声明。其他共享源码和依赖此后有变化。因此历史结果不能冒充当前完整源码的全量验收。

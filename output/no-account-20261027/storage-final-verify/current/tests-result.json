@@ -1,0 +1,4327 @@
+{
+  "label": "tests",
+  "argv": [
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "--workspace",
+    "--tests",
+    "--",
+    "--skip",
+    "unregistered_or_wrong_signer_service_never_authenticates",
+    "--skip",
+    "time::tests::real_macos_continuous_sample_is_available",
+    "--test-threads=1"
+  ],
+  "wrapped_argv": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "--workspace",
+    "--tests",
+    "--",
+    "--skip",
+    "unregistered_or_wrong_signer_service_never_authenticates",
+    "--skip",
+    "time::tests::real_macos_continuous_sample_is_available",
+    "--test-threads=1"
+  ],
+  "environment": {
+    "HOME": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/home",
+    "TMPDIR": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/tmp/",
+    "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/gua/.cargo",
+    "RUSTUP_HOME": "/Users/gua/.rustup",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "LC_ALL": "en_US.UTF-8",
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "CARGO_TARGET_DIR": "/Users/gua/CodexWorkspaces/claude-switcher/target",
+    "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin"
+  },
+  "exit": 0,
+  "seconds": 415.20010912499856,
+  "log_sha256": "844df261b2c462b7b0eb166c79ebdb59bffe27d6ba99aadd40c061cf0c447382",
+  "head_before": "7e40fb8edefd1d538bc2fdb80bbb06cd8b49907f",
+  "source_before": {
+    ".cargo/config.toml": "89ed6577a8d98d591a7e55a9339819be06d79a06bd9d0e9feccf849512f423f8",
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "apps/desktop/src-tauri/Cargo.toml": "ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1",
+    "apps/desktop/src-tauri/build.rs": "c51e626ec94759c490f02ce538ce2ac72ccfd1eeeded2274b8818b85e010840e",
+    "apps/desktop/src-tauri/capabilities/main.json": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7",
+    "apps/desktop/src-tauri/components/claude-switcher": "41697f16852ca2f921289ce5a790d4ac5689ef69ad55da7d1408285b95962d98",
+    "apps/desktop/src-tauri/components/switcher-guardian": "d9554c147dd12262b93efdfce2bcdfc05b6e75041d688ecfaaabf1f2d51f4877",
+    "apps/desktop/src-tauri/components/switcher-helper": "63d34a8e4c5f86f56983c91f652398b25a37d5c95684dd115b3a5b43c5e3275e",
+    "apps/desktop/src-tauri/icons/AppIcon.icns": "b780c94fcd91d70c1be36d3335e879da01a2e2a16b3d3173487dad300aa23907",
+    "apps/desktop/src-tauri/icons/icon.png": "6568c0a7e70224d58bd5d70cf9d56e5e8a3be2977b0f21734371baf6e8fafdc5",
+    "apps/desktop/src-tauri/src/bridge.rs": "394d3a04e7108d70cf07786367a2fd3af3cb8c5668c966c197b98330d229436e",
+    "apps/desktop/src-tauri/src/commands.rs": "c27542b28a06331941d01767171034ed107df40194bfe88594024b807393eb9f",
+    "apps/desktop/src-tauri/src/ipc.rs": "058aa4e2d978da5fa66a965f03e82b9804e24298c8cf358aef1ab8eddd9a8612",
+    "apps/desktop/src-tauri/src/ipc_business/backup.rs": "c3e0e088aa871e8ffe70c543ddde0b2e0b852b25dbce24afb987813e36d0bcaf",
+    "apps/desktop/src-tauri/src/ipc_business/ordinary.rs": "78a8edbbe5713dc3288241467909a2d49388798b5c57566f87589ea6ebb68fd1",
+    "apps/desktop/src-tauri/src/ipc_business/publish.rs": "6e3802e8342599d1213998febab834161487c37bd1e42ee34d35a67020cee38d",
+    "apps/desktop/src-tauri/src/ipc_business.rs": "3d5f5ac685ad5940e69d595f84bd1367cf1a0f9d805624c9f6a04c666641baf4",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs": "ed5c13dcaf95a3e47a75a10e81122a6d2ac5f86e2b10303a28db55b6fa307d39",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests.rs": "6ec33d80bb40b05438f9b76400b25cc1b48e210a42f2e3b2ed08c135c728f69c",
+    "apps/desktop/src-tauri/src/ipc_limits.rs": "0d7d6331b358708a5dd83f24a599ab65a48ce3ef04d0df8b50072b79a5c79b17",
+    "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "6ac345bce23f48e4d9dd3d29ce61023784e4d57b45da87d523c33936d4c61704",
+    "apps/desktop/src-tauri/src/main.rs": "720b1061240bff152d7f2ece668996421b19208fe226fdc3da850fcf9939a8da",
+    "apps/desktop/src-tauri/src/native_probe.rs": "227fe045f2b6a9209c4a54f470c3956d49ca317b3ff7edb43352e0938dcccfde",
+    "apps/desktop/src-tauri/src/publisher/README.md": "9d6d4182d26c18f6d51992f4a675e16bdfe6750d93ec689233acb713b3dadf23",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "df7857886a8f0217b3d4e7c55083efe641e644ea64195231551960c2687818e1",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "74a3b755428d391d295efa9039986816968d0fb45c89d5ca391b73ab3978843f",
+    "apps/desktop/src-tauri/src/publisher/connection/maintenance.rs": "8ff36f53116d63311ee254ff563861712030c630945f047c615d1e193f609c50",
+    "apps/desktop/src-tauri/src/publisher/connection/maintenance_tests.rs": "2699105822cf1bae849bfd44d23d69a4056806c2efda0757dda48c6f6d7080e5",
+    "apps/desktop/src-tauri/src/publisher/connection/r2_integration_tests.rs": "d33b5eaa4e2b6416f18f2dbe658e7bc04c43945de35cd5b31514fff67ad421fe",
+    "apps/desktop/src-tauri/src/publisher/connection/registry.rs": "15b88afe5a564c07fe3a79b23595a844dc746208aef8f621bf3931c1da60144b",
+    "apps/desktop/src-tauri/src/publisher/connection/tests.rs": "02c7bb1be817d4c94434979f54413eb22359dcf972a4474d25dee1bae6698130",
+    "apps/desktop/src-tauri/src/publisher/connection.rs": "da57e9c936141db67b9baf17b3546f52e7a942a4305a69f62783b3b67f08d703",
+    "apps/desktop/src-tauri/src/publisher/image_boundary_tests.rs": "cde2b29f009c87fb59e9b13901104ee24a2a157762ec83b56c452e8cc1bea3d8",
+    "apps/desktop/src-tauri/src/publisher/image_test_data/jpeg-at-limit.jpg": "b5632f47af52c1c30367f2b7602ddd3889c6c744491976402fcf009d1d9f5bab",
+    "apps/desktop/src-tauri/src/publisher/image_test_data/jpeg-over-limit.jpg": "29fb986faa8904be5495e35c048413ee0b4e9e93b37d73c5f856313d1a2767c2",
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "0931735a76a80479bd1d5ea7cdebe91e2a6cd665c0b31ecf6f0193b1a54edb96",
+    "apps/desktop/src-tauri/src/publisher/migration/recovery/tests.rs": "780fc1694355a2766b2e5c526b1f8673a79bc2be727a15e4fc52e0dbcaea62e7",
+    "apps/desktop/src-tauri/src/publisher/migration/recovery.rs": "f659fc2e54d401ddffc20807ca499290dc0fa67d20ff5d6e813fa5ad7607abc7",
+    "apps/desktop/src-tauri/src/publisher/migration.rs": "4c8d77cf33b7676bf887bf23b34d8a5fddc29ccef597b2fe2d8fbbce127d3b23",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "aacbc239d023b4bba3bb0a6eb2ad92371baaa0325b4fc9106729900415250db5",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs": "4e4bcb49983dc00e0ee3c1b0a8a58647b31d8ca75ef8975d8c170f3725164030",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs": "37d999f1b07b5eae0b7b6c33fdffaa5649fcdc578016e373658a04a57c51be15",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "140c63d4d815db1f929943cf24b41564a00afc61d043ca8038cf68e3b0f6a276",
+    "apps/desktop/src-tauri/src/publisher/r2_store/tests.rs": "e7e042fcd48a9fde2abdb2e6e1feae94a09587b27991cb3d71caa8ab87143be9",
+    "apps/desktop/src-tauri/src/publisher/r2_store.rs": "b4a083fba40763818899298c8ca79485277420543c30a0821ab508f39b2914d3",
+    "apps/desktop/src-tauri/src/publisher/remote_lock/tests.rs": "58bbcc21b914006143eef2545dc1e80dc47b39718fb2b8db6d21f6dffa212565",
+    "apps/desktop/src-tauri/src/publisher/remote_lock.rs": "40edca8fca2239bfe226cc08f325689afa460328409bfffb94ab8bd7e8133ad1",
+    "apps/desktop/src-tauri/src/publisher/security.rs": "2aff8b5bff7fa510ded70062f30b6a8004481a38aa2fc0c169f7b0ec88203d50",
+    "apps/desktop/src-tauri/src/publisher/target_backup.rs": "ce2ad447bbfbc450930fcb000a598deb81ef9077aae4fbf026ef1af3528dc2f6",
+    "apps/desktop/src-tauri/src/publisher/test_support.rs": "1313e780ef10f442268b3355f93f53f26ed79111efe3619f82e47d45f3bca135",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "0352509a79299165f0907bc894b65e27da4e7888377565a10fabe339b7009db0",
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "8a198f6e8ac88aa27ba68bd4b90ec32c98001a193379f2542cccdba87e941f1a",
+    "apps/desktop/src-tauri/src/publisher_recovery_commands.rs": "643406c4a185923460ca5bb827c35728ec24391104abefa85cccca43012ce09a",
+    "apps/desktop/src-tauri/src/update_runtime.rs": "21b9162907591b5a11866cd7d4acfa99d5ceea922ccf9b838e812c689d7e935e",
+    "apps/desktop/src-tauri/tauri.conf.json": "0dd7e5bcf3dcf30ee69fe2f0f47c4def9f9b2944cd7660936910b9bb4fc56d70",
+    "apps/desktop/src-tauri/tests/e03_activity_export.rs": "43e10669a06c7beeb861694a1c81a7f506b34d53f81b0e9f7efe48dc63713907",
+    "apps/desktop/src-tauri/tests/e03_core_preparation.rs": "d1150d54637d10a4d163f0531a796cf3adf5538d5cdf963b717058e039ddfe68",
+    "apps/desktop/src-tauri/tests/e06_repair_preview.rs": "d0ac9d702d078ff3ade3743fccfe424332e77de239267fa1452700e74817a888",
+    "apps/desktop/src-tauri/tests/e11_log_privacy.rs": "08cb2c2aecfb474426e4503c0d6c2464c1f4a470e36c36e6bffdf6641d08fd8c",
+    "apps/desktop/tests/native-ipc/denials.mjs": "21b0c9e1e910c46d16b406812e523527f2e0e4257fe268f77c5c3aa7e93cff1e",
+    "apps/desktop/tests/native-ipc/index.html": "0b7e51a5a1e15e07093b30786ae9d829e4027c76c22a708615125f627cb1e8df",
+    "apps/desktop/tests/native-ipc/limits.js": "938d908f27e2d07507e02c2748f1675f6ff1d0ea2787889a2ac74f3591fcc50a",
+    "apps/desktop/tests/native-ipc/payloads.mjs": "63d965f85b0ca7a6babccc0b69577f2f0bc66cdcb7002fedad3a671f9e6d38e9",
+    "crates/switcher-core/Cargo.toml": "7636589ba8480d16a1e11364caf437c6710d45d2d9e31d52a899f53837ad7b47",
+    "crates/switcher-core/src/accounts/legacy.rs": "36396ba43a4fe47ae3f0fe2c15049e5df3c693b39ac8600a6c0ad3df6bd737ee",
+    "crates/switcher-core/src/accounts/tests/native_metadata/volume.rs": "cceb6ea71d72b7b9a3d73a2d62ec9084b87be9fccc4e3b418d5b8871ecd34570",
+    "crates/switcher-core/src/accounts/tests/native_metadata.rs": "ebd277c090ffc193c2baa9aaaff44bdf6a894b32d46946f0526940627b25836d",
+    "crates/switcher-core/src/accounts.rs": "648ef7a58b21f00c7715caa42a5718e095090d71398a9c240f8738ce2ea1c807",
+    "crates/switcher-core/src/ad_runtime/VALIDATION.md": "6efdf49f2f7d16cf3b363ba5add0c557d5196890a148d2fc869443464ac8612f",
+    "crates/switcher-core/src/ad_runtime/local.rs": "42dd208ff27761a6859791db7e408a21b33a0826e230e5e6ff73f4089d4b8d66",
+    "crates/switcher-core/src/ad_runtime/tests.rs": "8ada600905eee08e99b09f14711686138f48298273eaef42577362267caaf45d",
+    "crates/switcher-core/src/ad_runtime.rs": "a4e3c4bcf104dfc4e43a30bb82a79a8594e5a793bba580c2440cc8d8a4cc605f",
+    "crates/switcher-core/src/ads.rs": "e5e47ccd03a210e4d19ac9848d53813ab59089c2158248d810f52d7dd89c49b2",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "790b559bc80af417921d91630faf22e8e5cf281f8926c4531f4d8681b15fd46d",
+    "crates/switcher-core/src/bin/keychain-metadata-probe.rs": "4e381944a4242197c05a19993779fb4ce226706beafb2f3a596770636f4b7d20",
+    "crates/switcher-core/src/bin/switcher-guardian.rs": "741904da07e84c2bd965293f873706e2d7e4769e56d325fa9da99c38be6a5f38",
+    "crates/switcher-core/src/bin/validate-ad-release.rs": "459ab68c12ec6f7664c5095ccf7c5d8d0c9134e3efc5618b8e470b1a73369d05",
+    "crates/switcher-core/src/checks.rs": "50c90a5ca6225738f09b1f22009285b8d561962e28bf6e15fac58f9c50f727b8",
+    "crates/switcher-core/src/config.rs": "f0f63e30c93961886ff2b17cf3508d0e4959a3656fc2d8204ed2cf5b7e4e2a82",
+    "crates/switcher-core/src/diagnostics.rs": "3eb9659e4a0e5fb48a52d6e320aa53a4be3e3e0f51fc4f0ee3309e88db6ee1a6",
+    "crates/switcher-core/src/guardian.rs": "eb3ff27bc3b4134651c121a01ba7ac798731663331d8f7a9ef059d72c24392b5",
+    "crates/switcher-core/src/guardian_repair.rs": "7082c1de685afea53e7a1ccbe6e5b23b10d703feae15209195172f8377cd733e",
+    "crates/switcher-core/src/install.rs": "05cd1439017d629da3a6efe265fd8fa84361c9e6304d98ad53f4db4a3bae9b9e",
+    "crates/switcher-core/src/installation_health.rs": "f9bd81d6a274f27be221af9d5d80c5df73ce5a524ae031c13dca0b45fe163d78",
+    "crates/switcher-core/src/lib.rs": "362104336538d72b43c5ea79103a5545acc903c786aa43508bf3fe47a3e9a6fd",
+    "crates/switcher-core/src/lifecycle.rs": "f14cc313ea8d465e5b1444760a09f55fab61a751e3d15edb8224d3af42760cac",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "d11fa31ddfb0248f0e7fb584b5848999863e8875a6a1cbd0bca318f6e3d0f47d",
+    "crates/switcher-core/src/network/socks_controlled.rs": "cfbb8ecbcf4ab703c131109a89d66d3dab847b31b9b8d83ef4c26c5c9a1bdca2",
+    "crates/switcher-core/src/network/socks_fixture.py": "d21750809cc71556466a3564908bb796722996da09c9a50a332fef179d5a37ff",
+    "crates/switcher-core/src/network.rs": "45446c740a5cf15a0831a8bad8c55f99ecf6642c1ec76b7d46625fc63a5b7da4",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/region_detection.rs": "fe4d6ed9ac6213bdcb774cee767ecd554f11f10b5061954add9b48c4824c8c6c",
+    "crates/switcher-core/src/regions/legacy.rs": "7cca69562a60434a33f9b4601b1200d970d35fd1e2e466f0044c3fdc38250e00",
+    "crates/switcher-core/src/regions.rs": "d05ee977d2971b721c05ecd5cf0d64b4898d6dd4996fd1780c5722ce1353a209",
+    "crates/switcher-core/src/repair_cli.rs": "7dc61ef8a3383b3ec2c4bd5704b6704ad8c1f2d44c240dd64a03101869ae1ec5",
+    "crates/switcher-core/src/signed.rs": "684386456ffdaec7a7e45a69f5158301ac3a826951be77ed3c4a53895fb50182",
+    "crates/switcher-core/src/storage.rs": "7ccb202c9e69d77415b1cc569972fdeea0160a32bf0b88e1fd1819f9ddb6bd1c",
+    "crates/switcher-core/src/time.rs": "d9dfa0f9b7837e1a5f7d0a7c8e30603d90af86e4d8ca56ad4db3940b8adfcde8",
+    "crates/switcher-core/src/updates.rs": "f22d1ec8d5e838d45e34cd63bdd1102935e311ebfaaa24218c069762e76f23ad",
+    "crates/switcher-core/src/user_repairs.rs": "4d374e373ff69c02356137a9cfb5c3b3ae1a3c4b969beb4736fd080aa10791ff",
+    "crates/switcher-core/tests/checks_cli.rs": "403d2fc5e14a66058476781e7c0b96001388e3c2bca71593044909cc3bc2b574",
+    "crates/switcher-core/tests/e11_privacy.rs": "a92004faae863e2f9f9562f6c218d0d1bd50051b4767aa161e06472e7a4b046f",
+    "crates/switcher-core/tests/fixtures/explicit_proxy_tls.py": "281454d5e85a3dad5451181facac397f1a1ee16644dd8aee5d382561745f1ff4",
+    "crates/switcher-domain/Cargo.toml": "aadbfca2ac2ff37b1b90cd4ea3ef90c013e8969fcebb59b1ed0ee819be1b0a30",
+    "crates/switcher-domain/src/ads.rs": "dee117cfd815c51ebd1012d1884b6c346ff82008fbbe15600d8f87af2711494e",
+    "crates/switcher-domain/src/bin/export-types.rs": "3ee07fc4017e5746e724363145a715ef4f5cce33aa6b4612800bf6c97c94a25f",
+    "crates/switcher-domain/src/checks.rs": "df8aee32e3fd9b61dbca52e36108bd172c5b4325ed5fc79b71462ed4d28558d5",
+    "crates/switcher-domain/src/desktop.rs": "8d10c7b40bd11cdd7dc2b6177f6417a4ea4d8496be715784af5a5d398e968eea",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "crates/switcher-domain/src/system.rs": "f3abbeed9862723944a6556f23b86f753ab2cc5460874bac001388977c152304",
+    "crates/switcher-helper/Cargo.toml": "dd7ae1e4a85e6857e265677ae0c34bd45ce136a5cde8d57e2d9e73821d23f525",
+    "crates/switcher-helper/src/installation_health.rs": "844d241876cca36e39051bf2e3fc2b7f296bc71a059568d528ec71645e303b6e",
+    "crates/switcher-helper/src/lib.rs": "d66d0b3fc1e96dee241992bf18914486e2a9d26f7081a987b37cc5bb81f07d53",
+    "crates/switcher-helper/src/main.rs": "1606db2246e1f33826702ab969194f465af86ee8f19c40406f413df942eb40f3",
+    "crates/switcher-helper/src/native_authorization.rs": "06f62b41205291499c0c2a8a6c7e329764e6c8ca203332de5ff1f5fef0c162ee",
+    "crates/switcher-helper/src/platform/dns_cache.rs": "82b75f9819d5c7c1353c43507932cf44e45334a771a019683482536011071607",
+    "crates/switcher-helper/src/platform/timezone_guard.rs": "8d328bfc625a8a6e335037c7e7cbbbc11570507575dee7dbaf41c095e3f7f914",
+    "crates/switcher-helper/src/platform.rs": "019da211ee5b152760fb799ab9c449c540470485766a463c6c4b5dbd6a6a471b",
+    "crates/switcher-helper/src/policy.rs": "153ca41f23c46aff961d89e867f9035ef55ca154397d9f57b7b2a90dea321dd2",
+    "crates/switcher-helper/src/root_operation.rs": "4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825",
+    "crates/switcher-helper/src/xpc.rs": "778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833",
+    "packaging/editions/ipc-business-personal.json": "644652e85a313b2f6a265a4f8327378ce8632049851bf76f1ad3cf7d3cf19b17",
+    "packaging/editions/ipc-business-public.json": "9f5e7d78ffd9211e38ca381ead783b0089fbaf2b2436995f31ea88257c8145fc",
+    "packaging/editions/ipc-limits-personal.json": "d7465b6561a0642b76cabd93a1289282292dbc1c74ddf47364e48972a39bacd1",
+    "packaging/editions/ipc-limits-public.json": "5c15bdb9db2879db3b32578d27c385d2f20f586e5b41205b39440b8858a8b8a7",
+    "packaging/editions/ipc-smoke.json": "315b4ca4aa40cb01be4dec7ee57c1cbec09f5e1e4eb35e6a29e320a0ac5d9754",
+    "packaging/editions/personal.json": "74b440c06829584eab981465bbb8cd9dcf701c30691bbd41f2ee48af2c839ca4",
+    "packaging/editions/public.json": "a251da0cc3cd495c85dc1f608cec5c6a68f6904066e09ee82511dba60cab57ac",
+    "apps/desktop/tests/native-ipc-business/README.md": "99e5203db3a8ec09ac56f2f3a19f9b399733fe45a53d7a493b9fa994e3126a1b",
+    "apps/desktop/tests/native-ipc-business/backup-old.png": "ea2a64c0c31ce43e0a4c8592c679024005a00a06c4e500caf16ce92b157f9965",
+    "apps/desktop/tests/native-ipc-business/backup-source.png": "08f13b8558fe7869f286da200c93e709aac242009a199277a9e76131a1b59534",
+    "apps/desktop/tests/native-ipc-business/backup.py": "d1a276236e0aee27598c3b0a3603a5c2f88e8ea229934b626d126c1493acc07d",
+    "apps/desktop/tests/native-ipc-business/backup_assets.py": "e1fface65009c2ff5724ee0909c349b82e40b5c3fb101120862f7a5d3e8025dc",
+    "apps/desktop/tests/native-ipc-business/backup_persistence.py": "ba507f2be02252795068797f49002e54fee5e813919e8adc2f36bc9d50079403",
+    "apps/desktop/tests/native-ipc-business/build_native.py": "aa9bed715d9cae6c1b7eeff509ce168f07e31dbf1dd1acf3c2a138ee35d7cc0a",
+    "apps/desktop/tests/native-ipc-business/business.js": "dee4f15902e8b29896049aedd863dbaf87bb6f1d2b79c625070131c92e064a35",
+    "apps/desktop/tests/native-ipc-business/denials.mjs": "21b0c9e1e910c46d16b406812e523527f2e0e4257fe268f77c5c3aa7e93cff1e",
+    "apps/desktop/tests/native-ipc-business/draft-persistence.mjs": "543ea61033665c1dacbd56b0d50b1319a745e678b5896612a14da3e343a19ba3",
+    "apps/desktop/tests/native-ipc-business/draft.mjs": "8ac6e3684e9dea5100b15e4552ae333e3464d90646146757cb01e880cd356e50",
+    "apps/desktop/tests/native-ipc-business/draft.py": "ec8085d38ef84afd53f308fdf22c54d20791fdf9a9f4c4558c813d2e9e6380fa",
+    "apps/desktop/tests/native-ipc-business/draft_persistence.py": "a68e8e17bc9f9a2f37990ed396b23bd5a2f8b6e16bf04d55ee4440a4f0235e78",
+    "apps/desktop/tests/native-ipc-business/image-fixtures.mjs": "9f3a68ce1dfc74c6378eff62e2d32afcf49f3390d3931f2280f0997442063c30",
+    "apps/desktop/tests/native-ipc-business/image-source.jpg": "7296f9c0e1bb0395c2e19fb04d24ca1eeb4b76b331d97554773bf2313392a2bb",
+    "apps/desktop/tests/native-ipc-business/images.mjs": "675b2660520c27078a2ecabb9374376894ebe17a2fe3eab81c75814ee1d5f8e4",
+    "apps/desktop/tests/native-ipc-business/images.py": "5d9788e0bb7fe5a34b122fc119318687e7044d0d7558f2564d258da5e981d1dc",
+    "apps/desktop/tests/native-ipc-business/index.html": "e2ca646cebf00e92fa2116afa72b25193cfc3ef800b71238d7aaaf80e08a38b8",
+    "apps/desktop/tests/native-ipc-business/jpeg_oracle.py": "b34a99dd83824894ebe08bb86b07e39ce097dfa05a9a09f245950a6c01e5216b",
+    "apps/desktop/tests/native-ipc-business/persistence.py": "4225a72bab182354d0d1f245efd3e0b42179ec931ac0d124b45f1394970b1b6e",
+    "apps/desktop/tests/native-ipc-business/publish.mjs": "760b98819e488e7557cbd7300b034171b624bc834468f7b8613fef3c381201f0",
+    "apps/desktop/tests/native-ipc-business/publish_persistence.py": "33fa9982a7283e44f5f332be256e33889b0c80ed00a399984df80d82389d56b9",
+    "apps/desktop/tests/native-ipc-business/runner.py": "b1f50b258617a5684715177e949385e50e656270aea4ea89deb7a60ede9feb9b",
+    "apps/desktop/tests/native-ipc-business/support.py": "9f679e0933286f2d3539a3769773c49e5d4a2c6efe425f55d32fb20df822c045",
+    "apps/desktop/tests/native-ipc-business/test_backup.py": "f8d96f789593e9dc8fb7a792cc6ac08d606a8bd023ffbd797bb6c0dfc36bd0a0",
+    "apps/desktop/tests/native-ipc-business/test_backup_assets.py": "9006f1eee7ae8da898f2120d29cba5a3c987bcac3003347d93536e6cea481278",
+    "apps/desktop/tests/native-ipc-business/test_backup_persistence.py": "51f448f872e6e05e1eee9d7995895406d85e0d452721f9e6dcf6c502ec94f8bd",
+    "apps/desktop/tests/native-ipc-business/test_draft.py": "55a36b9a17d38b459c9b948a065fc173d0a853dd3be87b80b819dd7e71f11cf9",
+    "apps/desktop/tests/native-ipc-business/test_draft_persistence.py": "56c7e182516f9c83e028f3f11a358bbb1e6fd7e0e37ffd9f95f91912f7afafc2",
+    "apps/desktop/tests/native-ipc-business/test_images.py": "1057fe1c216a0bc31447400b4930c3bcd31a4f8da265fcf2688f569b9f535164",
+    "apps/desktop/tests/native-ipc-business/test_persistence.py": "7bb4e8246951b8a6907a4b1819ac00bbcf524c7b3d70677981adc88fb0acd927",
+    "apps/desktop/tests/native-ipc-business/test_publish_validator.py": "1f8e5b61766d30c479421bb87dc12a008ed802d66d55b02bf1765e44d6d606ca",
+    "apps/desktop/tests/native-ipc-business/test_runner.py": "4415cc4e4287e2a1900501dcb716905a6a429c956bbe58155b68be729bbb9668",
+    "apps/desktop/tests/preferences-faults/account-free.sb.in": "0b1849f28907a3dcc517efaa3be1b9a29aca76db6dd64643ff4221ce746efbb6",
+    "apps/desktop/tests/preferences-faults/runner.py": "e2d33ec8e77f61078fb8c8e5b93acb9fc6d7e255fbff4eb128a817fa74b24a70",
+    "apps/desktop/tests/preferences-faults/test_runner.py": "72a18f4557ffe7b191901202bef3f8b49adced76cdf22848b50c5975f812c742",
+    "tests/evidence_reconciliation/README.md": "0d7c9baaf6b68c5e74cb52faceb7a41471e60f9276c0b35ad4ea00f87de7de70",
+    "tests/evidence_reconciliation/__init__.py": "fbe8a6dd63cc5c994629384fcd4292f31911eb4f38e82fe6a74851b9f15222d4",
+    "tests/evidence_reconciliation/reconcile.py": "e493e4a40e806426fc45c8da10cdd3e0534d61ceb92962ef55c586b4c0f8f2dc",
+    "tests/evidence_reconciliation/test_reconcile.py": "68340a2a8432ff48f5876ae977a5ac157861b834f6d5bae9b00b709d25f49f34",
+    "apps/desktop/tests/native-publisher/probe.js": "689e9b7099941ff50a66692cb80faf61a1d0bfedb36cc9b0b11e0fb49238ff0d",
+    "apps/desktop/tests/native-publisher/runner.py": "f243522244c7b637348918cd30448587bcd937cd90564fc45f9e088fad46f7a5",
+    "apps/desktop/tests/native-publisher/test_runner.py": "2c4d7e9f92d99bbcfae031b81b0c2556538e342ce5de74c7f54485c12e84afc9",
+    "apps/desktop/tests/native-publisher/test_verifier.py": "78a105db8ca2c79ab8f852c71bffd201716ef749b27173c48ecc3781579d9e0a",
+    "apps/desktop/tests/native-publisher/verify.mjs": "eeda0e8a1e27ac59fc8be18a670c1a1d78184735807894557d846982cab14fa6",
+    "apps/desktop/tests/native-remote-config/probe.js": "2bd0d410f02f73535b428f8d99bb23f75cea49121e39c49f72ce8605426cdfb4",
+    "apps/desktop/tests/native-remote-config/runner.py": "c1c92089f82bdff3bb3160527c2f51cefc97095c9f03edbede9f248f2a8974d5",
+    "apps/desktop/tests/native-remote-config/verify.mjs": "c6385f5191daf83812a3ca6a0f8223462ed11f478f7dbbe6564d716a867ff093",
+    "apps/desktop/tests/native-remote-ui/probe.js": "cf1f84b35b17f146c323f5323e0b12153b4e12bffe588d1b98647750419b40ce",
+    "apps/desktop/tests/native-remote-ui/runner.py": "6dfa8d4d7ce7ee69e6d500bb0358661d0f474361f3e30a121e42eb9bbd2c6f3e",
+    "apps/desktop/tests/native-remote-ui/tauri-shim.js": "632b75c60c7d908ee8a3b7f4a6468d222e4fe7fc9de186ac8cf236cede40e90a",
+    "apps/desktop/tests/native-remote-ui/tauri-shim.test.mjs": "a3f60f584fa88f97d3861f05e0130c4e47d8d5e9a949795ef69c6cd29f9a5f15",
+    "apps/desktop/tests/native-remote-ui/verify.mjs": "2c836bcfa4c50ccc77149b6449749b0d9ab53f920c0b199612d841d27c07f442",
+    "apps/desktop/tests/native-remote-ui/vite.config.js": "c6da52d0ae2a4d87c62c1086efe64d47836cc6bba29d8f278f6918efb5624473"
+  },
+  "source_after": {
+    ".cargo/config.toml": "89ed6577a8d98d591a7e55a9339819be06d79a06bd9d0e9feccf849512f423f8",
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "apps/desktop/src-tauri/Cargo.toml": "ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1",
+    "apps/desktop/src-tauri/build.rs": "c51e626ec94759c490f02ce538ce2ac72ccfd1eeeded2274b8818b85e010840e",
+    "apps/desktop/src-tauri/capabilities/main.json": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7",
+    "apps/desktop/src-tauri/components/claude-switcher": "41697f16852ca2f921289ce5a790d4ac5689ef69ad55da7d1408285b95962d98",
+    "apps/desktop/src-tauri/components/switcher-guardian": "d9554c147dd12262b93efdfce2bcdfc05b6e75041d688ecfaaabf1f2d51f4877",
+    "apps/desktop/src-tauri/components/switcher-helper": "63d34a8e4c5f86f56983c91f652398b25a37d5c95684dd115b3a5b43c5e3275e",
+    "apps/desktop/src-tauri/icons/AppIcon.icns": "b780c94fcd91d70c1be36d3335e879da01a2e2a16b3d3173487dad300aa23907",
+    "apps/desktop/src-tauri/icons/icon.png": "6568c0a7e70224d58bd5d70cf9d56e5e8a3be2977b0f21734371baf6e8fafdc5",
+    "apps/desktop/src-tauri/src/bridge.rs": "394d3a04e7108d70cf07786367a2fd3af3cb8c5668c966c197b98330d229436e",
+    "apps/desktop/src-tauri/src/commands.rs": "c27542b28a06331941d01767171034ed107df40194bfe88594024b807393eb9f",
+    "apps/desktop/src-tauri/src/ipc.rs": "058aa4e2d978da5fa66a965f03e82b9804e24298c8cf358aef1ab8eddd9a8612",
+    "apps/desktop/src-tauri/src/ipc_business/backup.rs": "c3e0e088aa871e8ffe70c543ddde0b2e0b852b25dbce24afb987813e36d0bcaf",
+    "apps/desktop/src-tauri/src/ipc_business/ordinary.rs": "78a8edbbe5713dc3288241467909a2d49388798b5c57566f87589ea6ebb68fd1",
+    "apps/desktop/src-tauri/src/ipc_business/publish.rs": "6e3802e8342599d1213998febab834161487c37bd1e42ee34d35a67020cee38d",
+    "apps/desktop/src-tauri/src/ipc_business.rs": "3d5f5ac685ad5940e69d595f84bd1367cf1a0f9d805624c9f6a04c666641baf4",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests/publisher_backup.rs": "ed5c13dcaf95a3e47a75a10e81122a6d2ac5f86e2b10303a28db55b6fa307d39",
+    "apps/desktop/src-tauri/src/ipc_dispatch_tests.rs": "6ec33d80bb40b05438f9b76400b25cc1b48e210a42f2e3b2ed08c135c728f69c",
+    "apps/desktop/src-tauri/src/ipc_limits.rs": "0d7d6331b358708a5dd83f24a599ab65a48ce3ef04d0df8b50072b79a5c79b17",
+    "apps/desktop/src-tauri/src/ipc_policy_tests.rs": "6ac345bce23f48e4d9dd3d29ce61023784e4d57b45da87d523c33936d4c61704",
+    "apps/desktop/src-tauri/src/main.rs": "720b1061240bff152d7f2ece668996421b19208fe226fdc3da850fcf9939a8da",
+    "apps/desktop/src-tauri/src/native_probe.rs": "227fe045f2b6a9209c4a54f470c3956d49ca317b3ff7edb43352e0938dcccfde",
+    "apps/desktop/src-tauri/src/publisher/README.md": "9d6d4182d26c18f6d51992f4a675e16bdfe6750d93ec689233acb713b3dadf23",
+    "apps/desktop/src-tauri/src/publisher/backup.rs": "5e3d4ca7ca42c160cc0ed311d6fb62117977ebaccbf0383da36a2191c01e7f68",
+    "apps/desktop/src-tauri/src/publisher/cleanup.rs": "df7857886a8f0217b3d4e7c55083efe641e644ea64195231551960c2687818e1",
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": "74a3b755428d391d295efa9039986816968d0fb45c89d5ca391b73ab3978843f",
+    "apps/desktop/src-tauri/src/publisher/connection/maintenance.rs": "8ff36f53116d63311ee254ff563861712030c630945f047c615d1e193f609c50",
+    "apps/desktop/src-tauri/src/publisher/connection/maintenance_tests.rs": "2699105822cf1bae849bfd44d23d69a4056806c2efda0757dda48c6f6d7080e5",
+    "apps/desktop/src-tauri/src/publisher/connection/r2_integration_tests.rs": "d33b5eaa4e2b6416f18f2dbe658e7bc04c43945de35cd5b31514fff67ad421fe",
+    "apps/desktop/src-tauri/src/publisher/connection/registry.rs": "15b88afe5a564c07fe3a79b23595a844dc746208aef8f621bf3931c1da60144b",
+    "apps/desktop/src-tauri/src/publisher/connection/tests.rs": "02c7bb1be817d4c94434979f54413eb22359dcf972a4474d25dee1bae6698130",
+    "apps/desktop/src-tauri/src/publisher/connection.rs": "da57e9c936141db67b9baf17b3546f52e7a942a4305a69f62783b3b67f08d703",
+    "apps/desktop/src-tauri/src/publisher/image_boundary_tests.rs": "cde2b29f009c87fb59e9b13901104ee24a2a157762ec83b56c452e8cc1bea3d8",
+    "apps/desktop/src-tauri/src/publisher/image_test_data/jpeg-at-limit.jpg": "b5632f47af52c1c30367f2b7602ddd3889c6c744491976402fcf009d1d9f5bab",
+    "apps/desktop/src-tauri/src/publisher/image_test_data/jpeg-over-limit.jpg": "29fb986faa8904be5495e35c048413ee0b4e9e93b37d73c5f856313d1a2767c2",
+    "apps/desktop/src-tauri/src/publisher/local_store.rs": "0931735a76a80479bd1d5ea7cdebe91e2a6cd665c0b31ecf6f0193b1a54edb96",
+    "apps/desktop/src-tauri/src/publisher/migration/recovery/tests.rs": "780fc1694355a2766b2e5c526b1f8673a79bc2be727a15e4fc52e0dbcaea62e7",
+    "apps/desktop/src-tauri/src/publisher/migration/recovery.rs": "f659fc2e54d401ddffc20807ca499290dc0fa67d20ff5d6e813fa5ad7607abc7",
+    "apps/desktop/src-tauri/src/publisher/migration.rs": "4c8d77cf33b7676bf887bf23b34d8a5fddc29ccef597b2fe2d8fbbce127d3b23",
+    "apps/desktop/src-tauri/src/publisher/mod.rs": "aacbc239d023b4bba3bb0a6eb2ad92371baaa0325b4fc9106729900415250db5",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs": "4e4bcb49983dc00e0ee3c1b0a8a58647b31d8ca75ef8975d8c170f3725164030",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs": "37d999f1b07b5eae0b7b6c33fdffaa5649fcdc578016e373658a04a57c51be15",
+    "apps/desktop/src-tauri/src/publisher/protocol.rs": "140c63d4d815db1f929943cf24b41564a00afc61d043ca8038cf68e3b0f6a276",
+    "apps/desktop/src-tauri/src/publisher/r2_store/tests.rs": "e7e042fcd48a9fde2abdb2e6e1feae94a09587b27991cb3d71caa8ab87143be9",
+    "apps/desktop/src-tauri/src/publisher/r2_store.rs": "b4a083fba40763818899298c8ca79485277420543c30a0821ab508f39b2914d3",
+    "apps/desktop/src-tauri/src/publisher/remote_lock/tests.rs": "58bbcc21b914006143eef2545dc1e80dc47b39718fb2b8db6d21f6dffa212565",
+    "apps/desktop/src-tauri/src/publisher/remote_lock.rs": "40edca8fca2239bfe226cc08f325689afa460328409bfffb94ab8bd7e8133ad1",
+    "apps/desktop/src-tauri/src/publisher/security.rs": "2aff8b5bff7fa510ded70062f30b6a8004481a38aa2fc0c169f7b0ec88203d50",
+    "apps/desktop/src-tauri/src/publisher/target_backup.rs": "ce2ad447bbfbc450930fcb000a598deb81ef9077aae4fbf026ef1af3528dc2f6",
+    "apps/desktop/src-tauri/src/publisher/test_support.rs": "1313e780ef10f442268b3355f93f53f26ed79111efe3619f82e47d45f3bca135",
+    "apps/desktop/src-tauri/src/publisher/tests.rs": "0352509a79299165f0907bc894b65e27da4e7888377565a10fabe339b7009db0",
+    "apps/desktop/src-tauri/src/publisher_commands.rs": "8a198f6e8ac88aa27ba68bd4b90ec32c98001a193379f2542cccdba87e941f1a",
+    "apps/desktop/src-tauri/src/publisher_recovery_commands.rs": "643406c4a185923460ca5bb827c35728ec24391104abefa85cccca43012ce09a",
+    "apps/desktop/src-tauri/src/update_runtime.rs": "21b9162907591b5a11866cd7d4acfa99d5ceea922ccf9b838e812c689d7e935e",
+    "apps/desktop/src-tauri/tauri.conf.json": "0dd7e5bcf3dcf30ee69fe2f0f47c4def9f9b2944cd7660936910b9bb4fc56d70",
+    "apps/desktop/src-tauri/tests/e03_activity_export.rs": "43e10669a06c7beeb861694a1c81a7f506b34d53f81b0e9f7efe48dc63713907",
+    "apps/desktop/src-tauri/tests/e03_core_preparation.rs": "d1150d54637d10a4d163f0531a796cf3adf5538d5cdf963b717058e039ddfe68",
+    "apps/desktop/src-tauri/tests/e06_repair_preview.rs": "d0ac9d702d078ff3ade3743fccfe424332e77de239267fa1452700e74817a888",
+    "apps/desktop/src-tauri/tests/e11_log_privacy.rs": "08cb2c2aecfb474426e4503c0d6c2464c1f4a470e36c36e6bffdf6641d08fd8c",
+    "apps/desktop/tests/native-ipc/denials.mjs": "21b0c9e1e910c46d16b406812e523527f2e0e4257fe268f77c5c3aa7e93cff1e",
+    "apps/desktop/tests/native-ipc/index.html": "0b7e51a5a1e15e07093b30786ae9d829e4027c76c22a708615125f627cb1e8df",
+    "apps/desktop/tests/native-ipc/limits.js": "938d908f27e2d07507e02c2748f1675f6ff1d0ea2787889a2ac74f3591fcc50a",
+    "apps/desktop/tests/native-ipc/payloads.mjs": "63d965f85b0ca7a6babccc0b69577f2f0bc66cdcb7002fedad3a671f9e6d38e9",
+    "crates/switcher-core/Cargo.toml": "7636589ba8480d16a1e11364caf437c6710d45d2d9e31d52a899f53837ad7b47",
+    "crates/switcher-core/src/accounts/legacy.rs": "36396ba43a4fe47ae3f0fe2c15049e5df3c693b39ac8600a6c0ad3df6bd737ee",
+    "crates/switcher-core/src/accounts/tests/native_metadata/volume.rs": "cceb6ea71d72b7b9a3d73a2d62ec9084b87be9fccc4e3b418d5b8871ecd34570",
+    "crates/switcher-core/src/accounts/tests/native_metadata.rs": "ebd277c090ffc193c2baa9aaaff44bdf6a894b32d46946f0526940627b25836d",
+    "crates/switcher-core/src/accounts.rs": "648ef7a58b21f00c7715caa42a5718e095090d71398a9c240f8738ce2ea1c807",
+    "crates/switcher-core/src/ad_runtime/VALIDATION.md": "6efdf49f2f7d16cf3b363ba5add0c557d5196890a148d2fc869443464ac8612f",
+    "crates/switcher-core/src/ad_runtime/local.rs": "42dd208ff27761a6859791db7e408a21b33a0826e230e5e6ff73f4089d4b8d66",
+    "crates/switcher-core/src/ad_runtime/tests.rs": "8ada600905eee08e99b09f14711686138f48298273eaef42577362267caaf45d",
+    "crates/switcher-core/src/ad_runtime.rs": "a4e3c4bcf104dfc4e43a30bb82a79a8594e5a793bba580c2440cc8d8a4cc605f",
+    "crates/switcher-core/src/ads.rs": "e5e47ccd03a210e4d19ac9848d53813ab59089c2158248d810f52d7dd89c49b2",
+    "crates/switcher-core/src/bin/claude-switcher.rs": "790b559bc80af417921d91630faf22e8e5cf281f8926c4531f4d8681b15fd46d",
+    "crates/switcher-core/src/bin/keychain-metadata-probe.rs": "4e381944a4242197c05a19993779fb4ce226706beafb2f3a596770636f4b7d20",
+    "crates/switcher-core/src/bin/switcher-guardian.rs": "741904da07e84c2bd965293f873706e2d7e4769e56d325fa9da99c38be6a5f38",
+    "crates/switcher-core/src/bin/validate-ad-release.rs": "459ab68c12ec6f7664c5095ccf7c5d8d0c9134e3efc5618b8e470b1a73369d05",
+    "crates/switcher-core/src/checks.rs": "50c90a5ca6225738f09b1f22009285b8d561962e28bf6e15fac58f9c50f727b8",
+    "crates/switcher-core/src/config.rs": "f0f63e30c93961886ff2b17cf3508d0e4959a3656fc2d8204ed2cf5b7e4e2a82",
+    "crates/switcher-core/src/diagnostics.rs": "3eb9659e4a0e5fb48a52d6e320aa53a4be3e3e0f51fc4f0ee3309e88db6ee1a6",
+    "crates/switcher-core/src/guardian.rs": "eb3ff27bc3b4134651c121a01ba7ac798731663331d8f7a9ef059d72c24392b5",
+    "crates/switcher-core/src/guardian_repair.rs": "7082c1de685afea53e7a1ccbe6e5b23b10d703feae15209195172f8377cd733e",
+    "crates/switcher-core/src/install.rs": "05cd1439017d629da3a6efe265fd8fa84361c9e6304d98ad53f4db4a3bae9b9e",
+    "crates/switcher-core/src/installation_health.rs": "f9bd81d6a274f27be221af9d5d80c5df73ce5a524ae031c13dca0b45fe163d78",
+    "crates/switcher-core/src/lib.rs": "362104336538d72b43c5ea79103a5545acc903c786aa43508bf3fe47a3e9a6fd",
+    "crates/switcher-core/src/lifecycle.rs": "f14cc313ea8d465e5b1444760a09f55fab61a751e3d15edb8224d3af42760cac",
+    "crates/switcher-core/src/macos.rs": "7eb6337c6fed628460ffe8bd38da719f2f86aa676fd0cc5615693c1f8208c5c3",
+    "crates/switcher-core/src/migration.rs": "d11fa31ddfb0248f0e7fb584b5848999863e8875a6a1cbd0bca318f6e3d0f47d",
+    "crates/switcher-core/src/network/socks_controlled.rs": "cfbb8ecbcf4ab703c131109a89d66d3dab847b31b9b8d83ef4c26c5c9a1bdca2",
+    "crates/switcher-core/src/network/socks_fixture.py": "d21750809cc71556466a3564908bb796722996da09c9a50a332fef179d5a37ff",
+    "crates/switcher-core/src/network.rs": "45446c740a5cf15a0831a8bad8c55f99ecf6642c1ec76b7d46625fc63a5b7da4",
+    "crates/switcher-core/src/pinned_routes.rs": "2981976a310b98af41493751b32f12d8008b53a5b71276f13ba0cd72fa37aa87",
+    "crates/switcher-core/src/proxy_repair.rs": "67c9d0ce5f7515e64026d34601511008ef1c5c2eae2ed551db3fa26203e81fb3",
+    "crates/switcher-core/src/region_detection.rs": "fe4d6ed9ac6213bdcb774cee767ecd554f11f10b5061954add9b48c4824c8c6c",
+    "crates/switcher-core/src/regions/legacy.rs": "7cca69562a60434a33f9b4601b1200d970d35fd1e2e466f0044c3fdc38250e00",
+    "crates/switcher-core/src/regions.rs": "d05ee977d2971b721c05ecd5cf0d64b4898d6dd4996fd1780c5722ce1353a209",
+    "crates/switcher-core/src/repair_cli.rs": "7dc61ef8a3383b3ec2c4bd5704b6704ad8c1f2d44c240dd64a03101869ae1ec5",
+    "crates/switcher-core/src/signed.rs": "684386456ffdaec7a7e45a69f5158301ac3a826951be77ed3c4a53895fb50182",
+    "crates/switcher-core/src/storage.rs": "7ccb202c9e69d77415b1cc569972fdeea0160a32bf0b88e1fd1819f9ddb6bd1c",
+    "crates/switcher-core/src/time.rs": "d9dfa0f9b7837e1a5f7d0a7c8e30603d90af86e4d8ca56ad4db3940b8adfcde8",
+    "crates/switcher-core/src/updates.rs": "f22d1ec8d5e838d45e34cd63bdd1102935e311ebfaaa24218c069762e76f23ad",
+    "crates/switcher-core/src/user_repairs.rs": "4d374e373ff69c02356137a9cfb5c3b3ae1a3c4b969beb4736fd080aa10791ff",
+    "crates/switcher-core/tests/checks_cli.rs": "403d2fc5e14a66058476781e7c0b96001388e3c2bca71593044909cc3bc2b574",
+    "crates/switcher-core/tests/e11_privacy.rs": "a92004faae863e2f9f9562f6c218d0d1bd50051b4767aa161e06472e7a4b046f",
+    "crates/switcher-core/tests/fixtures/explicit_proxy_tls.py": "281454d5e85a3dad5451181facac397f1a1ee16644dd8aee5d382561745f1ff4",
+    "crates/switcher-domain/Cargo.toml": "aadbfca2ac2ff37b1b90cd4ea3ef90c013e8969fcebb59b1ed0ee819be1b0a30",
+    "crates/switcher-domain/src/ads.rs": "dee117cfd815c51ebd1012d1884b6c346ff82008fbbe15600d8f87af2711494e",
+    "crates/switcher-domain/src/bin/export-types.rs": "3ee07fc4017e5746e724363145a715ef4f5cce33aa6b4612800bf6c97c94a25f",
+    "crates/switcher-domain/src/checks.rs": "df8aee32e3fd9b61dbca52e36108bd172c5b4325ed5fc79b71462ed4d28558d5",
+    "crates/switcher-domain/src/desktop.rs": "8d10c7b40bd11cdd7dc2b6177f6417a4ea4d8496be715784af5a5d398e968eea",
+    "crates/switcher-domain/src/lib.rs": "62254d0df149ff8dbca360a216ac864f641c6277d18e1e45c1b800c31c70d333",
+    "crates/switcher-domain/src/system.rs": "f3abbeed9862723944a6556f23b86f753ab2cc5460874bac001388977c152304",
+    "crates/switcher-helper/Cargo.toml": "dd7ae1e4a85e6857e265677ae0c34bd45ce136a5cde8d57e2d9e73821d23f525",
+    "crates/switcher-helper/src/installation_health.rs": "844d241876cca36e39051bf2e3fc2b7f296bc71a059568d528ec71645e303b6e",
+    "crates/switcher-helper/src/lib.rs": "d66d0b3fc1e96dee241992bf18914486e2a9d26f7081a987b37cc5bb81f07d53",
+    "crates/switcher-helper/src/main.rs": "1606db2246e1f33826702ab969194f465af86ee8f19c40406f413df942eb40f3",
+    "crates/switcher-helper/src/native_authorization.rs": "06f62b41205291499c0c2a8a6c7e329764e6c8ca203332de5ff1f5fef0c162ee",
+    "crates/switcher-helper/src/platform/dns_cache.rs": "82b75f9819d5c7c1353c43507932cf44e45334a771a019683482536011071607",
+    "crates/switcher-helper/src/platform/timezone_guard.rs": "8d328bfc625a8a6e335037c7e7cbbbc11570507575dee7dbaf41c095e3f7f914",
+    "crates/switcher-helper/src/platform.rs": "019da211ee5b152760fb799ab9c449c540470485766a463c6c4b5dbd6a6a471b",
+    "crates/switcher-helper/src/policy.rs": "153ca41f23c46aff961d89e867f9035ef55ca154397d9f57b7b2a90dea321dd2",
+    "crates/switcher-helper/src/root_operation.rs": "4e87fffdb74eca123cd34e724fad64d1f2ed9b90c695d0c5c61087b9b6603825",
+    "crates/switcher-helper/src/xpc.rs": "778698407e07be6312f0299f8cd1b790e63ed42776f01e011fd64787f44cb833",
+    "packaging/editions/ipc-business-personal.json": "644652e85a313b2f6a265a4f8327378ce8632049851bf76f1ad3cf7d3cf19b17",
+    "packaging/editions/ipc-business-public.json": "9f5e7d78ffd9211e38ca381ead783b0089fbaf2b2436995f31ea88257c8145fc",
+    "packaging/editions/ipc-limits-personal.json": "d7465b6561a0642b76cabd93a1289282292dbc1c74ddf47364e48972a39bacd1",
+    "packaging/editions/ipc-limits-public.json": "5c15bdb9db2879db3b32578d27c385d2f20f586e5b41205b39440b8858a8b8a7",
+    "packaging/editions/ipc-smoke.json": "315b4ca4aa40cb01be4dec7ee57c1cbec09f5e1e4eb35e6a29e320a0ac5d9754",
+    "packaging/editions/personal.json": "74b440c06829584eab981465bbb8cd9dcf701c30691bbd41f2ee48af2c839ca4",
+    "packaging/editions/public.json": "a251da0cc3cd495c85dc1f608cec5c6a68f6904066e09ee82511dba60cab57ac",
+    "apps/desktop/tests/native-ipc-business/README.md": "99e5203db3a8ec09ac56f2f3a19f9b399733fe45a53d7a493b9fa994e3126a1b",
+    "apps/desktop/tests/native-ipc-business/backup-old.png": "ea2a64c0c31ce43e0a4c8592c679024005a00a06c4e500caf16ce92b157f9965",
+    "apps/desktop/tests/native-ipc-business/backup-source.png": "08f13b8558fe7869f286da200c93e709aac242009a199277a9e76131a1b59534",
+    "apps/desktop/tests/native-ipc-business/backup.py": "d1a276236e0aee27598c3b0a3603a5c2f88e8ea229934b626d126c1493acc07d",
+    "apps/desktop/tests/native-ipc-business/backup_assets.py": "e1fface65009c2ff5724ee0909c349b82e40b5c3fb101120862f7a5d3e8025dc",
+    "apps/desktop/tests/native-ipc-business/backup_persistence.py": "ba507f2be02252795068797f49002e54fee5e813919e8adc2f36bc9d50079403",
+    "apps/desktop/tests/native-ipc-business/build_native.py": "aa9bed715d9cae6c1b7eeff509ce168f07e31dbf1dd1acf3c2a138ee35d7cc0a",
+    "apps/desktop/tests/native-ipc-business/business.js": "dee4f15902e8b29896049aedd863dbaf87bb6f1d2b79c625070131c92e064a35",
+    "apps/desktop/tests/native-ipc-business/denials.mjs": "21b0c9e1e910c46d16b406812e523527f2e0e4257fe268f77c5c3aa7e93cff1e",
+    "apps/desktop/tests/native-ipc-business/draft-persistence.mjs": "543ea61033665c1dacbd56b0d50b1319a745e678b5896612a14da3e343a19ba3",
+    "apps/desktop/tests/native-ipc-business/draft.mjs": "8ac6e3684e9dea5100b15e4552ae333e3464d90646146757cb01e880cd356e50",
+    "apps/desktop/tests/native-ipc-business/draft.py": "ec8085d38ef84afd53f308fdf22c54d20791fdf9a9f4c4558c813d2e9e6380fa",
+    "apps/desktop/tests/native-ipc-business/draft_persistence.py": "a68e8e17bc9f9a2f37990ed396b23bd5a2f8b6e16bf04d55ee4440a4f0235e78",
+    "apps/desktop/tests/native-ipc-business/image-fixtures.mjs": "9f3a68ce1dfc74c6378eff62e2d32afcf49f3390d3931f2280f0997442063c30",
+    "apps/desktop/tests/native-ipc-business/image-source.jpg": "7296f9c0e1bb0395c2e19fb04d24ca1eeb4b76b331d97554773bf2313392a2bb",
+    "apps/desktop/tests/native-ipc-business/images.mjs": "675b2660520c27078a2ecabb9374376894ebe17a2fe3eab81c75814ee1d5f8e4",
+    "apps/desktop/tests/native-ipc-business/images.py": "5d9788e0bb7fe5a34b122fc119318687e7044d0d7558f2564d258da5e981d1dc",
+    "apps/desktop/tests/native-ipc-business/index.html": "e2ca646cebf00e92fa2116afa72b25193cfc3ef800b71238d7aaaf80e08a38b8",
+    "apps/desktop/tests/native-ipc-business/jpeg_oracle.py": "b34a99dd83824894ebe08bb86b07e39ce097dfa05a9a09f245950a6c01e5216b",
+    "apps/desktop/tests/native-ipc-business/persistence.py": "4225a72bab182354d0d1f245efd3e0b42179ec931ac0d124b45f1394970b1b6e",
+    "apps/desktop/tests/native-ipc-business/publish.mjs": "760b98819e488e7557cbd7300b034171b624bc834468f7b8613fef3c381201f0",
+    "apps/desktop/tests/native-ipc-business/publish_persistence.py": "33fa9982a7283e44f5f332be256e33889b0c80ed00a399984df80d82389d56b9",
+    "apps/desktop/tests/native-ipc-business/runner.py": "b1f50b258617a5684715177e949385e50e656270aea4ea89deb7a60ede9feb9b",
+    "apps/desktop/tests/native-ipc-business/support.py": "9f679e0933286f2d3539a3769773c49e5d4a2c6efe425f55d32fb20df822c045",
+    "apps/desktop/tests/native-ipc-business/test_backup.py": "f8d96f789593e9dc8fb7a792cc6ac08d606a8bd023ffbd797bb6c0dfc36bd0a0",
+    "apps/desktop/tests/native-ipc-business/test_backup_assets.py": "9006f1eee7ae8da898f2120d29cba5a3c987bcac3003347d93536e6cea481278",
+    "apps/desktop/tests/native-ipc-business/test_backup_persistence.py": "51f448f872e6e05e1eee9d7995895406d85e0d452721f9e6dcf6c502ec94f8bd",
+    "apps/desktop/tests/native-ipc-business/test_draft.py": "55a36b9a17d38b459c9b948a065fc173d0a853dd3be87b80b819dd7e71f11cf9",
+    "apps/desktop/tests/native-ipc-business/test_draft_persistence.py": "56c7e182516f9c83e028f3f11a358bbb1e6fd7e0e37ffd9f95f91912f7afafc2",
+    "apps/desktop/tests/native-ipc-business/test_images.py": "1057fe1c216a0bc31447400b4930c3bcd31a4f8da265fcf2688f569b9f535164",
+    "apps/desktop/tests/native-ipc-business/test_persistence.py": "7bb4e8246951b8a6907a4b1819ac00bbcf524c7b3d70677981adc88fb0acd927",
+    "apps/desktop/tests/native-ipc-business/test_publish_validator.py": "1f8e5b61766d30c479421bb87dc12a008ed802d66d55b02bf1765e44d6d606ca",
+    "apps/desktop/tests/native-ipc-business/test_runner.py": "4415cc4e4287e2a1900501dcb716905a6a429c956bbe58155b68be729bbb9668",
+    "apps/desktop/tests/preferences-faults/account-free.sb.in": "0b1849f28907a3dcc517efaa3be1b9a29aca76db6dd64643ff4221ce746efbb6",
+    "apps/desktop/tests/preferences-faults/runner.py": "e2d33ec8e77f61078fb8c8e5b93acb9fc6d7e255fbff4eb128a817fa74b24a70",
+    "apps/desktop/tests/preferences-faults/test_runner.py": "72a18f4557ffe7b191901202bef3f8b49adced76cdf22848b50c5975f812c742",
+    "tests/evidence_reconciliation/README.md": "0d7c9baaf6b68c5e74cb52faceb7a41471e60f9276c0b35ad4ea00f87de7de70",
+    "tests/evidence_reconciliation/__init__.py": "fbe8a6dd63cc5c994629384fcd4292f31911eb4f38e82fe6a74851b9f15222d4",
+    "tests/evidence_reconciliation/reconcile.py": "e493e4a40e806426fc45c8da10cdd3e0534d61ceb92962ef55c586b4c0f8f2dc",
+    "tests/evidence_reconciliation/test_reconcile.py": "68340a2a8432ff48f5876ae977a5ac157861b834f6d5bae9b00b709d25f49f34",
+    "apps/desktop/tests/native-publisher/probe.js": "689e9b7099941ff50a66692cb80faf61a1d0bfedb36cc9b0b11e0fb49238ff0d",
+    "apps/desktop/tests/native-publisher/runner.py": "f243522244c7b637348918cd30448587bcd937cd90564fc45f9e088fad46f7a5",
+    "apps/desktop/tests/native-publisher/test_runner.py": "2c4d7e9f92d99bbcfae031b81b0c2556538e342ce5de74c7f54485c12e84afc9",
+    "apps/desktop/tests/native-publisher/test_verifier.py": "78a105db8ca2c79ab8f852c71bffd201716ef749b27173c48ecc3781579d9e0a",
+    "apps/desktop/tests/native-publisher/verify.mjs": "eeda0e8a1e27ac59fc8be18a670c1a1d78184735807894557d846982cab14fa6",
+    "apps/desktop/tests/native-remote-config/probe.js": "2bd0d410f02f73535b428f8d99bb23f75cea49121e39c49f72ce8605426cdfb4",
+    "apps/desktop/tests/native-remote-config/runner.py": "c1c92089f82bdff3bb3160527c2f51cefc97095c9f03edbede9f248f2a8974d5",
+    "apps/desktop/tests/native-remote-config/verify.mjs": "c6385f5191daf83812a3ca6a0f8223462ed11f478f7dbbe6564d716a867ff093",
+    "apps/desktop/tests/native-remote-ui/probe.js": "cf1f84b35b17f146c323f5323e0b12153b4e12bffe588d1b98647750419b40ce",
+    "apps/desktop/tests/native-remote-ui/runner.py": "6dfa8d4d7ce7ee69e6d500bb0358661d0f474361f3e30a121e42eb9bbd2c6f3e",
+    "apps/desktop/tests/native-remote-ui/tauri-shim.js": "632b75c60c7d908ee8a3b7f4a6468d222e4fe7fc9de186ac8cf236cede40e90a",
+    "apps/desktop/tests/native-remote-ui/tauri-shim.test.mjs": "a3f60f584fa88f97d3861f05e0130c4e47d8d5e9a949795ef69c6cd29f9a5f15",
+    "apps/desktop/tests/native-remote-ui/verify.mjs": "2c836bcfa4c50ccc77149b6449749b0d9ab53f920c0b199612d841d27c07f442",
+    "apps/desktop/tests/native-remote-ui/vite.config.js": "c6da52d0ae2a4d87c62c1086efe64d47836cc6bba29d8f278f6918efb5624473"
+  },
+  "source_unchanged": true,
+  "generated_before": {
+    "apps/desktop/src-tauri/gen/schemas/acl-manifests.json": "9a7690d0f4e88987dc56777ae068064c8ae96764629ac4004181f7fc2d85fc88",
+    "apps/desktop/src-tauri/gen/schemas/capabilities.json": "d0723b1bd235e5bb2af8165c39098829247f1ad099c5d166f290b19ea2094d9c",
+    "apps/desktop/src-tauri/gen/schemas/desktop-schema.json": "f08d4988a5572633e5abc459f6c05d7d0dcc310cf52c1fb1f2d8295fda8913a6",
+    "apps/desktop/src-tauri/gen/schemas/macOS-schema.json": "f08d4988a5572633e5abc459f6c05d7d0dcc310cf52c1fb1f2d8295fda8913a6",
+    "apps/desktop/src-tauri/permissions/autogenerated/account_action.toml": "e448b93868fb79be9272cf200eea1006f108b1a6071cfbc33e5acdb253f61f85",
+    "apps/desktop/src-tauri/permissions/autogenerated/activity_log.toml": "24ae8acb70f419ce04fcdc9f326b574b0615a15dfc8c2c4dec8cdfc29c722145",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_cached_image.toml": "7715537128422165ba0efec392138294908230b76f03b1c7a88cf90d51e1c358",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_draft_read.toml": "a7f686cb5143c125739529cea611e693793a9022d8c400b99c994c523fb4dcb3",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_draft_save.toml": "cb79264f06dc1947cd64ccadd5a14854994cae6d8b1f941b1186ff8b4943db9a",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_image_preview.toml": "54732b68223dbaa9aad3fab728bedcf676f3db987bd6fbde7bafd993f6c21829",
+    "apps/desktop/src-tauri/permissions/autogenerated/cancel_check.toml": "86e8371dc2dff6ff7cc611ed1dfc14d60f0b6dbe7cbad914c66529df6549fa8f",
+    "apps/desktop/src-tauri/permissions/autogenerated/cancel_repair.toml": "7abe1bef5b7ea552cfbe79adecc3a46dd69829baa5fdce72bbb0cb7a416acabb",
+    "apps/desktop/src-tauri/permissions/autogenerated/check_environment.toml": "81020d140f5b908bc6b554354deaee899c0bb724eee020714e2ead26af3ef261",
+    "apps/desktop/src-tauri/permissions/autogenerated/commit_publisher_cleanup.toml": "d6700214d5f543f09fb0b4620f0637ae1c7f7cacb438d1161da6f9ca8d491277",
+    "apps/desktop/src-tauri/permissions/autogenerated/commit_publisher_gc.toml": "135544d71eb39a42923f0433cb61b5a54b6da8d621a5a83ab2a0aecb71c9b9cc",
+    "apps/desktop/src-tauri/permissions/autogenerated/create_ad_signing_key.toml": "89b195e8576ea23fa66b235868c3bdc6ab693b8e13643d00ccd408c6bac723e3",
+    "apps/desktop/src-tauri/permissions/autogenerated/create_migration_backup.toml": "f3d188a8ec2ea6be3d995e77f1c30f717eed8dc6a396d898aab1dffc222e37f8",
+    "apps/desktop/src-tauri/permissions/autogenerated/execute_repair.toml": "5269d6f5a316f2c827cec679e3848905eb99770d3db9492fd2d342c2490f7544",
+    "apps/desktop/src-tauri/permissions/autogenerated/export_activity.toml": "438b3832f8b84cd6173e862539b20ed9b11483ac5dbe3f3140bf7146e9fcb3a6",
+    "apps/desktop/src-tauri/permissions/autogenerated/export_publisher_backup.toml": "cc06619c5207f869cc5d97b7dc3cb69fe73501cc44793a436aa28fcf6cc25d21",
+    "apps/desktop/src-tauri/permissions/autogenerated/finish_smoke.toml": "412ed7503038b36a11003fa36054e2334612f6e499cc3244bd58616ec75e7b12",
+    "apps/desktop/src-tauri/permissions/autogenerated/forbidden_probe.toml": "c59bf08f562abee19ee6de27dca7b7d7fcd978f87ef08ce7393d2a0d77db5992",
+    "apps/desktop/src-tauri/permissions/autogenerated/import_ad_image.toml": "c8b26f466450aaddbe1cd17ada33c399995a354d2335d745038fc4b20dd5a7a1",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_backup_export.toml": "efc7cc07fe984eaf1d425c431b430c6ece2c18191cb5439ac7d19d3dbe5edac8",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_backup_restore.toml": "11f5f81d020f5b075a7791a2230131c38ce14e40a5f12e79e95f7007a20477dd",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_draft_snapshot.toml": "bd3cd72da3e0b1ceea8d441a2bcaba6ca1ade3b14634f4e82a233cd480b523d0",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_finish.toml": "34d4be0b5aabbc036e34f045dacd849538aa24469d8273ca476cd6b86389c7db",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_forbidden.toml": "ae2b262ff5d4e2c09783b11264f7c1b62b2b429afbb3dc57b92fc2506fd8c371",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_info.toml": "42b00a15e5c631ed6579735604c94b5a2e5eed917412a7ca9bc5a64679e6cc25",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_preferences_snapshot.toml": "7323956b1e71d578cc2d943b11b29f90a1774ee273d4e191e123a5541aa518a0",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_publish.toml": "1d2b9b232946763a7938ea3a14ff36d64009b78e96a8a6d68996ac3e044c6702",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_publish_init.toml": "8daedd7e824af42cdb9463884758a7a62480419201ba92d7230c947b647323ec",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_backup.toml": "e5e6cbe5df3a967a641db3961591d6c7e41d29a22ed4ee86e9a7d2d17fc66bda",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_finish.toml": "2e81990bc264c2ecbdce4548076feeff4939c09bbf0eb8e6cc03853d577e3d55",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_forbidden.toml": "2a6cbc1861b67e6985a4e6575491dd0fca3a03cc46b206198ff3c75c2e357e0a",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_image.toml": "7877089fd0879556bb68da8239d2459f4be12b51cf3dbb78414f9a96a0064f46",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_info.toml": "2ead6fd643cf49c7f68c9677bd9fffd6f0a6d7711f516e2f9ac69ce311c0b38d",
+    "apps/desktop/src-tauri/permissions/autogenerated/launch_checked.toml": "5106bd5d4cdf1df184774c4fccedce36a274b390fe454eff0fae64ba724792f6",
+    "apps/desktop/src-tauri/permissions/autogenerated/migration_preparation.toml": "403802688351a6adc2ba6ad0ca9f4391a38000d156a7cfc1b4a11fd2c74cbcff",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_ad_link.toml": "52d632e5849cbaa3ac0542ba52b1056653415131c930d7cb98a76d6e1e090692",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_date_settings.toml": "a1e503418240ea15b4cd85c3540361be3f07fab15c7e5b980d75f7dec0ac212d",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_publisher_backup_folder.toml": "67d651af9fd5909675dd9025c04af20091cdb0c2149d94f875415094da34831e",
+    "apps/desktop/src-tauri/permissions/autogenerated/pause_ad.toml": "953d596cfb263784ab07e5ab47e9858b0bb2d4526a260b379973bc9733f28c5c",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_publisher_cleanup.toml": "0d4d127a93319f886651fb2b00a41a6a548a3b8cb6c4eff86e9212f29262e292",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_publisher_gc.toml": "905eac57a76dda7b4885a9e33e6459be1ebdf1c59b764410d56b81a615ceb9da",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_region_change.toml": "63b2dc393fdab7c2b3a2a2c337292a2f0c405d0dfd9be1b2b367699af7580981",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_repair.toml": "6d6a0a6d414dc6070dfee961008ce029c233698a3b23b9d15b699f28605e043d",
+    "apps/desktop/src-tauri/permissions/autogenerated/publish_ad.toml": "9da696e5162b89b803fa25c0e635b97cf1f90d5aaae51e89aebdb52230a70012",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_archive_import.toml": "7cf7575d7dfd648ee80f64b7c182966f9eb82133a03589c0080839c93976c01c",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_cancel.toml": "035a5637d1b6a533c03356e7060fdb9f200ae0297916376a4e9010fee2f37d92",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_confirm.toml": "796581f62d2e99502fff90829e49ba47905ca76cd8d17a7b8b57160f80f2ede1",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_prepare.toml": "d66ed300d1766c7b77710d5ef0d8c0de6834790e396a8cb946bc5642395a7158",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_read.toml": "9bb92bc20e13444334267b0f7caa552098b772d4b37dbce19b5bb56b7bee3762",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_save.toml": "c43728debc321c4f6dee6abdb7968bac2e8f49dd4f1aff0ae589b2f07c9f4fe1",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_select.toml": "c6800d14eedc4b77ad396b22554133e740f42fa25c570bd0e92fcacb063ce6bc",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_retained_export.toml": "5284f5a4c44b96b225b008fff02afc1759e8359c7df594d2820d8b758710d0f8",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_retained_list.toml": "1307458892b423c50ed1dcf44fbcbd93609b3375d54c5cb915055273738fcc78",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_status.toml": "f7f23e13512a2d2d9eb58c0629f0768b436617232ef3f8252b2eae64aa0139bf",
+    "apps/desktop/src-tauri/permissions/autogenerated/rebuild_time_baseline.toml": "9862094ca4cca1af5a300d25e7c40cf8faa67758956dbd60b5a4ef6541a31253",
+    "apps/desktop/src-tauri/permissions/autogenerated/recover_repair.toml": "3aace2fe9e8dcf42bdc231bad99e43a169695cf6b4ff882339258f84a9d98ebf",
+    "apps/desktop/src-tauri/permissions/autogenerated/refresh_ad_content.toml": "a3d1b24f1f2f9db8c2f958739bfd978191b3e0f1828fbf829c0b78758941e5b5",
+    "apps/desktop/src-tauri/permissions/autogenerated/region_view.toml": "629e8a36da3d4c78f1f2496842cf08357713a29107f981bbc19732dfba6e59e1",
+    "apps/desktop/src-tauri/permissions/autogenerated/restore_ad_history.toml": "33ef003e510e62a98ca9d49b443207a857fc3c33a87add969137862eeaf0e1fb",
+    "apps/desktop/src-tauri/permissions/autogenerated/restore_publisher_backup.toml": "060a86054c2950ea9ea67acd70c2042e60edcb56a70948b3eee2e6b865889a41",
+    "apps/desktop/src-tauri/permissions/autogenerated/runtime_info.toml": "b144f8d0266148194810656aa696cc05c50f33e2a7ade1f0396d5470af530b3a",
+    "apps/desktop/src-tauri/permissions/autogenerated/save_preferences.toml": "50492bbcbff8a3c5f5125d3f7f4e2f65bd612c99f50f39d89fcd7c6ccd183ad2",
+    "apps/desktop/src-tauri/permissions/autogenerated/software_update.toml": "d2a84b8360e7e2447bad0c61b7b3df16e2ff7f889e8c12e58d9a50b0ab64c551",
+    "apps/desktop/src-tauri/permissions/autogenerated/workspace_snapshot.toml": "1ebd579cc3a24b012cfb5e80f0255386045d42a8fd9f5daddafac7738c74f0e7"
+  },
+  "generated_after": {
+    "apps/desktop/src-tauri/gen/schemas/acl-manifests.json": "9a7690d0f4e88987dc56777ae068064c8ae96764629ac4004181f7fc2d85fc88",
+    "apps/desktop/src-tauri/gen/schemas/capabilities.json": "d0723b1bd235e5bb2af8165c39098829247f1ad099c5d166f290b19ea2094d9c",
+    "apps/desktop/src-tauri/gen/schemas/desktop-schema.json": "f08d4988a5572633e5abc459f6c05d7d0dcc310cf52c1fb1f2d8295fda8913a6",
+    "apps/desktop/src-tauri/gen/schemas/macOS-schema.json": "f08d4988a5572633e5abc459f6c05d7d0dcc310cf52c1fb1f2d8295fda8913a6",
+    "apps/desktop/src-tauri/permissions/autogenerated/account_action.toml": "e448b93868fb79be9272cf200eea1006f108b1a6071cfbc33e5acdb253f61f85",
+    "apps/desktop/src-tauri/permissions/autogenerated/activity_log.toml": "24ae8acb70f419ce04fcdc9f326b574b0615a15dfc8c2c4dec8cdfc29c722145",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_cached_image.toml": "7715537128422165ba0efec392138294908230b76f03b1c7a88cf90d51e1c358",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_draft_read.toml": "a7f686cb5143c125739529cea611e693793a9022d8c400b99c994c523fb4dcb3",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_draft_save.toml": "cb79264f06dc1947cd64ccadd5a14854994cae6d8b1f941b1186ff8b4943db9a",
+    "apps/desktop/src-tauri/permissions/autogenerated/ad_image_preview.toml": "54732b68223dbaa9aad3fab728bedcf676f3db987bd6fbde7bafd993f6c21829",
+    "apps/desktop/src-tauri/permissions/autogenerated/cancel_check.toml": "86e8371dc2dff6ff7cc611ed1dfc14d60f0b6dbe7cbad914c66529df6549fa8f",
+    "apps/desktop/src-tauri/permissions/autogenerated/cancel_repair.toml": "7abe1bef5b7ea552cfbe79adecc3a46dd69829baa5fdce72bbb0cb7a416acabb",
+    "apps/desktop/src-tauri/permissions/autogenerated/check_environment.toml": "81020d140f5b908bc6b554354deaee899c0bb724eee020714e2ead26af3ef261",
+    "apps/desktop/src-tauri/permissions/autogenerated/commit_publisher_cleanup.toml": "d6700214d5f543f09fb0b4620f0637ae1c7f7cacb438d1161da6f9ca8d491277",
+    "apps/desktop/src-tauri/permissions/autogenerated/commit_publisher_gc.toml": "135544d71eb39a42923f0433cb61b5a54b6da8d621a5a83ab2a0aecb71c9b9cc",
+    "apps/desktop/src-tauri/permissions/autogenerated/create_ad_signing_key.toml": "89b195e8576ea23fa66b235868c3bdc6ab693b8e13643d00ccd408c6bac723e3",
+    "apps/desktop/src-tauri/permissions/autogenerated/create_migration_backup.toml": "f3d188a8ec2ea6be3d995e77f1c30f717eed8dc6a396d898aab1dffc222e37f8",
+    "apps/desktop/src-tauri/permissions/autogenerated/execute_repair.toml": "5269d6f5a316f2c827cec679e3848905eb99770d3db9492fd2d342c2490f7544",
+    "apps/desktop/src-tauri/permissions/autogenerated/export_activity.toml": "438b3832f8b84cd6173e862539b20ed9b11483ac5dbe3f3140bf7146e9fcb3a6",
+    "apps/desktop/src-tauri/permissions/autogenerated/export_publisher_backup.toml": "cc06619c5207f869cc5d97b7dc3cb69fe73501cc44793a436aa28fcf6cc25d21",
+    "apps/desktop/src-tauri/permissions/autogenerated/finish_smoke.toml": "412ed7503038b36a11003fa36054e2334612f6e499cc3244bd58616ec75e7b12",
+    "apps/desktop/src-tauri/permissions/autogenerated/forbidden_probe.toml": "c59bf08f562abee19ee6de27dca7b7d7fcd978f87ef08ce7393d2a0d77db5992",
+    "apps/desktop/src-tauri/permissions/autogenerated/import_ad_image.toml": "c8b26f466450aaddbe1cd17ada33c399995a354d2335d745038fc4b20dd5a7a1",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_backup_export.toml": "efc7cc07fe984eaf1d425c431b430c6ece2c18191cb5439ac7d19d3dbe5edac8",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_backup_restore.toml": "11f5f81d020f5b075a7791a2230131c38ce14e40a5f12e79e95f7007a20477dd",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_draft_snapshot.toml": "bd3cd72da3e0b1ceea8d441a2bcaba6ca1ade3b14634f4e82a233cd480b523d0",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_finish.toml": "34d4be0b5aabbc036e34f045dacd849538aa24469d8273ca476cd6b86389c7db",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_forbidden.toml": "ae2b262ff5d4e2c09783b11264f7c1b62b2b429afbb3dc57b92fc2506fd8c371",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_info.toml": "42b00a15e5c631ed6579735604c94b5a2e5eed917412a7ca9bc5a64679e6cc25",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_preferences_snapshot.toml": "7323956b1e71d578cc2d943b11b29f90a1774ee273d4e191e123a5541aa518a0",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_publish.toml": "1d2b9b232946763a7938ea3a14ff36d64009b78e96a8a6d68996ac3e044c6702",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_business_publish_init.toml": "8daedd7e824af42cdb9463884758a7a62480419201ba92d7230c947b647323ec",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_backup.toml": "e5e6cbe5df3a967a641db3961591d6c7e41d29a22ed4ee86e9a7d2d17fc66bda",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_finish.toml": "2e81990bc264c2ecbdce4548076feeff4939c09bbf0eb8e6cc03853d577e3d55",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_forbidden.toml": "2a6cbc1861b67e6985a4e6575491dd0fca3a03cc46b206198ff3c75c2e357e0a",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_image.toml": "7877089fd0879556bb68da8239d2459f4be12b51cf3dbb78414f9a96a0064f46",
+    "apps/desktop/src-tauri/permissions/autogenerated/ipc_limits_info.toml": "2ead6fd643cf49c7f68c9677bd9fffd6f0a6d7711f516e2f9ac69ce311c0b38d",
+    "apps/desktop/src-tauri/permissions/autogenerated/launch_checked.toml": "5106bd5d4cdf1df184774c4fccedce36a274b390fe454eff0fae64ba724792f6",
+    "apps/desktop/src-tauri/permissions/autogenerated/migration_preparation.toml": "403802688351a6adc2ba6ad0ca9f4391a38000d156a7cfc1b4a11fd2c74cbcff",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_ad_link.toml": "52d632e5849cbaa3ac0542ba52b1056653415131c930d7cb98a76d6e1e090692",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_date_settings.toml": "a1e503418240ea15b4cd85c3540361be3f07fab15c7e5b980d75f7dec0ac212d",
+    "apps/desktop/src-tauri/permissions/autogenerated/open_publisher_backup_folder.toml": "67d651af9fd5909675dd9025c04af20091cdb0c2149d94f875415094da34831e",
+    "apps/desktop/src-tauri/permissions/autogenerated/pause_ad.toml": "953d596cfb263784ab07e5ab47e9858b0bb2d4526a260b379973bc9733f28c5c",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_publisher_cleanup.toml": "0d4d127a93319f886651fb2b00a41a6a548a3b8cb6c4eff86e9212f29262e292",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_publisher_gc.toml": "905eac57a76dda7b4885a9e33e6459be1ebdf1c59b764410d56b81a615ceb9da",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_region_change.toml": "63b2dc393fdab7c2b3a2a2c337292a2f0c405d0dfd9be1b2b367699af7580981",
+    "apps/desktop/src-tauri/permissions/autogenerated/preview_repair.toml": "6d6a0a6d414dc6070dfee961008ce029c233698a3b23b9d15b699f28605e043d",
+    "apps/desktop/src-tauri/permissions/autogenerated/publish_ad.toml": "9da696e5162b89b803fa25c0e635b97cf1f90d5aaae51e89aebdb52230a70012",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_archive_import.toml": "7cf7575d7dfd648ee80f64b7c182966f9eb82133a03589c0080839c93976c01c",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_cancel.toml": "035a5637d1b6a533c03356e7060fdb9f200ae0297916376a4e9010fee2f37d92",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_confirm.toml": "796581f62d2e99502fff90829e49ba47905ca76cd8d17a7b8b57160f80f2ede1",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_recovery_prepare.toml": "d66ed300d1766c7b77710d5ef0d8c0de6834790e396a8cb946bc5642395a7158",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_read.toml": "9bb92bc20e13444334267b0f7caa552098b772d4b37dbce19b5bb56b7bee3762",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_save.toml": "c43728debc321c4f6dee6abdb7968bac2e8f49dd4f1aff0ae589b2f07c9f4fe1",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_remote_select.toml": "c6800d14eedc4b77ad396b22554133e740f42fa25c570bd0e92fcacb063ce6bc",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_retained_export.toml": "5284f5a4c44b96b225b008fff02afc1759e8359c7df594d2820d8b758710d0f8",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_retained_list.toml": "1307458892b423c50ed1dcf44fbcbd93609b3375d54c5cb915055273738fcc78",
+    "apps/desktop/src-tauri/permissions/autogenerated/publisher_status.toml": "f7f23e13512a2d2d9eb58c0629f0768b436617232ef3f8252b2eae64aa0139bf",
+    "apps/desktop/src-tauri/permissions/autogenerated/rebuild_time_baseline.toml": "9862094ca4cca1af5a300d25e7c40cf8faa67758956dbd60b5a4ef6541a31253",
+    "apps/desktop/src-tauri/permissions/autogenerated/recover_repair.toml": "3aace2fe9e8dcf42bdc231bad99e43a169695cf6b4ff882339258f84a9d98ebf",
+    "apps/desktop/src-tauri/permissions/autogenerated/refresh_ad_content.toml": "a3d1b24f1f2f9db8c2f958739bfd978191b3e0f1828fbf829c0b78758941e5b5",
+    "apps/desktop/src-tauri/permissions/autogenerated/region_view.toml": "629e8a36da3d4c78f1f2496842cf08357713a29107f981bbc19732dfba6e59e1",
+    "apps/desktop/src-tauri/permissions/autogenerated/restore_ad_history.toml": "33ef003e510e62a98ca9d49b443207a857fc3c33a87add969137862eeaf0e1fb",
+    "apps/desktop/src-tauri/permissions/autogenerated/restore_publisher_backup.toml": "060a86054c2950ea9ea67acd70c2042e60edcb56a70948b3eee2e6b865889a41",
+    "apps/desktop/src-tauri/permissions/autogenerated/runtime_info.toml": "b144f8d0266148194810656aa696cc05c50f33e2a7ade1f0396d5470af530b3a",
+    "apps/desktop/src-tauri/permissions/autogenerated/save_preferences.toml": "50492bbcbff8a3c5f5125d3f7f4e2f65bd612c99f50f39d89fcd7c6ccd183ad2",
+    "apps/desktop/src-tauri/permissions/autogenerated/software_update.toml": "d2a84b8360e7e2447bad0c61b7b3df16e2ff7f889e8c12e58d9a50b0ab64c551",
+    "apps/desktop/src-tauri/permissions/autogenerated/workspace_snapshot.toml": "1ebd579cc3a24b012cfb5e80f0255386045d42a8fd9f5daddafac7738c74f0e7"
+  },
+  "expected_failure": false,
+  "executions": [
+    [
+      "accounts::legacy::tests::changed_stage_is_preserved_instead_of_overwriting_account_data",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::cleanup_resumes_when_child_removed_before_stage_directory",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::destination_local_stages_resume_every_persisted_boundary_without_receipts",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::ditto_roundtrip_preserves_symlinks_hardlink_content_and_writable_modes",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_committed_cleanup_recovers_after_child_removal",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_empty_directory_fingerprint_matches_disk",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_empty_outgoing_copy_cannot_replace_saved_archive",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_mismatched_outgoing_journal_stops_before_recovery_mutation",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_old_empty_first_a_in_place_journal_stops_before_recovery_writes",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_old_empty_journals_without_at_risk_a_archive_still_recover",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_preexisting_empty_outgoing_journal_is_preserved_for_review",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_preserve_flag_cannot_hide_nonempty_outgoing",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_preserved_archive_rejects_changed_outgoing_staging",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_recorded_empty_active_keeps_legacy_archiving",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_sigkill_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_sigkill_preserves_archives_at_every_durable_boundary",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_source_becoming_empty_before_snapshot_preserves_archive",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_source_restored_after_empty_copy_is_rejected",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_unowned_empty_active_recovers_every_durable_boundary",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f01_unowned_empty_prejournal_errors_remove_only_attempt_stages",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f06_fresh_recovery_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f06_fresh_recovery_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f06_fresh_recovery_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::f06_fresh_recovery_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::first_a_and_missing_same_account_archive_preserve_live_identity",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::in_place_adoption_recovers_every_durable_boundary_without_replacing_live",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::journal_write_error_after_rename_preserves_recoverable_stages",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::legacy_process_crash_child",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::pending_journal_without_in_place_field_retains_exchange_recovery",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::pre_journal_failures_remove_stages_and_preserve_accounts",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::sigkill_recovers_destination_local_transactions_at_every_boundary",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::unsupported_fifo_times_out_in_native_ditto_without_touching_source",
+      "ok"
+    ],
+    [
+      "accounts::legacy::tests::writable_acl_is_copied_without_becoming_a_business_gate",
+      "ok"
+    ],
+    [
+      "accounts::tests::account_process_crash_child_fixture",
+      "ok"
+    ],
+    [
+      "accounts::tests::all_durable_and_physical_interruption_points_recover_by_identity",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_proof_rejects_other_xattrs_acl_content_and_mtime_changes",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_provenance_addition_is_allowed_only_for_a_new_verified_copy",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_provenance_direction_and_existing_values_remain_strict",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_provenance_exchange_recovers_all_existing_checkpoints",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_provenance_round_trip_and_separate_artifact_tampering",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_rejects_destination_child_replaced_after_proof",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_rejects_destination_content_changed_after_proof",
+      "ok"
+    ],
+    [
+      "accounts::tests::copy_rejects_destination_mtime_changed_after_proof",
+      "ok"
+    ],
+    [
+      "accounts::tests::dangling_account_journal_blocks_switch_before_mutation",
+      "ok"
+    ],
+    [
+      "accounts::tests::dangling_account_journal_requires_recovery",
+      "ok"
+    ],
+    [
+      "accounts::tests::dangling_legacy_journal_requires_recovery",
+      "ok"
+    ],
+    [
+      "accounts::tests::dangling_migration_journal_requires_recovery",
+      "ok"
+    ],
+    [
+      "accounts::tests::derived_current_is_repaired_from_authoritative_state",
+      "ok"
+    ],
+    [
+      "accounts::tests::existing_a_missing_state_requires_matching_explicit_preview",
+      "ok"
+    ],
+    [
+      "accounts::tests::f04_absent_current_keeps_v2_fallback_for_inspection_and_selection",
+      "ok"
+    ],
+    [
+      "accounts::tests::f04_dangling_current_link_is_rejected_before_inspection_or_selection",
+      "ok"
+    ],
+    [
+      "accounts::tests::f04_existing_current_link_is_rejected_before_inspection_or_selection",
+      "ok"
+    ],
+    [
+      "accounts::tests::graceful_quit_requests_once_waits_for_stop_and_bounds_retries",
+      "ok"
+    ],
+    [
+      "accounts::tests::journal_staged_hash_legacy_fallback_and_format_validation",
+      "ok"
+    ],
+    [
+      "accounts::tests::killed_process_recovers_every_durable_and_physical_checkpoint",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_0755_archive_container_opens_without_changing_permissions",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_archive_compatibility_keeps_v2_directories_private",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_archive_container_modes_and_acl_are_accepted_but_root_links_are_not",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_archive_contents_and_metadata_survive_open",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_recovery_accepts_absent_account_journal",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_recovery_rejects_dangling_account_journal_without_mutation",
+      "ok"
+    ],
+    [
+      "accounts::tests::legacy_selection_recovers_interrupted_exchange_without_backup_permit",
+      "ok"
+    ],
+    [
+      "accounts::tests::malformed_journal_and_replaced_directory_preserve_every_directory",
+      "ok"
+    ],
+    [
+      "accounts::tests::missing_archive_container_is_created_private",
+      "ok"
+    ],
+    [
+      "accounts::tests::missing_outgoing_archive_is_recreated_and_recovered_after_rename",
+      "ok"
+    ],
+    [
+      "accounts::tests::native_metadata::f05_native_round_trip_preserves_both_trees_and_latest_nested_metadata",
+      "ok"
+    ],
+    [
+      "accounts::tests::native_metadata::f05_native_running_process_preserves_active_archive_and_committed_state",
+      "ok"
+    ],
+    [
+      "accounts::tests::pending_repairs_survive_lock_release_and_block_all_account_mutations",
+      "ok"
+    ],
+    [
+      "accounts::tests::readonly_acl_is_preserved_and_write_grant_acl_is_rejected",
+      "ok"
+    ],
+    [
+      "accounts::tests::readonly_inspection_uses_legacy_current_without_creating_v2",
+      "ok"
+    ],
+    [
+      "accounts::tests::synthetic_exchange_round_trip_keeps_latest_data_modes_and_xattrs",
+      "ok"
+    ],
+    [
+      "accounts::tests::synthetic_process_records_block_account_initialization_without_running_apps",
+      "ok"
+    ],
+    [
+      "accounts::tests::synthetic_process_records_preserve_owner_and_path_boundaries",
+      "ok"
+    ],
+    [
+      "accounts::tests::unsafe_links_owners_space_and_lock_conflicts_fail_before_exchange",
+      "ok"
+    ],
+    [
+      "accounts::tests::unsafe_migration_directory_blocks_account_inspection",
+      "ok"
+    ],
+    [
+      "accounts::tests::unsafe_user_repairs_directory_blocks_account_switch",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::clock_jump_hides_content_and_baseline_needs_signed_refresh",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::configured_pins_with_all_slots_off_make_zero_requests",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::controlled_https_ca_signed_manifest_assets_privacy_and_negative_cases",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::controlled_https_capture_detects_sensitive_query_headers_and_body_positive_control",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::controlled_https_capture_rejects_request_body_over_4096_bytes",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::controlled_https_manifest_and_asset_requests_exclude_synthetic_home_contents",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::different_release_source_does_not_inherit_old_refresh_deadline",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::different_release_source_does_not_inherit_old_revision",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::disabled_cached_ads_stay_request_free_after_due_expiry_and_restart",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::every_trust_identity_component_has_a_separate_state_and_restores_on_return",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::failed_asset_keeps_authenticated_watermark_and_hides_old_content",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::failed_request_uses_elapsed_time_when_final_clock_is_unavailable",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::failed_slow_request_schedules_backoff_from_failure_time",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::formal_public_build_rejects_r2_development_domains",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::legacy_cache_cannot_authenticate_a_higher_failed_asset_watermark",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::legacy_cache_signed_by_old_local_key_is_not_attributed_to_new_key",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::legacy_local_cache_is_verified_before_migration_and_original_is_preserved",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::legacy_local_floor_survives_key_rotation_and_failed_asset_refresh",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::local_high_revision_does_not_delay_or_block_first_release_refresh",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::local_trust_errors_are_explicit_and_public_open_never_creates_publication",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::malformed_state_is_not_reset_and_offline_content_expires",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::missing_pins_and_all_off_make_zero_requests",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::passive_disabled_and_missing_materials_preserve_initialized_clock",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::passive_no_work_refresh_preserves_clock_and_authenticated_history",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::passive_snapshots_and_images_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::real_loopback_https_rejects_non_tls_peer_without_downgrade",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::release_and_local_trust_selection_respects_edition_and_invalid_configuration",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::release_materials_require_complete_valid_fixed_configuration",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::restarted_runtime_rejects_different_signed_content_with_same_revision",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::scheduled_failures_back_off_across_restarts_until_verified_recovery",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::scheduled_refresh_fetches_new_signed_content_and_survives_restart",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::source_key_and_channel_changes_restore_their_own_verified_watermarks",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::stale_confirmation_and_slot_disabled_never_open_cached_target",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::successful_refresh_persists_deadline_filters_slots_and_confirms_clicks",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::transport_bounds_body_rejects_redirect_and_sends_no_identity",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::unacknowledged_enabled_slots_never_request_content",
+      "ok"
+    ],
+    [
+      "ad_runtime::tests::unverified_legacy_local_watermark_is_preserved_and_rejected",
+      "ok"
+    ],
+    [
+      "ads::tests::all_disabled_has_zero_request_permits_and_single_disabled_has_no_asset",
+      "ok"
+    ],
+    [
+      "ads::tests::animated_malformed_oversize_and_dimension_bombs_are_rejected",
+      "ok"
+    ],
+    [
+      "ads::tests::authentication_failures_never_refresh_cache_or_highest_revision",
+      "ok"
+    ],
+    [
+      "ads::tests::changing_merchant_or_normalized_host_requires_new_consent",
+      "ok"
+    ],
+    [
+      "ads::tests::earliest_offline_expiry_and_disk_restore_do_not_extend_success_time",
+      "ok"
+    ],
+    [
+      "ads::tests::future_cache_success_time_is_hidden_and_cannot_be_restored",
+      "ok"
+    ],
+    [
+      "ads::tests::manifest_scope_validity_and_ninety_day_limit",
+      "ok"
+    ],
+    [
+      "ads::tests::merchant_urls_reject_private_forms_and_normalize_idn",
+      "ok"
+    ],
+    [
+      "ads::tests::nested_unknown_and_duplicate_fields_are_rejected_after_signature",
+      "ok"
+    ],
+    [
+      "ads::tests::overlapping_disabled_campaign_still_requires_resolution",
+      "ok"
+    ],
+    [
+      "ads::tests::png_jpeg_normalization_and_hash_mime_dimensions_are_enforced",
+      "ok"
+    ],
+    [
+      "ads::tests::schedule_persists_jitter_remaining_time_backoff_and_merges_manual_requests",
+      "ok"
+    ],
+    [
+      "ads::tests::three_unique_slots_two_campaigns_and_global_ids",
+      "ok"
+    ],
+    [
+      "ads::tests::utc_boundaries_current_next_pause_and_slot_preferences",
+      "ok"
+    ],
+    [
+      "checks::tests::gate_rejects_changed_empty_or_inconsistent_network_generation",
+      "ok"
+    ],
+    [
+      "checks::tests::gate_rejects_expired_future_and_inconsistent_evidence_times",
+      "ok"
+    ],
+    [
+      "checks::tests::gate_rejects_invalid_schema_and_each_summary_field_independently",
+      "ok"
+    ],
+    [
+      "checks::tests::gate_requires_complete_unique_results_and_fresh_evidence",
+      "ok"
+    ],
+    [
+      "checks::tests::incomplete_check_tasks_keep_all_ids_and_block",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_dns_routes_language_and_wifi_use_original_scope",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_guardian_registration_passes_without_health_signature",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_history_prunes_and_counts_distinct_hashes",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_https_accepts_any_nonzero_http_status",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_language_and_asn_conditions",
+      "ok"
+    ],
+    [
+      "checks::tests::legacy_merge_group_and_hashed_history_persist_in_fixture_home",
+      "ok"
+    ],
+    [
+      "checks::tests::network_generation_before_and_after_checks_controls_permission",
+      "ok"
+    ],
+    [
+      "checks::tests::network_generation_late_synchronous_sample_cannot_allow_launch",
+      "ok"
+    ],
+    [
+      "checks::tests::network_generation_samples_share_one_budget_with_observations",
+      "ok"
+    ],
+    [
+      "checks::tests::network_generation_sampling_timeout_keeps_complete_reports",
+      "ok"
+    ],
+    [
+      "checks::tests::only_two_advisory_warnings_can_pass_the_gate",
+      "ok"
+    ],
+    [
+      "checks::tests::report_completed_results_allow_only_a_complete_passing_report",
+      "ok"
+    ],
+    [
+      "checks::tests::report_deadline_preserves_completed_results_and_aborts_pending_tasks",
+      "ok"
+    ],
+    [
+      "checks::tests::report_deadline_returns_all_ids_for_pending_and_missing_tasks",
+      "ok"
+    ],
+    [
+      "checks::tests::report_join_errors_and_cancellation_preserve_other_results_and_block_launch",
+      "ok"
+    ],
+    [
+      "checks::tests::required_region_uses_same_ip_fallback_and_blocks_unverified_country",
+      "ok"
+    ],
+    [
+      "checks::tests::stun_no_response_is_unknown_without_waiting_for_slow_geo",
+      "ok"
+    ],
+    [
+      "checks::tests::stun_partial_response_matches_egress_but_mismatch_blocks",
+      "ok"
+    ],
+    [
+      "checks::tests::stun_production_path_blocks_missing_or_different_egress",
+      "ok"
+    ],
+    [
+      "checks::tests::stun_production_path_does_not_wait_for_slow_asn",
+      "ok"
+    ],
+    [
+      "checks::tests::stun_without_valid_responses_is_unknown_with_or_without_https_egress",
+      "ok"
+    ],
+    [
+      "config::tests::installed_shim_literals_preserve_group_text_without_shell_evaluation",
+      "ok"
+    ],
+    [
+      "config::tests::shell_configuration_is_never_evaluated",
+      "ok"
+    ],
+    [
+      "diagnostics::tests::dead_proxy_does_not_fallback_or_modify_state",
+      "ok"
+    ],
+    [
+      "diagnostics::tests::explicit_proxy_validation_and_socks_dns_are_private",
+      "ok"
+    ],
+    [
+      "diagnostics::tests::legacy_config_accepts_unknown_fields_permissions_symlink_and_whitespace",
+      "ok"
+    ],
+    [
+      "diagnostics::tests::redaction_is_shared_and_idempotent",
+      "ok"
+    ],
+    [
+      "guardian::health_tests::fifo_health_is_rejected_without_blocking",
+      "ok"
+    ],
+    [
+      "guardian::legacy_behavior_tests::driver_checks_before_stop_and_events_config_or_heartbeat_cannot_stop",
+      "ok"
+    ],
+    [
+      "guardian::legacy_behavior_tests::legacy_path_scope_sends_term_once_per_matching_process_without_signature_gate",
+      "ok"
+    ],
+    [
+      "guardian::legacy_behavior_tests::legacy_shell_only_configuration_loads_at_startup_and_refreshes",
+      "ok"
+    ],
+    [
+      "guardian::legacy_behavior_tests::only_proxy_or_tun_failure_requests_stop_for_every_event",
+      "ok"
+    ],
+    [
+      "guardian::native_tests::network_epoch_native_queue_overflow_still_invalidates_every_event",
+      "ok"
+    ],
+    [
+      "guardian::native_tests::network_epoch_native_receiver_keeps_observer_alive_and_drop_is_detectable",
+      "ok"
+    ],
+    [
+      "guardian::native_tests::read_only_native_event_registration_and_cleanup",
+      "ok"
+    ],
+    [
+      "guardian::public_update_codesign_inline_requirement_argv",
+      "ok"
+    ],
+    [
+      "guardian::reload_tests::legacy_0755_root_keeps_permissions_and_private_v2",
+      "ok"
+    ],
+    [
+      "guardian::retained_diagnostic_tests::caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal",
+      "ok"
+    ],
+    [
+      "guardian::retained_diagnostic_tests::health_binds_current_complete_policy_without_needing_green_report",
+      "ok"
+    ],
+    [
+      "guardian::retained_diagnostic_tests::inventory_child_is_deadline_limited_and_output_is_collected",
+      "ok"
+    ],
+    [
+      "guardian::retained_diagnostic_tests::unsafe_legacy_roots_and_nonprivate_v2_are_rejected",
+      "ok"
+    ],
+    [
+      "guardian::tests::stop_is_independent_of_lifecycle_lock",
+      "ok"
+    ],
+    [
+      "guardian::tests::unknown_and_wake_do_not_stop_without_failure",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::bodyguard_or_user_guardian_satisfies_readiness_without_watchdog_substitution",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_actual_python_plists_and_bootstrap_contract",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_approved_encodings_reject_execution_contract_changes",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_checked_descriptor_metadata_links_and_bounds",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_emit_watchdog_update",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_registered_corrupt_components_do_not_become_ready",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_root_file_permissions_reject_special_bits_and_foreign_owners",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::f03_target_update_is_canonical_and_strict",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::failed_bodyguard_does_not_discard_other_fixed_repairs",
+      "ok"
+    ],
+    [
+      "guardian_repair::legacy_tests::only_timezone_watchdog_never_satisfies_bodyguard_readiness",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_failure_reports_committed_configuration",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_identity_failure_and_healthy_noop_never_launch",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_missing_and_stale_heartbeat_use_correct_action",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_rejects_installation_change_before_or_during_health",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_rejects_modified_plist",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_rejects_user_writable_component_paths",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_releases_capability_before_waiting_for_health",
+      "ok"
+    ],
+    [
+      "guardian_repair::tests::guardian_repair_wait_does_not_accept_health_from_replaced_installation",
+      "ok"
+    ],
+    [
+      "install::tests::cancelled_authorization_preserves_old_components",
+      "ok"
+    ],
+    [
+      "install::tests::durable_root_commit_prevents_rollback_after_lost_reply_or_restart",
+      "ok"
+    ],
+    [
+      "install::tests::edition_replacement_is_explicit_and_paths_fixed",
+      "ok"
+    ],
+    [
+      "install::tests::every_mutation_failure_restores_and_persists",
+      "ok"
+    ],
+    [
+      "install::tests::fixture_collision_preserves_existing_directory",
+      "ok"
+    ],
+    [
+      "install::tests::recovery_failure_blocks_new_install",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::authorization_delay_and_clock_change_reject_expired_installation",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::codesign_direct_passes_inline_requirement_as_one_argument",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::codesign_generated_shell_passes_inline_requirement_as_one_argument",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::native_update_blocks_all_account_journals",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::native_update_rejects_dangling_transaction",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::region_repair_reuses_only_the_correct_held_lock",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::shell_sources_remain_literals",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::source_local_signature_passes_exact_pin_requirement_as_one_argument",
+      "ok"
+    ],
+    [
+      "install::update_transaction_tests::update_journal_accepts_authenticated_state_larger_than_generic_metadata_limit",
+      "ok"
+    ],
+    [
+      "installation_health::tests::failed_probe_worker_does_not_prevent_a_later_tick",
+      "ok"
+    ],
+    [
+      "installation_health::tests::guardian_probe_is_single_flight_and_does_not_block_ticks",
+      "ok"
+    ],
+    [
+      "installation_health::tests::guardian_zero_sequence_is_rejected_before_native_io",
+      "ok"
+    ],
+    [
+      "installation_health::tests::gui_context_requires_current_owner_edition_and_full_install_record",
+      "ok"
+    ],
+    [
+      "installation_health::tests::successful_pending_challenge_is_reported_again_after_retry_interval",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::changed_or_unavailable_network_blocks_switch_before_selection",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::check_error_after_selection_preserves_target_until_fresh_launch_check",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::evidence_expiring_after_initial_gate_never_reaches_system_open",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::final_network_recheck_blocks_aba_wake_and_sampling_failure",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::first_b_checks_before_selection_and_again_before_open",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::interrupted_selection_keeps_account_and_requires_explicit_retry",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::open_failure_is_reported_without_claiming_launch",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::ordinary_launch_needs_only_checks_and_system_open",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::preflight_failure_does_not_quit_switch_or_open",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::prerequisite_errors_block_launch_until_explicit_fresh_retry",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::selected_account_change_during_check_prevents_wrong_account_launch",
+      "ok"
+    ],
+    [
+      "lifecycle::tests::stable_network_allows_both_editions_at_the_thirty_second_boundary",
+      "ok"
+    ],
+    [
+      "macos::test_observer::network_epoch_guardian_event_does_not_invalidate_unregistered_frontend",
+      "ok"
+    ],
+    [
+      "macos::test_observer::network_epoch_registration_is_reused_and_failure_is_sticky",
+      "ok"
+    ],
+    [
+      "macos::tests::automatic_proxy_adapter_includes_odcloud_and_clash_verge",
+      "ok"
+    ],
+    [
+      "macos::tests::f08_dns_accepts_real_delayed_child",
+      "ok"
+    ],
+    [
+      "macos::tests::f08_dns_deadline_covers_stdout_and_wait_then_reaps",
+      "ok"
+    ],
+    [
+      "macos::tests::f08_generic_keeps_two_second_timeout_and_waits",
+      "ok"
+    ],
+    [
+      "macos::tests::f08_real_children_preserve_output_and_first_answer_contract",
+      "ok"
+    ],
+    [
+      "macos::tests::generation_rejects_aba_and_events_during_observation",
+      "ok"
+    ],
+    [
+      "macos::tests::legacy_proxy_and_tun_observe_vpn_and_fake_ip_not_route",
+      "ok"
+    ],
+    [
+      "macos::tests::legacy_tun_and_shadowrocket_conditions",
+      "ok"
+    ],
+    [
+      "macos::tests::only_a_real_tunnel_interface_is_accepted",
+      "ok"
+    ],
+    [
+      "migration::tests::f01_invalid_current_marker_does_not_skip_saved_account_loading",
+      "ok"
+    ],
+    [
+      "migration::tests::f01_invalid_marker_uses_recorded_v2_for_same_account_shortcut",
+      "ok"
+    ],
+    [
+      "migration::tests::f01_unowned_active_with_only_saved_b_keeps_b_archive",
+      "ok"
+    ],
+    [
+      "migration::tests::f01_unowned_empty_active_preserves_saved_accounts",
+      "ok"
+    ],
+    [
+      "migration::tests::f01_unowned_missing_active_preserves_saved_accounts",
+      "ok"
+    ],
+    [
+      "migration::tests::failed_quit_never_creates_store_or_changes_active_data",
+      "ok"
+    ],
+    [
+      "migration::tests::first_a_archives_without_requiring_existing_v2_or_backup",
+      "ok"
+    ],
+    [
+      "migration::tests::first_b_saves_a_then_empty_b_login_and_roundtrip_preserve_latest_data",
+      "ok"
+    ],
+    [
+      "migration::tests::missing_current_uses_existing_v2_account_selection",
+      "ok"
+    ],
+    [
+      "migration::tests::old_current_wins_and_replaced_live_directory_is_rebound_without_migration",
+      "ok"
+    ],
+    [
+      "migration::tests::previous_in_place_journal_recovers_copy_without_version_keychain_or_backup",
+      "ok"
+    ],
+    [
+      "migration::tests::selecting_current_account_does_not_quit_or_rewrite_live_data",
+      "ok"
+    ],
+    [
+      "migration::tests::unsafe_migration_directory_blocks_recovery_without_mutation",
+      "ok"
+    ],
+    [
+      "network::socks_controlled::evidence_environment_does_not_overwrite_files_or_follow_links",
+      "ok"
+    ],
+    [
+      "network::socks_controlled::socks_local_and_remote_dns_authentication_and_tls_stay_in_explicit_proxy",
+      "ok"
+    ],
+    [
+      "network::socks_controlled::socks_transport_child",
+      "ok"
+    ],
+    [
+      "network::socks_controlled::test_tools_ignore_writable_path",
+      "ok"
+    ],
+    [
+      "network::tests::authentication_and_access_do_not_assert_account_usability",
+      "ok"
+    ],
+    [
+      "network::tests::explicit_proxy_authentication_tls_and_timeout_are_distinct",
+      "ok"
+    ],
+    [
+      "network::tests::explicit_proxy_connect_verifies_tls_without_environment_or_direct_requests",
+      "ok"
+    ],
+    [
+      "network::tests::explicit_proxy_ignores_environment_and_never_falls_back_to_direct",
+      "ok"
+    ],
+    [
+      "network::tests::explicit_proxy_isolation_child",
+      "ok"
+    ],
+    [
+      "network::tests::explicit_proxy_verified_tls_child",
+      "ok"
+    ],
+    [
+      "network::tests::geo_enrichment_keeps_source_identity_and_never_defaults_country",
+      "ok"
+    ],
+    [
+      "network::tests::geo_ip_sb_fallback_and_failure_are_distinct",
+      "ok"
+    ],
+    [
+      "network::tests::geo_same_ip_fallback_fills_missing_country",
+      "ok"
+    ],
+    [
+      "network::tests::legacy_checks_inherit_proxy_in_an_isolated_child",
+      "ok"
+    ],
+    [
+      "network::tests::legacy_inherited_proxy_child",
+      "ok"
+    ],
+    [
+      "network::tests::resolver_failure_has_a_dns_classification_without_network_requests",
+      "ok"
+    ],
+    [
+      "network::tests::socks_ipv6_uses_remote_domain_dns_without_http_connect_and_classifies_authentication",
+      "ok"
+    ],
+    [
+      "network::tests::stun_ipv6_xor_padding_and_magic_cookie_are_checked",
+      "ok"
+    ],
+    [
+      "network::tests::stun_validates_identity_source_lengths_and_family",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::f05_open_only_has_no_readiness_budget_and_keeps_app_names",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::f05_open_only_propagates_open_failure_without_waiting",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::f05_open_only_rejects_bad_time_or_unsupported_mode_before_operations",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::legacy_named_apps_open_without_identity_preconditions_and_wait_forty_seconds",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::legacy_pending_plan_keeps_decoding_without_identity_restrictions",
+      "ok"
+    ],
+    [
+      "proxy_repair::tests::running_app_waits_for_tun_without_reopening_and_timeout_is_bounded",
+      "ok"
+    ],
+    [
+      "region_detection::tests::conflicting_country_cn_and_missing_timezone_fail",
+      "ok"
+    ],
+    [
+      "region_detection::tests::legacy_target_accepts_geo_without_cloudflare_or_matching_ip",
+      "ok"
+    ],
+    [
+      "region_detection::tests::missing_cloudflare_and_different_ip_use_geo_fallback",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::app_open_runs_before_user_preferences_and_failure_preserves_them",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::cancelled_recovery_preserves_pending_files_and_both_journals",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::combined_authorization_denial_and_expiry_make_zero_user_writes",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::combined_confirmed_root_failure_or_cancel_restores_complete_user_files",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::combined_some_plan_commits_user_and_system_under_one_lock",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::combined_unknown_retains_both_journals_until_verified_recovery",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::combined_user_write_failure_never_calls_root_and_recovers_region_journal",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::committed_repair_releases_lock_before_guardian_wait",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::dangling_journal_markers_never_trigger_user_only_recovery",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::legacy_journal_without_runtime_state_remains_readable",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::new_repair_preview_still_requires_installed_identity",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovered_commit_finishes_guardian_only_after_releasing_lock",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovery_entrypoint_rejections_preserve_journals_and_backups",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovery_entrypoints_accept_pending_journals_even_with_degraded_health",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovery_gate_accepts_absent_user_repair_directory_and_journal",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovery_gate_rejects_dangling_user_repair_directory",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::recovery_gate_rejects_linked_existing_user_repair_directory",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::repair_preview_accepts_missing_or_stale_guardian_health",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_applied_recovery_keeps_target_files_when_restart_fails",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_authorization_denied_has_no_intent_or_process_changes",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_country_failure_restores_files_and_original_running_state",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_crash_before_root_dispatch_restores_without_root_status",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_external_rewrite_after_start_never_dispatches_root_or_overwrites_conflict",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_original_restart_rewrite_does_not_report_restoration_complete",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_plan_expiry_after_verification_never_dispatches_root",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_restored_files_with_failed_restart_keep_recoverable_journal",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_start_and_reload_are_durable_before_root_dispatch",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_stop_failure_never_writes_target_files",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::runtime_target_start_failure_restores_original_files_before_restart",
+      "ok"
+    ],
+    [
+      "regions::combined_tests::user_pending_dangling_receipt_preserves_region_recovery",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::administrator_cancel_continues_user_items_and_retry_has_no_journal",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::administrator_script_runs_every_fixed_item_and_retains_failure",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_late_ready_has_no_second_phase",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_named_and_unnamed_modes_keep_open_selection",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_open_failure_stops_before_tun_start_wait_and_country",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_timeout_has_one_forty_iteration_budget",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_verge_order_and_optional_start",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::f05_composition_verge_real_tun_edit_keeps_one_readiness_gate",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::failed_proxy_gate_blocks_system_and_preferences",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::fix_egress_production_client_inherits_proxy_in_isolated_child",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::fix_egress_proxy_fixture_child",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::guardian_only_repair_includes_both_dns_commands",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::proxy_fixture_accepted_stream_waits_for_delayed_request",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::set_region_saves_target_and_locale_before_cancel_without_fix_expansion",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::unavailable_guardian_continues_fixed_system_and_user_repairs",
+      "ok"
+    ],
+    [
+      "regions::legacy::tests::user_only_repair_never_requests_administrator",
+      "ok"
+    ],
+    [
+      "regions::tests::app_open_denial_expiry_config_change_and_mode_mismatch_never_dispatch",
+      "ok"
+    ],
+    [
+      "regions::tests::app_open_intent_precedes_dispatch_and_recovery_never_replays_it",
+      "ok"
+    ],
+    [
+      "regions::tests::app_open_post_dispatch_expiry_and_config_conflicts_keep_intent",
+      "ok"
+    ],
+    [
+      "regions::tests::app_open_preview_binds_deadline_and_missing_app_does_not_block_other_repairs",
+      "ok"
+    ],
+    [
+      "regions::tests::app_open_rejection_and_unknown_result_keep_intent_until_explicit_recovery",
+      "ok"
+    ],
+    [
+      "regions::tests::authorization_cancelled_or_rejected_preserves_all_config_and_creates_no_journal",
+      "ok"
+    ],
+    [
+      "regions::tests::changed_config_and_busy_lock_never_call_helper",
+      "ok"
+    ],
+    [
+      "regions::tests::commit_intent_survives_config_rename_and_never_rolls_back",
+      "ok"
+    ],
+    [
+      "regions::tests::config_changed_during_authorization_never_creates_repair_journal",
+      "ok"
+    ],
+    [
+      "regions::tests::failed_apply_does_not_commit_country_or_timezone",
+      "ok"
+    ],
+    [
+      "regions::tests::first_same_legacy_target_commit_materializes_guardian_policy",
+      "ok"
+    ],
+    [
+      "regions::tests::interruption_before_root_dispatch_recovers_without_calling_root",
+      "ok"
+    ],
+    [
+      "regions::tests::lost_root_reply_keeps_journal_then_verified_status_commits",
+      "ok"
+    ],
+    [
+      "regions::tests::successful_apply_commits_new_target_and_clears_egress_continuity",
+      "ok"
+    ],
+    [
+      "regions::tests::unknown_wrong_plan_and_external_config_keep_recovery_blocked",
+      "ok"
+    ],
+    [
+      "regions::tests::verified_no_start_clears_journal_without_changing_config",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::command_allowlist_rejects_extra_arguments_and_paths",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::edition_mismatch_and_unverified_gui_are_rejected",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::f06_legacy_repair_complete_has_real_events_and_ok",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::f06_legacy_repair_partial_failure_has_no_complete_or_ok",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::f06_legacy_repair_prepare_failure_has_no_apply_or_ok",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::f06_legacy_repair_preview_only_has_no_apply_or_ok",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::f06_modern_repair_and_set_region_keep_json_and_errors",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::fixed_commands_execute_by_default_with_explicit_preview",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::ordinary_fix_checks_once_and_never_reports_success_for_blocked_or_failed_checks",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::ordinary_fix_preview_and_prepare_or_apply_errors_never_recheck",
+      "ok"
+    ],
+    [
+      "repair_cli::tests::serialized_forwarding_keeps_only_fixed_arguments",
+      "ok"
+    ],
+    [
+      "signed::tests::duplicate_nested_keys_unknown_fields_and_replay_are_rejected",
+      "ok"
+    ],
+    [
+      "signed::tests::exact_payload_roundtrip_tampering_wrong_key_and_limit",
+      "ok"
+    ],
+    [
+      "signed::tests::sha256_is_fixed_lowercase_hex_with_leading_zeroes",
+      "ok"
+    ],
+    [
+      "storage::tests::anchored_io_preserves_missing_link_and_private_file_checks",
+      "ok"
+    ],
+    [
+      "storage::tests::atomic_metadata_replaces_privately_and_refuses_symlink_destination",
+      "ok"
+    ],
+    [
+      "storage::tests::atomic_write_stays_in_opened_parent_after_path_is_replaced",
+      "ok"
+    ],
+    [
+      "storage::tests::bounded_private_reads_reject_oversize_public_modes_and_fifo",
+      "ok"
+    ],
+    [
+      "storage::tests::failed_directory_sync_reports_possible_commit_and_retains_data",
+      "ok"
+    ],
+    [
+      "storage::tests::fixed_parent_write_rejects_links_and_foreign_parent",
+      "ok"
+    ],
+    [
+      "storage::tests::fixed_parent_write_reports_possible_commit_after_directory_swap",
+      "ok"
+    ],
+    [
+      "storage::tests::fixed_parent_write_requires_same_parent_and_retains_commit_semantics",
+      "ok"
+    ],
+    [
+      "storage::tests::guardian_snapshot_lock_read_only_and_unsafe_paths",
+      "ok"
+    ],
+    [
+      "storage::tests::identity_check_after_commit_preserves_system_error_source",
+      "ok"
+    ],
+    [
+      "storage::tests::identity_check_preserves_underlying_system_error",
+      "ok"
+    ],
+    [
+      "storage::tests::legacy_data_root_keeps_modes_and_rejects_unsafe_metadata",
+      "ok"
+    ],
+    [
+      "storage::tests::lifecycle_contention_child_fixture",
+      "ok"
+    ],
+    [
+      "storage::tests::lifecycle_lock_child_fixture",
+      "ok"
+    ],
+    [
+      "storage::tests::lifecycle_lock_excludes_another_owner_and_os_releases_it",
+      "ok"
+    ],
+    [
+      "storage::tests::lifecycle_lock_is_released_when_the_holding_process_is_killed",
+      "ok"
+    ],
+    [
+      "storage::tests::lock_identity_replacement_and_duplicate_json_are_rejected",
+      "ok"
+    ],
+    [
+      "storage::tests::moved_parent_must_not_report_read_success",
+      "ok"
+    ],
+    [
+      "storage::tests::moved_parent_must_not_report_write_success",
+      "ok"
+    ],
+    [
+      "storage::tests::opening_an_ancestor_rejects_a_concurrent_symlink_replacement",
+      "ok"
+    ],
+    [
+      "storage::tests::parent_moved_after_commit_reports_possible_commit",
+      "ok"
+    ],
+    [
+      "storage::tests::parent_moved_after_read_is_rejected",
+      "ok"
+    ],
+    [
+      "storage::tests::parent_moved_before_rename_keeps_old_data_and_removes_temporary",
+      "ok"
+    ],
+    [
+      "storage::tests::private_io_allows_search_only_ancestor",
+      "ok"
+    ],
+    [
+      "storage::tests::private_read_stays_in_opened_parent_after_path_is_replaced",
+      "ok"
+    ],
+    [
+      "storage::tests::three_process_writers_contend_and_os_releases_killed_holder",
+      "ok"
+    ],
+    [
+      "time::tests::forward_jump_and_monotonic_rollback_require_recovery",
+      "ok"
+    ],
+    [
+      "time::tests::passive_anomaly_is_sticky_after_reload_and_baseline_requires_verification",
+      "ok"
+    ],
+    [
+      "time::tests::passive_first_boot_forward_and_continuous_rollback_checkpoint",
+      "ok"
+    ],
+    [
+      "time::tests::passive_observation_keeps_normal_baseline_and_detects_cumulative_drift",
+      "ok"
+    ],
+    [
+      "time::tests::repeated_small_rollbacks_cannot_cross_the_verified_anchor",
+      "ok"
+    ],
+    [
+      "time::tests::sleep_utc_timezone_and_recovery_do_not_reset_authenticated_history",
+      "ok"
+    ],
+    [
+      "updates::tests::app_cdhash_binds_resigned_bundle_resources",
+      "ok"
+    ],
+    [
+      "updates::tests::app_cdhash_requires_one_exact_fingerprint",
+      "ok"
+    ],
+    [
+      "updates::tests::bridge_release_is_required_before_new_signing_key",
+      "ok"
+    ],
+    [
+      "updates::tests::caller_gate_blocks_account_journals_and_links",
+      "ok"
+    ],
+    [
+      "updates::tests::caller_gate_rejects_unsafe_migration_parent",
+      "ok"
+    ],
+    [
+      "updates::tests::caller_gate_rejects_unsafe_user_repair_parent_and_pending_journal",
+      "ok"
+    ],
+    [
+      "updates::tests::codesign_app_identity_passes_inline_requirement_in_production_argv",
+      "ok"
+    ],
+    [
+      "updates::tests::component_order_requires_a_compatible_intermediate_pair",
+      "ok"
+    ],
+    [
+      "updates::tests::download_proofs_cannot_cross_candidate_releases",
+      "ok"
+    ],
+    [
+      "updates::tests::e11_consent_personal_schedule_never_reuses_completed_action_after_roundtrip",
+      "ok"
+    ],
+    [
+      "updates::tests::metadata_is_bound_to_release_identity_time_version_and_source",
+      "ok"
+    ],
+    [
+      "updates::tests::minisign_proof_requires_exact_bytes_and_signed_version",
+      "ok"
+    ],
+    [
+      "updates::tests::persistent_failure_suppression_preserves_replay_watermark",
+      "ok"
+    ],
+    [
+      "updates::tests::personal_requires_each_action_public_schedule_pause_defer_backoff_survive_restart",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::actual_new_client_rejects_http_before_contacting_live_listener",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::actual_new_client_rejects_untrusted_tls_on_live_matching_ip_endpoint",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::archive_paths_links_and_expansion_are_bounded_before_apple_assessment",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::controlled_tls_checks_exact_candidate_bytes_rejects_redirect_bad_signature_and_oversize",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::controlled_tls_download_enforces_unknown_length_stream_limit",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::controlled_tls_download_rejects_truncated_responses",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::controlled_tls_request_uses_production_user_agent",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::e11_consent_tls_check_and_download_have_distinct_exact_request_targets",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::e11_update_wire_capture_observes_sensitive_headers_and_body_positive_control",
+      "ok"
+    ],
+    [
+      "updates::transport_tests::e11_update_wire_capture_rejects_body_above_4096_byte_limit",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::create_replace_and_preserve_user_rules",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_accept_target_header_suffixes_and_preserve_user_bytes",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_document_header_stays_before_inserted_rules",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_nested_target_and_scalar_text_remain_unchanged",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_reject_ambiguous_markers_and_keep_legacy_migration",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_reject_comment_without_yaml_separator",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_reject_duplicate_keys_and_document_ambiguity",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::f10_reject_inline_values",
+      "ok"
+    ],
+    [
+      "user_repairs::pinned_routes::tests::select_group_subset_and_ambiguous_rejection",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::absent_user_repair_journal_has_no_pending_receipt",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::archived_commit_and_restore_are_idempotent_and_reject_arbitrary_ids",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::commit_retains_full_backup_receipt_and_rejects_post_apply_changes",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::crash_at_each_journal_checkpoint_restores_without_receipt_memory",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::dangling_journal_blocks_archived_receipt_and_finalization",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::dangling_user_repair_journal_blocks_recovery_and_execution",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::durable_commit_decision_survives_archive_cleanup_crash_without_rollback",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::f04_current_legacy_config_with_missing_live_rules_requires_reload_without_writing",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::f04_current_merge_with_missing_live_rules_requires_reload_without_writing",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::f04_real_merge_decision_reloads_once_or_skips_when_live_rules_pass",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::failed_second_write_rolls_back_first_write",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::filtered_copy_digest_retains_quarantine_custom_xattrs_and_acl",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::full_apply_and_restore_preserves_bytes_modes_xattrs_and_unrelated_plist_types",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::large_preferences_keep_raw_targets_out_of_the_bounded_journal",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::legacy_language_skips_app_fallback_or_system_english_and_locale_is_independent",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::legacy_merge_uses_saved_group_creates_directory_and_preserves_complex_yaml",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::legacy_proxy_text_replaces_false_even_in_complex_documents",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::legacy_tun_quits_before_edit_and_restarts_without_touching_real_apps",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::missing_client_preferences_restore_to_absent",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::old_journal_missing_backup_stamp_keeps_strict_original_validation",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::ordinary_large_user_file_with_write_acl_is_accepted",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::ordinary_symlink_hardlink_and_world_writable_source_are_accepted",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::preview_is_read_only_redacted_and_fixed_enums",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::provenance_copy_exception_is_directional_and_keeps_other_stamp_fields_strict",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::read_only_external_preference_copy_probe",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::recovery_is_idempotent_if_rollback_was_interrupted",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::recovery_rejects_unrelated_external_changes_and_corrupt_backup",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::restored_receipt_accepts_saved_real_copy_with_added_provenance",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::restored_receipt_verifies_unattempted_original_and_legacy_journals_strictly",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::routes_create_preview_execute_restore_and_source_drift",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::routes_replacement_preserves_user_rules_and_recovers_full_original",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::stale_preview_and_wrong_lock_never_write",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::stopped_gate_runs_before_backups_or_writes",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::symlinked_user_repair_directory_is_never_absent",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::unsupported_proxy_is_explicit_without_suppressing_safe_locale_items",
+      "ok"
+    ],
+    [
+      "user_repairs::tests::writable_ancestor_is_accepted",
+      "ok"
+    ],
+    [
+      "tests::f06_global_flag_and_command_errors_have_zero_backend_calls",
+      "ok"
+    ],
+    [
+      "tests::f06_legacy_check_allowed_uses_unavailable_and_display_advisory",
+      "ok"
+    ],
+    [
+      "tests::f06_legacy_check_blocking_and_runtime_errors",
+      "ok"
+    ],
+    [
+      "tests::f06_legacy_status_uses_recorded_owner_not_display_default",
+      "ok"
+    ],
+    [
+      "tests::f06_legacy_switch_outcome_and_exit_codes",
+      "ok"
+    ],
+    [
+      "tests::f06_modern_defaults_json_override_and_set_region_stay_unchanged",
+      "ok"
+    ],
+    [
+      "tests::f06_non_utf8_arguments_keep_requested_error_mode",
+      "ok"
+    ],
+    [
+      "tests::f06_public_inspection_is_read_only_for_unknown_and_recorded_accounts",
+      "ok"
+    ],
+    [
+      "tests::legacy_report_keeps_fourteen_unique_rows_and_failures",
+      "ok"
+    ],
+    [
+      "tests::native_detail_child",
+      "ok"
+    ],
+    [
+      "tests::native_detail_creates_and_replaces_private_reports",
+      "ok"
+    ],
+    [
+      "tests::native_detail_rejects_linked_destinations",
+      "ok"
+    ],
+    [
+      "explicit_environment_and_private_file_need_no_curl_or_helpers_and_never_grant_launch",
+      "ok"
+    ],
+    [
+      "invalid_arguments_and_config_do_not_echo_paths_or_secrets",
+      "ok"
+    ],
+    [
+      "status_is_readonly_reports_login_unknown_and_rejects_arguments",
+      "ok"
+    ],
+    [
+      "unavailable_lifecycle_commands_never_start_or_modify_accounts",
+      "ok"
+    ],
+    [
+      "all_ads_disabled_and_personal_unrequested_updates_produce_no_request_targets",
+      "ok"
+    ],
+    [
+      "common_redaction_survives_persistence_preview_and_export_serialization",
+      "ok"
+    ],
+    [
+      "fixed_ad_source_cannot_be_replaced_by_response_links_or_account_data",
+      "ok"
+    ],
+    [
+      "geo_production_lookup_reaches_third_ip_sb_source_after_failures",
+      "ok"
+    ],
+    [
+      "injected_tls_fixture_rejects_redirects_without_second_hop",
+      "ok"
+    ],
+    [
+      "production_http_client_rejects_redirects_without_second_hop",
+      "ok"
+    ],
+    [
+      "stun_wire_is_only_a_twenty_byte_binding_request_with_no_account_payload",
+      "ok"
+    ],
+    [
+      "synthetic_account_markers_are_absent_from_captured_fixed_probe_requests",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report",
+      "ok"
+    ],
+    [
+      "bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::ordinary_dispatch_recovery_rejects_invalid_backups_without_changing_publisher_tree",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::ordinary_dispatch_wrong_window_and_corrupt_state_never_reset_draft",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::ordinary_registry_preferences_and_redacted_export_persist_on_reopen",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::ordinary_registry_rejects_untrusted_contexts_and_missing_arguments_without_writes",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::publisher_backup::ordinary_dispatch_backup_restores_assets_and_keys_then_republishes_above_current",
+      "ok"
+    ],
+    [
+      "ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data",
+      "ok"
+    ],
+    [
+      "ipc_policy_tests::ordinary_capabilities_match_registration_and_reject_other_windows_and_remote_origins",
+      "ok"
+    ],
+    [
+      "ipc_policy_tests::ordinary_capabilities_reject_fixture_unknown_and_cross_edition_commands",
+      "ok"
+    ],
+    [
+      "native_probe::tests::only_exact_health_arguments_are_accepted",
+      "ok"
+    ],
+    [
+      "native_probe::tests::ordinary_startup_is_not_a_probe",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::archive_directory_enumeration_rejects_concurrent_insert_and_delete",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::archive_directory_handle_detects_replacement_and_symlink",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_backup_portability_and_active_target_restore_refusal",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_candidate_identity_is_bounded_no_follow_and_content_bound",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_cleanup_state_rename_errors_reconcile_memory_and_restart",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_confirmed_index_cleanup_reopens_full_asset_capacity",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_current_watermark_authentication_and_stale_preview_binding",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_current_without_history_does_not_create_verified_history_and_expiry_is_allowed",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_gc_atomic_boundaries_restart_and_partial_reclaim_are_idempotent",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_gc_four_classes_finish_without_deleting_blocked_referenced_or_unknown",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_gc_identity_capacity_is_reserved_before_checkpoint_and_ordinary_persist",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_gc_second_confirmation_reclaims_verified_candidate",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_index_atomic_boundaries_preserve_old_state_or_durable_batch",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_local_store_reads_two_currents_under_one_lock_and_batch_survives_save_publish",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_missing_only_restart_must_sync_both_directories_before_finishing",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_pending_allows_read_only_preview_and_marks_execution_blocked",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_pending_gc_commit_preserves_files_and_index",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_quarantine_replacement_is_retained_and_recreated_source_is_never_unlinked",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_reference_union_resolution_release_and_checkpoint_evidence",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_restart_with_both_paths_and_unexpected_io_preserves_batch",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_retention_full_capacity_pins_currents_inside_default_128",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::f17_stale_previews_and_pending_cannot_commit",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_child_file_creation_detects_replacement_and_sync_errors",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_child_file_creation_has_one_winner_under_concurrency",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_child_file_creation_is_exclusive_and_verifies_content",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_parent_child_creation_is_exclusive_and_private",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_parent_child_creation_rejects_child_replacement_before_open",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::fixed_parent_child_creation_rejects_parent_swap_and_sync_failure",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::local_multi_source_holds_locks_and_checks_each_real_target_identity",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_after_backup_restore_to_another_directory_preserves_restored_generation",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_confirmation_preserves_old_generation_and_vault",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_post_commit_fault_reports_unknown_and_restart_keeps_both_generations",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_preserves_legacy_cleanup_and_cross_target_checkpoint",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::migration_watermarks_are_only_from_verified_new_target",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::multi_target_cleanup_checks_complete_sources_and_binds_current_to_confirmation",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::multi_target_cleanup_rejects_inactive_rollback_conflict_and_tampering",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::multi_target_retention_preserves_inactive_resolution_and_rejects_missing_asset",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::multi_target_retention_protects_inactive_history_and_pending",
+      "ok"
+    ],
+    [
+      "publisher::cleanup_tests::retained_generation_export_rejects_unexpected_files_without_mutating_state",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::changing_remote_target_keeps_previous_access_material",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::corrupt_credentials_never_fall_back_to_a_local_publication",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::encrypted_backup_restores_remote_settings_into_the_new_generation",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::invalid_configurations_and_shared_channel_credentials_preserve_vault",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::authenticated_inactive_current_pins_local_asset_through_real_cleanup_and_gc",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::changed_local_identity_fails_before_remote_acquisition",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::closure_errors_release_locks_and_foreign_locks_prevent_maintenance",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::configured_sources_cover_local_both_remote_channels_and_complete_cleanup_gc",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::domain_aliases_share_one_physical_lock_and_remote_reader",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::missing_configuration_is_rejected_before_any_provider_is_opened",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::partial_acquisition_releases_prior_locks_without_running_maintenance",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::maintenance_tests::pending_publication_retains_lock_across_preview_restart_and_backup_restore_attempt",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::missing_historical_target_is_reported_and_original_configuration_repairs_coverage",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::r2_integration_tests::configured_publication_uses_sdk_upload_readback_and_conditional_updates",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::r2_integration_tests::configured_sdk_recovers_committed_current_after_response_is_lost",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::r2_integration_tests::local_s3_accepts_delayed_request_data",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::retained_registry_capacity_and_serialized_byte_limit_preserve_previous_vault",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::retained_registry_rotation_backup_and_cross_channel_separation",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::retained_target_can_be_selected_after_restart_and_local_selection",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::retained_target_registry_migrates_legacy_and_rejects_malformed_records_atomically",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::retained_target_selection_rejects_wrong_channel_unknown_identity_and_vault_failure",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::settings_keep_credentials_out_of_responses_and_disk_and_survive_restart",
+      "ok"
+    ],
+    [
+      "publisher::connection::tests::vault_write_failure_preserves_previous_configuration",
+      "ok"
+    ],
+    [
+      "publisher::image_boundary_tests::invalid_jpeg_inputs_leave_publisher_and_files_unchanged",
+      "ok"
+    ],
+    [
+      "publisher::image_boundary_tests::jpeg_at_pixel_limit_is_normalized_and_metadata_is_removed",
+      "ok"
+    ],
+    [
+      "publisher::image_boundary_tests::preexisting_temp_directory_is_never_taken_or_removed",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::aggregate_archive_budget_rejects_oversized_generation_without_switching",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::backup_sync_failure_and_last_moment_source_mutation_prevent_switch",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::cancel_releases_both_locks_and_keeps_verified_backup_and_active_generation",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::complete_archive_roundtrip_preserves_unindexed_files_gc_checkpoint_secrets_and_trust",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::complete_manifest_tampering_is_rejected_before_any_import",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::confirmation_rejects_stale_digest_backup_source_vault_and_directory_changes",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::exclusive_vault_failure_and_post_commit_unknown_preserve_old_generation",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::legacy_state_with_omitted_default_fields_can_be_archived_without_rewriting_original",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::missing_or_corrupt_indexed_asset_never_yields_a_ready_recovery",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::recovery_revision_exceeds_inactive_target_watermarks_without_copying_their_ledgers",
+      "ok"
+    ],
+    [
+      "publisher::migration::recovery::tests::unsafe_files_missing_vault_and_invalid_password_prevent_preparation",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::immutable_collision_checks_existing_bytes",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::lock_identity_coalesces_domain_aliases_but_separates_accounts_buckets_and_channels",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::production_configuration_rejects_ipv6_literal_origins",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::production_configuration_rejects_untrusted_endpoints",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::production_rejects_provider_domains_even_with_dns_root_dot",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::public_read_is_anonymous_bounded_and_refuses_redirects",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::r2_target_identity_tracks_namespace_and_survives_credential_rotation",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::reserved_lock_transport_uses_authenticated_conditional_requests_only",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::signed_conditional_writes_and_error_classification",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::source_read_deadline_covers_slow_body_even_while_chunks_arrive",
+      "ok"
+    ],
+    [
+      "publisher::r2_store::tests::source_requires_etag_and_enforces_size",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::delayed_acquisition_that_wins_is_recovered_before_business_can_start",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::delayed_release_and_stale_handles_cannot_unlock_new_operation",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::different_owners_cannot_take_over_and_release_uses_unique_tombstones",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::invalid_etags_and_unknown_lock_fields_never_authorize_a_lease",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::journal_must_be_durable_before_remote_write_and_lost_ownership_fails_closed",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::malformed_record_or_journal_blocks_remote_mutations",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::restart_recovers_own_lock_and_fences_delayed_acquisition",
+      "ok"
+    ],
+    [
+      "publisher::remote_lock::tests::unknown_committed_acquisition_and_release_remain_recoverable",
+      "ok"
+    ],
+    [
+      "publisher::security::managed_tests::poisoned_managed_vault_never_runs_another_secret_operation",
+      "ok"
+    ],
+    [
+      "publisher::tests::backup_restore_rejects_orphan_vault_collision_without_changing_active_generation",
+      "ok"
+    ],
+    [
+      "publisher::tests::backup_vault_failure_preserves_active_generation_and_credentials_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::branch_audit_history_restore_restart_and_republish_keep_strict_sequence",
+      "ok"
+    ],
+    [
+      "publisher::tests::branch_audit_single_channel_credentials_deny_only_other_channel_without_writes",
+      "ok"
+    ],
+    [
+      "publisher::tests::branch_audit_six_campaign_edits_pauses_and_failed_save_survive_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::cas_conflict_requires_explicit_edit_and_never_reports_success",
+      "ok"
+    ],
+    [
+      "publisher::tests::cas_success_repeat_idempotence_pause_history_and_environment_isolation",
+      "ok"
+    ],
+    [
+      "publisher::tests::delayed_unknown_commit_is_recognized_after_retry_conflict",
+      "ok"
+    ],
+    [
+      "publisher::tests::delayed_unknown_commit_never_retires_on_missing_or_failed_conflict_read",
+      "ok"
+    ],
+    [
+      "publisher::tests::delayed_unknown_commit_remains_uncertain_when_retry_upload_fails",
+      "ok"
+    ],
+    [
+      "publisher::tests::drafts_need_no_key_and_explicit_generation_persists_only_public_trust_on_disk",
+      "ok"
+    ],
+    [
+      "publisher::tests::encrypted_backup_randomness_password_parameter_limits_and_atomic_generation_restore",
+      "ok"
+    ],
+    [
+      "publisher::tests::exclusive_vault_create_competing_writers_have_one_winner",
+      "ok"
+    ],
+    [
+      "publisher::tests::exclusive_vault_create_failure_preserves_existing_entries",
+      "ok"
+    ],
+    [
+      "publisher::tests::exclusive_vault_create_preserves_existing_credentials",
+      "ok"
+    ],
+    [
+      "publisher::tests::f15_backup_plaintext_budget_includes_header_and_tag",
+      "ok"
+    ],
+    [
+      "publisher::tests::f15_command_body_failures_preserve_source_target_and_vault",
+      "ok"
+    ],
+    [
+      "publisher::tests::f15_command_body_restores_inclusive_64_mib_backup",
+      "ok"
+    ],
+    [
+      "publisher::tests::f15_command_body_restores_valid_33_mib_backup",
+      "ok"
+    ],
+    [
+      "publisher::tests::f15_valid_image_accepts_exact_byte_and_pixel_limits",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_authenticated_current_failures_cannot_be_bypassed_by_public_exact_wire",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_clean_publisher_restores_resolution_using_authenticated_backup_key",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_committed_expired_reply_retires_pending_without_verified_history",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_committed_missing_image_is_repaired_from_local_bytes_without_cas",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_committed_missing_version_is_repaired_without_another_cas",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_committed_proven_missing_image_retires_without_verified_history",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_corrupt_immutable_objects_are_never_overwritten_or_retired",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_global_pause_removes_all_campaign_references_for_safe_higher_release",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_old_state_without_resolution_field_remains_readable",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_remote_read_or_upload_errors_keep_pending_and_never_claim_resolution",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_resolution_tampering_fails_closed_on_reopen",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_retired_release_retry_after_restart_returns_same_resolution_without_cas",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_second_terminal_preserves_both_original_evidence_and_new_pending",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_small_backup_restore_retains_current_resolution_from_older_snapshot",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_terminal_evidence_survives_restart_save_and_successful_higher_pause",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_terminal_write_failures_preserve_or_calibrate_exact_disk_commit",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_trusted_higher_current_supersedes_pending_without_remote_write",
+      "ok"
+    ],
+    [
+      "publisher::tests::f16_unsafe_or_corrupt_local_assets_never_become_missing_asset_resolutions",
+      "ok"
+    ],
+    [
+      "publisher::tests::generation_creation_never_overwrites_existing_state",
+      "ok"
+    ],
+    [
+      "publisher::tests::legacy_uploading_competing_signed_commit_preserves_pending_until_resolved",
+      "ok"
+    ],
+    [
+      "publisher::tests::legacy_uploading_delayed_commit_recovers_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::legacy_uploading_upload_failure_keeps_pending_across_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::legacy_uploading_without_version_resumes_first_upload",
+      "ok"
+    ],
+    [
+      "publisher::tests::local_publication_both_editions_pause_history_backup_and_signature_verification",
+      "ok"
+    ],
+    [
+      "publisher::tests::local_store_cas_exit_child",
+      "ok"
+    ],
+    [
+      "publisher::tests::local_store_cas_exit_repairs_missing_version_and_image_without_recommitting",
+      "ok"
+    ],
+    [
+      "publisher::tests::local_store_cas_process_exit_recovers_same_release_before_and_after_commit",
+      "ok"
+    ],
+    [
+      "publisher::tests::local_store_fixed_scope_cas_immutable_private_files_and_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::missing_or_wrong_signing_credentials_never_create_remote_objects",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_conflicting_inactive_pending_is_preserved",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_conflicting_watermark_preserves_local_generation_and_vault",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_credential_conflict_preserves_generation_and_secrets",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_merges_publication_history_and_watermarks_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_preserves_vault_item_without_trust_file",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_restores_into_fresh_publisher_without_credentials",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_unbound_existing_credentials_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_vault_failure_preserves_active_generation_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::multi_target_backup_vault_read_failure_is_not_treated_as_missing_item",
+      "ok"
+    ],
+    [
+      "publisher::tests::pending_publication_blocks_other_channel_before_source_access",
+      "ok"
+    ],
+    [
+      "publisher::tests::public_readback_must_validate_all_images_and_current_before_success",
+      "ok"
+    ],
+    [
+      "publisher::tests::restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets",
+      "ok"
+    ],
+    [
+      "publisher::tests::restore_rejects_same_revision_with_different_authenticated_payloads",
+      "ok"
+    ],
+    [
+      "publisher::tests::restored_backup_restart_preserves_recovery_gate_and_authenticated_watermark",
+      "ok"
+    ],
+    [
+      "publisher::tests::shared_draft_advances_past_all_target_watermarks",
+      "ok"
+    ],
+    [
+      "publisher::tests::strict_local_draft_atomic_lock_pause_history_and_private_images",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_backup_from_different_target_cannot_replace_state_or_vault",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_cleanup_rejects_unidentified_source_before_read",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_distinct_local_roots_must_not_resume_same_pending",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_draft_only_backup_fresh_restore_can_reconcile_production",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_draft_recovery_authenticates_before_binding_and_persists_watermark",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_draft_recovery_backup_can_restore_into_bound_target_and_repeat",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_draft_recovery_backup_restores_into_bound_target",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_draft_recovery_failed_read_does_not_bind_and_can_retry",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_every_legacy_pending_phase_stays_unchanged",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_legacy_evidence_blocks_cleanup_and_gc_before_source_access",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_legacy_evidence_cannot_merge_bound_backup",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_legacy_history_must_not_bind_an_unverified_root",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_legacy_local_state_upgrades_and_old_reader_rejects_it",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_legacy_unknown_pending_is_preserved_without_io",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_original_source_survives_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_rejects_ambiguous_cross_source_pending_before_io",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_rejects_other_empty_source_before_io_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_isolation_replaced_local_directory_is_rejected_after_restart",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_ledgers_block_unsafe_restore_and_cleanup",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_ledgers_capacity_rejects_new_target_without_changing_state",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_ledgers_reject_unknown_legacy_state_and_tampered_saved_targets",
+      "ok"
+    ],
+    [
+      "publisher::tests::target_ledgers_survive_switches_and_restart_with_pending_transactions",
+      "ok"
+    ],
+    [
+      "publisher::tests::unknown_before_commit_rechecks_version_and_retries_same_id",
+      "ok"
+    ],
+    [
+      "publisher::tests::unknown_result_recovers_same_release_after_restart_without_duplicate_commit",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::only_verified_publication_is_completed",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::ordinary_publish_errors_remain_errors",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::pending_publication_feedback_rechecks_selected_target",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::resolved_outcomes_are_delivered_without_claiming_verified_publication",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::restored_backup_feedback_requires_explicit_publication_to_selected_target",
+      "ok"
+    ],
+    [
+      "publisher_commands::f16_feedback_tests::status_keeps_recovery_and_pending_priority_without_inventing_history",
+      "ok"
+    ],
+    [
+      "publisher_commands::image_command_body_tests::empty_and_unsupported_images_are_rejected_before_import",
+      "ok"
+    ],
+    [
+      "publisher_commands::image_command_body_tests::import_error_is_returned_without_replacement",
+      "ok"
+    ],
+    [
+      "publisher_commands::image_command_body_tests::inclusive_image_limit_forwards_original_bytes_and_detected_mime_once",
+      "ok"
+    ],
+    [
+      "publisher_commands::image_command_body_tests::oversized_images_are_rejected_before_mime_or_import",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_invalid_account_state",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_pending_account_journals",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report",
+      "ok"
+    ],
+    [
+      "bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace",
+      "ok"
+    ],
+    [
+      "export_rejects_links_and_nonprivate_directory_without_changing_targets",
+      "ok"
+    ],
+    [
+      "export_uses_the_same_redacted_snapshot_and_private_edition_path",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_invalid_account_state",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_pending_account_journals",
+      "ok"
+    ],
+    [
+      "available_handling_plan_exposes_no_metadata_or_login_preservation_claim",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report",
+      "ok"
+    ],
+    [
+      "bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace",
+      "ok"
+    ],
+    [
+      "compatibility_assessments_preserve_backend_blockers_and_false_readiness",
+      "ok"
+    ],
+    [
+      "current_compatibility_readiness_matches_core_without_login_claims",
+      "ok"
+    ],
+    [
+      "handling_plan_preserves_every_backend_blocker_and_ready_consistency",
+      "ok"
+    ],
+    [
+      "inspected_current_account_never_offers_reinitialization",
+      "ok"
+    ],
+    [
+      "metadata_observed_never_implies_dependency_preservation",
+      "ok"
+    ],
+    [
+      "missing_scoped_context_never_implies_local_permission",
+      "ok"
+    ],
+    [
+      "only_consistent_complete_readiness_is_presented_as_ready",
+      "ok"
+    ],
+    [
+      "projection_keeps_all_blockers_and_excludes_keychain_metadata",
+      "ok"
+    ],
+    [
+      "recovery_failure_guidance_does_not_require_new_application_or_keychain_evidence",
+      "ok"
+    ],
+    [
+      "scoped_blockers_and_inconsistent_ready_fail_closed",
+      "ok"
+    ],
+    [
+      "scoped_permission_never_removes_global_keychain_gate",
+      "ok"
+    ],
+    [
+      "unsupported_backup_is_never_offered",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_invalid_account_state",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_pending_account_journals",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report",
+      "ok"
+    ],
+    [
+      "bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace",
+      "ok"
+    ],
+    [
+      "e06_repair_preview_cancel_before_worker_start_rejects_completion",
+      "ok"
+    ],
+    [
+      "e06_repair_preview_cancel_old_request_does_not_cancel_new_plan",
+      "ok"
+    ],
+    [
+      "e06_repair_preview_execution_consumes_only_matching_request_and_never_invents_a_plan",
+      "ok"
+    ],
+    [
+      "e06_repair_preview_newer_request_rejects_late_old_preview",
+      "ok"
+    ],
+    [
+      "e06_repair_preview_reverse_worker_completion_preserves_new_request",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_invalid_account_state",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_pending_account_journals",
+      "ok"
+    ],
+    [
+      "blocked_preferences_destination_preserves_existing_activity_both_editions",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_cancel_during_begin_initialization_cannot_be_overwritten",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_late_cancel_clears_published_report_and_rejects_late_publish",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_old_drop_does_not_release_new_check_and_drop_always_releases_own",
+      "ok"
+    ],
+    [
+      "bridge::check_session_tests::check_session_simultaneously_ready_report_and_cancel_never_leave_a_report",
+      "ok"
+    ],
+    [
+      "bridge::migration_compatibility_tests::unsupported_backup_returns_without_opening_workspace",
+      "ok"
+    ],
+    [
+      "desktop_log_privacy_roundtrip",
+      "ok"
+    ],
+    [
+      "desktop_personal_background_update_actions_are_denied_before_transport",
+      "ok"
+    ],
+    [
+      "unacknowledged_ad_preferences_are_rejected_without_persistence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::alternating_passive_runtimes_preserve_shared_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::anomalous_snapshot_persists_sticky_recovery_without_clearing_history",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::background_no_work_preserves_clock_and_recovers_in_flight",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::clock_recovery_status_preserves_actual_pause_setting_and_resume",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::corrupted_state_never_resets_the_replay_watermark",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::e11_consent_completed_personal_check_cannot_authorize_download_or_install_after_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::failed_clock_preserves_persisted_state_and_denies_all_entrypoints",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::legacy_0755_root_supports_both_runtimes_without_changing_legacy_data",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::missing_materials_and_personal_guardian_make_zero_requests_and_survive_restart",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::passive_snapshots_preserve_initialized_files_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pause_resume_snapshot_survives_restart_for_both_editions",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pending_repairs_block_install_before_state_changes_but_allow_check",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_channel_requires_valid_developer_identity_before_recovery",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::pinned_updater_policy_cannot_downgrade_or_skip_signed_version",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::public_fixed_task_persists_due_time_and_global_lock_merges_duplicate_processes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::shared_clock_baseline_overrides_legacy_embedded_clock_without_resetting_sequence",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_local_unconfigured_both_editions_have_rebuild_guidance_and_no_candidate",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::source_notice_preserves_pause_clock_and_recovery_failures",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unconfigured_actions_preserve_recovery_and_failure_reasons",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unreadable_schedule_never_reports_a_known_pause_setting",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::unsafe_roots_and_nonprivate_v2_fail_closed_in_both_runtimes",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_fixture_collision_does_not_claim_or_delete_directory",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_invalid_account_state",
+      "ok"
+    ],
+    [
+      "update_runtime::tests::update_feedback_pending_account_journals",
+      "ok"
+    ],
+    [
+      "system::install_trust_tests::developer_identity_keeps_apple_anchor_and_team",
+      "ok"
+    ],
+    [
+      "system::install_trust_tests::installation_challenge_binds_boot_expiry_record_and_local_generation",
+      "ok"
+    ],
+    [
+      "system::install_trust_tests::installation_receipt_requires_both_roles_loop_and_valid_observation_time",
+      "ok"
+    ],
+    [
+      "system::install_trust_tests::invalid_and_legacy_records_never_downgrade_to_local_trust",
+      "ok"
+    ],
+    [
+      "system::install_trust_tests::local_requirements_bind_fixed_role_and_exact_code",
+      "ok"
+    ],
+    [
+      "installation_health::tests::pending_exception_excludes_every_ordinary_root_action",
+      "ok"
+    ],
+    [
+      "installation_health::tests::receipt_atomic_write_keeps_private_file_and_complete_challenge",
+      "ok"
+    ],
+    [
+      "installation_health::tests::safe_challenge_io_rejects_wrong_mode_links_fifo_and_unknown_fields",
+      "ok"
+    ],
+    [
+      "installation_health::tests::session_role_proofs_require_both_real_roles_and_guardian_loop_before_receipt",
+      "ok"
+    ],
+    [
+      "installation_health::tests::tracker_binds_full_record_nonce_expiry_and_challenge_key",
+      "ok"
+    ],
+    [
+      "native_authorization::tests::malformed_and_forged_external_forms_are_rejected_without_interaction",
+      "ok"
+    ],
+    [
+      "platform::dns_cache::test_io::dns_cache_changed_repair_runs_fixed_commands_and_then_commits",
+      "ok"
+    ],
+    [
+      "platform::dns_cache::test_io::dns_cache_failed_refresh_recovers_pending_without_granting_timezone_authority",
+      "ok"
+    ],
+    [
+      "platform::dns_cache::test_io::dns_cache_failure_preserves_changes_and_journal_without_applied_completion",
+      "ok"
+    ],
+    [
+      "platform::dns_cache::test_io::dns_cache_no_system_change_skips_both_commands",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_component_retries_after_each_interrupted_write",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_existing_and_racing_final_journals_are_never_overwritten",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_journal_retries_after_each_interrupted_write",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_managed_retries_after_each_interrupted_write",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_old_fixed_residues_are_preserved_and_do_not_block_new_writes",
+      "ok"
+    ],
+    [
+      "platform::f11_test_io::f11_replaced_temp_is_neither_published_nor_removed",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_internal_restore_rejects_nonmatching_or_unsafe_backup",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_internal_restore_without_receipt_binds_exact_managed_backup",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_pending_status_binds_full_receipt_before_state_read",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_pending_status_reports_actual_state_or_read_error",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_present_bad_receipt_never_uses_internal_restore_compatibility",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_startup_preserves_service_for_explicit_business_conflicts",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_startup_refuses_trust_io_and_unknown_errors",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_trusted_pending_reader_is_readonly_and_accepts_expired_receipt_plan",
+      "ok"
+    ],
+    [
+      "platform::f12_tests::f12_trusted_pending_refuses_unsafe_journal_and_receipt_nodes",
+      "ok"
+    ],
+    [
+      "platform::no_tun_test_io::no_tun_apply_plan_never_reaches_system_or_journal_writes",
+      "ok"
+    ],
+    [
+      "platform::no_tun_test_io::no_tun_missing_boundary_fails_closed_and_unwind_resets_scope",
+      "ok"
+    ],
+    [
+      "platform::no_tun_test_io::no_tun_positive_control_trips_before_root_journal_io",
+      "ok"
+    ],
+    [
+      "platform::no_tun_test_io::no_tun_scope_is_thread_local_and_denies_unexpected_commands",
+      "ok"
+    ],
+    [
+      "platform::tests::actual_route_requires_one_real_tunnel_interface",
+      "ok"
+    ],
+    [
+      "platform::tests::entropy_is_fresh",
+      "ok"
+    ],
+    [
+      "platform::tests::preview_receipt_survives_client_crash_and_cannot_overwrite_terminal_receipt",
+      "ok"
+    ],
+    [
+      "platform::tests::status_requires_matching_plan_and_pending_overrides_completed_receipt",
+      "ok"
+    ],
+    [
+      "platform::tests::timezone_rejects_injection_and_traversal",
+      "ok"
+    ],
+    [
+      "platform::timezone_guard::tests::invalid_target_and_failed_readback_do_not_report_success",
+      "ok"
+    ],
+    [
+      "platform::timezone_guard::tests::target_reconciles_without_managed_record_or_receipt",
+      "ok"
+    ],
+    [
+      "platform::timezone_guard::tests::unrelated_pending_transaction_does_not_disable_watchdog",
+      "ok"
+    ],
+    [
+      "policy::source_local_tests::source_local_installer_cannot_begin_session",
+      "ok"
+    ],
+    [
+      "policy::source_local_tests::source_local_system_gate_contains_only_fixed_gui_and_guardian_pins",
+      "ok"
+    ],
+    [
+      "policy::source_local_tests::source_local_unknown_fields_missing_pins_and_legacy_records_are_rejected",
+      "ok"
+    ],
+    [
+      "policy::tests::apply_without_administrator_authorization_never_mutates",
+      "ok"
+    ],
+    [
+      "policy::tests::authorized_apply_is_single_use_and_recovery_requires_new_scoped_proof",
+      "ok"
+    ],
+    [
+      "policy::tests::expired_matching_plan_records_no_start_before_any_mutation",
+      "ok"
+    ],
+    [
+      "policy::tests::expired_session_records_no_start_for_its_bound_unconsumed_plan",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_allows_sessions_and_readonly_diagnostics",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_blocks_every_non_recovery_write_before_side_effects",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_blocks_expired_apply_before_no_start_receipt",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_preserves_owner_role_session_and_replay_boundaries",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_read_error_never_bypasses_gate",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_recovery_rejects_expired_or_apply_scoped_grants",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_rejects_wrong_plan_ids_before_status_or_authorization",
+      "ok"
+    ],
+    [
+      "policy::tests::f12_pending_requires_fresh_recovery_grant_then_reopens_after_clear",
+      "ok"
+    ],
+    [
+      "policy::tests::guardian_cannot_request_root_recovery_or_read_transaction_results",
+      "ok"
+    ],
+    [
+      "policy::tests::guardian_cannot_write_and_plan_is_single_use",
+      "ok"
+    ],
+    [
+      "policy::tests::native_proof_binding_rejects_invalid_expired_replayed_and_changed_plans",
+      "ok"
+    ],
+    [
+      "policy::tests::owner_role_session_sequence_and_expiry_matrix",
+      "ok"
+    ],
+    [
+      "policy::tests::recovery_plan_change_or_apply_scope_cannot_authorize_recovery",
+      "ok"
+    ],
+    [
+      "policy::tests::timezone_guard_requires_guardian_owner_live_session_and_sequence",
+      "ok"
+    ],
+    [
+      "root_operation::root_codesign_inline_requirement_argv",
+      "ok"
+    ],
+    [
+      "root_operation::tests::copied_app_must_match_sealed_cdhash_exactly_once",
+      "ok"
+    ],
+    [
+      "root_operation::tests::exclusive_rename_does_not_follow_or_overwrite_destination_symlink",
+      "ok"
+    ],
+    [
+      "root_operation::tests::inherited_transaction_lock_survives_runner_descriptor_close",
+      "ok"
+    ],
+    [
+      "root_operation::tests::root_gate_rechecks_expiry_clock_and_boot_after_authorization",
+      "ok"
+    ],
+    [
+      "root_operation::tests::source_local_absent_journal_allows_normal_root_gate_to_continue",
+      "ok"
+    ],
+    [
+      "root_operation::tests::source_local_bad_journal_type_or_contents_never_bypass_gate",
+      "ok"
+    ],
+    [
+      "root_operation::tests::source_local_pending_survives_previous_boot_barrier_removal",
+      "ok"
+    ],
+    [
+      "root_operation::tests::unprivileged_root_runner_fails_before_any_system_path_mutation",
+      "ok"
+    ],
+    [
+      "xpc::native_client_tests::mutation_budget_covers_full_bounded_command_and_rollback_chain",
+      "ok"
+    ],
+    [
+      "xpc::tests::synthetic_dictionary_has_no_sender_identity",
+      "ok"
+    ],
+    [
+      "xpc::tests::versions_are_numeric_and_fail_closed",
+      "ok"
+    ]
+  ],
+  "harness_results": [
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 455 filtered out; finished in 0.05s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 455 filtered out; finished in 0.05s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 455 filtered out; finished in 0.01s",
+    "test result: ok. 453 passed; 0 failed; 2 ignored; 0 measured; 1 filtered out; finished in 103.33s",
+    "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s",
+    "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.06s",
+    "test result: ok. 239 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 260.22s",
+    "test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.13s",
+    "test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.95s",
+    "test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.26s",
+    "test result: ok. 33 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.22s",
+    "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 70 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 1.99s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "passed": true
+}

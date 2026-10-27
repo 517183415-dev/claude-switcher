@@ -1,0 +1,15 @@
+{
+  "HOME": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/home",
+  "TMPDIR": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/tmp/",
+  "PATH": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+  "CARGO_HOME": "/Users/gua/.cargo",
+  "RUSTUP_HOME": "/Users/gua/.rustup",
+  "CARGO_NET_OFFLINE": "true",
+  "RUSTC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustc",
+  "RUSTDOC": "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/rustdoc",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "LC_ALL": "en_US.UTF-8",
+  "MACOSX_DEPLOYMENT_TARGET": "13.0",
+  "CARGO_TARGET_DIR": "/Users/gua/CodexWorkspaces/claude-switcher/target",
+  "RUSTUP_TOOLCHAIN": "1.96.0-aarch64-apple-darwin"
+}

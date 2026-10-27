@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：保留代次的读取与验证
+
+`Publisher::retained_views → PrivateDirectory::child/read_archive_file → 状态哈希与严格 JSON → cleanup::validate_batch / validate_state → RetainedView`。缺失或损坏时保持未验证状态；仅整理等价条件并补充行为测试。[证据](../../output/no-account-20261027/storage-final-verify/current/README.md)。
+
+CodeGraph complete、pending 0：265 文件、6703 节点、27764 条边。
+
 ## 2026-10-27：产品页面远程配置接线
 
 `RemotePublisher.svelte → 测试构建专用 invoke 包装 → 正式 Tauri IPC/权限 → Publisher 远程配置 → 合成 MemoryVault`。测试包装只模拟启动时的工作区快照和环境检查。产品页面的预览/正式保存、本机切换和旧目标选回通过。[证据](../../output/no-account-20261027/native-remote-ui/README.md)。

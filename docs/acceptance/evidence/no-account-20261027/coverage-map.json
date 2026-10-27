@@ -8373,5 +8373,20 @@
       ],
       "next_review": "先固定测量候选与事件协议，短期补证；其余按实际时间及设备单列"
     }
-  ]
+  ],
+  "latest_isolated_validation": {
+    "evidence": "output/no-account-20261027/storage-final-verify/current/README.md",
+    "full_suite_head": "7e40fb8edefd1d538bc2fdb80bbb06cd8b49907f",
+    "top_level_passed_records": 931,
+    "ignored_records": 6,
+    "excluded_by_policy": 2,
+    "f01_mapped_names_passed": 24,
+    "strict_clippy": "PASS_AFTER_NARROW_REFACTOR",
+    "full_suite_source_changed_afterward": true,
+    "changed_files": [
+      "apps/desktop/src-tauri/src/publisher/migration.rs",
+      "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs"
+    ],
+    "complete_acceptance": false
+  }
 }

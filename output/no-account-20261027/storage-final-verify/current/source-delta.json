@@ -1,0 +1,14 @@
+{
+  "full_suite_head": "7e40fb8edefd1d538bc2fdb80bbb06cd8b49907f",
+  "changed_source_files": {
+    "apps/desktop/src-tauri/src/publisher/migration.rs": {
+      "full_suite_sha256": "4c8d77cf33b7676bf887bf23b34d8a5fddc29ccef597b2fe2d8fbbce127d3b23",
+      "post_sha256": "0ca128c5dee8356cb8925064505dbb409e15dfec16fd362fbf30e0bff5962e4e"
+    },
+    "apps/desktop/src-tauri/src/publisher/cleanup_tests.rs": {
+      "full_suite_sha256": "74a3b755428d391d295efa9039986816968d0fb45c89d5ca391b73ab3978843f",
+      "post_sha256": "0e41f5dd0fae84b917d0b5bd8b964597b8b46de8255c4fec8b4e11972eb7e854"
+    }
+  },
+  "other_recorded_inputs_match": true
+}

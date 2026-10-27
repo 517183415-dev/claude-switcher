@@ -649,8 +649,27 @@ fn migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure() {
         old_state
     );
     let views = serde_json::to_value(publisher.retained_views().unwrap()).unwrap();
+    assert_eq!(views[0]["state_verified"], true);
     assert_eq!(views[0]["pending_target_unknown"], true);
     assert!(views[0]["pending_release_id"].as_str().is_some());
+
+    // Damaged or absent retained state must never become trusted history.
+    let retained_state = root.0.join(&old_generation).join("state.json");
+    for damaged in [true, false] {
+        if damaged {
+            storage::atomic_write(&retained_state, b"damaged").unwrap();
+        } else {
+            fs::remove_file(&retained_state).unwrap();
+        }
+        let views = serde_json::to_value(publisher.retained_views().unwrap()).unwrap();
+        assert_eq!(views[0]["state_verified"], false);
+        assert_eq!(views[0]["history"], serde_json::json!([]));
+        assert!(views[0]["pending_release_id"].is_null());
+        assert_eq!(views[0]["pending_target_unknown"], true);
+        storage::atomic_write(&retained_state, &old_state).unwrap();
+        let restored = serde_json::to_value(publisher.retained_views().unwrap()).unwrap();
+        assert_eq!(restored[0]["state_verified"], true);
+    }
 }
 
 #[test]

@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/storage-final-verify/current/account-free.sb",
+    "/Users/gua/.rustup/toolchains/1.96.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "switcher-desktop",
+    "--bin",
+    "switcher-desktop",
+    "publisher::cleanup_tests::migration_rejects_invalid_target_and_keeps_unknown_pending_on_failure",
+    "--",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "seconds": 5.566351625020616
+}

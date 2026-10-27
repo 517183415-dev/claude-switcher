@@ -562,26 +562,20 @@ impl Publisher {
                 pending_release_id: None,
                 pending_target_unknown: true,
             };
-            if let Ok(directory) = root.child(&index.old_generation) {
-                if let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT) {
-                    if signed::digest(&bytes) == index.old_state_hash {
-                        if let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT) {
-                            let mut checked = state.clone();
-                            checked.cleanup = None;
-                            if cleanup::validate_batch(
-                                state.cleanup.as_ref(),
-                                &index.old_generation,
-                            )
-                            .is_ok()
-                                && self.validate_state(&checked).is_ok()
-                            {
-                                view.state_verified = true;
-                                view.history = state.history;
-                                view.pending_release_id =
-                                    state.pending.map(|pending| pending.manifest.release_id);
-                            }
-                        }
-                    }
+            if let Ok(directory) = root.child(&index.old_generation)
+                && let Ok(bytes) = directory.read_archive_file("state.json", STATE_LIMIT)
+                && signed::digest(&bytes) == index.old_state_hash
+                && let Ok(state) = signed::strict_json::<State>(&bytes, STATE_LIMIT)
+            {
+                let mut checked = state.clone();
+                checked.cleanup = None;
+                if cleanup::validate_batch(state.cleanup.as_ref(), &index.old_generation).is_ok()
+                    && self.validate_state(&checked).is_ok()
+                {
+                    view.state_verified = true;
+                    view.history = state.history;
+                    view.pending_release_id =
+                        state.pending.map(|pending| pending.manifest.release_id);
                 }
             }
             views.push(view);
