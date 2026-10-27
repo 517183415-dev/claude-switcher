@@ -1,0 +1,12 @@
+{
+  "name": "typecheck",
+  "command": [
+    "/opt/homebrew/bin/npm",
+    "--offline",
+    "run",
+    "check"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1.51,
+  "log_sha256": "9b56c79abb8f278c6390ccec9dbe23d378e79be013ec591288ae33ae0becdf78"
+}

@@ -7996,7 +7996,14 @@
           "requirement_checklist": "N：Personal日期输入、切换编辑时区、两发行展示；无需修改真实系统时区"
         }
       ],
-      "next_review": "向现有时钟边界注入时点，验IPC持久值与界面值"
+      "next_review": "向现有时钟边界注入时点，验IPC持久值与界面值",
+      "date_parser_evidence": {
+        "status": "PARSER_VERIFIED_NOT_NATIVE_INPUT",
+        "path": "output/no-account-20261027/campaign-date-validation/receipt.json",
+        "scope": "Strict editor date syntax and calendar validity before existing local DST conversion; pure parser regression, not native input or complete AD-06 acceptance.",
+        "new_tests": 3,
+        "frontend_full_tests": 67
+      }
     },
     {
       "id": "AD-07",

@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/opt/homebrew/bin/node",
+    "--test",
+    "apps/desktop/tests/operations-timezone.test.mjs"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 0.17,
+  "base_commit": "93815bfbe9213e1be1204791ec11c55ac60979ad",
+  "source_sha256": {
+    "apps/desktop/src/operations-date.ts": "c5c14461ec22e6ed333c5e2ce8778d15af6f2075bdd1103df95dd0540f452d45",
+    "apps/desktop/tests/operations-timezone.test.mjs": "b437cacaea6bcd73daee01d06ca02444b6ed4b239ff7a67930d416ca460cc512"
+  },
+  "log_sha256": "7d1d7e2cdb99e7fd4f793ff4709fb638ac49c3bdbd8d174f546060788abab3d7"
+}

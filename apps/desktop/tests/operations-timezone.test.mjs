@@ -75,3 +75,38 @@ test('empty or invalid input cannot become epoch zero', () => {
     }
   });
 });
+
+test('calendar overflow cannot silently change a campaign date', () => {
+  for (const zone of ['UTC', 'Asia/Taipei', 'America/Los_Angeles']) {
+    inZone(zone, () => {
+      for (const input of ['2026-02-29T12:30', '1900-02-29T12:30', '2024-02-30T12:30', '2026-04-31T12:30', '2026-10-22T24:00', '2026-13-01T12:30', '2026-00-01T12:30', '2026-01-00T12:30', '2026-01-01T12:60', '2026-01-01T12:30:60']) {
+        for (const utc of [false, true]) {
+          assert.deepEqual(parseDate(input, utc ? 'UTC' : systemTimeZone(), utc), {status:'invalid'}, `${zone} ${utc} ${input}`);
+        }
+      }
+    });
+  }
+});
+
+test('only datetime-local syntax enters campaign date conversion', () => {
+  inZone('Asia/Taipei', () => {
+    for (const input of ['2026-10-22', '2026-10-22 11:47', '2026-10-22T11:47Z', '2026-10-22T11:47+08:00', '2026-1-2T03:04', 'October 22, 2026 11:47']) {
+      for (const utc of [false, true]) {
+        assert.deepEqual(parseDate(input, utc ? 'UTC' : systemTimeZone(), utc), {status:'invalid'}, `${utc} ${input}`);
+      }
+    }
+  });
+});
+
+test('valid leap dates, epoch zero and optional seconds remain accepted', () => {
+  for (const zone of ['UTC', 'Asia/Taipei', 'America/Los_Angeles']) {
+    inZone(zone, () => {
+      for (const input of ['1970-01-01T00:00', '2000-02-29T12:30', '2024-02-29T12:30:45', '2024-02-29T12:30:45.125']) {
+        for (const utc of [false, true]) {
+          const expected = Math.floor(new Date(input + (utc ? 'Z' : '')).getTime()/1000);
+          assert.deepEqual(parseDate(input, utc ? 'UTC' : systemTimeZone(), utc), {status:'ok', value:expected});
+        }
+      }
+    });
+  }
+});

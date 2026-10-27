@@ -1,0 +1,18 @@
+{
+  "initialized": true,
+  "projectPath": "/Users/gua/CodexWorkspaces/claude-switcher",
+  "lastIndexed": "2026-10-27T06:48:42.587Z",
+  "fileCount": 239,
+  "nodeCount": 6337,
+  "edgeCount": 26423,
+  "pendingChanges": {
+    "added": 0,
+    "modified": 0,
+    "removed": 0
+  },
+  "index": {
+    "state": "complete",
+    "pendingRefs": 0
+  },
+  "source": "codegraph status --json /Users/gua/CodexWorkspaces/claude-switcher observed during finalization"
+}

@@ -1,0 +1,17 @@
+✔ Taipei and Los Angeles labels match date conversion and parse (10.406875ms)
+✔ a running page retains consistent old-zone display but cannot write after TZ changes (0.728125ms)
+✔ Los Angeles to Taipei changes reject old inputs before any poll (0.618ms)
+✔ UTC editing survives a running process timezone change (0.546458ms)
+✔ Los Angeles DST offsets use the timestamp rather than the current offset (0.633125ms)
+✔ empty or invalid input cannot become epoch zero (0.3675ms)
+✔ calendar overflow cannot silently change a campaign date (2.442625ms)
+✔ only datetime-local syntax enters campaign date conversion (0.441958ms)
+✔ valid leap dates, epoch zero and optional seconds remain accepted (1.370834ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 74.791666

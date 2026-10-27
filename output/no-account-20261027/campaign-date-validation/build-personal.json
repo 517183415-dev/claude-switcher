@@ -1,0 +1,13 @@
+{
+  "name": "build-personal",
+  "command": [
+    "/opt/homebrew/bin/npm",
+    "--offline",
+    "run",
+    "build"
+  ],
+  "VITE_EDITION": "personal",
+  "exit_code": 0,
+  "elapsed_seconds": 0.48,
+  "log_sha256": "e784dd7f2b95e6b1d7c1303d459b50a72169c3c137b1a86d97cdd58360a25665"
+}

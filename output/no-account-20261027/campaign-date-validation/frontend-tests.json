@@ -1,0 +1,11 @@
+{
+  "name": "frontend-tests",
+  "command": [
+    "/opt/homebrew/bin/npm",
+    "--offline",
+    "test"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1.2,
+  "log_sha256": "820a3928e3f420dae98b1adcba218f1dc4562d4e85f2a98cdc0bc4b19f2df395"
+}

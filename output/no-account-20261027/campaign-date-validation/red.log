@@ -1,0 +1,75 @@
+✔ Taipei and Los Angeles labels match date conversion and parse (48.597166ms)
+✔ a running page retains consistent old-zone display but cannot write after TZ changes (1.141666ms)
+✔ Los Angeles to Taipei changes reject old inputs before any poll (1.005208ms)
+✔ UTC editing survives a running process timezone change (0.792458ms)
+✔ Los Angeles DST offsets use the timestamp rather than the current offset (0.700583ms)
+✔ empty or invalid input cannot become epoch zero (0.506125ms)
+✖ calendar overflow cannot silently change a campaign date (1.120625ms)
+✖ only datetime-local syntax enters campaign date conversion (0.894041ms)
+✔ valid leap dates, epoch zero and optional seconds remain accepted (1.427708ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 7
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.569333
+
+✖ failing tests:
+
+test at apps/desktop/tests/operations-timezone.test.mjs:79:1
+✖ calendar overflow cannot silently change a campaign date (1.120625ms)
+  AssertionError [ERR_ASSERTION]: UTC false 2026-02-29T12:30
+  + actual - expected
+  
+    {
+  +   status: 'ok',
+  +   value: 1772368200
+  -   status: 'invalid'
+    }
+  
+      at file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:84:18
+      at inZone (file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:8:9)
+      at TestContext.<anonymous> (file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:81:5)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { status: 'ok', value: 1772368200 },
+    expected: { status: 'invalid' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at apps/desktop/tests/operations-timezone.test.mjs:91:1
+✖ only datetime-local syntax enters campaign date conversion (0.894041ms)
+  AssertionError [ERR_ASSERTION]: false 2026-10-22
+  + actual - expected
+  
+    {
+  +   status: 'ok',
+  +   value: 1792627200
+  -   status: 'invalid'
+    }
+  
+      at file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:95:16
+      at inZone (file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:8:9)
+      at TestContext.<anonymous> (file:///Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/tests/operations-timezone.test.mjs:92:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { status: 'ok', value: 1792627200 },
+    expected: { status: 'invalid' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,13 @@
+{
+  "name": "build-public",
+  "command": [
+    "/opt/homebrew/bin/npm",
+    "--offline",
+    "run",
+    "build"
+  ],
+  "VITE_EDITION": "public",
+  "exit_code": 0,
+  "elapsed_seconds": 0.42,
+  "log_sha256": "7ef76613bf58da138ca7f4505ae05b41dcd80c4a4fc31b58b74f6a30fc5c6f78"
+}
