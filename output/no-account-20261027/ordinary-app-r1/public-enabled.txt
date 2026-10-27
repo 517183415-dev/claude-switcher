@@ -1,0 +1,2 @@
+There has been no change in the accessibility tree for Window: "Claude 切换器".
+The focused UI element is 13 HTML content Description: Claude 切换器, URL: tauri://localhost

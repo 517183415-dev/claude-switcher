@@ -1,0 +1,62 @@
+{
+  "preferences.json": {
+    "value": {
+      "ads": {
+        "slots_enabled": [
+          false,
+          true,
+          false
+        ],
+        "request_purpose_acknowledged": true
+      },
+      "updates_paused_until": null
+    },
+    "sha256": "cb26e499a9aba1e52c7d472930cfcf79735b754c732bb54dab39017e8220cffc",
+    "mode": "0o600",
+    "nlink": 1
+  },
+  "activity.json": {
+    "value": [
+      {
+        "observed_at": 1793076073,
+        "level": "info",
+        "message": "环境检查完成：0 项通过，1 项提示，13 项阻塞"
+      },
+      {
+        "observed_at": 1793076157,
+        "level": "info",
+        "message": "环境检查完成：0 项通过，1 项提示，13 项阻塞"
+      },
+      {
+        "observed_at": 1793076189,
+        "level": "info",
+        "message": "已保存本机设置；全部广告关闭时不发送广告请求"
+      }
+    ],
+    "sha256": "ee71acc83d1e768a6f9987f4faa093e5c1389fcd94995734e1b9ae5fff429275",
+    "mode": "0o600",
+    "nlink": 1
+  },
+  "exports/activity-redacted.json": {
+    "value": [
+      {
+        "observed_at": 1793076073,
+        "level": "info",
+        "message": "环境检查完成：0 项通过，1 项提示，13 项阻塞"
+      },
+      {
+        "observed_at": 1793076157,
+        "level": "info",
+        "message": "环境检查完成：0 项通过，1 项提示，13 项阻塞"
+      },
+      {
+        "observed_at": 1793076189,
+        "level": "info",
+        "message": "已保存本机设置；全部广告关闭时不发送广告请求"
+      }
+    ],
+    "sha256": "ee71acc83d1e768a6f9987f4faa093e5c1389fcd94995734e1b9ae5fff429275",
+    "mode": "0o600",
+    "nlink": 1
+  }
+}

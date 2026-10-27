@@ -1,0 +1,128 @@
+Window: "Claude 切换器", App: Claude 切换器 Personal.
+0 standard window Claude 切换器, Secondary Actions: Raise
+	1 scroll area
+		2 HTML content Description: Claude 切换器, URL: tauri://localhost
+			3 container 主导航
+				4 text 工作空间
+				5 container 页面
+					6 button 总览
+					7 button 账号
+					8 button 环境检查
+					9 button 活动记录
+					10 button 广告运营
+				11 button 设置
+				12 text Personal · 0.2.0
+			13 container
+				14 heading 广告运营, Value: 1
+					15 text 广告运营
+				16 text 三个固定广告位，独立编辑、排期和发布。
+				17 text Personal · 本机自用 本机私有目录 本地草稿可用。尚未生成广告签名密钥。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。 尚未初始化签名密钥。请先点击下方按钮，在本机 Keychain 创建广告签名密钥。
+				18 button 创建本机广告签名密钥
+				19 heading 旧发布资料恢复, Value: 2
+					20 text 旧发布资料恢复
+				21 text 来源不明的旧发布事务不会自动重放。软件先保存并核验完整加密归档，再等待你确认。 确认后只建立新的本机代次。旧目录、历史、事务和密钥继续保留。请核对新草稿，再明确发布。 完整归档口令（至少 12 个字符）
+				22 secure text field (settable) 完整归档口令（至少 12 个字符）
+				23 button (disabled) 保存完整备份并准备恢复
+				24 text 导入完整归档到保留目录
+				25 button 读取保留资料
+				26 heading 发布来源, Value: 2
+					27 text 发布来源
+				28 text 预览和正式渠道分别设置。R2 配置与写入凭据一起保存在本机钥匙串。
+				29 button 读取已保存配置
+				30 heading 本地草稿 序号 2, Value: 2
+					31 text 本地草稿 序号 2
+				32 text 本地内容已读取 · 日常商家更新沿用当前软件版本
+				33 button 保存草稿
+				34 tab group (selectable) 广告位
+					35 tab (selected) 美国家庭宽带
+					36 tab (selectable) 注册好的账号
+					37 tab (selectable) KYC 服务
+				38 container
+					39 checkbox 允许此广告位展示, Value: 0
+					40 text 允许此广告位展示
+				41 button 暂停此位
+				42 button 全部暂停
+				43 button ＋ 添加一期
+				44 container
+					45 text 编辑时区
+					46 pop up button (collapsed) 编辑时区, Value: Asia/Shanghai, Secondary Actions: Expand
+				47 heading 此广告位还没有排期, Value: 2
+					48 text 此广告位还没有排期
+				49 text 每位可保存当前一期和下一期，三个广告位互不覆盖。
+				50 button 添加第一期
+				51 heading 本机草稿预览, Value: 2
+					52 text 本机草稿预览
+				53 text 使用客户端共用广告卡片。此处展示草稿，不打开商家链接，也不代表已发布。
+				54 pop up button (collapsed) 预览期次, Value: 当前一期, Secondary Actions: Expand
+				55 pop up button (collapsed) 预览窗口尺寸, Value: 1180 × 800, Secondary Actions: Expand
+				56 text 对应 1180 × 800 窗口的卡片区域 · 随可用空间缩放
+				57 container 美国家庭宽带
+					58 text 美国家庭宽带 预览
+					59 heading 此广告位已关闭, Value: 3
+						60 text 此广告位已关闭
+					61 text 不会读取此广告位的素材。
+					62 text 共用客户端展示组件
+				63 container 注册好的账号
+					64 text 注册好的账号 预览
+					65 heading 暂无有效内容, Value: 3
+						66 text 暂无有效内容
+					67 text 内容通过签名与排期校验后显示。
+					68 text 共用客户端展示组件
+				69 container KYC 服务
+					70 text KYC 服务 预览
+					71 heading 暂无有效内容, Value: 3
+						72 text 暂无有效内容
+					73 text 内容通过签名与排期校验后显示。
+					74 text 共用客户端展示组件
+				75 heading 本机签名发布与回读, Value: 2
+					76 text 本机签名发布与回读
+				77 text 本机预览区与正式区使用独立目录。发布保存图片、签名和不可变版本，再核验回读结果。不向其他用户远程投放。
+				78 button 发布到预览渠道
+				79 button 发布到正式渠道
+				80 text 预览发布仅供本机运营核对。正式发布供本机两个发行的广告区读取；请开启对应广告位并刷新广告内容。展示仍受签名、排期与缓存时限约束。
+				81 heading 本机发布历史与恢复, Value: 2
+					82 text 本机发布历史与恢复
+				83 text 恢复历史会建立更高内容序号。历史按下方整理设置保留。当前内容与仍被引用的素材受保护。
+				84 text 尚无已验证发布记录。
+				85 heading 本机历史与素材整理, Value: 2
+					86 text 本机历史与素材整理
+				87 text 默认保留 128 条历史，包含本机预览和正式内容对应的现有记录。先确认索引整理，再单独预览和确认文件回收。
+				88 container
+					89 text 保留历史条数
+					90 number field (settable) 保留历史条数, Value: 128
+						91 stepper 0
+							92 unknown
+							93 unknown
+				94 container
+					95 checkbox 释放上次未验证发布的处理记录槽, Value: 0
+					96 text 释放上次未验证发布的处理记录槽
+				97 button 预览索引整理
+				98 button 预览本批文件回收
+				99 heading 加密备份与恢复, Value: 2
+					100 text 加密备份与恢复
+				101 text 备份包含草稿、历史、素材索引、发布配置和加密密钥。恢复后，各发布目标先回读并核对版本，再补齐素材并发布。进行中的整理撤销记录不随备份迁移；恢复前须先结束本机回收批次。
+				102 container
+					103 text 备份口令
+					104 secure text field (settable) 备份口令, Value: 至少 12 个字符，仅用于本次加解密
+				105 button (disabled) 导出加密备份
+				106 button 打开备份目录
+				107 container
+					108 text 恢复加密备份
+					109 file upload button
+			110 container
+				111 text 最近检查 10/27 12:40:28
+				112 button 重新检查
+				113 text 资料留在本机
+	114 close button
+	115 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	116 minimize button
+	117 text Claude 切换器
+118 menu bar
+	119 Claude 切换器 Personal
+	120 File
+	121 Edit
+	122 View
+	123 Window
+	124 Help
+
+The focused UI element is 14 heading 广告运营, Value: 1

@@ -1,0 +1,45 @@
+Window: "Claude 切换器", App: Claude 切换器 Public.
+0 standard window Claude 切换器, Secondary Actions: Raise
+	1 scroll area
+		2 HTML content Description: Claude 切换器, URL: tauri://localhost
+			3 container 主导航
+				4 text 工作空间
+				5 container 页面
+					6 button 总览
+					7 button 账号
+					8 button 环境检查
+					9 button 活动记录
+				10 button 设置
+				11 text Public · 0.2.0
+			12 container
+				13 heading 活动记录, Value: 1
+					14 text 活动记录
+				15 text 这里只显示脱敏后的本机操作记录。
+				16 text Public · 公开发行 操作完成
+				17 text 脱敏记录已保存到本机：/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/home/.claude-switcher/v2/public/exports/activity-redacted.json
+				18 button 关闭操作提示
+				19 text 本机记录 · 与导出使用同一脱敏结果
+				20 button 导出脱敏记录
+				21 container
+					22 text 10/27 12:41:13 环境检查完成：0 项通过，1 项提示，13 项阻塞 记录
+				23 container
+					24 text 10/27 12:42:37 环境检查完成：0 项通过，1 项提示，13 项阻塞 记录
+				25 container
+					26 text 10/27 12:43:09 已保存本机设置；全部广告关闭时不发送广告请求 记录
+			27 container
+				28 text 最近检查 10/27 12:42:37
+				29 button 重新检查
+				30 text 资料留在本机
+	31 close button
+	32 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	33 minimize button
+	34 text Claude 切换器
+35 menu bar
+	36 Claude 切换器 Public
+	37 File
+	38 Edit
+	39 View
+	40 Window
+	41 Help
+
+The focused UI element is 2 HTML content Description: Claude 切换器, URL: tauri://localhost

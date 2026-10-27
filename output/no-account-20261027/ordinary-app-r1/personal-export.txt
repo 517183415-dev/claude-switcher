@@ -1,0 +1,6 @@
+The following is a diff from the previous accessibility tree for Window: "Claude 切换器" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~				17 text Personal · 本机自用 操作完成
++				88 text 脱敏记录已保存到本机：/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-personal/home/.claude-switcher/v2/personal/exports/activity-redacted.json
++				89 button 关闭操作提示
++				90 text 本机记录 · 与导出使用同一脱敏结果
+The focused UI element is 2 HTML content Description: Claude 切换器, URL: tauri://localhost

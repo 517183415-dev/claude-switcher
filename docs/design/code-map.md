@@ -1,6 +1,14 @@
 # Claude 切换器当前代码图谱
 
-## 2026-10-27：远程锁与全部目标清理接线
+## 2026-10-27：普通 App 实际业务路径与后续 UI 计划
+
+普通发行入口 → 现有 Tauri/WKWebView → 设置、活动记录及 Personal 运营页面 → 正常业务命令 → 合成 HOME 内持久文件。源码基线为 `9d6a3efcfc6e907ae7797633a843720533a94b34`；未启用 fixture feature，未注入测试 WebView。两版实际验证偏好保存、重启和脱敏导出；Personal 另验证草稿保存、重启及发布来源读取。回执见[ordinary-app-r1](../../output/no-account-20261027/ordinary-app-r1/receipt.json)。
+
+Public 无运营导航只属于界面证据；完整动态 ACL 命令矩阵仍未证明。R2 表单读取不证明真实 Vault 写入或远端发布。隔离环境的 14 项检查仍有 13 项阻塞。真实 Keychain/R2、安装、传播和系统托管 WebKit 回收仍未验收。
+
+产品源码未变。当前索引状态复核为 complete、pending 0：227 文件、6100 节点、25090 条边。复用既有图谱，不重复重建。后续原生 SwiftUI 流体玻璃重写排在任务清单最后，保留当前 UI 布局，采用非蓝紫色配色；详见[设计约束](SwiftUI流体玻璃重写-排期与设计约束-2026-10-27.md)。本轮没有把 Tauri/Svelte 改为 SwiftUI。
+
+## 历史阶段：远程锁与全部目标清理接线
 
 `publisher_commands::with_cleanup_source` → `Publisher::with_configured_currents` → `connection/maintenance.rs::Sources` → 既有 `cleanup_preview/commit`、`gc_preview/commit`。先核对全部账本的配置覆盖及本机目录身份，再按物理锁标识排序取得全部远程锁。一个 `LocalObjectStore` 覆盖本机两渠道；同一 R2 桶、账号与渠道的不同公开域名只取得一把锁。每轮引用读取先复核锁，清理算法继续验证签名、版本水位和预览摘要。
 

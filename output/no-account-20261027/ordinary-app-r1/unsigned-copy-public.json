@@ -1,0 +1,48 @@
+{
+  "Contents": {
+    "directory": true,
+    "mode": "0o755"
+  },
+  "Contents/Info.plist": {
+    "bytes": 1013,
+    "sha256": "5b39da0982188c4233b19bbc0f728e2254ffee0b664dd3e4a83e2a5d989721c4",
+    "mode": "0o644"
+  },
+  "Contents/MacOS": {
+    "directory": true,
+    "mode": "0o755"
+  },
+  "Contents/MacOS/switcher-desktop": {
+    "bytes": 19070192,
+    "sha256": "10bd8428f1d8e7b27b76a3dd6d40ce435d31bd9d3def1a456fdc4643ded425d0",
+    "mode": "0o755"
+  },
+  "Contents/Resources": {
+    "directory": true,
+    "mode": "0o755"
+  },
+  "Contents/Resources/AppIcon.icns": {
+    "bytes": 739462,
+    "sha256": "b780c94fcd91d70c1be36d3335e879da01a2e2a16b3d3173487dad300aa23907",
+    "mode": "0o644"
+  },
+  "Contents/Resources/components": {
+    "directory": true,
+    "mode": "0o755"
+  },
+  "Contents/Resources/components/claude-switcher": {
+    "bytes": 8202432,
+    "sha256": "91132464a3e8c0fa9e56a288ad48b9042cecb8ce6b7c6b40253d53c0aa6892f9",
+    "mode": "0o755"
+  },
+  "Contents/Resources/components/switcher-guardian": {
+    "bytes": 1678768,
+    "sha256": "66b17d302fbb138f10255fa7f187739b4f5b23e26843a952a5129da98b1e5137",
+    "mode": "0o755"
+  },
+  "Contents/Resources/components/switcher-helper": {
+    "bytes": 1105920,
+    "sha256": "a5b48cf3d590ea0b4f067c4cdff34b0e7a358f9f7508c059bd4ded8c67692d66",
+    "mode": "0o755"
+  }
+}

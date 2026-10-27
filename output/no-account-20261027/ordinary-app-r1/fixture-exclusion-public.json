@@ -1,0 +1,515 @@
+{
+  "edition": "public",
+  "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+  "source_contract": {
+    "status": "PASS_SOURCE_CONFIGURATION_ONLY",
+    "frontend_dist": "../dist",
+    "capabilities": {
+      "base": [
+        "main"
+      ],
+      "main": {
+        "identifier": "main",
+        "description": "仅允许本地工作台的固定业务命令。",
+        "windows": [
+          "main"
+        ],
+        "permissions": [
+          "allow-runtime-info",
+          "allow-workspace-snapshot",
+          "allow-check-environment",
+          "allow-cancel-check",
+          "allow-launch-checked",
+          "allow-account-action",
+          "allow-migration-preparation",
+          "allow-create-migration-backup",
+          "allow-preview-repair",
+          "allow-execute-repair",
+          "allow-cancel-repair",
+          "allow-recover-repair",
+          "allow-save-preferences",
+          "allow-activity-log",
+          "allow-export-activity",
+          "allow-software-update",
+          "allow-rebuild-time-baseline",
+          "allow-open-date-settings",
+          "allow-open-ad-link",
+          "allow-ad-cached-image",
+          "allow-refresh-ad-content",
+          "allow-region-view",
+          "allow-preview-region-change"
+        ]
+      },
+      "personal": [
+        "main",
+        {
+          "identifier": "personal-operations",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "allow-ad-draft-read",
+            "allow-ad-draft-save",
+            "allow-import-ad-image",
+            "allow-ad-image-preview",
+            "allow-publisher-status",
+            "allow-publish-ad",
+            "allow-publisher-remote-read",
+            "allow-publisher-remote-save",
+            "allow-publisher-remote-select",
+            "allow-pause-ad",
+            "allow-restore-ad-history",
+            "allow-create-ad-signing-key",
+            "allow-export-publisher-backup",
+            "allow-restore-publisher-backup",
+            "allow-open-publisher-backup-folder",
+            "allow-preview-publisher-cleanup",
+            "allow-commit-publisher-cleanup",
+            "allow-preview-publisher-gc",
+            "allow-commit-publisher-gc",
+            "allow-publisher-recovery-prepare",
+            "allow-publisher-recovery-confirm",
+            "allow-publisher-recovery-cancel",
+            "allow-publisher-archive-import",
+            "allow-publisher-retained-list",
+            "allow-publisher-retained-export"
+          ]
+        }
+      ],
+      "public": [
+        "main"
+      ]
+    },
+    "ordinary_handler_names": {
+      "personal": [
+        "runtime_info",
+        "workspace_snapshot",
+        "check_environment",
+        "cancel_check",
+        "launch_checked",
+        "account_action",
+        "migration_preparation",
+        "create_migration_backup",
+        "preview_repair",
+        "execute_repair",
+        "cancel_repair",
+        "recover_repair",
+        "save_preferences",
+        "activity_log",
+        "export_activity",
+        "software_update",
+        "rebuild_time_baseline",
+        "open_date_settings",
+        "open_ad_link",
+        "ad_cached_image",
+        "refresh_ad_content",
+        "region_view",
+        "preview_region_change",
+        "ad_draft_read",
+        "ad_draft_save",
+        "import_ad_image",
+        "ad_image_preview",
+        "publisher_status",
+        "publish_ad",
+        "publisher_remote_read",
+        "publisher_remote_save",
+        "publisher_remote_select",
+        "publisher_recovery_prepare",
+        "publisher_recovery_confirm",
+        "publisher_recovery_cancel",
+        "publisher_archive_import",
+        "publisher_retained_list",
+        "publisher_retained_export",
+        "pause_ad",
+        "restore_ad_history",
+        "create_ad_signing_key",
+        "export_publisher_backup",
+        "restore_publisher_backup",
+        "open_publisher_backup_folder",
+        "preview_publisher_cleanup",
+        "commit_publisher_cleanup",
+        "preview_publisher_gc",
+        "commit_publisher_gc"
+      ],
+      "public": [
+        "runtime_info",
+        "workspace_snapshot",
+        "check_environment",
+        "cancel_check",
+        "launch_checked",
+        "account_action",
+        "migration_preparation",
+        "create_migration_backup",
+        "preview_repair",
+        "execute_repair",
+        "cancel_repair",
+        "recover_repair",
+        "save_preferences",
+        "activity_log",
+        "export_activity",
+        "software_update",
+        "rebuild_time_baseline",
+        "open_date_settings",
+        "open_ad_link",
+        "ad_cached_image",
+        "refresh_ad_content",
+        "region_view",
+        "preview_region_change"
+      ]
+    },
+    "normal_command_names": [
+      "account_action",
+      "activity_log",
+      "ad_cached_image",
+      "ad_draft_read",
+      "ad_draft_save",
+      "ad_image_preview",
+      "cancel_check",
+      "cancel_repair",
+      "check_environment",
+      "commit_publisher_cleanup",
+      "commit_publisher_gc",
+      "create_ad_signing_key",
+      "create_migration_backup",
+      "execute_repair",
+      "export_activity",
+      "export_publisher_backup",
+      "import_ad_image",
+      "launch_checked",
+      "migration_preparation",
+      "open_ad_link",
+      "open_date_settings",
+      "open_publisher_backup_folder",
+      "pause_ad",
+      "preview_publisher_cleanup",
+      "preview_publisher_gc",
+      "preview_region_change",
+      "preview_repair",
+      "publish_ad",
+      "publisher_archive_import",
+      "publisher_recovery_cancel",
+      "publisher_recovery_confirm",
+      "publisher_recovery_prepare",
+      "publisher_remote_read",
+      "publisher_remote_save",
+      "publisher_remote_select",
+      "publisher_retained_export",
+      "publisher_retained_list",
+      "publisher_status",
+      "rebuild_time_baseline",
+      "recover_repair",
+      "refresh_ad_content",
+      "region_view",
+      "restore_ad_history",
+      "restore_publisher_backup",
+      "runtime_info",
+      "save_preferences",
+      "software_update",
+      "workspace_snapshot"
+    ],
+    "fixture_features_default_disabled": true,
+    "fixture_module_and_main_cfg_gated": true,
+    "fixture_features_mutually_exclusive": true,
+    "draft_fixture_commands": [
+      "ipc_business_draft_snapshot",
+      "allow-ipc-business-draft-snapshot"
+    ],
+    "draft_fixture_excluded_from_ordinary_handlers_commands_capabilities": true,
+    "publish_fixture_commands": [
+      "ipc_business_publish_init",
+      "ipc_business_publish",
+      "allow-ipc-business-publish-init",
+      "allow-ipc-business-publish"
+    ],
+    "publish_fixture_personal_only_and_excluded_from_ordinary_handlers_commands_capabilities": true,
+    "backup_fixture_commands": [
+      "ipc_business_backup_export",
+      "ipc_business_backup_restore",
+      "allow-ipc-business-backup-export",
+      "allow-ipc-business-backup-restore"
+    ],
+    "backup_fixture_personal_only_and_excluded_from_ordinary_handlers_commands_capabilities": true,
+    "preferences_snapshot_entry": "ipc_business_preferences_snapshot",
+    "preferences_snapshot_excluded_from_normal_handler_commands_capabilities": true,
+    "unselected_fixture_configs": {
+      "packaging/editions/ipc-limits-personal.json": {
+        "sha256": "d7465b6561a0642b76cabd93a1289282292dbc1c74ddf47364e48972a39bacd1",
+        "config": {
+          "identifier": "local.switcher.ipclimits.personal",
+          "build": {
+            "frontendDist": "../tests/native-ipc"
+          },
+          "app": {
+            "windows": [
+              {
+                "label": "ipc-limits",
+                "title": "IPC 隔离验证",
+                "width": 640,
+                "height": 360,
+                "incognito": true,
+                "url": "index.html"
+              }
+            ],
+            "security": {
+              "capabilities": [
+                {
+                  "identifier": "ipc-limits",
+                  "windows": [
+                    "ipc-limits"
+                  ],
+                  "permissions": [
+                    "allow-ipc-limits-info",
+                    "allow-ipc-limits-image",
+                    "allow-ipc-limits-backup",
+                    "allow-ipc-limits-finish"
+                  ]
+                }
+              ]
+            }
+          },
+          "bundle": {
+            "active": false
+          }
+        }
+      },
+      "packaging/editions/ipc-limits-public.json": {
+        "sha256": "5c15bdb9db2879db3b32578d27c385d2f20f586e5b41205b39440b8858a8b8a7",
+        "config": {
+          "identifier": "local.switcher.ipclimits.public",
+          "build": {
+            "frontendDist": "../tests/native-ipc"
+          },
+          "app": {
+            "windows": [
+              {
+                "label": "ipc-limits",
+                "title": "IPC 隔离验证",
+                "width": 640,
+                "height": 360,
+                "incognito": true,
+                "url": "index.html"
+              }
+            ],
+            "security": {
+              "capabilities": [
+                {
+                  "identifier": "ipc-limits",
+                  "windows": [
+                    "ipc-limits"
+                  ],
+                  "permissions": [
+                    "allow-ipc-limits-info",
+                    "allow-ipc-limits-finish"
+                  ]
+                }
+              ]
+            }
+          },
+          "bundle": {
+            "active": false
+          }
+        }
+      },
+      "packaging/editions/ipc-business-personal.json": {
+        "sha256": "644652e85a313b2f6a265a4f8327378ce8632049851bf76f1ad3cf7d3cf19b17",
+        "config": {
+          "identifier": "local.switcher.ipcbusiness.personal",
+          "build": {
+            "frontendDist": "../tests/native-ipc-business"
+          },
+          "app": {
+            "windows": [
+              {
+                "label": "ipc-business",
+                "title": "日志业务 IPC 隔离验证",
+                "width": 640,
+                "height": 360,
+                "incognito": true,
+                "url": "index.html"
+              }
+            ],
+            "security": {
+              "capabilities": [
+                {
+                  "identifier": "ipc-business",
+                  "windows": [
+                    "ipc-business"
+                  ],
+                  "permissions": [
+                    "allow-activity-log",
+                    "allow-export-activity",
+                    "allow-ipc-business-info",
+                    "allow-ipc-business-finish",
+                    "allow-save-preferences",
+                    "allow-ipc-business-preferences-snapshot",
+                    "allow-ipc-business-backup-export",
+                    "allow-ipc-business-backup-restore",
+                    "allow-ad-draft-read",
+                    "allow-ad-draft-save",
+                    "allow-pause-ad",
+                    "allow-ipc-business-draft-snapshot",
+                    "allow-import-ad-image",
+                    "allow-ad-image-preview",
+                    "allow-ipc-business-publish-init",
+                    "allow-ipc-business-publish",
+                    "allow-publisher-status",
+                    "allow-restore-ad-history",
+                    "allow-preview-publisher-cleanup",
+                    "allow-commit-publisher-cleanup",
+                    "allow-preview-publisher-gc",
+                    "allow-commit-publisher-gc"
+                  ]
+                }
+              ]
+            }
+          },
+          "bundle": {
+            "active": false
+          }
+        }
+      },
+      "packaging/editions/ipc-business-public.json": {
+        "sha256": "9f5e7d78ffd9211e38ca381ead783b0089fbaf2b2436995f31ea88257c8145fc",
+        "config": {
+          "identifier": "local.switcher.ipcbusiness.public",
+          "build": {
+            "frontendDist": "../tests/native-ipc-business"
+          },
+          "app": {
+            "windows": [
+              {
+                "label": "ipc-business",
+                "title": "日志业务 IPC 隔离验证",
+                "width": 640,
+                "height": 360,
+                "incognito": true,
+                "url": "index.html"
+              }
+            ],
+            "security": {
+              "capabilities": [
+                {
+                  "identifier": "ipc-business",
+                  "windows": [
+                    "ipc-business"
+                  ],
+                  "permissions": [
+                    "allow-activity-log",
+                    "allow-export-activity",
+                    "allow-ipc-business-info",
+                    "allow-ipc-business-finish",
+                    "allow-save-preferences",
+                    "allow-ipc-business-preferences-snapshot"
+                  ]
+                }
+              ]
+            }
+          },
+          "bundle": {
+            "active": false
+          }
+        }
+      }
+    },
+    "input_sha256": {
+      "apps/desktop/src-tauri/tauri.conf.json": "0dd7e5bcf3dcf30ee69fe2f0f47c4def9f9b2944cd7660936910b9bb4fc56d70",
+      "packaging/editions/personal.json": "74b440c06829584eab981465bbb8cd9dcf701c30691bbd41f2ee48af2c839ca4",
+      "packaging/editions/public.json": "a251da0cc3cd495c85dc1f608cec5c6a68f6904066e09ee82511dba60cab57ac",
+      "apps/desktop/src-tauri/capabilities/main.json": "02b2dc1e2b05aaed6aa74eb5a1b8476585b7f4d589774f4659ef420cf6e2f3e7",
+      "apps/desktop/src-tauri/Cargo.toml": "3db210dee5d051ce7a85d896de5bc4178194298608a5816fbff96073f5926a60",
+      "apps/desktop/src-tauri/build.rs": "c51e626ec94759c490f02ce538ce2ac72ccfd1eeeded2274b8818b85e010840e",
+      "apps/desktop/src-tauri/src/main.rs": "c1b4189bb13507d61b153b9f63314e76d1488989c0b89fd530b84cc11e7fbd6c",
+      "apps/desktop/src-tauri/src/ipc_business.rs": "31ae30dd2c7a0c8dcb92d79dbc05e2df6f99c2e0d941f001c1947b0cc07c29cf",
+      "apps/desktop/vite.config.ts": "3e7c406cabaa634f455f0baa50c3409691c2a29f0aa869c53ac0d668951c1be7",
+      "apps/desktop/index.html": "15ef5129bee45f9b8765a8892712e39d246278951f72adc2ebac2bc63d893106",
+      "apps/desktop/src-tauri/src/ipc_business/backup.rs": "c3e0e088aa871e8ffe70c543ddde0b2e0b852b25dbce24afb987813e36d0bcaf",
+      "apps/desktop/src-tauri/src/ipc_business/publish.rs": "6e3802e8342599d1213998febab834161487c37bd1e42ee34d35a67020cee38d"
+    }
+  },
+  "build_argv": [
+    "/opt/homebrew/bin/node",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules/@tauri-apps/cli/tauri.js",
+    "build",
+    "--target",
+    "aarch64-apple-darwin",
+    "--features",
+    "public",
+    "--config",
+    "../../packaging/editions/public.json",
+    "--no-sign",
+    "--",
+    "--no-default-features",
+    "--offline",
+    "--locked"
+  ],
+  "build_fixture_features_disabled": true,
+  "retained_frontend_dist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/dist/public",
+  "ordinary_frontend_dist": {
+    "assets/index-B_P7B5X0.js": {
+      "sha256": "b68334e35b356d46d8b8d25edb2026b31fcd24b1def9c77ae61a9e4677fc4be0",
+      "bytes": 85589,
+      "fixture_marker_hits": []
+    },
+    "assets/index-Dv7E4Yva.css": {
+      "sha256": "46c78d27c30e79b7a5a8de1252daa83cad1e1e3ef5778e7a1f0fcbee2835e42b",
+      "bytes": 17259,
+      "fixture_marker_hits": []
+    },
+    "index.html": {
+      "sha256": "5f104ce765d53f066eb53ede21f0b0ccf17c9e6d9e0f4ebd4064c3c90e5d80f2",
+      "bytes": 361,
+      "fixture_marker_hits": []
+    }
+  },
+  "app_resource_marker_hits": {
+    "Contents/Info.plist": [],
+    "Contents/Resources/AppIcon.icns": [],
+    "Contents/_CodeSignature/CodeResources": []
+  },
+  "binary_marker_hits": {
+    "Contents/MacOS/switcher-desktop": [
+      {
+        "token": "forbidden_probe",
+        "category": "historical_e01_permission_review",
+        "count": 1,
+        "first_offsets": [
+          12271344
+        ],
+        "contexts": [
+          "llow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeallow-import-ad-imageimport_ad_imageallow-launch-checkedlaunch_checkedallow-migr"
+        ]
+      },
+      {
+        "token": "finish_smoke",
+        "category": "historical_e01_permission_review",
+        "count": 1,
+        "first_offsets": [
+          12271311
+        ],
+        "contexts": [
+          "er-backupexport_publisher_backupallow-finish-smokefinish_smokeallow-forbidden-probeforbidden_probeallow-import-ad-imageimport_ad_imageallow-la"
+        ]
+      }
+    ],
+    "Contents/Resources/components/claude-switcher": [],
+    "Contents/Resources/components/switcher-guardian": [],
+    "Contents/Resources/components/switcher-helper": []
+  },
+  "runtime_body_violations": [],
+  "runtime_body_exclusion": "PASS_NO_RUNTIME_BODY_MARKERS",
+  "binary_scan_status": "REVIEW_MARKERS_PRESENT",
+  "interpretation": "Raw names/permission descriptions are reported as REVIEW, including historical E01 forbidden_probe/finish_smoke; they do not prove an active callable handler. Runtime-body markers fail this static gate. Static evidence does not establish native runtime ACL behavior.",
+  "historical_e01_baseline": {
+    "personal": {
+      "forbidden_probe": 1,
+      "finish_smoke": 1
+    },
+    "public": {
+      "forbidden_probe": 1,
+      "finish_smoke": 1
+    },
+    "status": "HISTORICAL_REVIEW_NOT_ERASED_BY_THIS_RUN"
+  },
+  "native_runtime_acl": "NOT_RUN",
+  "product_launch": "NOT_RUN"
+}

@@ -1,0 +1,99 @@
+The following is a diff from the previous accessibility tree for Window: "Claude 切换器" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 106-107, 109-114, 118, 121-124, 126-128, 132-133, 135, 139, 141, 145-154
+~				25 heading 广告运营, Value: 1
+~					26 text 广告运营
+~				27 text 三个固定广告位，独立编辑、排期和发布。
+~				28 text Personal · 本机自用 本机私有目录 本地草稿可用。尚未生成广告签名密钥。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。 尚未初始化签名密钥。请先点击下方按钮，在本机 Keychain 创建广告签名密钥。
+~				105 button 创建本机广告签名密钥
++				106 heading 旧发布资料恢复, Value: 2
++					107 text 旧发布资料恢复
+~				108 text 来源不明的旧发布事务不会自动重放。软件先保存并核验完整加密归档，再等待你确认。 确认后只建立新的本机代次。旧目录、历史、事务和密钥继续保留。请核对新草稿，再明确发布。 完整归档口令（至少 12 个字符）
++				109 secure text field (settable) 完整归档口令（至少 12 个字符）
++				110 button (disabled) 保存完整备份并准备恢复
++				111 text 导入完整归档到保留目录
++				112 button 读取保留资料
++				113 heading 发布来源, Value: 2
++					114 text 发布来源
+~				115 text 预览和正式渠道分别设置。R2 配置与写入凭据一起保存在本机钥匙串。
+~				116 button 读取已保存配置
+~				117 heading 本地草稿 序号 1, Value: 2
++					118 text 本地草稿 序号 1
+~				119 text 本地内容已读取 · 日常商家更新沿用当前软件版本
+~				120 button 保存草稿
++				121 tab group (selectable) 广告位
++					122 tab (selected) 美国家庭宽带
++					123 tab (selectable) 注册好的账号
++					124 tab (selectable) KYC 服务
+~				125 container
++					126 checkbox 允许此广告位展示, Value: 1
++					127 text 允许此广告位展示
++				128 button 暂停此位
+~				129 button 全部暂停
+~				130 button ＋ 添加一期
+~				131 container
++					132 text 编辑时区
++					133 pop up button (collapsed) 编辑时区, Value: Asia/Shanghai, Secondary Actions: Expand
+~				134 heading 此广告位还没有排期, Value: 2
++					135 text 此广告位还没有排期
+~				136 text 每位可保存当前一期和下一期，三个广告位互不覆盖。
+~				137 button 添加第一期
+~				138 heading 本机草稿预览, Value: 2
++					139 text 本机草稿预览
+~				140 text 使用客户端共用广告卡片。此处展示草稿，不打开商家链接，也不代表已发布。
++				141 pop up button (collapsed) 预览期次, Value: 当前一期, Secondary Actions: Expand
+~				142 pop up button (collapsed) 预览窗口尺寸, Value: 1180 × 800, Secondary Actions: Expand
+~				143 text 对应 1180 × 800 窗口的卡片区域 · 随可用空间缩放
+~				144 container 美国家庭宽带
++					145 text 美国家庭宽带 预览
++					146 heading 暂无有效内容, Value: 3
++						147 text 暂无有效内容
++					148 text 内容通过签名与排期校验后显示。
++					149 text 共用客户端展示组件
++				150 container 注册好的账号
++					151 text 注册好的账号 预览
++					152 heading 暂无有效内容, Value: 3
++						153 text 暂无有效内容
++					154 text 内容通过签名与排期校验后显示。
++					155 text 共用客户端展示组件
++				156 container KYC 服务
++					157 text KYC 服务 预览
++					158 heading 暂无有效内容, Value: 3
++						159 text 暂无有效内容
++					160 text 内容通过签名与排期校验后显示。
++					161 text 共用客户端展示组件
++				162 heading 本机签名发布与回读, Value: 2
++					163 text 本机签名发布与回读
++				164 text 本机预览区与正式区使用独立目录。发布保存图片、签名和不可变版本，再核验回读结果。不向其他用户远程投放。
++				165 button 发布到预览渠道
++				166 button 发布到正式渠道
++				167 text 预览发布仅供本机运营核对。正式发布供本机两个发行的广告区读取；请开启对应广告位并刷新广告内容。展示仍受签名、排期与缓存时限约束。
++				168 heading 本机发布历史与恢复, Value: 2
++					169 text 本机发布历史与恢复
++				170 text 恢复历史会建立更高内容序号。历史按下方整理设置保留。当前内容与仍被引用的素材受保护。
++				171 text 尚无已验证发布记录。
++				172 heading 本机历史与素材整理, Value: 2
++					173 text 本机历史与素材整理
++				174 text 默认保留 128 条历史，包含本机预览和正式内容对应的现有记录。先确认索引整理，再单独预览和确认文件回收。
++				175 container
++					176 text 保留历史条数
++					177 number field (settable) 保留历史条数, Value: 128
++						178 stepper 0
++							179 unknown
++							180 unknown
++				181 container
++					182 checkbox 释放上次未验证发布的处理记录槽, Value: 0
++					183 text 释放上次未验证发布的处理记录槽
++				184 button 预览索引整理
++				185 button 预览本批文件回收
++				186 heading 加密备份与恢复, Value: 2
++					187 text 加密备份与恢复
++				188 text 备份包含草稿、历史、素材索引、发布配置和加密密钥。恢复后，各发布目标先回读并核对版本，再补齐素材并发布。进行中的整理撤销记录不随备份迁移；恢复前须先结束本机回收批次。
++				189 container
++					190 text 备份口令
++					191 secure text field (settable) 备份口令, Value: 至少 12 个字符，仅用于本次加解密
++				192 button (disabled) 导出加密备份
++				193 button 打开备份目录
++				194 container
++					195 text 恢复加密备份
++					196 file upload button
+The focused UI element is 25 heading 广告运营, Value: 1

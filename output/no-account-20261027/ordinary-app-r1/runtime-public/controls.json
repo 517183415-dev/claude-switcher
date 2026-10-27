@@ -1,0 +1,16 @@
+{
+  "edition": "public",
+  "exit": 0,
+  "stdout": "{\"external_network_denied\": true, \"real_library_denied\": true, \"security_exec_denied\": true, \"sudo_exec_denied\": true, \"synthetic_write\": true}\n",
+  "stderr": "python3: error: couldn't create cache file '/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/xcrun_db-aVJ4H1o8' (errno=Operation not permitted)\n",
+  "environment": {
+    "HOME": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/home",
+    "TMPDIR": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/tmp/",
+    "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8",
+    "USER": "ordinary-ui",
+    "LOGNAME": "ordinary-ui"
+  },
+  "profile": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/runtime.sb"
+}

@@ -1,0 +1,695 @@
+{
+  "status": "PASS_LOCAL_APP_BUNDLE_STATIC",
+  "edition": "personal",
+  "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+  "app": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app",
+  "bundle_identifier": "local.claudeswitcher.personal",
+  "version": "0.2.0",
+  "minimum_macos": "13.0",
+  "architecture": "arm64",
+  "signature": "adhoc_without_timestamp",
+  "unsigned_main_sha256": "379d3d5ace99addd2fe5c0d22cc13cdbd040e91c47d3e1e418505640cb8f5821",
+  "signed_main_sha256": "ec1361a698973d6597bbfb7ca622e27f1a9e03d2236c469aec69b14607b648d1",
+  "components": {
+    "claude-switcher": {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher",
+      "role": "cli",
+      "sha256": "91132464a3e8c0fa9e56a288ad48b9042cecb8ce6b7c6b40253d53c0aa6892f9",
+      "bytes": 8202432
+    },
+    "switcher-helper": {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper",
+      "role": "helper",
+      "sha256": "fe0b866da778c9f5c178ba208cead89be16b8b03a5d621c7a0503edd2262fbb8",
+      "bytes": 1105920
+    },
+    "switcher-guardian": {
+      "path": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian",
+      "role": "guardian",
+      "sha256": "91a1a250f68aec7b83987245a9c13faff2b959c36ce2a1afba89b8dd74953285",
+      "bytes": 1678768
+    }
+  },
+  "native_checks": {
+    "main": {
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "identifier": "local.claudeswitcher.personal",
+      "signature": "adhoc",
+      "runtime": true,
+      "rpaths": [],
+      "resolved_rpaths": [],
+      "dependencies": [
+        {
+          "install_name": "/System/Library/Frameworks/OSAKit.framework/Versions/A/OSAKit",
+          "resolved": "/System/Library/Frameworks/OSAKit.framework/Versions/A/OSAKit",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit",
+          "resolved": "/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
+          "resolved": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics",
+          "resolved": "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon",
+          "resolved": "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
+          "resolved": "/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "resolved": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libSystem.B.dylib",
+          "resolved": "/usr/lib/libSystem.B.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+          "resolved": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore",
+          "resolved": "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "resolved": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "resolved": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "resolved": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "resolved": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libobjc.A.dylib",
+          "resolved": "/usr/lib/libobjc.A.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libiconv.2.dylib",
+          "resolved": "/usr/lib/libiconv.2.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/ColorSync.framework/Versions/A/ColorSync",
+          "resolved": "/System/Library/Frameworks/ColorSync.framework/Versions/A/ColorSync",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
+          "resolved": "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
+          "system": true
+        }
+      ]
+    },
+    "claude-switcher": {
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "identifier": "local.claudeswitcher.cli",
+      "signature": "adhoc",
+      "runtime": true,
+      "rpaths": [],
+      "resolved_rpaths": [],
+      "dependencies": [
+        {
+          "install_name": "/usr/lib/libSystem.B.dylib",
+          "resolved": "/usr/lib/libSystem.B.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "resolved": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "resolved": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "resolved": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "resolved": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libobjc.A.dylib",
+          "resolved": "/usr/lib/libobjc.A.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "resolved": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libiconv.2.dylib",
+          "resolved": "/usr/lib/libiconv.2.dylib",
+          "system": true
+        }
+      ]
+    },
+    "switcher-helper": {
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "identifier": "local.claudeswitcher.helper",
+      "signature": "adhoc",
+      "runtime": true,
+      "rpaths": [],
+      "resolved_rpaths": [],
+      "dependencies": [
+        {
+          "install_name": "/usr/lib/libSystem.B.dylib",
+          "resolved": "/usr/lib/libSystem.B.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "resolved": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "resolved": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libiconv.2.dylib",
+          "resolved": "/usr/lib/libiconv.2.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libobjc.A.dylib",
+          "resolved": "/usr/lib/libobjc.A.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "resolved": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "system": true
+        }
+      ]
+    },
+    "switcher-guardian": {
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "identifier": "local.claudeswitcher.guardian",
+      "signature": "adhoc",
+      "runtime": true,
+      "rpaths": [],
+      "resolved_rpaths": [],
+      "dependencies": [
+        {
+          "install_name": "/usr/lib/libSystem.B.dylib",
+          "resolved": "/usr/lib/libSystem.B.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "resolved": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "resolved": "/System/Library/Frameworks/Security.framework/Versions/A/Security",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "resolved": "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "resolved": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libobjc.A.dylib",
+          "resolved": "/usr/lib/libobjc.A.dylib",
+          "system": true
+        },
+        {
+          "install_name": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "resolved": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+          "system": true
+        },
+        {
+          "install_name": "/usr/lib/libiconv.2.dylib",
+          "resolved": "/usr/lib/libiconv.2.dylib",
+          "system": true
+        }
+      ]
+    }
+  },
+  "files": {
+    "Contents/Info.plist": {
+      "sha256": "c8640bb584e8fa5e548463db1fa57c2bc8ab5f4168759fd905f63c99939932b9",
+      "bytes": 1019,
+      "mode": "0o644"
+    },
+    "Contents/MacOS/switcher-desktop": {
+      "sha256": "ec1361a698973d6597bbfb7ca622e27f1a9e03d2236c469aec69b14607b648d1",
+      "bytes": 29964368,
+      "mode": "0o755"
+    },
+    "Contents/Resources/AppIcon.icns": {
+      "sha256": "b780c94fcd91d70c1be36d3335e879da01a2e2a16b3d3173487dad300aa23907",
+      "bytes": 739462,
+      "mode": "0o644"
+    },
+    "Contents/Resources/components/claude-switcher": {
+      "sha256": "91132464a3e8c0fa9e56a288ad48b9042cecb8ce6b7c6b40253d53c0aa6892f9",
+      "bytes": 8202432,
+      "mode": "0o755"
+    },
+    "Contents/Resources/components/switcher-guardian": {
+      "sha256": "91a1a250f68aec7b83987245a9c13faff2b959c36ce2a1afba89b8dd74953285",
+      "bytes": 1678768,
+      "mode": "0o755"
+    },
+    "Contents/Resources/components/switcher-helper": {
+      "sha256": "fe0b866da778c9f5c178ba208cead89be16b8b03a5d621c7a0503edd2262fbb8",
+      "bytes": 1105920,
+      "mode": "0o755"
+    },
+    "Contents/_CodeSignature/CodeResources": {
+      "sha256": "2bf7b83e6580efcae16184c14b40a2b14505425e33f1b0130739ca0232bb13fe",
+      "bytes": 3224,
+      "mode": "0o644"
+    }
+  },
+  "tree_manifest_sha256": "364c3791ca1bd3ee58329883efe953ac73a77af8fdadaa73997fdb580bc8c81e",
+  "commands": [
+    {
+      "label": "copy",
+      "argv": [
+        "/usr/bin/ditto",
+        "/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Personal.app",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app"
+      ],
+      "exit": 0,
+      "seconds": 0.015043999999761581,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "sign-app",
+      "argv": [
+        "/usr/bin/codesign",
+        "--force",
+        "--options",
+        "runtime",
+        "--sign",
+        "-",
+        "--timestamp=none",
+        "--identifier",
+        "local.claudeswitcher.personal",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app"
+      ],
+      "exit": 0,
+      "seconds": 0.05104837496764958,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c93e57b1ae89f425160a34dac7d432a456c0a3da92b75b653bb96c0043b31f23"
+    },
+    {
+      "label": "verify-app",
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "--deep",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app"
+      ],
+      "exit": 0,
+      "seconds": 0.02955795789603144,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "display-app",
+      "argv": [
+        "/usr/bin/codesign",
+        "--display",
+        "--verbose=4",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app"
+      ],
+      "exit": 0,
+      "seconds": 0.013900166959501803,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5b0d2ceaace9f0629a1c3bfd7d17fae8f4873185db46e1aea453921716719cc0"
+    },
+    {
+      "label": "arch-main",
+      "argv": [
+        "/usr/bin/lipo",
+        "-archs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.018333957996219397,
+      "stdout_sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "loads-main",
+      "argv": [
+        "/usr/bin/otool",
+        "-l",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.018527416978031397,
+      "stdout_sha256": "8b03459c5d66f92177bc03a4e0a971327964874ea60ec5277bb4ebfe72c3f633",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "verify-main",
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.02911670901812613,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "signature-main",
+      "argv": [
+        "/usr/bin/codesign",
+        "--display",
+        "--verbose=4",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.01485299994237721,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5b0d2ceaace9f0629a1c3bfd7d17fae8f4873185db46e1aea453921716719cc0"
+    },
+    {
+      "label": "dependencies-main",
+      "argv": [
+        "/usr/bin/otool",
+        "-L",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/MacOS/switcher-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.015411333995871246,
+      "stdout_sha256": "75db4a6e973b306472192aebe82bf6723854eb731ac6d971d907839a500a09be",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "arch-claude-switcher",
+      "argv": [
+        "/usr/bin/lipo",
+        "-archs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher"
+      ],
+      "exit": 0,
+      "seconds": 0.015819333028048277,
+      "stdout_sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "loads-claude-switcher",
+      "argv": [
+        "/usr/bin/otool",
+        "-l",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher"
+      ],
+      "exit": 0,
+      "seconds": 0.015789458993822336,
+      "stdout_sha256": "b9e53850d9cfaddc639b924846d07fcc4bbdee830c40470960ce6a490f5e8999",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "verify-claude-switcher",
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher"
+      ],
+      "exit": 0,
+      "seconds": 0.017361875041387975,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "signature-claude-switcher",
+      "argv": [
+        "/usr/bin/codesign",
+        "--display",
+        "--verbose=4",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher"
+      ],
+      "exit": 0,
+      "seconds": 0.015193750034086406,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "71c215d169ee5f1226857c34308f35ce5efc3add6e2372c825e87e39415900f8"
+    },
+    {
+      "label": "dependencies-claude-switcher",
+      "argv": [
+        "/usr/bin/otool",
+        "-L",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/claude-switcher"
+      ],
+      "exit": 0,
+      "seconds": 0.01539495901670307,
+      "stdout_sha256": "a9deba225e3ac15dc599ed6d7defc4e8a090cef2ab9f9981a5c6d440e89ca321",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "arch-switcher-helper",
+      "argv": [
+        "/usr/bin/lipo",
+        "-archs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper"
+      ],
+      "exit": 0,
+      "seconds": 0.016043374896980822,
+      "stdout_sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "loads-switcher-helper",
+      "argv": [
+        "/usr/bin/otool",
+        "-l",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper"
+      ],
+      "exit": 0,
+      "seconds": 0.015668374951928854,
+      "stdout_sha256": "0736beaf01d411b66ab91a470808e02fce4200813db2635e53f56f9f0cbf7490",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "verify-switcher-helper",
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper"
+      ],
+      "exit": 0,
+      "seconds": 0.014860875089652836,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "signature-switcher-helper",
+      "argv": [
+        "/usr/bin/codesign",
+        "--display",
+        "--verbose=4",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper"
+      ],
+      "exit": 0,
+      "seconds": 0.013530166004784405,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b6b2789a5765705882ac6dd6071630c98da3d74dc31e44a3f4972e714858a531"
+    },
+    {
+      "label": "dependencies-switcher-helper",
+      "argv": [
+        "/usr/bin/otool",
+        "-L",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-helper"
+      ],
+      "exit": 0,
+      "seconds": 0.014445874956436455,
+      "stdout_sha256": "243d40e7d7f4824f683e806595c69806133ecdf4e8c70d9794f0402d26ba34f9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "arch-switcher-guardian",
+      "argv": [
+        "/usr/bin/lipo",
+        "-archs",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian"
+      ],
+      "exit": 0,
+      "seconds": 0.014977250015363097,
+      "stdout_sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "loads-switcher-guardian",
+      "argv": [
+        "/usr/bin/otool",
+        "-l",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian"
+      ],
+      "exit": 0,
+      "seconds": 0.01611954194959253,
+      "stdout_sha256": "f8b2536f55a6b7ac6c6e936c982a5faa6bee19e74eeba090ebdc8aca3701c00e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "verify-switcher-guardian",
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian"
+      ],
+      "exit": 0,
+      "seconds": 0.014323499985039234,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "signature-switcher-guardian",
+      "argv": [
+        "/usr/bin/codesign",
+        "--display",
+        "--verbose=4",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian"
+      ],
+      "exit": 0,
+      "seconds": 0.012928750016726553,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "309c2a6709bc2d5083d90c3f6540f162e81b36ede0d20954c516c4d548cc19f9"
+    },
+    {
+      "label": "dependencies-switcher-guardian",
+      "argv": [
+        "/usr/bin/otool",
+        "-L",
+        "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/personal/Claude 切换器 Personal.app/Contents/Resources/components/switcher-guardian"
+      ],
+      "exit": 0,
+      "seconds": 0.014955166960135102,
+      "stdout_sha256": "c393d5c5dfe30d07ab35f0f4e0d798937ac18087a33f23099189decd6e819981",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "full_app_bundle": true,
+  "static_check_command_count": 22,
+  "mutation_command_count": 2,
+  "mutation_labels": [
+    "copy",
+    "sign-app"
+  ],
+  "all_entries_after_signing": {
+    "Contents": {
+      "directory": true,
+      "mode": "0o755"
+    },
+    "Contents/Info.plist": {
+      "bytes": 1019,
+      "sha256": "c8640bb584e8fa5e548463db1fa57c2bc8ab5f4168759fd905f63c99939932b9",
+      "mode": "0o644"
+    },
+    "Contents/MacOS": {
+      "directory": true,
+      "mode": "0o755"
+    },
+    "Contents/MacOS/switcher-desktop": {
+      "bytes": 29964368,
+      "sha256": "ec1361a698973d6597bbfb7ca622e27f1a9e03d2236c469aec69b14607b648d1",
+      "mode": "0o755"
+    },
+    "Contents/Resources": {
+      "directory": true,
+      "mode": "0o755"
+    },
+    "Contents/Resources/AppIcon.icns": {
+      "bytes": 739462,
+      "sha256": "b780c94fcd91d70c1be36d3335e879da01a2e2a16b3d3173487dad300aa23907",
+      "mode": "0o644"
+    },
+    "Contents/Resources/components": {
+      "directory": true,
+      "mode": "0o755"
+    },
+    "Contents/Resources/components/claude-switcher": {
+      "bytes": 8202432,
+      "sha256": "91132464a3e8c0fa9e56a288ad48b9042cecb8ce6b7c6b40253d53c0aa6892f9",
+      "mode": "0o755"
+    },
+    "Contents/Resources/components/switcher-guardian": {
+      "bytes": 1678768,
+      "sha256": "91a1a250f68aec7b83987245a9c13faff2b959c36ce2a1afba89b8dd74953285",
+      "mode": "0o755"
+    },
+    "Contents/Resources/components/switcher-helper": {
+      "bytes": 1105920,
+      "sha256": "fe0b866da778c9f5c178ba208cead89be16b8b03a5d621c7a0503edd2262fbb8",
+      "mode": "0o755"
+    },
+    "Contents/_CodeSignature": {
+      "directory": true,
+      "mode": "0o755"
+    },
+    "Contents/_CodeSignature/CodeResources": {
+      "bytes": 3224,
+      "sha256": "2bf7b83e6580efcae16184c14b40a2b14505425e33f1b0130739ca0232bb13fe",
+      "mode": "0o644"
+    }
+  },
+  "copy_bytes_modes_verified": true,
+  "product_launch": "NOT_RUN",
+  "native_gui_ipc": "NOT_RUN",
+  "installation_services": "NOT_RUN",
+  "real_accounts": "NOT_ACCESSED",
+  "Developer_ID_notarization_Gatekeeper": "NOT_RUN"
+}

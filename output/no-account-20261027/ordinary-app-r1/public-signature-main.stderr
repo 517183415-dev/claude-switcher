@@ -1,0 +1,26 @@
+Executable=/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/public/Claude 切换器 Public.app/Contents/MacOS/switcher-desktop
+Identifier=local.claudeswitcher.public
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20500 size=37180 flags=0x10002(adhoc,runtime) hashes=1155+3 location=embedded
+VersionPlatform=1
+VersionMin=851968
+VersionSDK=1769472
+Hash type=sha256 size=32
+CandidateCDHash sha256=a08338a38b3304b16041a7dc9b80b35237f825e4
+CandidateCDHashFull sha256=a08338a38b3304b16041a7dc9b80b35237f825e46ae92bc082193be1497787a1
+Hash choices=sha256
+CMSDigest=a08338a38b3304b16041a7dc9b80b35237f825e46ae92bc082193be1497787a1
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=14254080
+Executable Segment flags=0x1
+Page size=16384
+CDHash=a08338a38b3304b16041a7dc9b80b35237f825e4
+Signature=adhoc
+Info.plist entries=14
+TeamIdentifier=not set
+Runtime Version=27.0.0
+Sealed Resources version=2 rules=13 files=4
+Internal requirements count=0 size=12
+Total signatures=1
+Chosen signature=1

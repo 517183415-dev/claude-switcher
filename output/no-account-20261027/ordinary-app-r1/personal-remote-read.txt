@@ -1,0 +1,11 @@
+The following is a diff from the previous accessibility tree for Window: "Claude 切换器" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
++				203 container
++					204 text 渠道
++					205 pop up button (collapsed) 渠道, Value: 预览, Secondary Actions: Expand
++				206 container
++					207 text 发布来源
++					208 pop up button (collapsed) 发布来源, Value: 本机目录, Secondary Actions: Expand
++				209 text 该渠道已保存的来源：本机目录
++				210 button 保存该渠道配置
++				211 text 更换来源或选择本机目录会保留旧目标及其凭据。保留目标和当前目标的凭据轮换均需重新输入密钥。
+The focused UI element is 13 HTML content Description: Claude 切换器, URL: tauri://localhost

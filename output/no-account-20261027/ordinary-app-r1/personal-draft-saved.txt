@@ -1,0 +1,17 @@
+The following is a diff from the previous accessibility tree for Window: "Claude 切换器" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 178-180
+~				28 text Personal · 本机自用 操作完成
++				197 text 草稿已保存到本机，尚未发布。
++				198 button 关闭操作提示
++				199 text 本机私有目录 本地草稿可用。尚未生成广告签名密钥。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。 尚未初始化签名密钥。请先点击下方按钮，在本机 Keychain 创建广告签名密钥。
+~				109 secure text field (settable) 完整归档口令（至少 12 个字符）
+~				112 button 读取保留资料
+~				117 heading 本地草稿 序号 2, Value: 2
+~					118 text 本地草稿 序号 2
+~				119 text 本地内容已读取 · 日常商家更新沿用当前软件版本
+~				165 button 发布到预览渠道
+~				166 button 发布到正式渠道
++						200 stepper 0
++							201 unknown
++							202 unknown
+The focused UI element is 13 HTML content Description: Claude 切换器, URL: tauri://localhost

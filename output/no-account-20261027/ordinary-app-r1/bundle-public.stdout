@@ -1,0 +1,28 @@
+
+> claude-switcher-desktop@0.2.0 types
+> cargo run --manifest-path ../../Cargo.toml -p switcher-domain --bin export-types
+
+Exported domain types to /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-domain/../../apps/desktop/src/generated
+
+> claude-switcher-desktop@0.2.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop
+Getting Svelte diagnostics...
+
+[32msvelte-check found 0 errors and 0 warnings
+[39m
+> claude-switcher-desktop@0.2.0 build
+> VITE_EDITION=${VITE_EDITION:-personal} vite build
+
+12:34:43 PM [vite-plugin-svelte] no Svelte config found at /private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop - using default configuration.
+[36mvite v8.3.5 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 120 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.36 kB │ gzip:  0.28 kB
+dist/assets/index-Dv7E4Yva.css  17.25 kB │ gzip:  4.26 kB
+dist/assets/index-B_P7B5X0.js   85.58 kB │ gzip: 32.29 kB
+
+[32m✓ built in 247ms[39m

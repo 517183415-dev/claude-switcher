@@ -1,0 +1,25 @@
+{
+  "pid": 98669,
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/runtime.sb",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/public/Claude \u5207\u6362\u5668 Public.app/Contents/MacOS/switcher-desktop"
+  ],
+  "started": 1793076157.0774431,
+  "edition": "public",
+  "binary_sha256": "ea971c24224848ffe033d60edefa519698b3cc6cbb517455c81cafcd536e81cb",
+  "profile_sha256": "b3c4d84eac6dc3d6e24e67ae1e445ca87aadb1b63f84df5ee3e8ffdfcdac8229",
+  "environment": {
+    "HOME": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/home",
+    "TMPDIR": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/runtime-public/tmp/",
+    "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8",
+    "USER": "ordinary-ui",
+    "LOGNAME": "ordinary-ui"
+  },
+  "ordinary_entry": true,
+  "test_feature": false,
+  "stop_policy": "only this spawned process group"
+}

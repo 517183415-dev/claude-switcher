@@ -1,0 +1,2 @@
+There has been no change in the accessibility tree for Window: "Claude 切换器".
+The focused UI element is 111 checkbox 我已了解请求用途, Value: 0

@@ -1,0 +1,156 @@
+Window: "Claude 切换器", App: Claude 切换器 Personal.
+0 standard window Claude 切换器, Secondary Actions: Raise
+	1 scroll area
+		2 HTML content Description: Claude 切换器, URL: tauri://localhost
+			3 container 主导航
+				4 text 工作空间
+				5 container 页面
+					6 button 总览
+					7 button 账号
+					8 button 环境检查
+					9 button 活动记录
+					10 button 广告运营
+				11 button 设置
+				12 text Personal · 0.2.0
+			13 container
+				14 heading 广告运营, Value: 1
+					15 text 广告运营
+				16 text 三个固定广告位，独立编辑、排期和发布。
+				17 text Personal · 本机自用 操作完成
+				18 text 草稿已保存到本机，尚未发布。
+				19 button 关闭操作提示
+				20 text 本机私有目录 本地草稿可用。尚未生成广告签名密钥。 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。 尚未初始化签名密钥。请先点击下方按钮，在本机 Keychain 创建广告签名密钥。
+				21 button 创建本机广告签名密钥
+				22 heading 旧发布资料恢复, Value: 2
+					23 text 旧发布资料恢复
+				24 text 来源不明的旧发布事务不会自动重放。软件先保存并核验完整加密归档，再等待你确认。 确认后只建立新的本机代次。旧目录、历史、事务和密钥继续保留。请核对新草稿，再明确发布。 完整归档口令（至少 12 个字符）
+				25 secure text field (settable) 完整归档口令（至少 12 个字符）
+				26 button (disabled) 保存完整备份并准备恢复
+				27 text 导入完整归档到保留目录
+				28 button 读取保留资料
+				29 heading 发布来源, Value: 2
+					30 text 发布来源
+				31 text 预览和正式渠道分别设置。R2 配置与写入凭据一起保存在本机钥匙串。
+				32 button 读取已保存配置
+				33 container
+					34 text 渠道
+					35 pop up button (collapsed) 渠道, Value: 预览, Secondary Actions: Expand
+				36 container
+					37 text 发布来源
+					38 pop up button (collapsed) 发布来源, Value: Cloudflare R2, Secondary Actions: Expand
+				39 text 该渠道已保存的来源：本机目录
+				40 container
+					41 text Cloudflare 账号 ID
+					42 text field (settable) Cloudflare 账号 ID, Placeholder: 32 位账号 ID
+				43 container
+					44 text 存储桶名称
+					45 text field (settable) 存储桶名称
+				46 container
+					47 text 公开域名
+					48 URL field (settable) 公开域名, Placeholder: https://ads.example.com
+				49 container
+					50 text 访问密钥 ID
+					51 secure text field (settable) 访问密钥 ID
+				52 container
+					53 text 访问密钥
+					54 secure text field (settable) 访问密钥
+				55 text 两个渠道需要不同的存储桶和访问密钥。修改配置时请重新输入密钥。已有未完成发布时，先恢复原目标的发布，再更换来源。
+				56 button (disabled) 保存该渠道配置
+				57 text 更换来源或选择本机目录会保留旧目标及其凭据。保留目标和当前目标的凭据轮换均需重新输入密钥。
+				58 heading 本地草稿 序号 2, Value: 2
+					59 text 本地草稿 序号 2
+				60 text 本地内容已读取 · 日常商家更新沿用当前软件版本
+				61 button 保存草稿
+				62 tab group (selectable) 广告位
+					63 tab (selected) 美国家庭宽带
+					64 tab (selectable) 注册好的账号
+					65 tab (selectable) KYC 服务
+				66 container
+					67 checkbox 允许此广告位展示, Value: 0
+					68 text 允许此广告位展示
+				69 button 暂停此位
+				70 button 全部暂停
+				71 button ＋ 添加一期
+				72 container
+					73 text 编辑时区
+					74 pop up button (collapsed) 编辑时区, Value: Asia/Shanghai, Secondary Actions: Expand
+				75 heading 此广告位还没有排期, Value: 2
+					76 text 此广告位还没有排期
+				77 text 每位可保存当前一期和下一期，三个广告位互不覆盖。
+				78 button 添加第一期
+				79 heading 本机草稿预览, Value: 2
+					80 text 本机草稿预览
+				81 text 使用客户端共用广告卡片。此处展示草稿，不打开商家链接，也不代表已发布。
+				82 pop up button (collapsed) 预览期次, Value: 当前一期, Secondary Actions: Expand
+				83 pop up button (collapsed) 预览窗口尺寸, Value: 1180 × 800, Secondary Actions: Expand
+				84 text 对应 1180 × 800 窗口的卡片区域 · 随可用空间缩放
+				85 container 美国家庭宽带
+					86 text 美国家庭宽带 预览
+					87 heading 此广告位已关闭, Value: 3
+						88 text 此广告位已关闭
+					89 text 不会读取此广告位的素材。
+					90 text 共用客户端展示组件
+				91 container 注册好的账号
+					92 text 注册好的账号 预览
+					93 heading 暂无有效内容, Value: 3
+						94 text 暂无有效内容
+					95 text 内容通过签名与排期校验后显示。
+					96 text 共用客户端展示组件
+				97 container KYC 服务
+					98 text KYC 服务 预览
+					99 heading 暂无有效内容, Value: 3
+						100 text 暂无有效内容
+					101 text 内容通过签名与排期校验后显示。
+					102 text 共用客户端展示组件
+				103 heading 本机签名发布与回读, Value: 2
+					104 text 本机签名发布与回读
+				105 text 本机预览区与正式区使用独立目录。发布保存图片、签名和不可变版本，再核验回读结果。不向其他用户远程投放。
+				106 button 发布到预览渠道
+				107 button 发布到正式渠道
+				108 text 预览发布仅供本机运营核对。正式发布供本机两个发行的广告区读取；请开启对应广告位并刷新广告内容。展示仍受签名、排期与缓存时限约束。
+				109 heading 本机发布历史与恢复, Value: 2
+					110 text 本机发布历史与恢复
+				111 text 恢复历史会建立更高内容序号。历史按下方整理设置保留。当前内容与仍被引用的素材受保护。
+				112 text 尚无已验证发布记录。
+				113 heading 本机历史与素材整理, Value: 2
+					114 text 本机历史与素材整理
+				115 text 默认保留 128 条历史，包含本机预览和正式内容对应的现有记录。先确认索引整理，再单独预览和确认文件回收。
+				116 container
+					117 text 保留历史条数
+					118 number field (settable) 保留历史条数, Value: 128
+						119 stepper 0
+							120 unknown
+							121 unknown
+				122 container
+					123 checkbox 释放上次未验证发布的处理记录槽, Value: 0
+					124 text 释放上次未验证发布的处理记录槽
+				125 button 预览索引整理
+				126 button 预览本批文件回收
+				127 heading 加密备份与恢复, Value: 2
+					128 text 加密备份与恢复
+				129 text 备份包含草稿、历史、素材索引、发布配置和加密密钥。恢复后，各发布目标先回读并核对版本，再补齐素材并发布。进行中的整理撤销记录不随备份迁移；恢复前须先结束本机回收批次。
+				130 container
+					131 text 备份口令
+					132 secure text field (settable) 备份口令, Value: 至少 12 个字符，仅用于本次加解密
+				133 button (disabled) 导出加密备份
+				134 button 打开备份目录
+				135 container
+					136 text 恢复加密备份
+					137 file upload button
+			138 container
+				139 text 最近检查 10/27 12:34:27
+				140 button 重新检查
+				141 text 资料留在本机
+	142 close button
+	143 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	144 minimize button
+	145 text Claude 切换器
+146 menu bar
+	147 Claude 切换器 Personal
+	148 File
+	149 Edit
+	150 View
+	151 Window
+	152 Help
+
+The focused UI element is 38 pop up button (collapsed) 发布来源, Value: Cloudflare R2, Secondary Actions: Expand

@@ -1,0 +1,21 @@
+{
+  "label": "tauri-build-help",
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules/@tauri-apps/cli/tauri.js",
+    "build",
+    "--help"
+  ],
+  "sandbox": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/build.sb",
+  "exit": 0,
+  "seconds": 0.12298166588880122,
+  "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+  "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/home",
+  "CARGO_HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/cargo-home",
+  "network_policy": "deny network*",
+  "installation": "NOT_RUN",
+  "real_accounts": "NOT_ACCESSED",
+  "product_launch": "NOT_RUN",
+  "stdout_sha256": "03e9c70c0431f2c47352b8e3d78a6d7f5e48de92374def0d0d19df0d2f388482",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

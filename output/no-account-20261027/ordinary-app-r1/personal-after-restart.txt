@@ -1,0 +1,57 @@
+The following is a diff from the previous accessibility tree for Window: "Claude 切换器" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 29-100
+~				25 heading 工作空间设置, Value: 1
+~					26 text 工作空间设置
+~				27 text 管理更新、广告和本地时间恢复。
+~				28 text Personal · 本机自用
++				105 heading 目标地区, Value: 2
++					106 text 目标地区
++				107 text 选择明确的目标国家。程序使用固定国家、时区与地区格式组合。
++				108 description list
++					109 text 当前锁定国家
++					110 text 未设置
++					111 text 目标时区
++					112 text 未设置
++					113 text 目标地区格式
++					114 text 未设置
++				115 text 新目标地区
++				116 pop up button (collapsed) 新目标地区, Value: 美国, Secondary Actions: Expand
++				117 text 更换国家需要先切换到对应代理节点。仅保存界面选项不会改变目标。系统修复成功后，核心才会持锁保存新的地区配置。
++				118 button 预览地区修改
++				119 button 重新读取地区
++				120 heading 软件更新, Value: 2
++					121 text 软件更新
++				122 text Personal：已配置签名更新通道时，检查、下载、安装分别由本人操作。 0.2.0 无法安全读取或保存更新状态。请检查 v2 更新目录的权限和恢复记录。
++				123 button 检查更新
++				124 button (disabled) 下载候选
++				125 button (disabled) 确认安装
++				126 text 安装要求：Claude 完全退出、账号事务空闲、组件兼容，且工件通过全部身份验证。
++				127 heading 广告展示, Value: 2
++					128 text 广告展示
++				129 button 刷新广告内容
++				130 text 开启后仅向固定内容源读取签名清单与对应素材。所有广告位关闭时，广告请求为零。 手动刷新仅访问固定内容源。核心限制至少间隔 30 秒，并合并进行中的刷新。
++				131 text 美国家庭宽带
++				132 text 只控制此广告位，互不覆盖
++				133 switch (settable, boolean) 显示美国家庭宽带广告, Value: on
++				134 text 注册好的账号
++				135 text 只控制此广告位，互不覆盖
++				136 switch (settable, boolean) 显示注册好的账号广告, Value: off
++				137 text KYC 服务
++				138 text 只控制此广告位，互不覆盖
++				139 switch (settable, boolean) 显示KYC 服务广告, Value: off
++				140 heading 本地时间恢复, Value: 2
++					141 text 本地时间恢复
++				142 text 发现时间回拨或跳变时，广告收起、软件安装暂停。校正系统时间后，重新建立时间基线。
++				143 button 打开系统日期设置
++				144 button 重新建立时间基线
++				145 text 重新建立后，仍须从固定源取得有效签名内容。最高内容序号保持不变。
++				146 heading 等待材料, Value: 2
++					147 text 等待材料
++				148 content list
++					149 container 本机广告尚未完成首次签名发布；远程广告上线未配置
++						150 list marker •
++						151 text 本机广告尚未完成首次签名发布；远程广告上线未配置
++					152 container 广告已收起：boot_id。请检查 Personal 本机运营内容。
++						153 list marker •
++						154 text 广告已收起：boot_id。请检查 Personal 本机运营内容。
+The focused UI element is 25 heading 工作空间设置, Value: 1

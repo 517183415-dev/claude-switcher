@@ -1,0 +1,87 @@
+Window: "Claude 切换器", App: Claude 切换器 Public.
+0 standard window Claude 切换器, Secondary Actions: Raise
+	1 scroll area
+		2 HTML content Description: Claude 切换器, URL: tauri://localhost
+			3 container 主导航
+				4 text 工作空间
+				5 container 页面
+					6 button 总览
+					7 button 账号
+					8 button 环境检查
+					9 button 活动记录
+				10 button 设置
+				11 text Public · 0.2.0
+			12 container
+				13 heading 工作空间设置, Value: 1
+					14 text 工作空间设置
+				15 text 管理更新、广告和本地时间恢复。
+				16 text Public · 公开发行
+				17 heading 目标地区, Value: 2
+					18 text 目标地区
+				19 text 选择明确的目标国家。程序使用固定国家、时区与地区格式组合。
+				20 description list
+					21 text 当前锁定国家
+					22 text 未设置
+					23 text 目标时区
+					24 text 未设置
+					25 text 目标地区格式
+					26 text 未设置
+				27 text 新目标地区
+				28 pop up button (collapsed) 新目标地区, Value: 美国, Secondary Actions: Expand
+				29 text 更换国家需要先切换到对应代理节点。仅保存界面选项不会改变目标。系统修复成功后，核心才会持锁保存新的地区配置。
+				30 button 预览地区修改
+				31 button 重新读取地区
+				32 heading 软件更新, Value: 2
+					33 text 软件更新
+				34 text Public：已配置签名更新通道时，默认每 12 小时检查。 0.2.0 无法安全读取或保存更新状态。请检查 v2 更新目录的权限和恢复记录。
+				35 button 检查更新
+				36 button (disabled) 下载候选
+				37 button (disabled) 确认安装
+				38 button (disabled) 暂停自动检查
+				39 button 延后安装
+				40 text 安装要求：Claude 完全退出、账号事务空闲、组件兼容，且工件通过全部身份验证。
+				41 heading 广告展示, Value: 2
+					42 text 广告展示
+				43 button 刷新广告内容
+				44 text 开启后仅向固定内容源读取签名清单与对应素材。所有广告位关闭时，广告请求为零。 手动刷新仅访问固定内容源。核心限制至少间隔 30 秒，并合并进行中的刷新。
+				45 text 美国家庭宽带
+				46 text 只控制此广告位，互不覆盖
+				47 switch (settable, boolean) 显示美国家庭宽带广告, Value: off
+				48 text 注册好的账号
+				49 text 只控制此广告位，互不覆盖
+				50 switch (settable, boolean) 显示注册好的账号广告, Value: on
+				51 text KYC 服务
+				52 text 只控制此广告位，互不覆盖
+				53 switch (settable, boolean) 显示KYC 服务广告, Value: off
+				54 heading 本地时间恢复, Value: 2
+					55 text 本地时间恢复
+				56 text 发现时间回拨或跳变时，广告收起、软件安装暂停。校正系统时间后，重新建立时间基线。
+				57 button 打开系统日期设置
+				58 button 重新建立时间基线
+				59 text 重新建立后，仍须从固定源取得有效签名内容。最高内容序号保持不变。
+				60 heading 等待材料, Value: 2
+					61 text 等待材料
+				62 content list
+					63 container 本机广告尚未完成首次签名发布；远程广告上线未配置
+						64 list marker •
+						65 text 本机广告尚未完成首次签名发布；远程广告上线未配置
+					66 container 广告已收起：boot_id。请检查 Personal 本机运营内容。
+						67 list marker •
+						68 text 广告已收起：boot_id。请检查 Personal 本机运营内容。
+			69 container
+				70 text 最近检查 10/27 12:43:35
+				71 button 重新检查
+				72 text 资料留在本机
+	73 close button
+	74 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	75 minimize button
+	76 text Claude 切换器
+77 menu bar
+	78 Claude 切换器 Public
+	79 File
+	80 Edit
+	81 View
+	82 Window
+	83 Help
+
+The focused UI element is 13 heading 工作空间设置, Value: 1

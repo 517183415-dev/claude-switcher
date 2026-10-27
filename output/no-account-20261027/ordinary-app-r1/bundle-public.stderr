@@ -1,0 +1,152 @@
+        Warn --no-sign flag detected: Signing will be skipped.
+        Info `tauri-build` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+        Info `tauri` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `bash scripts/prepare-native.sh && npm run types && npm run check && npm run build`
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-helper v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-helper)
+    Finished `release` profile [optimized] target(s) in 3.78s
+/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop/src-tauri/components/switcher-helper: replacing existing signature
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-core)
+    Finished `release` profile [optimized] target(s) in 6.26s
+/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop/src-tauri/components/switcher-guardian: replacing existing signature
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `release` profile [optimized] target(s) in 0.17s
+/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop/src-tauri/components/claude-switcher: replacing existing signature
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `/Users/gua/CodexWorkspaces/claude-switcher/target/debug/export-types`
+   Compiling syn v2.0.119
+   Compiling objc2-foundation v0.3.2
+   Compiling url v2.5.8
+   Compiling tokio v1.54.1
+   Compiling getrandom v0.2.17
+   Compiling rustls v0.23.46
+   Compiling futures-util v0.3.34
+   Compiling hashbrown v0.17.1
+   Compiling system-configuration-sys v0.6.0
+   Compiling core-foundation v0.9.4
+   Compiling dirs-sys v0.5.0
+   Compiling png v0.18.1
+   Compiling ring v0.17.14
+   Compiling rustix v1.1.5
+   Compiling system-configuration v0.7.0
+   Compiling core-graphics-types v0.2.0
+   Compiling urlpattern v0.6.0
+   Compiling indexmap v2.14.2
+   Compiling rustls-webpki v0.103.16
+   Compiling plist v1.10.3
+   Compiling security-framework v3.7.0
+   Compiling core-graphics v0.25.0
+   Compiling dirs v7.0.0
+   Compiling dispatch2 v0.3.1
+   Compiling xattr v1.6.1
+   Compiling tar v0.4.46
+   Compiling serde_derive_internals v0.29.1
+   Compiling getrandom v0.4.3
+   Compiling curve25519-dalek v5.0.0
+   Compiling getrandom v0.3.4
+   Compiling image v0.25.10
+   Compiling tempfile v3.27.0
+   Compiling ed25519-dalek v3.0.0
+   Compiling phf_macros v0.13.1
+   Compiling derive_more-impl v2.1.1
+   Compiling schemars_derive v0.8.22
+   Compiling ts-rs-macros v12.0.1
+   Compiling serialize-to-javascript-impl v0.1.2
+   Compiling serialize-to-javascript v0.1.2
+   Compiling phf v0.13.1
+   Compiling derive_more v2.1.1
+   Compiling schemars v0.8.22
+   Compiling web_atoms v0.2.6
+   Compiling cssparser v0.37.0
+   Compiling tauri-utils v2.10.2
+   Compiling ts-rs v12.0.1
+   Compiling markup5ever v0.39.0
+   Compiling selectors v0.38.0
+   Compiling html5ever v0.39.0
+   Compiling hyper v1.12.0
+   Compiling tower v0.5.3
+   Compiling tokio-util v0.7.20
+   Compiling dom_query v0.28.0
+   Compiling switcher-domain v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-domain)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling tokio-rustls v0.26.6
+   Compiling hyper-util v0.1.21
+   Compiling tower-http v0.6.11
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling hyper-rustls v0.27.10
+   Compiling reqwest v0.13.5
+   Compiling switcher-helper v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-helper)
+   Compiling switcher-core v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/crates/switcher-core)
+   Compiling tauri-build v2.7.4
+   Compiling tauri-plugin v2.7.2
+   Compiling tauri-codegen v2.7.4
+   Compiling objc2-quartz-core v0.3.2
+   Compiling objc2-app-kit v0.3.2
+   Compiling tauri v2.12.5
+   Compiling tauri-plugin-updater v2.14.0
+   Compiling tauri-macros v2.7.4
+   Compiling switcher-desktop v0.2.0 (/private/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/workspace/apps/desktop/src-tauri)
+   Compiling objc2-web-kit v0.3.2
+   Compiling tao v0.37.1
+   Compiling muda v0.20.0
+   Compiling window-vibrancy v0.8.1
+   Compiling objc2-osa-kit v0.3.2
+   Compiling osakit v0.3.1
+   Compiling wry v0.57.0
+   Compiling tauri-runtime v2.12.2
+   Compiling tauri-runtime-wry v2.12.3
+    Finished `release` profile [optimized] target(s) in 1m 33s
+       Built application at: /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/switcher-desktop
+    Bundling Claude 切换器 Public.app (/Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app)
+        Warn Skipping signing due to --no-sign flag.
+    Finished 1 bundle at:
+        /Users/gua/CodexWorkspaces/claude-switcher/target/aarch64-apple-darwin/release/bundle/macos/Claude 切换器 Public.app (29.37 MiB)
+

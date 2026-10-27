@@ -1,0 +1,120 @@
+{
+  "status": "PASS_SCOPED_ORDINARY_APP_BUSINESS",
+  "source_commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+  "source_tree": "b20942ac8a9308e84e9b96bdcab620e46d3f58ed",
+  "archive_sha256": "3edc66a0dbc48c22e532de0206d76fdb2a2824d0781ca3f9e9cb5f058433665d",
+  "editions": {
+    "personal": {
+      "build_exit": 0,
+      "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+      "binary_sha256": "ec1361a698973d6597bbfb7ca622e27f1a9e03d2236c469aec69b14607b648d1",
+      "tree_manifest_sha256": "364c3791ca1bd3ee58329883efe953ac73a77af8fdadaa73997fdb580bc8c81e",
+      "static_checks": 22,
+      "fixture_body_exclusion": "PASS_NO_RUNTIME_BODY_MARKERS",
+      "binary_name_scan": "REVIEW_MARKERS_PRESENT",
+      "controls": {
+        "external_network_denied": true,
+        "real_library_denied": true,
+        "security_exec_denied": true,
+        "sudo_exec_denied": true,
+        "synthetic_write": true
+      },
+      "stopped_attempts": [
+        "r1",
+        "r2",
+        "r3",
+        "r4"
+      ],
+      "final_preferences": {
+        "ads": {
+          "slots_enabled": [
+            false,
+            false,
+            false
+          ],
+          "request_purpose_acknowledged": true
+        },
+        "updates_paused_until": null
+      },
+      "files": {
+        "activity.json": "58f0c43a996c4f62c938bb219677fdc59ff2f686dd6a9dd182a3248f03c96439",
+        "exports/activity-redacted.json": "7e6652277c3b3f2ac3ced19a7615dc5e029dd903fc3eccc9953d8694e45fc27a",
+        "preferences.json": "2c26f45e6cf4c0cbbc4e42a050d617035fa9ad1fe9f9f57b65aa9ebf433a3727",
+        "publisher/9755bad70d8e436e510be0b9b65f38dc/state.json": "ea2c145c5a617c7b1ddac022c856fa88c1fbb90eb56e73e658df3554aa99fd5c",
+        "publisher/active.json": "ade691aa5fd69655abb953ff280f6045665ccf3c41735e656c5e4764e8a0b359",
+        "publisher/lifecycle.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "public": {
+      "build_exit": 0,
+      "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+      "binary_sha256": "ea971c24224848ffe033d60edefa519698b3cc6cbb517455c81cafcd536e81cb",
+      "tree_manifest_sha256": "ced0f2ee72eec24ba413805288a04a3d86691c6f10be0cfdc850072ef1777a4e",
+      "static_checks": 22,
+      "fixture_body_exclusion": "PASS_NO_RUNTIME_BODY_MARKERS",
+      "binary_name_scan": "REVIEW_MARKERS_PRESENT",
+      "controls": {
+        "external_network_denied": true,
+        "real_library_denied": true,
+        "security_exec_denied": true,
+        "sudo_exec_denied": true,
+        "synthetic_write": true
+      },
+      "stopped_attempts": [
+        "r1",
+        "r2",
+        "r3"
+      ],
+      "final_preferences": {
+        "ads": {
+          "slots_enabled": [
+            false,
+            false,
+            false
+          ],
+          "request_purpose_acknowledged": true
+        },
+        "updates_paused_until": null
+      },
+      "files": {
+        "activity.json": "36e3b9f3a94a20a8f427e746346d29cbc99398e592691be5d5befc6f5863d9f9",
+        "exports/activity-redacted.json": "ee71acc83d1e768a6f9987f4faa093e5c1389fcd94995734e1b9ae5fff429275",
+        "preferences.json": "2c26f45e6cf4c0cbbc4e42a050d617035fa9ad1fe9f9f57b65aa9ebf433a3727"
+      }
+    }
+  },
+  "new_evidence": [
+    "ordinary entry startup",
+    "preferences save and process restart",
+    "activity read and redacted export equal at export checkpoint",
+    "Personal draft save and restart",
+    "Personal local remote-configuration read and R2 form",
+    "Public UI has no publisher navigation",
+    "Personal files unchanged during Public validation"
+  ],
+  "interpretation": "UI observations plus independent synthetic-file checks; not a complete IPC/ACL command matrix",
+  "environment_checks": "0 pass, 1 advisory, 13 blocking under isolation; not launch acceptance",
+  "reuse": "No product source changed; backend 223-pass evidence belongs to the preceding remote-locks stage. Not rerun or added to this count.",
+  "not_run": [
+    "real Claude accounts",
+    "real Keychain",
+    "real R2",
+    "deployment",
+    "payment",
+    "complete ordinary-App ACL denial matrix",
+    "installation and guardian services",
+    "remote propagation",
+    "Developer ID and notarization"
+  ],
+  "not_proven": [
+    "system-managed WebKit helper termination",
+    "direct securityd connection negative control"
+  ],
+  "attempt_notes": [
+    "Personal r3 and Public r1 interrupted for user design requests before assertions; not counted as additional cases",
+    "Initial system Python lacked tar extraction filter argument; harness bootstrap retried with installed Python 3.14, no product failure",
+    "One Personal r4 stale AX index minimized the window; recorded draft state precedes this harness interaction",
+    "Some AX transcript files contain diffs or no-change observations; use named restart/full-form snapshots and disk checkpoints for assertions"
+  ],
+  "ui_rewrite": "Queued last; native SwiftUI Liquid Glass effect, current product layout, non-blue-purple palette; not implemented"
+}

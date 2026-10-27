@@ -1,0 +1,29 @@
+{
+  "preferences": {
+    "ads": {
+      "slots_enabled": [
+        true,
+        false,
+        false
+      ],
+      "request_purpose_acknowledged": true
+    },
+    "updates_paused_until": null
+  },
+  "export_equals_activity": true,
+  "entry_count": 2,
+  "files": {
+    "preferences.json": {
+      "sha256": "f105c518cbcc7a77fc49ad8e19b6bbcb196665286ee2c3e4876969bf1c965370",
+      "mode": "0600"
+    },
+    "activity.json": {
+      "sha256": "7e6652277c3b3f2ac3ced19a7615dc5e029dd903fc3eccc9953d8694e45fc27a",
+      "mode": "0600"
+    },
+    "exports/activity-redacted.json": {
+      "sha256": "7e6652277c3b3f2ac3ced19a7615dc5e029dd903fc3eccc9953d8694e45fc27a",
+      "mode": "0600"
+    }
+  }
+}

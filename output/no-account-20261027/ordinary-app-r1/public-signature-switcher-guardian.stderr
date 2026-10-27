@@ -1,0 +1,26 @@
+Executable=/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/artifacts/public/Claude 切换器 Public.app/Contents/Resources/components/switcher-guardian
+Identifier=local.claudeswitcher.guardian
+Format=Mach-O thin (arm64)
+CodeDirectory v=20500 size=3486 flags=0x10002(adhoc,runtime) hashes=103+2 location=embedded
+VersionPlatform=1
+VersionMin=851968
+VersionSDK=1769472
+Hash type=sha256 size=32
+CandidateCDHash sha256=1dea3492f3b8bc183d3df4dfa3e29847f1d31b69
+CandidateCDHashFull sha256=1dea3492f3b8bc183d3df4dfa3e29847f1d31b69f0761ffa283447961cd2f055
+Hash choices=sha256
+CMSDigest=1dea3492f3b8bc183d3df4dfa3e29847f1d31b69f0761ffa283447961cd2f055
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=1163264
+Executable Segment flags=0x1
+Page size=16384
+CDHash=1dea3492f3b8bc183d3df4dfa3e29847f1d31b69
+Signature=adhoc
+Info.plist entries=3
+TeamIdentifier=not set
+Runtime Version=27.0.0
+Sealed Resources=none
+Internal requirements count=0 size=12
+Total signatures=1
+Chosen signature=1

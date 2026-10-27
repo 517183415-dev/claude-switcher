@@ -1,0 +1,31 @@
+{
+  "label": "bundle-personal",
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-r07-offline-yziue7g_/workspace/apps/desktop/node_modules/@tauri-apps/cli/tauri.js",
+    "build",
+    "--target",
+    "aarch64-apple-darwin",
+    "--features",
+    "personal",
+    "--config",
+    "../../packaging/editions/personal.json",
+    "--no-sign",
+    "--",
+    "--no-default-features",
+    "--offline",
+    "--locked"
+  ],
+  "sandbox": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/ordinary-app-r1/build.sb",
+  "exit": 0,
+  "seconds": 187.05975845793728,
+  "commit": "9d6a3efcfc6e907ae7797633a843720533a94b34",
+  "HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/home",
+  "CARGO_HOME": "/var/folders/gq/3mlm75990wg6j1lgrb4f80kc0000gn/T/claude-app-bundle-hsikt996/cargo-home",
+  "network_policy": "deny network*",
+  "installation": "NOT_RUN",
+  "real_accounts": "NOT_ACCESSED",
+  "product_launch": "NOT_RUN",
+  "stdout_sha256": "b3d1431eaf66b3cdea6be3e69c6e03faea3e3fee316e6d1f74062789c051c7b8",
+  "stderr_sha256": "70cb857b65302012e1204f3a5e60ad3600ba9a49a154834cd5f7a006b5395bbf"
+}
