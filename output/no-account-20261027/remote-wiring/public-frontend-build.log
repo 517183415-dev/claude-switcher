@@ -1,0 +1,15 @@
+
+> claude-switcher-desktop@0.2.0 build
+> VITE_EDITION=${VITE_EDITION:-personal} vite build
+
+11:26:13 AM [vite-plugin-svelte] no Svelte config found at /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop - using default configuration.
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 120 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.36 kB │ gzip:  0.28 kB
+dist/assets/index-Dv7E4Yva.css  17.25 kB │ gzip:  4.26 kB
+dist/assets/index-B_P7B5X0.js   85.58 kB │ gzip: 32.29 kB
+
+✓ built in 247ms

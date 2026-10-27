@@ -1,0 +1,11 @@
+Diff in /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri/src/publisher_commands.rs:2:
+ use crate::{
+     bridge::{self, DesktopState},
+     publisher::{
+-        self, Publisher,
+-        cleanup::CleanupOptions,
+-        local_store::LocalObjectStore,
++        self, Publisher, cleanup::CleanupOptions, local_store::LocalObjectStore,
+         security::KeychainVault,
+     },
+ };

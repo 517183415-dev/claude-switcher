@@ -1,11 +1,9 @@
-//! Compiled into Personal only. No input accepts a filesystem path or content-source URL.
+//! Compiled into Personal only. Remote settings require an explicit operator action.
 use crate::{
     bridge::{self, DesktopState},
     publisher::{
-        self, Publisher,
-        cleanup::CleanupOptions,
-        local_store::LocalObjectStore,
-        security::{KeychainVault, Vault},
+        self, Publisher, cleanup::CleanupOptions, local_store::LocalObjectStore,
+        security::KeychainVault,
     },
 };
 use std::sync::Arc;
@@ -158,11 +156,17 @@ pub fn ad_image_preview(state: Desktop<'_>, sha256: String) -> Result<String, St
 #[tauri::command]
 pub fn publisher_status(state: Desktop<'_>) -> Result<PublisherView, String> {
     with_publisher(&state, |p| {
-        Ok(publisher_view(
+        let mut view = publisher_view(
             p.status(),
             p.configured_public_key().is_some(),
             p.cleanup_pending(),
-        ))
+        );
+        if p.active_target()
+            .is_some_and(|target| target.starts_with("r2:"))
+        {
+            view.source = Some("Cloudflare R2（上次选择的发布目标）".into());
+        }
+        Ok(view)
     })
 }
 fn publisher_view(
@@ -209,7 +213,7 @@ fn publisher_view(
         }
         .into(),
         message: format!(
-            "本地草稿可用。{key_status}{pending_status}{resolution_status}{cleanup_status} 本机预览与正式目录已可运营；不会发布到远程用户。"
+            "本地草稿可用。{key_status}{pending_status}{resolution_status}{cleanup_status} 发布来源按渠道配置选择；只有签名内容与素材公开回读通过，才视为发布完成。"
         ),
         history: status
             .history
@@ -233,7 +237,7 @@ fn publication_outcome(
     result: publisher::Result<publisher::Publication>,
 ) -> publisher::Result<OperationOutcome> {
     match result {
-        Ok(_) => Ok(bridge::completed("本机签名内容及素材已通过回读验证")),
+        Ok(_) => Ok(bridge::completed("签名内容及素材已通过公开回读验证")),
         Err(publisher::Error::Resolved(summary)) => Ok(OperationOutcome {
             completed: false,
             message: resolution_message(&summary),
@@ -346,12 +350,13 @@ mod f16_feedback_tests {
         );
     }
 }
+#[cfg(feature = "ipc-business")]
 pub(crate) fn publish_local(
     publisher: &mut Publisher,
     root: &std::path::Path,
     channel: AdChannel,
     now: u64,
-    vault: &dyn Vault,
+    vault: &dyn publisher::security::Vault,
 ) -> publisher::Result<OperationOutcome> {
     let public_key = publisher
         .configured_public_key()
@@ -372,17 +377,47 @@ pub async fn publish_ad(
     let state = state.inner().clone();
     tokio::task::spawn_blocking(move || {
         with_publisher(&state, |p| {
-            publish_local(
-                p,
+            publication_outcome(p.publish_configured(
                 &state.root,
                 channel,
                 switcher_core::checks::unix_now(),
                 &KeychainVault,
-            )
+            ))
         })
     })
     .await
     .map_err(|_| "发布操作被中断".to_owned())?
+}
+#[tauri::command]
+pub async fn publisher_remote_read(
+    state: Desktop<'_>,
+) -> Result<publisher::connection::RemoteSettings, String> {
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || {
+        with_publisher(&state, |p| p.remote_settings(&KeychainVault))
+    })
+    .await
+    .map_err(|_| "远程发布配置读取被中断".to_owned())?
+}
+
+#[tauri::command]
+pub async fn publisher_remote_save(
+    state: Desktop<'_>,
+    channel: AdChannel,
+    config: Option<publisher::r2_store::R2Config>,
+    access_key: String,
+    secret_key: String,
+) -> Result<publisher::connection::RemoteSettings, String> {
+    let access_key = zeroize::Zeroizing::new(access_key);
+    let secret_key = zeroize::Zeroizing::new(secret_key);
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || {
+        with_publisher(&state, |p| {
+            p.configure_r2(channel, config, access_key, secret_key, &mut KeychainVault)
+        })
+    })
+    .await
+    .map_err(|_| "远程发布配置保存被中断，请重新读取配置".to_owned())?
 }
 async fn with_cleanup_source<T: Send + 'static>(
     state: Arc<DesktopState>,

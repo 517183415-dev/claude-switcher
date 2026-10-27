@@ -20,7 +20,9 @@ fn no_proxy_behavior() -> BehaviorVersion {
 
 type StoreResult<T> = std::result::Result<T, StoreError>;
 
-/// These values are not user-provided URLs. The caller must load audited configuration.
+/// Explicit Personal operator configuration, validated before use.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct R2Config {
     pub account_id: String,
     pub bucket: String,
@@ -53,19 +55,31 @@ fn valid_bucket(bucket: &str) -> bool {
             .is_some_and(u8::is_ascii_alphanumeric)
 }
 
-impl R2Store {
-    /// The credential strings are held by the SDK and never exposed through errors or logs.
-    pub fn open(config: R2Config, access_key: &str, secret_key: &str) -> StoreResult<Self> {
-        if config.account_id.len() != 32
-            || !config.account_id.bytes().all(|c| c.is_ascii_hexdigit())
-            || !valid_bucket(&config.bucket)
-            || access_key.is_empty()
-            || secret_key.is_empty()
+impl R2Config {
+    pub(crate) fn identity(&self) -> StoreResult<String> {
+        let origin = self.validate()?;
+        let identity = serde_json::to_vec(&(
+            "r2-v1",
+            self.account_id.to_ascii_lowercase(),
+            &self.bucket,
+            origin
+                .host_str()
+                .ok_or(StoreError::Permission)?
+                .trim_end_matches('.'),
+            self.channel,
+        ))
+        .map_err(|_| StoreError::Unavailable)?;
+        Ok(format!("r2:{}", signed::digest(&identity)))
+    }
+    pub(crate) fn validate(&self) -> StoreResult<reqwest::Url> {
+        if self.account_id.len() != 32
+            || !self.account_id.bytes().all(|c| c.is_ascii_hexdigit())
+            || !valid_bucket(&self.bucket)
         {
             return Err(StoreError::Permission);
         }
         let origin =
-            reqwest::Url::parse(&config.public_origin).map_err(|_| StoreError::Permission)?;
+            reqwest::Url::parse(&self.public_origin).map_err(|_| StoreError::Permission)?;
         let host = origin.host_str().ok_or(StoreError::Permission)?;
         let canonical_host = host.trim_end_matches('.');
         if origin.scheme() != "https"
@@ -80,20 +94,23 @@ impl R2Store {
                 canonical_host == *domain
                     || canonical_host
                         .strip_suffix(domain)
-                        .is_some_and(|prefix| prefix.ends_with('.'))
+                        .is_some_and(|p| p.ends_with('.'))
             })
         {
             return Err(StoreError::Permission);
         }
-        let identity = serde_json::to_vec(&(
-            "r2-v1",
-            config.account_id.to_ascii_lowercase(),
-            &config.bucket,
-            canonical_host,
-            config.channel,
-        ))
-        .map_err(|_| StoreError::Unavailable)?;
-        let target = format!("r2:{}", signed::digest(&identity));
+        Ok(origin)
+    }
+}
+
+impl R2Store {
+    /// The credential strings are held by the SDK and never exposed through errors or logs.
+    pub fn open(config: R2Config, access_key: &str, secret_key: &str) -> StoreResult<Self> {
+        let origin = config.validate()?;
+        if access_key.is_empty() || secret_key.is_empty() {
+            return Err(StoreError::Permission);
+        }
+        let target = config.identity()?;
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

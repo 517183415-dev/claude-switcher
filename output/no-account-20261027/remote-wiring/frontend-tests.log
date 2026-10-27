@@ -1,0 +1,35 @@
+✔ backup card renders local message and recovery in a polite status, with nearby errors (47.847ms)
+✔ export shows the returned message and clears the password on success (66.977667ms)
+✔ restore preserves a completed=false outcome and its recovery guidance (16.851ms)
+✔ a new export clears stale feedback while pending and reports failures locally (15.47675ms)
+✔ restore validation clears stale feedback and reports the error beside the card (9.227208ms)
+✔ restore rejection stays local and clears the file selection (15.948791ms)
+✔ fixture backup handlers make zero IPC calls even when invoked directly (4.869ms)
+✔ restore success remains visible if the subsequent draft refresh fails (12.333125ms)
+✔ opening the backup folder clears old errors and shows its real outcome (7.286833ms)
+✔ image handler accepts the inclusive 1 MiB boundary (54.835375ms)
+✔ image handler rejects over 1 MiB before reading or invoking (20.441625ms)
+✔ restore handler accepts the inclusive 64 MiB boundary (4.930708ms)
+✔ restore handler rejects oversized files and short passwords before invoke (13.64375ms)
+✔ real handlers report backend failure and release busy state (12.170833ms)
+✔ production defaults are 128 and no implicit evidence release; preview only reads (1.876542ms)
+✔ cancelling a preview does not execute either phase (0.3355ms)
+✔ first confirmation commits the bound index plan once and never starts GC (0.294958ms)
+✔ changed options and known pending state invalidate index execution (1.428625ms)
+✔ second preview and a separate confirmation are required for file GC (0.277916ms)
+✔ GC pending and duplicate clicks cannot bypass the confirmation gate (0.266334ms)
+✔ backend rejection clears the consumed plan and never invents completion (0.258709ms)
+✔ fixture and busy handlers perform zero IPC (0.416875ms)
+✔ production markup connects both previews, separate confirmations and cancellation (53.533416ms)
+✔ non-completed terminal outcome is delivered and status is refreshed (3.69275ms)
+✔ status refresh failure retains the delivered terminal outcome (0.665083ms)
+✔ ordinary backend failure does not become a terminal outcome (0.302166ms)
+✔ fixture, busy and missing draft do not invoke IPC (1.679292ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 869.79875

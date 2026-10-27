@@ -1,0 +1,19 @@
+error: failed to determine package fingerprint for build script for switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+An I/O error happened. Please make sure you can access the file.
+
+By default, if your project contains a build script, cargo scans all files in
+it to determine whether a rebuild is needed. If you don't expect to access the
+file, specify `rerun-if-changed` in your build script.
+See https://doc.rust-lang.org/cargo/reference/build-scripts.html#rerun-if-changed for more information.
+
+Caused by:
+  failed to determine the most recently modified file in /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri
+
+Caused by:
+  failed to determine list of files in /Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri
+
+Caused by:
+  Could not read repository exclude
+
+Caused by:
+  Operation not permitted (os error 1)

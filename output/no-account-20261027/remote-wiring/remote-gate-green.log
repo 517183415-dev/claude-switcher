@@ -1,0 +1,28 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: unused import: `Vault`
+ --> apps/desktop/src-tauri/src/publisher_commands.rs:8:35
+  |
+8 |         security::{KeychainVault, Vault},
+  |                                   ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 1 warning (run `cargo fix --bin "switcher-desktop" -p switcher-desktop --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.26s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 1 test
+test publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 186 filtered out; finished in 0.74s
+

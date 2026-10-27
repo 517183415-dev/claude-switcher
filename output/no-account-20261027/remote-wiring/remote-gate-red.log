@@ -1,0 +1,32 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.12s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 1 test
+test publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local ... FAILED
+
+failures:
+
+---- publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local stdout ----
+
+thread 'publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local' (33633041) panicked at apps/desktop/src-tauri/src/publisher/tests.rs:2746:75:
+called `Result::unwrap()` on an `Err` value: Invalid("publisher_target_unavailable")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    publisher::tests::target_ledgers_publish_remote_and_resume_without_replaying_into_local
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 179 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

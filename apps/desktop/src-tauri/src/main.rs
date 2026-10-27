@@ -202,6 +202,8 @@ fn main() {
         publisher_commands::ad_image_preview,
         publisher_commands::publisher_status,
         publisher_commands::publish_ad,
+        publisher_commands::publisher_remote_read,
+        publisher_commands::publisher_remote_save,
         publisher_commands::pause_ad,
         publisher_commands::restore_ad_history,
         publisher_commands::create_ad_signing_key,

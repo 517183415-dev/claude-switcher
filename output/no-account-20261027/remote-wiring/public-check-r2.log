@@ -1,0 +1,56 @@
+   Compiling syn v2.0.119
+    Checking url v2.5.8
+    Checking futures-util v0.3.34
+    Checking hyper v1.12.0
+    Checking plist v1.10.3
+    Checking tokio-rustls v0.26.6
+    Checking tokio-util v0.7.20
+    Checking urlpattern v0.6.0
+    Checking tao v0.37.1
+    Checking wry v0.57.0
+    Checking hyper-util v0.1.21
+    Checking tower v0.5.3
+   Compiling serde_derive_internals v0.29.1
+    Checking tower-http v0.6.11
+   Compiling phf_macros v0.13.1
+   Compiling derive_more-impl v2.1.1
+   Compiling ts-rs-macros v12.0.1
+   Compiling serialize-to-javascript-impl v0.1.2
+    Checking hyper-rustls v0.27.10
+   Compiling schemars_derive v0.8.22
+    Checking serialize-to-javascript v0.1.2
+    Checking reqwest v0.13.5
+   Compiling phf v0.13.1
+   Compiling derive_more v2.1.1
+   Compiling schemars v0.8.22
+    Checking ts-rs v12.0.1
+   Compiling web_atoms v0.2.6
+   Compiling cssparser v0.37.0
+    Checking tauri-utils v2.10.2
+    Checking switcher-domain v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-domain)
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling markup5ever v0.39.0
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling selectors v0.38.0
+    Checking switcher-helper v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-helper)
+   Compiling html5ever v0.39.0
+    Checking switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling dom_query v0.28.0
+    Checking tauri-runtime v2.12.2
+    Checking tauri-runtime-wry v2.12.3
+   Compiling tauri-build v2.7.4
+   Compiling tauri-plugin v2.7.2
+   Compiling tauri-codegen v2.7.4
+   Compiling tauri v2.12.5
+   Compiling tauri-plugin-updater v2.14.0
+   Compiling tauri-macros v2.7.4
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.33s

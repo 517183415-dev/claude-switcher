@@ -94,6 +94,8 @@ fn main() {
             "ad_image_preview",
             "publisher_status",
             "publish_ad",
+            "publisher_remote_read",
+            "publisher_remote_save",
             "pause_ad",
             "restore_ad_history",
             "create_ad_signing_key",

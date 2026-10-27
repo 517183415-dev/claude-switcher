@@ -1,10 +1,24 @@
 # Claude 切换器当前代码图谱
 
-## 2026-10-27：密钥恢复验证与本地阶段提交
+## 2026-10-27：远程发布产品调用链
+
+`Operations.svelte` → `RemotePublisher.svelte` → Personal 专用 `publisher_remote_read/save` → `Publisher::configure_r2` → 现有 Vault。读取响应不含密钥；保存配置不访问网络。
+
+`publish_ad` → `Publisher::publish_configured` → 按渠道读取 `Connection` → `select_target` → `R2Store` 或 `LocalObjectStore` → 共用签名发布事务。`connection.rs` 负责配置校验、渠道隔离、凭据轮换和目标选择；`r2_store.rs` 负责 SDK 传输及匿名回读。`TargetLedger` 隔离各目标的历史、水位和未完成事务。
+
+`connection/tests.rs` 使用合成 Vault 与真实隔离文件存储覆盖配置、失败保留、渠道选择、重开、轮换和加密备份。`tests.rs::target_ledgers_publish_remote_and_resume_without_replaying_into_local` 覆盖远程发布恢复、禁止未选择目标以及跨目标事务隔离。R2 SDK 协议替身测试随桌面套件集中执行。Public 不注册或授权这两个配置命令。
+
+本阶段桌面套件首次为 186 通过、1 失败。失败仅来自新测试的提交尝试计数断言；修正后定向 1 项通过，累计 187 个不同测试名通过，没有重跑其余 186 项。新增配置 7 项已包含在桌面结果内。前端相关 27 项、两版前端构建、Public 编译、格式检查通过；Svelte 检查为 0 错误、0 警告。默认与 ipc-business Clippy 退出码均为 0，仍有旧清理/迁移代码警告，未宣称严格零警告。图谱为 218 文件、5879 节点、23801 条边，complete、pending 0。
+
+[本阶段回执](../../output/no-account-20261027/remote-wiring/receipt.json)记录集中验证和输入摘要。[图谱状态](../../output/no-account-20261027/remote-wiring/codegraph-status.json)记录增量同步。图谱数量不代表测试覆盖率。真实服务、Keychain、普通 App 动态 IPC 和线上传播未验；旧状态完整迁移和远程多目标清理仍未完成。
+
+以下记录保留各历史阶段的证据和限制；“尚未接线”等描述仅适用于对应历史阶段。
+
+## 历史阶段：密钥恢复验证与本地提交
 
 密钥已写入而信任文件缺失时，恢复仍须保护现有凭据。仅明确的密钥不存在结果可视为空；读取失败须中止恢复。[验证回执](../../output/no-account-20261027/r2-target-identity/orphan-vault-summary.json)复用 9 项回归和 141 项发布器测试通过日志，本轮只补 Clippy（退出码 0，7 条未使用代码警告）和图谱同步。真实 Keychain、远程 R2 及产品接线仍未验证。此提交保存当前本地实现，不表示远程发布功能完成。
 
-## 2026-10-27：R2 发布目标标识
+## 历史阶段：R2 发布目标标识
 
 `publisher/r2_store.rs` 从账号、存储桶、公开域名和渠道生成目标标识，凭据不参与计算。`publisher/mod.rs` 仍拒绝远程目标；产品接线及真实远端验证尚未完成。[隔离测试摘要](../../output/no-account-20261027/r2-target-identity/summary.json)为 8 项通过，并记录本机原始日志的 SHA256。代码仍在未提交工作树中。
 
@@ -158,7 +172,7 @@ Rust r3四命令exit0；原正则计数失败保留。[仓库严格解析器对�
 
 历史00db普通双包已构建：绑定 `00dbf3c` 的精确归档，每版22条静态检查及2条复制/签名变更通过，Public构建后两版各12条目重验通过。business/limits fixture运行体标记未检出；历史E01权限描述字符串保留REVIEW_MARKERS_PRESENT。普通App动态ACL、启动及安装仍NOT_RUN。独立包复核已完成限定静态核对；解析器已完成限定独立审核。[双包交付回执](../../output/no-account-20261027/bundles-ordinary-next/delivery-summary.json)记录准确路径与哈希。
 
-当前发布命令生产实现仅装配LocalObjectStore，使用本机私有文件；尚无已装配的生产HTTP ObjectStore。广告受控HTTPS客户端及MemoryStore状态机测试不证明发布HTTP CAS已实现或通过；远程对象存储适配与实源验收单列未完成。
+历史本地发布阶段只装配 LocalObjectStore。本轮 publish_ad 已接入按渠道配置选择 R2Store；本机协议替身验证与真实 R2 验收仍分开记录。
 
 历史00db普通包产品源码提交为 `00dbf3c486b65aa5840033954485af2262fb85d3`，tree：`a756309a1e69e6754fd8d40e6ba33770fce226ba`。普通双包已从该提交精确归档构建并完成静态检查；CNC普通包保留为历史已验证包。此前[CodeGraph状态](../../output/no-account-20261027/ordinary-next/codegraph-status.json)为172文件/4748节点/18696关系，complete、pending0，统计不是覆盖率。
 

@@ -3,6 +3,7 @@ pub mod backup;
 pub(crate) mod cleanup;
 #[cfg(test)]
 mod cleanup_tests;
+pub mod connection;
 #[cfg(test)]
 mod image_boundary_tests;
 pub mod local_store;
@@ -712,8 +713,7 @@ impl Publisher {
     }
 
     /// Select an already authenticated store without assigning legacy evidence to it.
-    /// Remote use remains gated until backup and cleanup support every ledger.
-    #[allow(dead_code)]
+    /// Cleanup remains unavailable unless every ledger's source is supplied.
     pub(crate) fn select_target(&mut self, source: &dyn ObjectStore) -> Result<()> {
         let target = source
             .target_identity()
@@ -1041,12 +1041,15 @@ impl Publisher {
         {
             return Err(Error::RecoveryReadRequired);
         }
-        // Remote namespaces are intentionally disabled until backup and cleanup
-        // account for every target. Never infer the owner of a legacy pending.
+        // Remote publication requires explicit target selection. Unknown legacy
+        // evidence must never be attributed to a newly configured remote source.
         let target = source
             .target_identity()
             .ok_or(Error::Invalid("publisher_target_unavailable"))?;
-        if !target.starts_with("local:") {
+        if !valid_target_identity(&target, true)
+            || (target.starts_with("r2:")
+                && (self.state.schema != 3 || self.state.target.as_ref() != Some(&target)))
+        {
             return Err(Error::Invalid("publisher_target_unavailable"));
         }
         if self

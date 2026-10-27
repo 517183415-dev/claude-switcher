@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-publisher-remote-read"
+description = "Enables the publisher_remote_read command without any pre-configured scope."
+commands.allow = ["publisher_remote_read"]
+
+[[permission]]
+identifier = "deny-publisher-remote-read"
+description = "Denies the publisher_remote_read command without any pre-configured scope."
+commands.deny = ["publisher_remote_read"]

@@ -1,0 +1,53 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+warning: function `publish_local` is never used
+   --> apps/desktop/src-tauri/src/publisher_commands.rs:355:15
+    |
+355 | pub(crate) fn publish_local(
+    |               ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `switcher-desktop` (bin "switcher-desktop" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.81s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 7 tests
+test publisher::connection::tests::corrupt_credentials_never_fall_back_to_a_local_publication ... ok
+test publisher::connection::tests::vault_write_failure_preserves_previous_configuration ... ok
+test publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate ... FAILED
+test publisher::connection::tests::invalid_configurations_and_shared_channel_credentials_preserve_vault ... ok
+test publisher::connection::tests::settings_keep_credentials_out_of_responses_and_disk_and_survive_restart ... ok
+test publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories ... FAILED
+test publisher::connection::tests::encrypted_backup_restores_remote_settings_into_the_new_generation ... ok
+
+failures:
+
+---- publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate stdout ----
+
+thread 'publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate' (33642977) panicked at apps/desktop/src-tauri/src/publisher/connection/tests.rs:275:10:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories stdout ----
+
+thread 'publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories' (33642973) panicked at apps/desktop/src-tauri/src/publisher/connection/tests.rs:226:10:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+
+failures:
+    publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories
+    publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate
+
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 180 filtered out; finished in 2.52s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`

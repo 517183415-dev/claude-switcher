@@ -2734,21 +2734,62 @@ fn target_ledgers_capacity_rejects_new_target_without_changing_state() {
 }
 
 #[test]
-fn target_ledgers_keep_remote_publication_disabled() {
+fn target_ledgers_publish_remote_and_resume_without_replaying_into_local() {
     let root = LocalRoot::new();
     let mut publisher = open(&root);
     let vault = vault(&mut publisher);
     let mut remote = MemoryStore::new(AdChannel::Preview);
     remote.target_identity = "r2:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+    assert!(matches!(
+        publisher.publish_with(&mut remote, &vault, AdChannel::Preview, 1001),
+        Err(Error::Invalid("publisher_target_unavailable"))
+    ));
+    assert!(publisher.state.pending.is_none());
+    assert_eq!(remote.commits, 0);
     publisher.select_target(&remote).unwrap();
     drop(publisher);
     let mut publisher = open(&root);
+    publisher
+        .publish_with(&mut remote, &vault, AdChannel::Preview, 1002)
+        .unwrap();
+    assert_eq!(remote.commits, 1);
+    publisher.pause(None, 1003).unwrap();
+    remote.unknown_before_commit = true;
+    assert!(
+        publisher
+            .publish_with(&mut remote, &vault, AdChannel::Preview, 1004)
+            .is_err()
+    );
+    let pending = publisher.state.pending.clone().unwrap();
+    let remote_attempts = remote.commits;
+    let mut local = MemoryStore::new(AdChannel::Preview);
+    publisher.select_target(&local).unwrap();
     assert!(matches!(
-        publisher.publish_with(&mut remote, &vault, AdChannel::Preview, 1002),
+        publisher.publish_with(&mut remote, &vault, AdChannel::Preview, 1005),
         Err(Error::Invalid("publisher_target_unavailable"))
     ));
-    assert_eq!(remote.current_reads, 0);
-    assert_eq!(remote.commits, 0);
+    assert_eq!(remote.commits, remote_attempts);
+    publisher
+        .publish_with(&mut local, &vault, AdChannel::Preview, 1005)
+        .unwrap();
+    drop(publisher);
+    let mut publisher = open(&root);
+    publisher.select_target(&remote).unwrap();
+    assert_eq!(
+        publisher
+            .state
+            .pending
+            .as_ref()
+            .unwrap()
+            .manifest
+            .release_id,
+        pending.manifest.release_id
+    );
+    publisher
+        .publish_with(&mut remote, &vault, AdChannel::Preview, 1006)
+        .unwrap();
+    assert_eq!(remote.commits, remote_attempts + 1);
+    assert_eq!(local.commits, 1);
 }
 
 #[test]
