@@ -37,7 +37,6 @@ def check_result(value):
         raise ValueError('missing process identities')
     if child.get('ppid') != parent['pid'] or child['pid'] == parent['pid']:
         raise ValueError('unexpected child identity')
-    securityd_proven = True
     for process in (parent, child):
         if process.get('synthetic_home_roundtrip') is not True:
             raise ValueError('synthetic HOME failed')
@@ -54,11 +53,11 @@ def check_result(value):
         lookup = object_field(process, 'securityd').get('lookup')
         if lookup == 'unexpected_allowed':
             raise ValueError('securityd lookup unexpectedly allowed')
-        if lookup != 'denied':
-            securityd_proven = False
     if value.get('webkit_process_isolation') != 'NOT_PROVEN' or value.get('system_managed_process_cleanup') != 'NOT_PROVEN':
         raise ValueError('system managed process boundary must remain unproven')
-    return 'DIRECT_PROCESSES_PASS' if securityd_proven else 'PARTIAL_SECURITYD_NOT_PROVEN'
+    # A lookup string alone cannot establish that a reliable query and its
+    # positive/negative controls ran against the intended policy.
+    return 'PARTIAL_SECURITYD_NOT_PROVEN'
 
 
 def main():
@@ -114,7 +113,7 @@ def main():
     (run / 'receipt.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
     print(json.dumps({'receipt': str(run / 'receipt.json'), 'status': result['status'],
                       'sha256': digest(run / 'receipt.json')}))
-    return 0 if result['status'] == 'DIRECT_PROCESSES_PASS' else 1
+    return 1  # No supported securityd proof exists yet.
 
 
 if __name__ == '__main__':

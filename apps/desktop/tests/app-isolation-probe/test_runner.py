@@ -23,9 +23,7 @@ def sample():
 
 
 class ResultTests(unittest.TestCase):
-    def test_invalid_nested_schema_produces_failure_receipt(self):
-        value = sample()
-        value['parent'] = []
+    def fake_receipt(self, value):
         class FakeProcess:
             pid = 101
             def __init__(self, *args, stdout, **kwargs):
@@ -43,10 +41,23 @@ class ResultTests(unittest.TestCase):
                  patch.object(runner.subprocess, 'Popen', FakeProcess), \
                  patch('sys.argv', ['runner.py', '--output', str(root)]), \
                  contextlib.redirect_stdout(io.StringIO()) as output:
-                self.assertEqual(runner.main(), 1)
+                result = runner.main()
             receipt = json.loads(Path(json.loads(output.getvalue())['receipt']).read_text())
-            self.assertEqual(receipt['status'], 'NOT_PROVEN')
-            self.assertIn('error', receipt)
+        return result, receipt
+
+    def test_invalid_nested_schema_produces_failure_receipt(self):
+        value = sample()
+        value['parent'] = []
+        result, receipt = self.fake_receipt(value)
+        self.assertEqual(result, 1)
+        self.assertEqual(receipt['status'], 'NOT_PROVEN')
+        self.assertIn('error', receipt)
+
+    def test_denied_claim_produces_partial_failure_receipt(self):
+        result, receipt = self.fake_receipt(sample())
+        self.assertEqual(result, 1)
+        self.assertEqual(receipt['status'], 'PARTIAL_SECURITYD_NOT_PROVEN')
+        self.assertNotIn('error', receipt)
 
     def test_all_nested_objects_reject_invalid_types(self):
         for path in [('parent',), ('child',), ('parent', 'private_directory'),
@@ -61,11 +72,14 @@ class ResultTests(unittest.TestCase):
                 with self.subTest(path=path, invalid=invalid), self.assertRaises(ValueError):
                     check_result(value)
 
-    def test_exact_success_and_securityd_unproven(self):
+    def test_securityd_claim_without_verified_method_remains_unproven(self):
         value = sample()
-        self.assertEqual(check_result(value), 'DIRECT_PROCESSES_PASS')
-        value['child']['securityd']['lookup'] = 'NOT_RUN'
-        self.assertEqual(check_result(value), 'PARTIAL_SECURITYD_NOT_PROVEN')
+        for lookup in ('denied', 'NOT_RUN', 'NOT_PROVEN'):
+            for process in ('parent', 'child'):
+                with self.subTest(lookup=lookup, process=process):
+                    candidate = copy.deepcopy(value)
+                    candidate[process]['securityd']['lookup'] = lookup
+                    self.assertEqual(check_result(candidate), 'PARTIAL_SECURITYD_NOT_PROVEN')
 
     def test_each_direct_process_must_pass_each_control(self):
         for name in ('parent', 'child'):
@@ -83,10 +97,11 @@ class ResultTests(unittest.TestCase):
                         check_result(value)
 
     def test_unexpected_securityd_lookup_is_failure(self):
-        value = sample()
-        value['parent']['securityd']['lookup'] = 'unexpected_allowed'
-        with self.assertRaises(ValueError):
-            check_result(value)
+        for process in ('parent', 'child'):
+            with self.subTest(process=process), self.assertRaises(ValueError):
+                value = sample()
+                value[process]['securityd']['lookup'] = 'unexpected_allowed'
+                check_result(value)
 
     def test_reaping_and_identity_are_required(self):
         for field in ('direct_child_reaped', 'child_pid', 'child_ppid'):
