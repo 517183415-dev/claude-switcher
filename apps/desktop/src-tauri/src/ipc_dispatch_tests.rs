@@ -477,6 +477,99 @@ fn ad_refresh_dispatch_verifies_local_publication_and_rejects_tampering() {
     }
 }
 
+#[cfg(all(feature = "public", not(feature = "personal")))]
+fn public_ad_fixture_clock() -> Result<switcher_core::time::ClockSample, &'static str> {
+    Ok(switcher_core::time::ClockSample {
+        utc_secs: 1_800_000_000,
+        continuous_ms: 1_800_000_000_000,
+        boot_id: "synthetic-public-ad".into(),
+    })
+}
+
+#[test]
+#[cfg(all(feature = "public", not(feature = "personal")))]
+fn ad_refresh_dispatch_public_build_verifies_signed_content_and_rejects_tampering() {
+    use switcher_core::{
+        ad_runtime::{AdRuntime, local},
+        signed, storage,
+    };
+    use switcher_domain::{Edition, ads::AdPreferences};
+
+    no_release_ad_source();
+    let root = SyntheticRoot::new();
+    // Public, synthetic signing material; it must never be used for a release.
+    let fixture: Value =
+        serde_json::from_slice(include_bytes!("../../tests/fixtures/public-ad-signed.json"))
+            .unwrap();
+    let image = include_bytes!("../../tests/native-ipc-business/backup-source.png");
+    let directory = local::directory(&root.0);
+    let production = directory.join("production");
+    let assets = production.join("assets");
+    for path in [
+        root.0.join("v2"),
+        directory.clone(),
+        production.clone(),
+        assets.clone(),
+    ] {
+        storage::create_private_directory(&path).unwrap();
+    }
+    storage::atomic_json(&directory.join("trust.json"), &fixture["trust"]).unwrap();
+    let current = production.join("current.json");
+    storage::atomic_json(&current, &fixture["envelope"]).unwrap();
+    storage::atomic_write(
+        &assets.join(format!("{}.png", signed::digest(image))),
+        image,
+    )
+    .unwrap();
+
+    let state = DesktopState::isolated_activity_fixture(root.0.clone(), Edition::Public)
+        .with_ad_clock(public_ad_fixture_clock);
+    let (_app, window) = root.build_app(state);
+    enable_one_ad_slot(&window);
+    let preferences = AdPreferences {
+        slots_enabled: [true, false, false],
+        request_purpose_acknowledged: true,
+    };
+    let snapshot = || {
+        AdRuntime::new(root.0.clone(), Edition::Public)
+            .with_clock(public_ad_fixture_clock)
+            .snapshot_with_status(&preferences)
+    };
+    assert_eq!(
+        invoke(&window, "refresh_ad_content", json!({})).unwrap()["completed"],
+        true
+    );
+    let accepted = snapshot().unwrap();
+    let manifest = accepted.manifest.expect("signed content must be visible");
+    assert!(!accepted.refresh_failed);
+    assert_eq!(manifest.slots[0].campaigns[0].title, "合成广告");
+    assert_eq!(
+        manifest.slots[0].campaigns[0].image.sha256,
+        signed::digest(image)
+    );
+
+    let mut tampered = fixture["envelope"].clone();
+    tampered["signature"][0] = json!(tampered["signature"][0].as_u64().unwrap() ^ 1);
+    storage::atomic_json(&current, &tampered).unwrap();
+    assert_eq!(
+        invoke(&window, "refresh_ad_content", json!({})).unwrap_err(),
+        json!("signature")
+    );
+    assert_eq!(
+        snapshot().err(),
+        Some("local_ad_previous_content_verification_failed")
+    );
+
+    storage::atomic_json(&current, &fixture["envelope"]).unwrap();
+    assert_eq!(
+        invoke(&window, "refresh_ad_content", json!({})).unwrap()["completed"],
+        true
+    );
+    let recovered = snapshot().unwrap();
+    assert!(!recovered.refresh_failed);
+    assert!(recovered.manifest.is_some());
+}
+
 #[test]
 fn ordinary_registry_preferences_and_redacted_export_persist_on_reopen() {
     use switcher_core::storage;

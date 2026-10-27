@@ -1,5 +1,11 @@
 # 广告手动刷新桌面命令：隔离测试
 
+## 后续补充：独立 Public 构建
+
+独立 Public 特性构建使用固定合成密钥、时钟、签名数据与图片，经 Tauri MockRuntime 的实际命令验证本机内容接收、签名篡改拒绝和恢复。篡改后本机快照返回校验错误；恢复有效内容后重新显示。新增测试 1 项通过，Public 测试目标严格 Clippy 和格式检查通过。[通过日志](ad-status-and-candidate-20261028/public-signed.log)、[首次失败日志](ad-status-and-candidate-20261028/public-signed-initial.log)、[Clippy](ad-status-and-candidate-20261028/public-signed-clippy.log)。
+
+首次失败是测试误以为本机篡改时快照直接返回失败状态；实际返回明确校验错误。测试修正预期后通过，产品代码未改。该补充不验证发行来源、真实网络、窗口业务或线上传播。下文保留前一轮记录。
+
 ## 测试范围
 
 测试通过 Tauri MockRuntime 调用实际 `refresh_ad_content` 处理函数，并使用当前命令权限。临时工作区和合成密钥库独立于用户资料。测试时钟使用本机 UTC 对齐签发时间，并使用合成启动标识和连续时间；生产运行仍使用系统时钟。沙箱禁止外网，只允许回环连接，也禁止读取真实账号和默认 Keychain。
@@ -22,4 +28,4 @@
 
 ## 未验证
 
-签名成功的 Public 状态运行在 Personal 特性测试程序中，不代表独立 Public 特性构建的签名成功路径已通过。测试没有使用发行来源配置、原生窗口、默认 Keychain、真实 Claude 或真实 R2/CDN。它也不证明客户安装和线上传播。既有核心及远程测试本轮没有重复运行。
+前一轮签名成功的 Public 状态运行在 Personal 特性测试程序中；独立 Public 特性构建的后续验证见上文。测试没有使用发行来源配置、原生窗口、默认 Keychain、真实 Claude 或真实 R2/CDN。它也不证明客户安装和线上传播。既有核心及远程测试本轮没有重复运行。
