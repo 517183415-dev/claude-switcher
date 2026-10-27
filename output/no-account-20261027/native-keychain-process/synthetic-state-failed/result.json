@@ -1,0 +1,1 @@
+{"exercise_passed":false,"owned_items_removed":false,"preferences_unchanged":true,"private_keychain_removed":true,"scope":"writer exits and is reaped before new reader process; direct Publisher and explicit private Keychain"}

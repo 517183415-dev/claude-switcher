@@ -1,0 +1,7 @@
+
+running 2 tests
+test publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker ... ignored, worker invoked only by explicit native process acceptance
+test publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit ... ignored, explicit native Keychain process restart acceptance; synthetic owned items only
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 237 filtered out; finished in 0.00s
+

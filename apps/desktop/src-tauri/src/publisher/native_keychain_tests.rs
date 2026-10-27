@@ -294,3 +294,6 @@ fn native_keychain_create_race_and_backup_restore_preserve_owned_items() {
         std::panic::resume_unwind(error);
     }
 }
+
+#[path = "native_keychain_process_tests.rs"]
+mod process_tests;

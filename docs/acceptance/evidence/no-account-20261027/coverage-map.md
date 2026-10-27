@@ -1,5 +1,7 @@
 # 无真实账号功能覆盖审查索引
 
+AD-10 跨进程增量：[私有库恢复证据](../../../../output/no-account-20261027/native-keychain-process/README.md)通过写入进程退出并回收后的新进程回读、旧密钥与旧状态保留、无自动发布和清理。一个验收用例，内部两个 worker 不累加功能计数。默认库权限、成功 WebView、整机重启、实源及整项仍未证明。
+
 AD-10 独立 Keychain 增量：[原生恢复证据](../../../../output/no-account-20261027/native-keychain-isolation/README.md)通过跨库隔离、独占创建/真实并发、坏口令/成功恢复/旧密钥与代次保留、同进程重开及清理。一个原生测试名；不累计断言数。前阶段默认库失败保留，默认库权限、OS 进程重启、成功 WebView 及整项仍未证明。
 
 AD-10 原生增量：显式 KeychainVault/Publisher 测试已编译；首次创建因 SecretUnavailable 失败，受限进程默认 Keychain 查询为 -25307。正向恢复与竞争断言未进入，状态 WAIT；启用保护与空条目清理已核对。[证据](../../../../output/no-account-20261027/native-keychain/README.md)。不升级整项或原生成功状态。

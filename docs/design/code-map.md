@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：私有 Keychain 的跨进程恢复通过
+
+`native_keychain_process_tests 协调器 → 写入 worker → wait 回收 → 新读 worker → Publisher::open / KeychainVault::isolated`。两个 worker 使用同一编译测试二进制、不同 OS 进程；写入者退出后才启动读者。读者验证恢复代次、recovery_required、旧密钥与恢复密钥、旧状态摘要及无自动发布。协调器按精确清单清理条目，删除私有库，核对偏好快照。
+
+一个原生验收测试通过，内部两次 worker 不累计为独立功能数；新增两个入口默认忽略，缺少显式启用提前拒绝。权限 fixture 首次失败已修正，保留严格断言与 RED/GREEN。只扩展测试模块，产品及依赖未改；定向编译、Clippy、格式通过，复用上一阶段 236 项完整测试。CodeGraph complete、pending 0：243 文件、6433 节点、27096 条边。[证据](../../output/no-account-20261027/native-keychain-process/README.md)。不外推为默认库权限、WebView 成功、整机重启、实源或完整 AD-10。UI 最后，沿用当前布局及非蓝紫色背景；注册、部署、付款暂停。
+
 ## 2026-10-27：独立 Keychain 内原生恢复通过
 
 `ManagedVault::default → KeychainVault::default` 保留默认库选择。KeychainVault 仅在测试构造器中接受私有 Keychain，前端无选择入口。创建仍走同一 SecItemAdd，服务名和编码函数集中复用；私有库读写用 SDK 显式限定位置，默认库 SDK 路径保持原样。

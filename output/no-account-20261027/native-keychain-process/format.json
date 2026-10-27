@@ -1,0 +1,12 @@
+{
+  "command": [
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--check",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs"
+  ],
+  "exit": 0,
+  "execution": "captured from exec tool response; no duplicate invocation"
+}

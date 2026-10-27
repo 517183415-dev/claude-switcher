@@ -1,0 +1,8 @@
+{
+  "receipt": "build-failed-2.json",
+  "compiler_artifacts": 475,
+  "errors": [
+    "error[E0596]: cannot borrow `keychain` as mutable, as it is not declared as mutable\n  --> apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:59:5\n   |\n59 |     keychain\n   |     ^^^^^^^^ cannot borrow as mutable\n   |\nhelp: consider changing this to be mutable\n   |\n58 |     let mut keychain = SecKeychain::open(path).unwrap();\n   |         +++\n\n"
+  ],
+  "raw_log_kept_locally": "build-failed-2.log"
+}

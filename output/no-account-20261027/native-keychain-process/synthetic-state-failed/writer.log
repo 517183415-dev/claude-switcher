@@ -1,0 +1,18 @@
+
+running 1 test
+test publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker ... FAILED
+
+failures:
+
+---- publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker stdout ----
+
+thread 'publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker' (34422034) panicked at apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:51:5:
+assertion failed: metadata.mode() & 0o077 == 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    publisher::security::native_keychain_tests::process_tests::native_keychain_process_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 238 filtered out; finished in 0.69s
+

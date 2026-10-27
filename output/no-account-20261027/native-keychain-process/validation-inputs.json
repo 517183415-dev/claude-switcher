@@ -1,0 +1,11 @@
+{
+  "source_parent": "c64b91b53973f14c36b263f19cd3d65a018a3bed",
+  "sha256": {
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs": "37d999f1b07b5eae0b7b6c33fdffaa5649fcdc578016e373658a04a57c51be15",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs": "4e4bcb49983dc00e0ee3c1b0a8a58647b31d8ca75ef8975d8c170f3725164030",
+    "apps/desktop/src-tauri/src/publisher/security.rs": "cc5a23b36e11a7f922298a8052682cb21194a2d63f50bfac0e570a48b68a8b45",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "apps/desktop/src-tauri/Cargo.toml": "ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "receipt": "build-failed.json",
+  "compiler_artifacts": 475,
+  "errors": [
+    "error[E0432]: unresolved import `sha2`\n --> apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:4:5\n  |\n4 | use sha2::{Digest, Sha256};\n  |     ^^^^ use of unresolved module or unlinked crate `sha2`\n  |\n  = help: if you wanted to use a crate named `sha2`, use `cargo add sha2` to add it to your `Cargo.toml`\n\n",
+    "error[E0308]: mismatched types\n  --> apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:61:22\n   |\n61 |         .unlock(Some(b\"synthetic-private-keychain-password\"))\n   |                 ---- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&str`, found `&[u8; 35]`\n   |                 |\n   |                 arguments to this enum variant are incorrect\n   |\n   = note: expected reference `&str`\n              found reference `&'static [u8; 35]`\nhelp: the type constructed contains `&'static [u8; 35]` due to the type of the argument passed\n  --> apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:61:17\n   |\n61 |         .unlock(Some(b\"synthetic-private-keychain-password\"))\n   |                 ^^^^^--------------------------------------^\n   |                      |\n   |                      this argument influences the type of `Some`\nnote: tuple variant defined here\n  --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library/core/src/option.rs:608:4\nhelp: consider removing the leading `b`\n   |\n61 -         .unlock(Some(b\"synthetic-private-keychain-password\"))\n61 +         .unlock(Some(\"synthetic-private-keychain-password\"))\n   |\n\n"
+  ],
+  "raw_log_kept_locally": "build-failed.log"
+}

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/usr/bin/sandbox-exec",
+    "-f",
+    "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-keychain-process/native.sb",
+    "/Users/gua/CodexWorkspaces/claude-switcher/target/debug/deps/switcher_desktop-d7d281c3081aaab0",
+    "--exact",
+    "publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit",
+    "--ignored",
+    "--test-threads=1"
+  ],
+  "exit": 0,
+  "duration_seconds": 7.708,
+  "log_sha256": "e93436e39d688e3742efbe1547364ca4c75b153f7bc2e49f679847fe57a9fda3",
+  "policy_sha256": "fdb7c3280851829824dddd8ad175409ea726a7180f4faa0722e1d2c73b189bdb"
+}

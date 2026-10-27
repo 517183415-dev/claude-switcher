@@ -1,0 +1,19 @@
+
+running 1 test
+test publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit ... FAILED
+
+failures:
+
+---- publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit stdout ----
+
+thread 'publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit' (34426261) panicked at apps/desktop/src-tauri/src/publisher/native_keychain_process_tests.rs:20:5:
+assertion failed: std::env::var("SWITCHER_NATIVE_KEYCHAIN_OPT_IN").as_deref() ==
+    Ok("synthetic-owned-items-only")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    publisher::security::native_keychain_tests::process_tests::native_keychain_restore_survives_writer_exit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 238 filtered out; finished in 0.00s
+
