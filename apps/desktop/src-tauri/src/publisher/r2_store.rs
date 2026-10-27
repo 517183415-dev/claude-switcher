@@ -35,6 +35,7 @@ pub struct R2Store {
     bucket: String,
     origin: reqwest::Url,
     target: String,
+    lock_target: String,
     client: Client,
     public_client: reqwest::blocking::Client,
     runtime: tokio::runtime::Runtime,
@@ -56,6 +57,17 @@ fn valid_bucket(bucket: &str) -> bool {
 }
 
 impl R2Config {
+    pub(crate) fn lock_identity(&self) -> StoreResult<String> {
+        self.validate()?;
+        let bytes = serde_json::to_vec(&(
+            self.account_id.to_ascii_lowercase(),
+            &self.bucket,
+            self.channel,
+        ))
+        .map_err(|_| StoreError::Unavailable)?;
+        Ok(format!("r2-lock:{}", signed::digest(&bytes)))
+    }
+
     pub(crate) fn identity(&self) -> StoreResult<String> {
         let origin = self.validate()?;
         let identity = serde_json::to_vec(&(
@@ -146,6 +158,7 @@ impl R2Store {
             .map_err(|_| StoreError::Unavailable)?;
         Ok(Self {
             channel: config.channel,
+            lock_target: config.lock_identity()?,
             bucket: config.bucket,
             origin,
             target,
@@ -166,6 +179,10 @@ impl R2Store {
         timeout: Duration,
     ) -> StoreResult<Option<Object>> {
         protocol::validate_key(self.channel, key)?;
+        self.raw_read(key, limit, timeout)
+    }
+
+    fn raw_read(&self, key: &str, limit: usize, timeout: Duration) -> StoreResult<Option<Object>> {
         if limit > ads::MAX_IMAGE_BYTES {
             return Err(StoreError::Permission);
         }
@@ -214,6 +231,10 @@ impl R2Store {
     }
     fn put(&self, key: &str, bytes: &[u8], expected: Option<&str>) -> StoreResult<()> {
         protocol::validate_key(self.channel, key)?;
+        self.raw_put(key, bytes, expected)
+    }
+
+    fn raw_put(&self, key: &str, bytes: &[u8], expected: Option<&str>) -> StoreResult<()> {
         if bytes.len() > ads::MAX_IMAGE_BYTES {
             return Err(StoreError::Permission);
         }
@@ -240,6 +261,27 @@ impl R2Store {
     }
 }
 impl ObjectStore for R2Store {
+    fn lock_identity(&self) -> Option<String> {
+        Some(self.lock_target.clone())
+    }
+    fn read_lock(&mut self) -> StoreResult<Option<Object>> {
+        self.raw_read(
+            &format!("{}/publisher-lock.json", protocol::prefix(self.channel)),
+            super::remote_lock::WIRE_LIMIT,
+            Duration::from_secs(30),
+        )
+    }
+    fn commit_lock(&mut self, expected: Option<&str>, bytes: &[u8]) -> StoreResult<()> {
+        if bytes.len() > super::remote_lock::WIRE_LIMIT {
+            return Err(StoreError::Permission);
+        }
+        self.raw_put(
+            &format!("{}/publisher-lock.json", protocol::prefix(self.channel)),
+            bytes,
+            expected,
+        )
+    }
+
     fn channel(&self) -> AdChannel {
         self.channel
     }

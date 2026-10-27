@@ -12,6 +12,7 @@ use switcher_domain::ads::AdChannel;
 use zeroize::{Zeroize, Zeroizing};
 
 const CONNECTION_LIMIT: usize = 16 * 1024;
+mod maintenance;
 mod registry;
 use registry::Registry;
 
@@ -243,7 +244,19 @@ impl Publisher {
         if is_remote || self.state.schema == 3 {
             self.select_target(source.as_ref())?;
         }
-        self.publish(channel, now, Some(source.as_mut()), vault)
+        let lease = if is_remote {
+            Some(super::remote_lock::Lease::acquire(self, source.as_mut())?)
+        } else {
+            None
+        };
+        let result = self.publish(channel, now, Some(source.as_mut()), vault);
+        // Unknown publication outcomes retain ownership until the existing CAS recovery finishes.
+        if !self.has_pending_publications()
+            && let Some(lease) = lease
+        {
+            lease.release(self, source.as_mut())?;
+        }
+        result
     }
 }
 

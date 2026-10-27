@@ -1,6 +1,26 @@
 # Claude 切换器当前代码图谱
 
-## 2026-10-27：保留发布目标与配置回切
+## 2026-10-27：远程锁与全部目标清理接线
+
+`publisher_commands::with_cleanup_source` → `Publisher::with_configured_currents` → `connection/maintenance.rs::Sources` → 既有 `cleanup_preview/commit`、`gc_preview/commit`。先核对全部账本的配置覆盖及本机目录身份，再按物理锁标识排序取得全部远程锁。一个 `LocalObjectStore` 覆盖本机两渠道；同一 R2 桶、账号与渠道的不同公开域名只取得一把锁。每轮引用读取先复核锁，清理算法继续验证签名、版本水位和预览摘要。
+
+```text
+渠道配置表 + 全部目标账本 → 完整来源覆盖 → 本机锁 + 远程 CAS 锁
+                                                      ↓
+认证全部 current → 索引整理确认 → 独立文件回收确认 → 释放锁
+                                                      ↑
+                        发布结果未知：保留锁，重启后沿用所有者回查
+```
+
+`publish_configured` → `remote_lock::Lease::acquire` → 共用发布事务 → `Lease::release`。`r2_store.rs` 只为固定的渠道锁路径开放内部认证 GET/条件 PUT；普通素材、版本和公开读取不能操作锁。锁状态包含随机所有者与随机版本；不自动到期，不抢占其他所有者，不删除锁对象。每次重取锁先执行新 CAS，隔离旧请求。锁意图先持久写入根目录 `remote-locks.json`，不含凭据，也不进入可移植备份。未知写入和待回查发布保留意图；有意图时阻止备份恢复与有效代切换。
+
+修复同桶更换公开域名后版本文件 ID 冲突：新操作避开全部目标历史中使用过的同渠道发布 ID。失败复现、最终验证和源码摘要见[远程锁回执](../../output/no-account-20261027/remote-locks/receipt.json)。测试覆盖锁竞争、迟到请求、重启、坏记录、部分取锁失败、来源缺失、域名去重、旧目标素材保留及真实隔离目录回收。
+
+保证范围是采用该锁协议的合作发布器。旧客户端、手工写桶或丢失本机锁意图不属于自动协调保证；不按时间抢锁。真实 R2/Keychain、普通 App 动态 IPC 和远程传播仍未验收。注册、部署、付款继续暂停。
+
+本阶段桌面后端完整套件 223 项通过，0 失败；其中相关连接测试最终 22 项通过，包含在 223 项内，不相加。完整套件后只合并两处条件语句，并针对最终代码复跑连接测试。Clippy、Public 编译和格式检查通过；保留 3 条原有迁移风格警告。前端未改动，沿用上一阶段有效构建记录。图谱为 227 文件、6100 节点、25090 条边，complete、pending 0。
+
+## 历史阶段：保留发布目标与配置回切
 
 `RemotePublisher.svelte` → Personal 专用 `publisher_remote_read/save/select` → `connection.rs` → `connection/registry.rs` → 现有 Vault。每个渠道保留独立目标配置表，目标标识必须与配置重新计算的身份一致。读取旧单目标格式时兼容转换；保存时写入新格式，不另建明文凭据文件。
 

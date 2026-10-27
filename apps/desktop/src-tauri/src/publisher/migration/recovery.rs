@@ -183,6 +183,7 @@ impl PreparedRecovery {
         vault: &dyn Vault,
         now: u64,
     ) -> Result<Self> {
+        publisher.require_no_remote_intents()?;
         let root = PrivateDirectory::open(&publisher.root)?;
         let generation = root.child(&publisher.generation)?;
         let migration_digest = publisher.migration_preview(&mut source, now)?.digest;

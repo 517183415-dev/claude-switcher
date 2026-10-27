@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "created_at": "2026-10-27T04:26:05.558563+00:00",
+  "base_commit": "3cc88f2e072b77dc066e821ae471be751f11d410",
+  "scope": "Personal remote cooperative locks, configured multi-target cleanup, regression tests; local only",
+  "results": {
+    "desktop_unit_suite": {
+      "exit_code": 0,
+      "passed": 223,
+      "failed": 0,
+      "duration_seconds": 256.5,
+      "log": "stage-tests.log",
+      "inputs": "source-inputs.json"
+    },
+    "final_connection_tests": {
+      "exit_code": 0,
+      "passed": 22,
+      "failed": 0,
+      "log": "connection-final.log"
+    },
+    "clippy": {
+      "exit_code": 0,
+      "existing_migration_collapsible_if_warnings": 3,
+      "log": "clippy-final.log"
+    },
+    "public_check": {
+      "exit_code": 0,
+      "log": "public-check.log"
+    },
+    "format": {
+      "exit_code": 0,
+      "log": "fmt-final.log"
+    }
+  },
+  "post_suite_changes": {
+    "reason": "Collapse two nested conditions as requested by Clippy; branch behavior unchanged",
+    "files": [
+      "apps/desktop/src-tauri/src/publisher/connection.rs",
+      "apps/desktop/src-tauri/src/publisher/connection/maintenance.rs"
+    ],
+    "verification": "Final 22 connection tests and all-target Clippy; full 223-test suite not repeated"
+  },
+  "regression": {
+    "bug": "Same R2 bucket/channel with a new public-domain identity reused a prior immutable version release ID",
+    "red_log": "connection-green.log",
+    "red_case": "domain_aliases_share_one_physical_lock_and_remote_reader",
+    "red_result": "18 passed, 1 failed with Store(Conflict)",
+    "fix": "Check same-channel release IDs across all target histories before creating a new operation",
+    "green_logs": [
+      "maintenance-green.log",
+      "stage-tests.log",
+      "connection-final.log"
+    ]
+  },
+  "isolation": {
+    "policy": "../storage-directory-race/account-free.sb",
+    "policy_sha256": "3e266f89c06e932f3d72cf2b6f74b9e6150accb4383d7ffa4947bc0b3fb362fa",
+    "fixtures": "MemoryVault, synthetic signing keys and R2 credentials, isolated private roots, loopback HTTP/CAS fixtures",
+    "external_network": "Denied by sandbox; loopback allowed"
+  },
+  "codegraph": {
+    "fileCount": 227,
+    "nodeCount": 6100,
+    "edgeCount": 25090,
+    "pendingChanges": {
+      "added": 0,
+      "modified": 0,
+      "removed": 0
+    },
+    "index": {
+      "builtWithVersion": "1.6.0",
+      "builtWithExtractionVersion": 25,
+      "currentExtractionVersion": 25,
+      "reindexRecommended": false,
+      "state": "complete",
+      "pendingRefs": 0
+    }
+  },
+  "reused_without_rerun": [
+    "Previous unchanged frontend Personal/Public builds and Svelte checks in ../target-registry/receipt.json"
+  ],
+  "not_run": [
+    "Real Claude account",
+    "Real Keychain behavior",
+    "Real R2/IAM/TLS/cache/WAF/billing",
+    "Ordinary App dynamic IPC acceptance",
+    "Public remote end-to-end propagation"
+  ],
+  "not_performed": [
+    "Account registration",
+    "Deployment",
+    "Payment",
+    "Subagents"
+  ],
+  "protocol_limits": [
+    "Only cooperative publishers are coordinated; direct or older writers can bypass advisory locks",
+    "Locks do not expire or permit foreign takeover; loss of local owner journal is not auto-recoverable",
+    "Any uncertain publication retains locks; expired uncommitted publications retain the existing recovery restriction"
+  ],
+  "final_source_inputs": "final-source-inputs.json"
+}

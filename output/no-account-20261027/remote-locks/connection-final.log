@@ -1,0 +1,40 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.37s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 22 tests
+test publisher::connection::tests::changing_remote_target_keeps_previous_access_material ... ok
+test publisher::connection::tests::configured_channels_route_and_reopen_with_separate_target_histories ... ok
+test publisher::connection::tests::corrupt_credentials_never_fall_back_to_a_local_publication ... ok
+test publisher::connection::tests::encrypted_backup_restores_remote_settings_into_the_new_generation ... ok
+test publisher::connection::tests::invalid_configurations_and_shared_channel_credentials_preserve_vault ... ok
+test publisher::connection::tests::maintenance_tests::authenticated_inactive_current_pins_local_asset_through_real_cleanup_and_gc ... ok
+test publisher::connection::tests::maintenance_tests::changed_local_identity_fails_before_remote_acquisition ... ok
+test publisher::connection::tests::maintenance_tests::closure_errors_release_locks_and_foreign_locks_prevent_maintenance ... ok
+test publisher::connection::tests::maintenance_tests::configured_sources_cover_local_both_remote_channels_and_complete_cleanup_gc ... ok
+test publisher::connection::tests::maintenance_tests::domain_aliases_share_one_physical_lock_and_remote_reader ... ok
+test publisher::connection::tests::maintenance_tests::missing_configuration_is_rejected_before_any_provider_is_opened ... ok
+test publisher::connection::tests::maintenance_tests::partial_acquisition_releases_prior_locks_without_running_maintenance ... ok
+test publisher::connection::tests::maintenance_tests::pending_publication_retains_lock_across_preview_restart_and_backup_restore_attempt ... ok
+test publisher::connection::tests::missing_historical_target_is_reported_and_original_configuration_repairs_coverage ... ok
+test publisher::connection::tests::pending_target_cannot_be_removed_or_changed_but_credentials_can_rotate ... ok
+test publisher::connection::tests::retained_registry_capacity_and_serialized_byte_limit_preserve_previous_vault ... ok
+test publisher::connection::tests::retained_registry_rotation_backup_and_cross_channel_separation ... ok
+test publisher::connection::tests::retained_target_can_be_selected_after_restart_and_local_selection ... ok
+test publisher::connection::tests::retained_target_registry_migrates_legacy_and_rejects_malformed_records_atomically ... ok
+test publisher::connection::tests::retained_target_selection_rejects_wrong_channel_unknown_identity_and_vault_failure ... ok
+test publisher::connection::tests::settings_keep_credentials_out_of_responses_and_disk_and_survive_restart ... ok
+test publisher::connection::tests::vault_write_failure_preserves_previous_configuration ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 201 filtered out; finished in 11.34s
+

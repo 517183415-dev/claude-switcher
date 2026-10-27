@@ -1,0 +1,49 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.50s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-c8b3e442c7df22fd)
+
+running 7 tests
+test publisher::connection::tests::maintenance_tests::changed_local_identity_fails_before_remote_acquisition ... ok
+test publisher::connection::tests::maintenance_tests::closure_errors_release_locks_and_foreign_locks_prevent_maintenance ... ok
+test publisher::connection::tests::maintenance_tests::configured_sources_cover_local_both_remote_channels_and_complete_cleanup_gc ... ok
+test publisher::connection::tests::maintenance_tests::domain_aliases_share_one_physical_lock_and_remote_reader ... ok
+test publisher::connection::tests::maintenance_tests::missing_configuration_is_rejected_before_any_provider_is_opened ... ok
+test publisher::connection::tests::maintenance_tests::partial_acquisition_releases_prior_locks_without_running_maintenance ... ok
+test publisher::connection::tests::maintenance_tests::pending_publication_retains_lock_across_preview_restart_and_backup_restore_attempt ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 213 filtered out; finished in 3.28s
+
+     Running tests/e03_activity_export.rs (target/debug/deps/e03_activity_export-caf67ac949cd614c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s
+
+     Running tests/e03_core_preparation.rs (target/debug/deps/e03_core_preparation-95688e69776a175b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.00s
+
+     Running tests/e06_repair_preview.rs (target/debug/deps/e06_repair_preview-4577a2d3d82aa5b2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+     Running tests/e11_log_privacy.rs (target/debug/deps/e11_log_privacy-b429c761a8f3a79e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+

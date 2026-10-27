@@ -1,10 +1,7 @@
 //! Compiled into Personal only. Remote settings require an explicit operator action.
 use crate::{
     bridge::{self, DesktopState},
-    publisher::{
-        self, Publisher, cleanup::CleanupOptions, local_store::LocalObjectStore,
-        security::KeychainVault,
-    },
+    publisher::{self, Publisher, cleanup::CleanupOptions, security::KeychainVault},
 };
 use std::sync::Arc;
 use switcher_domain::{
@@ -369,7 +366,7 @@ pub(crate) fn publish_local(
         key_id: "ads-personal-v1".into(),
         public_key,
     };
-    let mut source = LocalObjectStore::open(root, channel, &trust)?;
+    let mut source = publisher::local_store::LocalObjectStore::open(root, channel, &trust)?;
     publication_outcome(publisher.publish(channel, now, Some(&mut source), vault))
 }
 #[tauri::command]
@@ -440,21 +437,19 @@ pub async fn publisher_remote_select(
 
 async fn with_cleanup_source<T: Send + 'static>(
     state: Arc<DesktopState>,
-    run: impl FnOnce(&mut Publisher, &mut LocalObjectStore, u64) -> publisher::Result<T>
+    run: impl FnOnce(
+        &mut Publisher,
+        &mut dyn publisher::cleanup::FixedCurrents,
+        u64,
+    ) -> publisher::Result<T>
     + Send
     + 'static,
 ) -> Result<T, String> {
     tokio::task::spawn_blocking(move || {
         with_publisher(&state, |publisher| {
-            let trust = switcher_core::ad_runtime::local::LocalTrust {
-                schema: 1,
-                key_id: "ads-personal-v1".into(),
-                public_key: publisher
-                    .configured_public_key()
-                    .ok_or(publisher::Error::MissingSigningKey)?,
-            };
-            let mut source = LocalObjectStore::open(&state.root, AdChannel::Preview, &trust)?;
-            run(publisher, &mut source, switcher_core::checks::unix_now())
+            publisher.with_configured_currents(&state.root, &KeychainVault, |publisher, source| {
+                run(publisher, source, switcher_core::checks::unix_now())
+            })
         })
     })
     .await

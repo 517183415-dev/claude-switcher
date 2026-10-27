@@ -10,6 +10,7 @@ pub mod local_store;
 pub(crate) mod migration;
 pub mod protocol;
 pub mod r2_store;
+mod remote_lock;
 pub mod security;
 mod target_backup;
 #[cfg(any(test, feature = "ipc-business"))]
@@ -58,6 +59,7 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Invalid("migration_active_outcome_unknown") => f.write_str("迁移结果尚未确认。请重新打开软件并检查当前状态；两代数据均已保留，请勿重复确认原预览。"),
+            Self::Invalid("remote_lock_recovery_required") => f.write_str("远程锁尚未回查。请先重试原目标发布或整理预览，再恢复备份。"),
             Self::Invalid(reason) => write!(f, "发布数据无效：{reason}"),
             Self::Io(_) => f.write_str("本地发布数据读写失败"),
             Self::SecretUnavailable => f.write_str("Keychain 凭据不可用或访问被取消"),
@@ -1130,10 +1132,23 @@ impl Publisher {
             }
             let mut manifest = self.draft_read();
             manifest.channel = channel;
-            if self.state.history.iter().any(|record| {
-                record.manifest.release_id == manifest.release_id
-                    && record.manifest.channel == channel
-            }) {
+            // A public-domain alias can be a distinct logical target in the
+            // same physical bucket. Its immutable version keys still collide.
+            if self
+                .state
+                .history
+                .iter()
+                .chain(
+                    self.state
+                        .other_targets
+                        .values()
+                        .flat_map(|ledger| ledger.history.iter()),
+                )
+                .any(|record| {
+                    record.manifest.release_id == manifest.release_id
+                        && record.manifest.channel == channel
+                })
+            {
                 manifest.release_id = random_id()?;
             }
             manifest.content_revision = manifest.content_revision.max(
@@ -1474,6 +1489,7 @@ impl Publisher {
         passphrase: &[u8],
         vault: &mut dyn Vault,
     ) -> Result<()> {
+        self.require_no_remote_intents()?;
         if self.state.cleanup.is_some() {
             return Err(Error::Invalid("cleanup_finish_gc_before_restore"));
         }

@@ -141,4 +141,7 @@ impl Registry {
     pub(super) fn contains(&self, target: &str) -> bool {
         self.targets.contains_key(target)
     }
+    pub(super) fn get(&self, target: &str) -> Option<&Connection> {
+        self.targets.get(target)
+    }
 }

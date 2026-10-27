@@ -6,6 +6,9 @@ use super::*;
 use std::{fs, os::unix::fs::DirBuilderExt, path::PathBuf};
 use switcher_core::storage;
 
+#[path = "maintenance_tests.rs"]
+mod maintenance_tests;
+
 struct Root(PathBuf);
 impl Drop for Root {
     fn drop(&mut self) {
@@ -68,8 +71,34 @@ struct TestRemote {
     inner: LocalObjectStore,
     target: String,
     unknown: bool,
+    lock_path: PathBuf,
+    lock_id: String,
 }
 impl ObjectStore for TestRemote {
+    fn lock_identity(&self) -> Option<String> {
+        Some(self.lock_id.clone())
+    }
+    fn read_lock(&mut self) -> std::result::Result<Option<Object>, StoreError> {
+        match storage::read_private_bytes(&self.lock_path, super::super::remote_lock::WIRE_LIMIT) {
+            Ok(bytes) => Ok(Some(Object {
+                etag: switcher_core::signed::digest(&bytes),
+                bytes,
+            })),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(_) => Err(StoreError::Unavailable),
+        }
+    }
+    fn commit_lock(
+        &mut self,
+        expected: Option<&str>,
+        bytes: &[u8],
+    ) -> std::result::Result<(), StoreError> {
+        if self.read_lock()?.as_ref().map(|o| o.etag.as_str()) != expected {
+            return Err(StoreError::Conflict);
+        }
+        storage::atomic_write(&self.lock_path, bytes).map_err(|_| StoreError::Unavailable)
+    }
+
     fn target_identity(&self) -> Option<String> {
         Some(self.target.clone())
     }
@@ -115,6 +144,11 @@ fn remote(root: &Path, c: R2Config, unknown: bool) -> Result<Box<dyn ObjectStore
     Ok(Box::new(TestRemote {
         inner: LocalObjectStore::open(&base, c.channel, &trust)?,
         target: c.identity()?,
+        lock_id: c.lock_identity()?,
+        lock_path: base.join(format!(
+            "lock-{}.json",
+            super::super::protocol::prefix(c.channel)
+        )),
         unknown,
     }))
 }

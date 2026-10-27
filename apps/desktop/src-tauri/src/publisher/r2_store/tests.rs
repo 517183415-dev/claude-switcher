@@ -144,6 +144,7 @@ fn store(endpoint: &str) -> R2Store {
         bucket: "test-bucket".into(),
         origin: reqwest::Url::parse(&format!("{endpoint}/")).unwrap(),
         target: "r2:synthetic".into(),
+        lock_target: format!("r2-lock:{}", "a".repeat(64)),
         client: Client::from_conf(config),
         public_client: reqwest::blocking::Client::builder()
             .no_proxy()
@@ -186,6 +187,69 @@ fn signed_conditional_writes_and_error_classification() {
     assert!(first.contains("if-none-match: *"));
     assert!(second.contains("if-match: \"old\""));
     handle.join().unwrap();
+}
+
+#[test]
+fn reserved_lock_transport_uses_authenticated_conditional_requests_only() {
+    let (url, rx, handle) = server(vec![
+        "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nETag: \"lock\"\r\nConnection: close\r\n\r\n{}",
+        "HTTP/1.1 412 Precondition Failed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+    ]);
+    let mut s = store(&url);
+    assert!(s.read_lock().unwrap().is_none());
+    s.commit_lock(None, b"{}").unwrap();
+    assert_eq!(s.read_lock().unwrap().unwrap().etag, "\"lock\"");
+    assert_eq!(
+        s.commit_lock(Some("\"lock\""), b"{}"),
+        Err(StoreError::Conflict)
+    );
+    for index in 0..4 {
+        let request = rx.recv().unwrap().to_ascii_lowercase();
+        assert!(request.contains("/test-bucket/preview/publisher-lock.json"));
+        assert!(request.contains("authorization: aws4-hmac-sha256"));
+        if index == 1 {
+            assert!(request.contains("if-none-match: *"));
+        }
+        if index == 3 {
+            assert!(request.contains("if-match: \"lock\""));
+        }
+    }
+    let key = "preview/publisher-lock.json";
+    assert_eq!(s.put_immutable(key, b"{}"), Err(StoreError::Permission));
+    assert!(matches!(
+        s.public_read(key, 1024),
+        Err(StoreError::Permission)
+    ));
+    assert_eq!(
+        s.commit_lock(None, &vec![0; super::super::remote_lock::WIRE_LIMIT + 1]),
+        Err(StoreError::Permission)
+    );
+    handle.join().unwrap();
+}
+
+#[test]
+fn lock_identity_coalesces_domain_aliases_but_separates_accounts_buckets_and_channels() {
+    let mut c = R2Config {
+        account_id: "abcdef0123456789abcdef0123456789".into(),
+        bucket: "test-bucket".into(),
+        public_origin: "https://ads.example.com".into(),
+        channel: AdChannel::Preview,
+    };
+    let first = c.lock_identity().unwrap();
+    c.public_origin = "https://other.example.com".into();
+    c.account_id = c.account_id.to_ascii_uppercase();
+    assert_eq!(first, c.lock_identity().unwrap());
+    for variant in 0..3 {
+        let mut different = c.clone();
+        match variant {
+            0 => different.bucket = "other-bucket".into(),
+            1 => different.channel = AdChannel::Production,
+            _ => different.account_id = "abcdef0123456789abcdef0123456780".into(),
+        }
+        assert_ne!(first, different.lock_identity().unwrap());
+    }
 }
 
 #[test]

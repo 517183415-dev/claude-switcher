@@ -1,0 +1,16 @@
+{
+  "apps/desktop/src-tauri/src/publisher/connection.rs": "da57e9c936141db67b9baf17b3546f52e7a942a4305a69f62783b3b67f08d703",
+  "apps/desktop/src-tauri/src/publisher/connection/maintenance.rs": "8ff36f53116d63311ee254ff563861712030c630945f047c615d1e193f609c50",
+  "apps/desktop/src-tauri/src/publisher/connection/maintenance_tests.rs": "2699105822cf1bae849bfd44d23d69a4056806c2efda0757dda48c6f6d7080e5",
+  "apps/desktop/src-tauri/src/publisher/connection/registry.rs": "15b88afe5a564c07fe3a79b23595a844dc746208aef8f621bf3931c1da60144b",
+  "apps/desktop/src-tauri/src/publisher/connection/tests.rs": "a0045d97b4165c485ca5aa36e16160153d6eb531a2349832c3030109c441bc95",
+  "apps/desktop/src-tauri/src/publisher/migration.rs": "4c8d77cf33b7676bf887bf23b34d8a5fddc29ccef597b2fe2d8fbbce127d3b23",
+  "apps/desktop/src-tauri/src/publisher/migration/recovery.rs": "f659fc2e54d401ddffc20807ca499290dc0fa67d20ff5d6e813fa5ad7607abc7",
+  "apps/desktop/src-tauri/src/publisher/mod.rs": "aacbc239d023b4bba3bb0a6eb2ad92371baaa0325b4fc9106729900415250db5",
+  "apps/desktop/src-tauri/src/publisher/protocol.rs": "140c63d4d815db1f929943cf24b41564a00afc61d043ca8038cf68e3b0f6a276",
+  "apps/desktop/src-tauri/src/publisher/r2_store.rs": "fb4b132a18a582a10dbd42fef6a0c441d704627164d83e670418a1df12e07e7c",
+  "apps/desktop/src-tauri/src/publisher/r2_store/tests.rs": "fd6ff461aee1103504548ce3d0ee2a9c666ca2556dd9e065ac450e96374ebb56",
+  "apps/desktop/src-tauri/src/publisher/remote_lock.rs": "40edca8fca2239bfe226cc08f325689afa460328409bfffb94ab8bd7e8133ad1",
+  "apps/desktop/src-tauri/src/publisher/remote_lock/tests.rs": "58bbcc21b914006143eef2545dc1e80dc47b39718fb2b8db6d21f6dffa212565",
+  "apps/desktop/src-tauri/src/publisher_commands.rs": "462f03f1e006bb490076640518f0da7ed1b524ea6f62fb039451bb78f7276783"
+}

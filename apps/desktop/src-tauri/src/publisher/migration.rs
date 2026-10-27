@@ -26,6 +26,7 @@ struct Prepared {
 }
 impl Publisher {
     fn prepare_migration(&self, source: &mut dyn FixedCurrents, now: u64) -> Result<Prepared> {
+        self.require_no_remote_intents()?;
         if !self._lock.protects(&self.root) {
             return Err(Error::Invalid("migration_lock"));
         }

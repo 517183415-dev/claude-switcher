@@ -30,6 +30,20 @@ pub trait ObjectStore {
     fn requires_credentials(&self) -> bool {
         true
     }
+    /// Physical namespace, independent of public-domain aliases.
+    fn lock_identity(&self) -> Option<String> {
+        None
+    }
+    fn read_lock(&mut self) -> std::result::Result<Option<Object>, StoreError> {
+        Err(StoreError::Permission)
+    }
+    fn commit_lock(
+        &mut self,
+        _expected: Option<&str>,
+        _bytes: &[u8],
+    ) -> std::result::Result<(), StoreError> {
+        Err(StoreError::Permission)
+    }
     fn current(&mut self) -> std::result::Result<Option<Object>, StoreError>;
     fn public_read(
         &mut self,
