@@ -424,6 +424,76 @@ fn successful_refresh_persists_deadline_filters_slots_and_confirms_clicks() {
 }
 
 #[test]
+fn scheduled_refresh_fetches_new_signed_content_and_survives_restart() {
+    let root = Root::new();
+    let runtime = configured_runtime(&root);
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&runtime, &manifest(7));
+    assert_eq!(
+        refresh(&runtime, &mut fetcher, 1000).unwrap().next_check_at,
+        Some(1917)
+    );
+
+    let mut next = manifest(8);
+    next.slots[0].campaigns[0].title = "新版合成标题".into();
+    fetcher.set(&runtime, &next);
+    let before = fetcher.requests.len();
+    {
+        let _lock = runtime.lock().unwrap();
+        let early = runtime
+            .refresh_locked(&prefs(), false, sample(1916), Some(&mut fetcher), Some(17))
+            .unwrap();
+        assert!(!early.refreshed);
+        assert_eq!(early.reason, "ad_refresh_not_due_or_merged");
+        assert_eq!(fetcher.requests.len(), before);
+        let due = runtime
+            .refresh_locked(&prefs(), false, sample(1917), Some(&mut fetcher), Some(17))
+            .unwrap();
+        assert!(due.refreshed);
+        assert_eq!(due.next_check_at, Some(2834));
+    }
+    // The asset is already verified and cached; only the new manifest is fetched.
+    assert_eq!(fetcher.requests.len(), before + 1);
+    let restarted = configured_runtime(&root);
+    let (state, clock) = restarted.load(&sample(1918)).unwrap();
+    assert_eq!(state.sequence.highest, 8);
+    assert_eq!(state.cache.highest_revision, 8);
+    assert_eq!(state.schedule.next_check_at, Some(2834));
+    let visible = restarted.visible(&state, &clock, &prefs(), 1918).unwrap();
+    assert_eq!(visible.slots[0].campaigns[0].title, "新版合成标题");
+}
+
+#[test]
+fn restarted_runtime_rejects_different_signed_content_with_same_revision() {
+    let root = Root::new();
+    let runtime = configured_runtime(&root);
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&runtime, &manifest(7));
+    refresh(&runtime, &mut fetcher, 1000).unwrap();
+    let restarted = configured_runtime(&root);
+    let mut conflicting = manifest(7);
+    conflicting.slots[0].campaigns[0].title = "冲突的合成标题".into();
+    fetcher.set(&restarted, &conflicting);
+    {
+        let _lock = restarted.lock().unwrap();
+        assert_eq!(
+            restarted
+                .refresh_locked(&prefs(), false, sample(1917), Some(&mut fetcher), Some(17))
+                .unwrap_err(),
+            "sequence_conflict"
+        );
+    }
+    let restarted_again = configured_runtime(&root);
+    let (state, clock) = restarted_again.load(&sample(1918)).unwrap();
+    assert_eq!(state.sequence.highest, 7);
+    assert_eq!(state.cache.highest_revision, 7);
+    let visible = restarted_again
+        .visible(&state, &clock, &prefs(), 1918)
+        .unwrap();
+    assert_eq!(visible.slots[0].campaigns[0].title, "合成标题");
+}
+
+#[test]
 fn failed_asset_keeps_authenticated_watermark_and_hides_old_content() {
     let root = Root::new();
     let runtime = configured_runtime(&root);
