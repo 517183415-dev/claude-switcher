@@ -49,6 +49,13 @@ class BuildGateTests(unittest.TestCase):
         self.assertEqual(code, 64)
         self.assertEqual(commands, "")
 
+    def test_both_product_editions_build_the_native_workspace(self):
+        for edition in ("personal", "public"):
+            with self.subTest(edition=edition):
+                code, commands = self.run_build(edition)
+                self.assertEqual(code, 0)
+                self.assertIn(f"--features {edition},native-ui", commands)
+
 
 if __name__ == "__main__":
     unittest.main()

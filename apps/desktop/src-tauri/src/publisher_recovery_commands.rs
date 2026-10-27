@@ -158,16 +158,14 @@ pub fn publisher_recovery_cancel(sessions: Sessions<'_>) -> Result<(), String> {
 pub async fn publisher_archive_import(
     state: State<'_, Arc<DesktopState>>,
     vault: PublisherVault<'_>,
-    bytes: Vec<u8>,
+    bytes: publisher_commands::PublisherInputBytes,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
     let passphrase = zeroize::Zeroizing::new(passphrase);
-    if bytes.len() > publisher::backup::LIMIT {
-        return Err("备份文件超过 64 MiB 上限".into());
-    }
     let state = state.inner().clone();
     let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
+        let bytes = bytes.decode(publisher::backup::LIMIT, "备份文件超过 64 MiB 上限")?;
         publisher_commands::with_publisher_vault(&state, &vault, |p, vault| {
             p.import_retained_generation(&bytes, passphrase.as_bytes(), vault)?;
             Ok(bridge::completed(

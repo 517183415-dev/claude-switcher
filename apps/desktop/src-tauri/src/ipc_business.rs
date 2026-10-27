@@ -11,7 +11,7 @@ use switcher_domain::{Edition, desktop::ActivityEntry};
 
 #[cfg(feature = "personal")]
 mod backup;
-#[cfg(feature = "personal")]
+#[cfg(any(feature = "personal", all(feature = "native-ui", target_os = "macos")))]
 mod ordinary;
 #[cfg(feature = "personal")]
 mod publish;
@@ -202,6 +202,11 @@ pub fn run() {
     let args: Vec<_> = std::env::args().skip(1).collect();
     #[cfg(feature = "personal")]
     if args == ["--ordinary-publisher"] {
+        ordinary::run();
+        return;
+    }
+    #[cfg(all(feature = "native-ui", target_os = "macos"))]
+    if args == ["--native-workspace"] {
         ordinary::run();
         return;
     }

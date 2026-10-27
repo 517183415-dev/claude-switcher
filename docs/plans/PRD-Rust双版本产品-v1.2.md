@@ -1,10 +1,10 @@
 # Claude 切换器 Rust 重写 PRD
 
-## 2026-10-27：SwiftUI 界面迁移
+## 2026-10-28：SwiftUI 界面迁移
 
 整体界面使用 SwiftUI 原生玻璃组件。布局沿用现有产品页面，而非效果图布局；采用暖色配色，不使用蓝紫色背景。macOS 26 及以上使用系统玻璃效果，macOS 13–25 使用原生材质兼容。两发行的能力与现有业务、安全门禁保持一致。
 
-当前仅完成界面基础、合成数据总览预览和隔离命令桥验证。产品仍使用 Svelte；其他页面、真实数据与操作、原生宿主和打包尚未完成。详见 [迁移方案](../design/SwiftUI迁移实施方案-2026-10-27.md) 和 [本阶段证据](../../output/no-account-20261027/swiftui-foundation/README.md)。
+总览、账号、环境检查、活动记录、设置与 Personal 广告运营页面已接入 SwiftUI。产品构建脚本启用原生宿主；界面通过隐藏的本地 Tauri 桥调用现有 Rust 业务及权限。直接运行未启用 `native-ui` 的开发构建仍使用原 Svelte 页面。隔离窗口使用合成资料与密钥库；默认 Keychain、真实 Claude、真实 R2/CDN 和 macOS 13–25 实机仍需单独验收。两版 arm64 产品包已完成隔离启动检查；该检查只确认进程和窗口存在。详见 [迁移方案](../design/SwiftUI迁移实施方案-2026-10-27.md)与[本轮验证记录](../acceptance/evidence/no-account-20261027/swiftui-native-20261028.md)。
 
 ## 2026-10-27：恢复后的资料刷新
 

@@ -24,4 +24,4 @@ cd apps/desktop
 npm ci --ignore-scripts
 npm run check
 # Tauri forwards Cargo-only flags after the argument separator.
-npm run tauri -- build --target "$native_target" --features "$edition" --config "../../packaging/editions/$edition.json" -- --no-default-features
+npm run tauri -- build --target "$native_target" --features "$edition,native-ui" --config "../../packaging/editions/$edition.json" -- --no-default-features

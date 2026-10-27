@@ -1,5 +1,10 @@
 fn main() {
-    let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some() {
+    if std::env::var_os("CARGO_FEATURE_NATIVE_UI").is_some() {
+        build_native_ui();
+    }
+    let commands: &[&str] = if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some()
+        && std::env::var_os("CARGO_FEATURE_NATIVE_UI").is_none()
+    {
         if std::env::var_os("CARGO_FEATURE_PERSONAL").is_some() {
             &[
                 "import_ad_image",
@@ -144,4 +149,83 @@ fn main() {
     let manifest = tauri_build::AppManifest::new().commands(commands);
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(manifest))
         .expect("Tauri manifest");
+}
+
+fn build_native_ui() {
+    use std::{path::Path, process::Command};
+
+    fn collect(directory: &Path, sources: &mut Vec<std::path::PathBuf>) {
+        println!("cargo:rerun-if-changed={}", directory.display());
+        for item in std::fs::read_dir(directory).expect("SwiftUI sources") {
+            let path = item.expect("SwiftUI source entry").path();
+            if path.is_dir() {
+                collect(&path, sources);
+            } else if path
+                .extension()
+                .is_some_and(|extension| extension == "swift")
+            {
+                sources.push(path);
+            }
+        }
+    }
+
+    let target = std::env::var("TARGET").expect("Rust target");
+    let architecture = match target.as_str() {
+        "aarch64-apple-darwin" => "arm64",
+        "x86_64-apple-darwin" => "x86_64",
+        _ => panic!("native-ui requires a supported macOS target"),
+    };
+    let output = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("build output"));
+    let mut sources = Vec::new();
+    collect(Path::new("../swiftui/Sources/SwitcherUI"), &mut sources);
+    sources.sort();
+    let mut command = Command::new("/usr/bin/xcrun");
+    command
+        .arg("swiftc")
+        .args([
+            "-parse-as-library",
+            "-emit-library",
+            "-static",
+            "-whole-module-optimization",
+            "-module-name",
+            "SwitcherNative",
+            "-target",
+        ])
+        .arg(format!("{architecture}-apple-macos13.0"));
+    if std::env::var_os("CARGO_FEATURE_IPC_BUSINESS").is_some() {
+        command.args(["-D", "SWITCHER_NATIVE_FIXTURE"]);
+    }
+    let status = command
+        .args(&sources)
+        .arg("-o")
+        .arg(output.join("libswitcher_native.a"))
+        .status()
+        .expect("start Swift compiler");
+    assert!(status.success(), "SwiftUI static library build failed");
+    println!("cargo:rustc-link-search=native={}", output.display());
+    println!("cargo:rustc-link-lib=static=switcher_native");
+    // Rust links with -nodefaultlibs. Swift's availability checks still need
+    // the Apple compiler runtime that clang would ordinarily add itself.
+    let runtime = Command::new("/usr/bin/xcrun")
+        .args(["clang", "--print-libgcc-file-name"])
+        .output()
+        .expect("find Apple compiler runtime");
+    assert!(runtime.status.success(), "find Apple compiler runtime");
+    let runtime = String::from_utf8(runtime.stdout).expect("Apple compiler runtime path");
+    let runtime = runtime.trim();
+    assert!(
+        Path::new(runtime).is_file(),
+        "Apple compiler runtime missing"
+    );
+    println!("cargo:rustc-link-arg={runtime}");
+    for framework in [
+        "AppKit",
+        "SwiftUI",
+        "WebKit",
+        "Foundation",
+        "Combine",
+        "UniformTypeIdentifiers",
+    ] {
+        println!("cargo:rustc-link-lib=framework={framework}");
+    }
 }

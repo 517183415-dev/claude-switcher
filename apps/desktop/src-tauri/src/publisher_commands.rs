@@ -7,6 +7,7 @@ use crate::{
         security::{ManagedVault, Vault},
     },
 };
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use std::sync::Arc;
 use switcher_domain::{
     AdSlot,
@@ -17,6 +18,64 @@ use tauri::State;
 
 type Desktop<'a> = State<'a, Arc<DesktopState>>;
 pub(crate) type PublisherVault<'a> = State<'a, Arc<ManagedVault>>;
+
+/// Legacy web clients send integer arrays; the native client sends base64 to
+/// avoid allocating one Swift object per byte for a large backup.
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+pub enum PublisherInputBytes {
+    Array(Vec<u8>),
+    Base64(String),
+}
+
+impl PublisherInputBytes {
+    pub(crate) fn decode(self, limit: usize, too_large: &str) -> Result<Vec<u8>, String> {
+        let bytes = match self {
+            Self::Array(bytes) => bytes,
+            Self::Base64(encoded) => {
+                let max_encoded = (limit.saturating_add(2) / 3).saturating_mul(4);
+                if encoded.len() > max_encoded {
+                    return Err(too_large.into());
+                }
+                STANDARD
+                    .decode(encoded)
+                    .map_err(|_| "文件数据格式无效".to_owned())?
+            }
+        };
+        if bytes.len() > limit {
+            return Err(too_large.into());
+        }
+        Ok(bytes)
+    }
+}
+
+#[cfg(test)]
+mod publisher_input_tests {
+    use super::PublisherInputBytes;
+    use serde_json::json;
+
+    #[test]
+    fn native_base64_and_legacy_arrays_preserve_exact_bytes() {
+        for value in [json!([0, 1, 127, 255]), json!("AAF//w==")] {
+            let input: PublisherInputBytes = serde_json::from_value(value).unwrap();
+            assert_eq!(input.decode(4, "too large").unwrap(), [0, 1, 127, 255]);
+        }
+    }
+
+    #[test]
+    fn invalid_and_oversized_binary_inputs_are_rejected() {
+        for value in [json!([0, 1]), json!("AAE="), json!("AAECAw==")] {
+            let input: PublisherInputBytes = serde_json::from_value(value).unwrap();
+            assert_eq!(input.decode(1, "too large").unwrap_err(), "too large");
+        }
+        let input: PublisherInputBytes = serde_json::from_value(json!("!!!")).unwrap();
+        assert_eq!(
+            input.decode(8, "too large").unwrap_err(),
+            "文件数据格式无效"
+        );
+        assert!(serde_json::from_value::<PublisherInputBytes>(json!([256])).is_err());
+    }
+}
 pub(crate) fn with_publisher<T>(
     state: &DesktopState,
     run: impl FnOnce(&mut Publisher) -> publisher::Result<T>,
@@ -55,7 +114,11 @@ pub fn ad_draft_save(state: Desktop<'_>, manifest: AdManifest) -> Result<AdManif
     })
 }
 #[tauri::command]
-pub fn import_ad_image(state: Desktop<'_>, bytes: Vec<u8>) -> Result<ImportedImage, String> {
+pub fn import_ad_image(
+    state: Desktop<'_>,
+    bytes: PublisherInputBytes,
+) -> Result<ImportedImage, String> {
+    let bytes = bytes.decode(switcher_core::ads::MAX_IMAGE_BYTES, "图片超过 1 MiB 上限")?;
     import_ad_image_body(bytes, |bytes, mime| {
         with_publisher(&state, |p| {
             let asset = p.import_image(bytes, mime)?;
@@ -712,17 +775,23 @@ pub async fn export_publisher_backup(
 pub async fn restore_publisher_backup(
     state: Desktop<'_>,
     vault: PublisherVault<'_>,
-    bytes: Vec<u8>,
+    bytes: PublisherInputBytes,
     passphrase: String,
 ) -> Result<OperationOutcome, String> {
     let state = state.inner().clone();
     let vault = vault.inner().clone();
     tokio::task::spawn_blocking(move || {
-        restore_publisher_backup_body(&bytes, passphrase, |bytes, passphrase| {
-            with_publisher_vault(&state, &vault, |p, vault| {
-                p.restore_backup(bytes, passphrase, vault)
-            })
-        })
+        let mut passphrase = zeroize::Zeroizing::new(passphrase);
+        let bytes = bytes.decode(publisher::backup::LIMIT, "备份文件超过 64 MiB 上限")?;
+        restore_publisher_backup_body(
+            &bytes,
+            std::mem::take(&mut *passphrase),
+            |bytes, passphrase| {
+                with_publisher_vault(&state, &vault, |p, vault| {
+                    p.restore_backup(bytes, passphrase, vault)
+                })
+            },
+        )
     })
     .await
     .map_err(|_| "恢复操作被中断".to_owned())?
@@ -733,10 +802,10 @@ pub(crate) fn restore_publisher_backup_body(
     passphrase: String,
     restore: impl FnOnce(&[u8], &[u8]) -> Result<(), String>,
 ) -> Result<OperationOutcome, String> {
+    let passphrase = zeroize::Zeroizing::new(passphrase);
     if bytes.len() > publisher::backup::LIMIT {
         return Err("备份文件超过 64 MiB 上限".into());
     }
-    let passphrase = zeroize::Zeroizing::new(passphrase);
     restore(bytes, passphrase.as_bytes())?;
     Ok(bridge::waiting(
         "已恢复加密备份中的本地资料，尚未发布",

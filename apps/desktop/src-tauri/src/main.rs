@@ -23,6 +23,8 @@ mod bridge;
 mod commands;
 #[cfg(not(any(feature = "ipc-smoke", feature = "ipc-limits")))]
 mod ipc;
+#[cfg(all(feature = "native-ui", target_os = "macos"))]
+mod native_host;
 mod native_probe;
 #[cfg(feature = "personal")]
 mod publisher;
@@ -152,7 +154,11 @@ fn main() {
         std::sync::Arc::new(bridge::DesktopState::new(edition).expect("desktop data context"));
     #[cfg(not(feature = "ipc-smoke"))]
     let background = state.clone();
-    let builder = tauri::Builder::default().manage(state).setup(move |_| {
+    let builder = tauri::Builder::default().manage(state).setup(move |app| {
+        #[cfg(all(feature = "native-ui", target_os = "macos"))]
+        native_host::attach(app, cfg!(feature = "public"))?;
+        #[cfg(not(all(feature = "native-ui", target_os = "macos")))]
+        let _ = app;
         #[cfg(not(feature = "ipc-smoke"))]
         tauri::async_runtime::spawn(async move {
             loop {
@@ -181,6 +187,8 @@ fn main() {
     let builder = builder.invoke_handler(ipc::handler());
 
     let mut context = tauri::generate_context!();
+    #[cfg(all(feature = "native-ui", target_os = "macos"))]
+    native_host::use_bridge_page(&mut context);
     let mut builder = builder;
     if let Some(pins) = update_runtime::compiled_release_pins() {
         context.config_mut().plugins.0.insert(

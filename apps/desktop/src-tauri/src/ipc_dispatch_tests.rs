@@ -375,6 +375,46 @@ fn ordinary_dispatch_recovery_rejects_invalid_backups_without_changing_publisher
 
 #[test]
 #[cfg(feature = "personal")]
+fn publisher_input_dispatch_accepts_base64_and_preserves_state_on_invalid_input() {
+    use crate::publisher::{security::ManagedVault, test_support::MemoryVault};
+    use base64::{Engine as _, engine::general_purpose::STANDARD};
+    let root = SyntheticRoot::new();
+    let (_app, window) =
+        root.app_with_vault(Arc::new(ManagedVault::synthetic(MemoryVault::default())));
+    let image = include_bytes!("../../tests/native-ipc-business/backup-source.png");
+    let legacy = invoke(
+        &window,
+        "import_ad_image",
+        json!({"bytes": image.as_slice()}),
+    )
+    .unwrap();
+    let native = invoke(
+        &window,
+        "import_ad_image",
+        json!({"bytes": STANDARD.encode(image)}),
+    )
+    .unwrap();
+    assert_eq!(native, legacy);
+    let directory = root.0.join("v2/personal/publisher");
+    let before = publisher_tree(&directory);
+    for command in [
+        "import_ad_image",
+        "restore_publisher_backup",
+        "publisher_archive_import",
+    ] {
+        let error = invoke(
+            &window,
+            command,
+            json!({"bytes":"!!!","passphrase":"synthetic-passphrase"}),
+        )
+        .unwrap_err();
+        assert_eq!(error.as_str().unwrap(), "文件数据格式无效");
+        assert_eq!(publisher_tree(&directory), before);
+    }
+}
+
+#[test]
+#[cfg(feature = "personal")]
 fn ordinary_dispatch_six_campaign_edits_pauses_and_reopen_keep_committed_draft() {
     let root = SyntheticRoot::new();
     let (app, window) = root.app();
