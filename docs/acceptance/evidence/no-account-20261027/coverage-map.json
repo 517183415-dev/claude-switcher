@@ -6785,10 +6785,17 @@
         },
         {
           "kind": "NATIVE_SYSTEM_EXTERNAL_TIME_GATES",
-          "requirement_checklist": "N：合成资料的真实子进程终止/重启与文件持久化；模拟故障不称断电验收"
+          "requirement_checklist": "N：真实断电与所有文件系统故障未验证；合成资料的进程终止和恢复已有以下局部证据"
         }
       ],
-      "next_review": "枚举实际持久检查点，逐点注入并重启同一路径"
+      "next_review": "保留现有进程终止和恢复证据；仅核对尚未证明的故障分支及真实断电，不重复已通过的同路径检查",
+      "process_crash_evidence": {
+        "path": "output/no-account-20261027/f05-native-metadata/final/core-tests.log",
+        "inputs": "output/no-account-20261027/f05-native-metadata/final/inputs.json",
+        "status": "SCOPED_SYNTHETIC_PROCESS_CRASH_PASS_NOT_POWER_LOSS",
+        "scope": "现代事务在11个持久化/物理边界杀死子进程，由父进程新建存储实例恢复两次；旧事务三个补充边界杀死写入子进程后，由另一个新子进程恢复两次。均验证资料和事务清理。相关生产文件及依赖清单与回执一致；另一个原生元数据测试文件后续发生修改。",
+        "not_proven": "真实断电、全部存储故障与完整 F-06；测试全部使用合成资料"
+      }
     },
     {
       "id": "F-07",
@@ -7843,7 +7850,7 @@
           "requirement_checklist": "N：Personal三槽、两期、独立开关和持久化闭环"
         }
       ],
-      "next_review": "三槽六期、修改/暂停与拒绝保持已有生产处理函数的 MockRuntime 分发证据；待可用 GUI 会话验证普通窗口实际 IPC 与进程重启",
+      "next_review": "真实 WKWebView 已覆盖三槽六期及正式处理函数；继续核对产品前端与操作系统进程重启，不重复已通过的测试前端路径",
       "mock_dispatch_evidence": {
         "status": "MOCK_RUNTIME_DISPATCH_VERIFIED_NOT_NATIVE_WEBVIEW",
         "path": "output/no-account-20261027/ipc-dispatch/final-checks.json",
@@ -7859,6 +7866,11 @@
         "scope": "Same product registration and ordinary ACL; both editions reject untrusted contexts; selected required-argument refusal, preferences and redacted export handlers; Personal draft tests retained. Not full native or complete business acceptance.",
         "personal_full_tests": 230,
         "public_full_tests": 35
+      },
+      "native_webview_evidence": {
+        "path": "output/no-account-20261027/native-publisher/README.md",
+        "status": "NATIVE_WEBVIEW_PRODUCT_HANDLERS_SYNTHETIC_FIXTURE",
+        "scope": "测试前端经真实 WKWebView、产品注册表与普通 ACL 保存三槽六期，并完成本机预览及正式签名发布；不是未经修改的产品前端，也未验证操作系统进程重启。"
       }
     },
     {
@@ -8051,7 +8063,7 @@
           "requirement_checklist": "N/E受控：三槽两期、至少两次发布、一次单位暂停、一次全暂停和一次历史恢复；E实源：端到端匿名回读"
         }
       ],
-      "next_review": "将运营闭环贯穿真实IPC与生产传输，分列实源结果",
+      "next_review": "真实 WKWebView 与本机对象存储已验证单位暂停、全部暂停和历史恢复续发；继续核对产品前端、进程重启及远程受控传输，实源单列",
       "ordinary_publisher_vault_evidence": {
         "path": "output/no-account-20261027/publisher-vault-dispatch/receipt.json",
         "status": "MOCK_PRODUCT_HANDLERS_SYNTHETIC_VAULT_NOT_NATIVE_OR_EXTERNAL",
@@ -8060,6 +8072,12 @@
           "ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data"
         ],
         "scope": "备份导出/恢复/高序号续发、旧密钥与代次保留、准备/取消/确认、另一隔离安装归档导入；不证明历史恢复或真实客户端传播"
+      },
+      "native_pause_history_evidence": {
+        "path": "output/no-account-20261027/native-pause-history/README.md",
+        "status": "NATIVE_WEBVIEW_LOCAL_STORE_SYNTHETIC_VAULT",
+        "scope": "三槽六期下，单槽暂停保持其他槽；全部暂停及历史恢复均须明确发布；未知历史拒绝不改状态；四次正式发布的版本递增且经独立 Ed25519 验签。",
+        "not_proven": "未经修改的产品前端、进程重启、实际 R2/CDN、默认 Keychain 及整项完整分支"
       }
     },
     {

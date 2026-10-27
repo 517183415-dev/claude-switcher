@@ -1,0 +1,28 @@
+{
+  "status": "PASS_NATIVE_WEBVIEW_SLOT_PAUSE_AND_HISTORY_SYNTHETIC_VAULT",
+  "responses": 13,
+  "checkpoints": [
+    "baseline",
+    "single-draft",
+    "single-published",
+    "all-draft",
+    "all-published",
+    "rejected",
+    "history-draft",
+    "history-published"
+  ],
+  "single_slot_preserves_other_slots": true,
+  "unknown_history_preserves_state": true,
+  "draft_changes_do_not_publish": true,
+  "higher_revision_history_verified": true,
+  "signature_verifier": "independent Node crypto Ed25519",
+  "binary_sha256": "a2dc1bb940ce6a463342dc2a80322d980add2c8527a404827e81fc21ffd1fa0d",
+  "source_inputs_sha256": "abebd273a929e471538e59143de95ddb9ff7a3529a53626e5e24a9caa77ad10e",
+  "not_proven": [
+    "unmodified product frontend/startup",
+    "OS restart",
+    "real R2/CDN",
+    "default Keychain permission",
+    "whole AD-07 and exhaustive branches"
+  ]
+}

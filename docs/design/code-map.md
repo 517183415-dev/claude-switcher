@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：单槽暂停与历史恢复
+
+native-pause-history/runner.py → native-publisher 隔离工具 → WKWebView → 正式 IPC → Publisher::pause / restore_history / publish。独立前端生成三槽六期，覆盖单槽与全暂停、未知历史拒绝和恢复后显式发布。宿主检查 8 个磁盘快照，并独立验证 4 个正式版本的 Ed25519 签名及递增序号。产品代码和依赖未改。[证据](../../output/no-account-20261027/native-pause-history/README.md)。
+
+CodeGraph complete、pending 0：255 文件、6616 节点、27469 条边。真实产品前端、默认 Keychain、OS 重启、R2/CDN 与 AD-07 全部边界未因此通过。
+
 ## 2026-10-27：WebView 恢复会话确认和取消
 
 `native-recovery/runner.py → native-publisher 隔离工具 → WKWebView → 正式 IPC 注册表 → RecoverySessions / PreparedRecovery`。14 次响应与 6 个检查点验证取消、重复准备和错误确认的拒绝，以及正确确认后的旧代次/备份保留、无自动发布和显式续发。宿主独立验签。测试前端、MemoryVault 和本机对象存储均为合成夹具，真实产品 UI 对话框仍待验。[证据](../../output/no-account-20261027/native-recovery/README.md)。产品代码未改；相关旧测试与 ACL 证据复用。CodeGraph complete、pending 0：252 文件、6581 节点、27393 条边。

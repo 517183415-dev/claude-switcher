@@ -1,0 +1,48 @@
+{
+  "productName": "Claude 切换器 Personal",
+  "identifier": "local.claudeswitcher.personal",
+  "app": {
+    "security": {
+      "capabilities": [
+        "main",
+        {
+          "identifier": "personal-operations",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "allow-ad-draft-read",
+            "allow-ad-draft-save",
+            "allow-import-ad-image",
+            "allow-ad-image-preview",
+            "allow-publisher-status",
+            "allow-publish-ad",
+            "allow-publisher-remote-read",
+            "allow-publisher-remote-save",
+            "allow-publisher-remote-select",
+            "allow-pause-ad",
+            "allow-restore-ad-history",
+            "allow-create-ad-signing-key",
+            "allow-export-publisher-backup",
+            "allow-restore-publisher-backup",
+            "allow-open-publisher-backup-folder",
+            "allow-preview-publisher-cleanup",
+            "allow-commit-publisher-cleanup",
+            "allow-preview-publisher-gc",
+            "allow-commit-publisher-gc",
+            "allow-publisher-recovery-prepare",
+            "allow-publisher-recovery-confirm",
+            "allow-publisher-recovery-cancel",
+            "allow-publisher-archive-import",
+            "allow-publisher-retained-list",
+            "allow-publisher-retained-export"
+          ]
+        }
+      ],
+      "csp": "default-src 'self' tauri:; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://127.0.0.1:52614"
+    }
+  },
+  "build": {
+    "frontendDist": "/Users/gua/CodexWorkspaces/claude-switcher/output/no-account-20261027/native-pause-history/r1/dist"
+  }
+}
