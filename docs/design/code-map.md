@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-28：活动记录并发保护
+
+`DesktopState::activity / log → ActivityLogLock → LifecycleLock::try_named → activity.json`。两版使用各自发行目录内的锁。写入在锁内读取、脱敏并追加；读取已有记录也先取锁。锁占用超过两秒返回可重试错误。[测试与边界](../acceptance/evidence/no-account-20261027/activity-concurrency-20261028.md)。
+
+本次 CodeGraph 状态 complete、pending 0：306 文件、7526 节点、29988 条边。索引统计不代表测试覆盖率。
+
 ## 2026-10-28：SwiftUI 快照乱序保护
 
 `SwitcherWorkspaceView` 定时调用 `WorkspaceModel.refresh → DesktopBridge → workspace_snapshot`。`WorkspaceModel` 用快照代次丢弃较早的异步读取；通过 `beginAction` 启动的操作也会使先前快照失效。检查报告继续由独立的检查代次保护。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-snapshot-order-20261028.md)。

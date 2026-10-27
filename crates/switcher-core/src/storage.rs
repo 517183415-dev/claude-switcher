@@ -18,6 +18,7 @@ pub struct LifecycleLock {
     directory: PathBuf,
     directory_identity: (u64, u64),
     name: &'static str,
+    validate_acl: bool,
 }
 
 impl Drop for LifecycleLock {
@@ -29,10 +30,15 @@ impl Drop for LifecycleLock {
 
 impl LifecycleLock {
     pub fn try_acquire(directory: &Path) -> io::Result<Self> {
-        Self::try_named(directory, "lifecycle.lock", true)
+        Self::try_named(directory, "lifecycle.lock", true, false)
     }
 
-    fn try_named(directory: &Path, name: &'static str, create: bool) -> io::Result<Self> {
+    fn try_named(
+        directory: &Path,
+        name: &'static str,
+        create: bool,
+        validate_acl: bool,
+    ) -> io::Result<Self> {
         validate_no_symlinks(directory)?;
         let directory = directory.canonicalize()?;
         let metadata = fs::metadata(&directory)?;
@@ -64,7 +70,7 @@ impl LifecycleLock {
                 "unsafe lifecycle lock",
             ));
         }
-        if name != "lifecycle.lock" {
+        if validate_acl {
             crate::accounts::access_control(&directory)?;
             crate::accounts::access_control(&directory.join(name))?;
         }
@@ -79,6 +85,7 @@ impl LifecycleLock {
             directory,
             directory_identity,
             name,
+            validate_acl,
         };
         if !lock.protects(&lock.directory) {
             return Err(io::Error::new(
@@ -113,8 +120,35 @@ impl LifecycleLock {
             && on_disk.nlink() == 1
             && on_disk.uid() == unsafe { libc::geteuid() }
             && on_disk.mode() & 0o077 == 0
-            && (self.name == "lifecycle.lock"
+            && (!self.validate_acl
                 || crate::accounts::access_control(&directory.join(self.name)).is_ok())
+    }
+}
+
+/// Serialize activity snapshots and read-modify-write updates across desktop processes.
+pub struct ActivityLogLock {
+    _lock: LifecycleLock,
+}
+impl ActivityLogLock {
+    pub fn try_acquire(directory: &Path) -> io::Result<Self> {
+        LifecycleLock::try_named(directory, "activity.lock", true, cfg!(target_os = "macos"))
+            .map(|lock| Self { _lock: lock })
+    }
+
+    pub fn acquire(directory: &Path) -> io::Result<Self> {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        loop {
+            match Self::try_acquire(directory) {
+                Ok(lock) => return Ok(lock),
+                Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock
+                        && std::time::Instant::now() < deadline =>
+                {
+                    std::thread::sleep(std::time::Duration::from_millis(5));
+                }
+                Err(error) => return Err(error),
+            }
+        }
     }
 }
 
@@ -124,7 +158,7 @@ pub(crate) struct GuardianSnapshotLock {
 }
 impl GuardianSnapshotLock {
     pub(crate) fn try_acquire(directory: &Path, create: bool) -> io::Result<Self> {
-        LifecycleLock::try_named(directory, "guardian-snapshot.lock", create)
+        LifecycleLock::try_named(directory, "guardian-snapshot.lock", create, true)
             .map(|lock| Self { _lock: lock })
     }
     #[cfg(test)]

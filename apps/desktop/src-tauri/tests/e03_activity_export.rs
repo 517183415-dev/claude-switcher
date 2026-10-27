@@ -21,6 +21,217 @@ fn isolated(suffix: &str) -> bridge::DesktopState {
 }
 
 #[test]
+fn concurrent_successful_activity_writes_preserve_each_event() {
+    use std::sync::{Arc, Barrier};
+
+    const WRITERS: usize = 32;
+    const READERS: usize = 4;
+    let state = isolated("concurrent");
+    let root = state.root.clone();
+    for edition in [Edition::Personal, Edition::Public] {
+        let state = bridge::DesktopState::isolated_activity_fixture(root.clone(), edition);
+        state.prepare_directory().unwrap();
+        let start = Arc::new(Barrier::new(WRITERS + READERS));
+        let errors = std::thread::scope(|scope| {
+            let mut operations: Vec<_> = (0..WRITERS)
+                .map(|index| {
+                    let start = Arc::clone(&start);
+                    let state = &state;
+                    scope.spawn(move || {
+                        start.wait();
+                        state.log("info", &format!("concurrent-event-{index}"))
+                    })
+                })
+                .collect();
+            for _ in 0..READERS {
+                let start = Arc::clone(&start);
+                let state = &state;
+                operations.push(scope.spawn(move || {
+                    start.wait();
+                    for _ in 0..8 {
+                        state.activity()?;
+                    }
+                    Ok(())
+                }));
+            }
+            operations
+                .into_iter()
+                .filter_map(|operation| operation.join().unwrap().err())
+                .collect::<Vec<_>>()
+        });
+        let entries = state.activity().unwrap();
+        let missing: Vec<_> = (0..WRITERS)
+            .filter(|index| {
+                !entries
+                    .iter()
+                    .any(|entry| entry.message == format!("concurrent-event-{index}"))
+            })
+            .collect();
+        assert!(
+            errors.is_empty() && missing.is_empty(),
+            "{edition:?}: {} errors, missing {missing:?}; {} records persisted",
+            errors.len(),
+            entries.len()
+        );
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn empty_activity_read_does_not_create_a_directory_or_lock() {
+    let state = isolated("empty-read");
+    assert!(state.activity().unwrap().is_empty());
+    assert!(!state.root.join("v2").exists());
+    state.prepare_directory().unwrap();
+    assert!(state.activity().unwrap().is_empty());
+    assert!(!state.directory().join("activity.lock").exists());
+    std::fs::remove_dir_all(state.root).unwrap();
+}
+
+#[test]
+fn unsafe_activity_lock_is_rejected_without_changing_data() {
+    let state = isolated("unsafe-lock");
+    state.log("info", "existing event").unwrap();
+    let activity = state.directory().join("activity.json");
+    let before = std::fs::read(&activity).unwrap();
+    let lock = state.directory().join("activity.lock");
+    let sentinel = state.root.join("sentinel");
+    storage::atomic_write(&sentinel, b"sentinel").unwrap();
+    std::fs::remove_file(&lock).unwrap();
+
+    for hard_link in [false, true] {
+        if hard_link {
+            std::fs::hard_link(&sentinel, &lock).unwrap();
+        } else {
+            symlink(&sentinel, &lock).unwrap();
+        }
+        assert!(state.log("info", "must not persist").is_err());
+        assert!(state.activity().is_err());
+        assert_eq!(std::fs::read(&activity).unwrap(), before);
+        assert_eq!(std::fs::read(&sentinel).unwrap(), b"sentinel");
+        std::fs::remove_file(&lock).unwrap();
+    }
+    std::fs::remove_dir_all(state.root).unwrap();
+}
+
+#[test]
+fn busy_activity_lock_returns_an_error_and_allows_retry() {
+    let state = isolated("busy-lock");
+    state.log("info", "existing event").unwrap();
+    let activity = state.directory().join("activity.json");
+    let before = std::fs::read(&activity).unwrap();
+    let lock = storage::ActivityLogLock::acquire(&state.directory()).unwrap();
+    let started = std::time::Instant::now();
+    assert_eq!(
+        state.log("info", "retry event").unwrap_err(),
+        "活动记录忙，请稍后重试"
+    );
+    assert!(started.elapsed() >= std::time::Duration::from_secs(2));
+    assert_eq!(std::fs::read(&activity).unwrap(), before);
+    drop(lock);
+    state.log("info", "retry event").unwrap();
+    assert_eq!(state.activity().unwrap().len(), 2);
+    std::fs::remove_dir_all(state.root).unwrap();
+}
+
+// Invoked only by the parent test, with an isolated synthetic root.
+#[test]
+#[ignore = "subprocess fixture"]
+fn activity_lock_child_fixture() {
+    let root = std::path::PathBuf::from(std::env::var_os("SWITCHER_TEST_ACTIVITY_ROOT").unwrap());
+    let edition = match std::env::var("SWITCHER_TEST_ACTIVITY_EDITION")
+        .unwrap()
+        .as_str()
+    {
+        "personal" => Edition::Personal,
+        "public" => Edition::Public,
+        _ => panic!("unexpected edition"),
+    };
+    let state = bridge::DesktopState::isolated_activity_fixture(root.clone(), edition);
+    assert!(matches!(
+        storage::ActivityLogLock::try_acquire(&state.directory()),
+        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock
+    ));
+    std::fs::write(root.join("child-ready"), b"ready").unwrap();
+    state.log("info", "child event").unwrap();
+}
+
+#[test]
+fn activity_lock_serializes_separate_processes() {
+    use std::{
+        process::Command,
+        time::{Duration, Instant},
+    };
+
+    let state = isolated("processes");
+    let root = state.root.clone();
+    for edition in [Edition::Personal, Edition::Public] {
+        let state = bridge::DesktopState::isolated_activity_fixture(root.clone(), edition);
+        state.log("info", "parent event").unwrap();
+        let before = std::fs::read(state.directory().join("activity.json")).unwrap();
+        let lock = storage::ActivityLogLock::acquire(&state.directory()).unwrap();
+        let ready = root.join("child-ready");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "activity_lock_child_fixture",
+                "--exact",
+                "--ignored",
+                "--nocapture",
+            ])
+            .env_clear()
+            .env("HOME", &root)
+            .env("TMPDIR", &root)
+            .env("SWITCHER_TEST_ACTIVITY_ROOT", &root)
+            .env(
+                "SWITCHER_TEST_ACTIVITY_EDITION",
+                bridge::edition_name(edition),
+            )
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !ready.exists() && Instant::now() < deadline {
+            if child.try_wait().unwrap().is_some() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        if !ready.exists() {
+            let _ = child.kill();
+            let output = child.wait_with_output().unwrap();
+            panic!(
+                "child did not observe the held lock: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+        assert_eq!(
+            std::fs::read(state.directory().join("activity.json")).unwrap(),
+            before
+        );
+        drop(lock);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while child.try_wait().unwrap().is_none() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        if child.try_wait().unwrap().is_none() {
+            child.kill().unwrap();
+        }
+        let output = child.wait_with_output().unwrap();
+        assert!(
+            output.status.success(),
+            "child failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let events = state.activity().unwrap();
+        assert!(events.iter().any(|entry| entry.message == "parent event"));
+        assert!(events.iter().any(|entry| entry.message == "child event"));
+        std::fs::remove_file(ready).unwrap();
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn export_uses_the_same_redacted_snapshot_and_private_edition_path() {
     let mut state = isolated("content");
     for edition in [Edition::Personal, Edition::Public] {

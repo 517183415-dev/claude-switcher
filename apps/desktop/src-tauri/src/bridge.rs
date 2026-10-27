@@ -504,6 +504,30 @@ impl DesktopState {
         }
     }
     pub fn activity(&self) -> Result<Vec<ActivityEntry>, String> {
+        let directory = self.directory();
+        match storage::validate_no_symlinks(&directory) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(_) => return Err("本地元数据无法安全读取".into()),
+        }
+        match std::fs::symlink_metadata(directory.join("activity.json")) {
+            Ok(_) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(_) => return Err("本地元数据无法安全读取".into()),
+        }
+        let _lock = self.activity_lock()?;
+        self.read_activity_unlocked()
+    }
+    fn activity_lock(&self) -> Result<storage::ActivityLogLock, String> {
+        storage::ActivityLogLock::acquire(&self.directory()).map_err(|error| {
+            if error.kind() == std::io::ErrorKind::WouldBlock {
+                "活动记录忙，请稍后重试".into()
+            } else {
+                "无法安全锁定活动记录".into()
+            }
+        })
+    }
+    fn read_activity_unlocked(&self) -> Result<Vec<ActivityEntry>, String> {
         let values: Vec<ActivityEntry> =
             read_optional(&self.directory().join("activity.json"))?.unwrap_or_default();
         Ok(values
@@ -527,7 +551,8 @@ impl DesktopState {
     }
     pub fn log(&self, level: &str, message: &str) -> Result<(), String> {
         self.prepare_directory()?;
-        let mut entries = self.activity()?;
+        let _lock = self.activity_lock()?;
+        let mut entries = self.read_activity_unlocked()?;
         entries.push(ActivityEntry {
             observed_at: checks::unix_now(),
             level: level.into(),
