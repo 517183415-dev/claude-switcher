@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：R2 发布目标标识
+
+`publisher/r2_store.rs` 从账号、存储桶、公开域名和渠道生成目标标识，凭据不参与计算。`publisher/mod.rs` 仍拒绝远程目标；预览与正式渠道的独立状态、备份恢复和接线尚未完成。[隔离测试摘要](../../output/no-account-20261027/r2-target-identity/summary.json)为 8 项通过，并记录本机原始日志的 SHA256。代码仍在未提交工作树中。
+
+本轮 CodeGraph 同步后为 214 文件、5746 节点、23001 条边，索引完成且无待处理变更。
+
 ## 本轮增量：恢复门禁和隔离证据
 
 代码修复提交 `0a68899`；探针修复提交 `7fec6db7f9b54919eea08301f3d06d16ddfc8a8a`，tree `8bfed7dd5e085504cf5063bb5fd3142ac21a3e4d`。普通双包已从7fec精确归档构建；[构建回执](../../output/no-account-20261027/bundles-next-commit-r2/final-summary.json) SHA256 `128278784d1d5525b360f8e2b8a3cb16c187c77de9a4f0c2bd6881b4bdfb5c78`，归档SHA256 `ddc21ebb676f4cce6b9adce7ef04d4eda0ee3c736bc372ec385c0d8ec4023ff4`。每版22项静态检查和2项复制/签名操作通过；夹具运行体标记排除PASS，二进制名称标记仍为REVIEW。普通App、动态ACL及安装NOT_RUN。93afc71普通双包为历史，不归属于7fec。

@@ -1,0 +1,19 @@
+{
+  "command": "cargo test -p switcher-desktop --bin switcher-desktop publisher::r2_store::tests",
+  "sandbox": "account-free.sb",
+  "passed": 8,
+  "failed": 0,
+  "tests": [
+    "publisher::r2_store::tests::production_configuration_rejects_untrusted_endpoints",
+    "publisher::r2_store::tests::production_rejects_provider_domains_even_with_dns_root_dot",
+    "publisher::r2_store::tests::r2_target_identity_tracks_namespace_and_survives_credential_rotation",
+    "publisher::r2_store::tests::public_read_is_anonymous_bounded_and_refuses_redirects",
+    "publisher::r2_store::tests::source_requires_etag_and_enforces_size",
+    "publisher::r2_store::tests::immutable_collision_checks_existing_bytes",
+    "publisher::r2_store::tests::signed_conditional_writes_and_error_classification",
+    "publisher::r2_store::tests::source_read_deadline_covers_slow_body_even_while_chunks_arrive"
+  ],
+  "raw_log_sha256": "885a09c5d2b4c9fbd4562387cbfea49d72889003155cf0031dbee7d040132ecd",
+  "raw_log": "tests.log",
+  "scope": "Synthetic configuration and local protocol substitutes; no real R2 service."
+}
