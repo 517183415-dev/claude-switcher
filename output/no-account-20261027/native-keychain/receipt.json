@@ -1,0 +1,34 @@
+{
+  "status": "WAIT_NATIVE_KEYCHAIN_NO_DEFAULT_IN_RESTRICTED_PROCESS",
+  "source_parent": "b2e6a78e898a3013c01f89fd9d5f31ec8da6294b",
+  "source_sha256": {
+    "apps/desktop/src-tauri/src/publisher/security.rs": "7a6277ad7ea9a5c00643ddc840d4ad1bf5dfe2d490ae08ca5132161518e20a52",
+    "apps/desktop/src-tauri/src/publisher/native_keychain_tests.rs": "e962feba922901828f382ac66f98b52daefed67b129a10c4d638bd1f5e807dcb",
+    "Cargo.toml": "16f084a0e120fa14830973b80e1a8bc1578d816a10c5a73debfd2758155a36e1",
+    "Cargo.lock": "1b2c43717b9b7c23ec444e388e533eb751922956b6351166c97da7f95cd8adae",
+    "apps/desktop/src-tauri/Cargo.toml": "ea7988b7fccfaaad4cd925fc6e07b463b2152909a5fa03b97572b61724af4ed1"
+  },
+  "verified": {
+    "personal_test_binary_compile": true,
+    "personal_bin_and_tests_clippy": true,
+    "existing_clippy_warnings": 3,
+    "rustfmt_changed_files": 2,
+    "default_native_test_ignored": true,
+    "missing_opt_in_refused_before_root_creation": true,
+    "empty_owned_item_cleanup_journal": true
+  },
+  "native_attempt": {
+    "passed": false,
+    "failure": "SecretUnavailable at first KeychainVault.create",
+    "default_keychain_status": -25307,
+    "positive_concurrency_backup_restore_checks": "NOT_REACHED",
+    "created_owned_items": 0,
+    "product_defect_confirmed": false
+  },
+  "limits": [
+    "No native successful recovery evidence",
+    "No OS restart or successful WebView business evidence",
+    "No real Claude account, R2, registration, deployment or payment",
+    "No default Keychain/search-list or lockscreen changes"
+  ]
+}

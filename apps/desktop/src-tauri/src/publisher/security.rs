@@ -172,3 +172,7 @@ mod managed_tests {
         }
     }
 }
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "native_keychain_tests.rs"]
+mod native_keychain_tests;

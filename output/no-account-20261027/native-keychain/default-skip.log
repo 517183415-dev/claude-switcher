@@ -1,0 +1,6 @@
+
+running 1 test
+test publisher::security::native_keychain_tests::native_keychain_create_race_and_backup_restore_preserve_owned_items ... ignored, explicit native Keychain acceptance; creates and removes only synthetic owned items
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 236 filtered out; finished in 0.00s
+

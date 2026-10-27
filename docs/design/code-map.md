@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：原生 Keychain 验证入口与阻断证据
+
+`security.rs → cfg(test, macOS) native_keychain_tests → OwnedVault → 正式 KeychainVault / Publisher`。测试默认忽略，必须显式启用并使用全新合成目录。OwnedVault 只允许更新本次成功创建的随机条目；竞争线程在所有权锁之外调用正式创建接口。正常与 panic 路径清理精确条目，并回查缺失。
+
+本轮编译、Personal bin/tests Clippy、两文件格式及两项启用保护通过。原生尝试首次创建返回 SecretUnavailable；只读默认 Keychain 查询返回 -25307，正向恢复未进入，所有权清单为空。原生恢复保持 WAIT，不升级 AD-10。没有调整系统默认密钥库或搜索列表。[证据与范围](../../output/no-account-20261027/native-keychain/README.md)。CodeGraph complete、pending 0：242 文件、6403 节点、26914 条边。
+
 ## 2026-10-27：真实 WKWebView 拒绝边界补证
 
 `native-ipc-policy/run.py → 普通 main/ipc::handler → 实际 capability → WKWebView 报告 → 宿主独立校验` 已完成两版远程来源主窗口和其他窗口矩阵。Public 23×2、Personal 48×2，共 142 条明确 ACL 拒绝。生产调用链和权限未改。

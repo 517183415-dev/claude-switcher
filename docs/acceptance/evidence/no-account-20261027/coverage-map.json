@@ -8204,6 +8204,14 @@
           "ipc_dispatch_tests::publisher_backup::ordinary_dispatch_recovery_confirmation_and_archive_import_preserve_active_data"
         ],
         "scope": "生产参数解码及成功 handler 闭环；两渠道签名与素材独立核对；恢复/导入不自动发布；合成 Vault 和 App 状态重建"
+      },
+      "native_keychain_attempt": {
+        "status": "WAIT_NATIVE_KEYCHAIN_NO_DEFAULT_IN_RESTRICTED_PROCESS",
+        "path": "output/no-account-20261027/native-keychain/receipt.json",
+        "positive_assertions": "NOT_REACHED",
+        "default_keychain_osstatus": -25307,
+        "created_owned_items": 0,
+        "whole_requirement_complete": false
       }
     },
     {
