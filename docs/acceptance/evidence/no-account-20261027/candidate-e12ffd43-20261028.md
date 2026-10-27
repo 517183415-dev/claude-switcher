@@ -6,4 +6,6 @@ Personal 和 Public 均从提交 `e12ffd432282834ee33e525ba81b2fc6cff0d556` 的�
 
 构建使用现有依赖与离线 Cargo。为适配隔离环境，只在归档副本的 `build.rs` 中给 `swiftc` 增加了 `-disable-sandbox`；外层沙箱仍禁止非本机网络及默认 securityd。该调整没有写入仓库源码。
 
-没有安装或启动这两版候选包，也没有验证窗口、真实 Claude 账号、默认 Keychain、真实 Cloudflare/CDN 或公证。构建产物和日志保存在本机 output 目录，不包含在 Git 提交中。
+两版候选包随后在独立合成 HOME 和沙箱中启动，进程均创建了自己的窗口；探针随后终止进程。[窗口回执](../../../../output/no-account-20261027/candidate-e12ffd43.Bwatky/product-runtime.json)。沙箱禁止网络、默认 securityd 和执行真实 Claude。此探针只确认进程和窗口存在，不验证界面操作。
+
+没有安装候选包，也没有验证真实 Claude 账号、默认 Keychain、真实 Cloudflare/CDN 或公证。构建产物和日志保存在本机 output 目录，不包含在 Git 提交中。
