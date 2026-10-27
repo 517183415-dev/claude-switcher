@@ -1,0 +1,357 @@
+{
+  "ok": true,
+  "rows": [
+    {
+      "label": "runtime",
+      "command": "runtime_info",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "version": "0.2.0",
+        "edition": "personal",
+        "slots": [
+          "residential_broadband",
+          "account_service",
+          "kyc_service"
+        ],
+        "automatic_updates": false,
+        "ads_enabled": false
+      }
+    },
+    {
+      "label": "key",
+      "command": "create_ad_signing_key",
+      "ok": true,
+      "value": {
+        "completed": true,
+        "message": "广告签名私钥已保存到本机钥匙串。公开验证公钥：6c9a15e47c2274f6e33d41ae266f2ffdee6c4c185a16398dac9fa2c696d56d4e",
+        "recovery": null
+      }
+    },
+    {
+      "label": "initial",
+      "command": "publisher_remote_read",
+      "ok": true,
+      "value": {
+        "preview": null,
+        "production": null,
+        "targets": [],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "preview",
+      "command": "publisher_remote_save",
+      "ok": true,
+      "value": {
+        "preview": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-preview",
+          "public_origin": "https://preview.example.com",
+          "channel": "preview"
+        },
+        "production": null,
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "wrong-channel",
+      "command": "publisher_remote_save",
+      "ok": false,
+      "error": "发布数据无效：r2_configuration"
+    },
+    {
+      "label": "shared-access",
+      "command": "publisher_remote_save",
+      "ok": false,
+      "error": "发布数据无效：r2_channels_require_separate_buckets_and_keys"
+    },
+    {
+      "label": "after-rejection",
+      "command": "publisher_remote_read",
+      "ok": true,
+      "value": {
+        "preview": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-preview",
+          "public_origin": "https://preview.example.com",
+          "channel": "preview"
+        },
+        "production": null,
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "production",
+      "command": "publisher_remote_save",
+      "ok": true,
+      "value": {
+        "preview": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-preview",
+          "public_origin": "https://preview.example.com",
+          "channel": "preview"
+        },
+        "production": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-production",
+          "public_origin": "https://ads.example.com",
+          "channel": "production"
+        },
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": true
+          },
+          {
+            "target": "r2:7401fde07638450744dc946e78d7ceed8e0ef300fba02d1e56fc5eeac6a24509",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-production",
+              "public_origin": "https://ads.example.com",
+              "channel": "production"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "second-preview",
+      "command": "publisher_remote_save",
+      "ok": true,
+      "value": {
+        "preview": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-preview-two",
+          "public_origin": "https://preview-two.example.com",
+          "channel": "preview"
+        },
+        "production": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-production",
+          "public_origin": "https://ads.example.com",
+          "channel": "production"
+        },
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:ebad3f46a6daad153b4caa8e6ff382a12e59234890ab08a1f87bc4c70aa90205",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview-two",
+              "public_origin": "https://preview-two.example.com",
+              "channel": "preview"
+            },
+            "selected": true
+          },
+          {
+            "target": "r2:7401fde07638450744dc946e78d7ceed8e0ef300fba02d1e56fc5eeac6a24509",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-production",
+              "public_origin": "https://ads.example.com",
+              "channel": "production"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "wrong-retained-channel",
+      "command": "publisher_remote_select",
+      "ok": false,
+      "error": "发布数据无效：r2_retained_target_missing"
+    },
+    {
+      "label": "restore-preview",
+      "command": "publisher_remote_select",
+      "ok": true,
+      "value": {
+        "preview": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-preview",
+          "public_origin": "https://preview.example.com",
+          "channel": "preview"
+        },
+        "production": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-production",
+          "public_origin": "https://ads.example.com",
+          "channel": "production"
+        },
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": true
+          },
+          {
+            "target": "r2:ebad3f46a6daad153b4caa8e6ff382a12e59234890ab08a1f87bc4c70aa90205",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview-two",
+              "public_origin": "https://preview-two.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:7401fde07638450744dc946e78d7ceed8e0ef300fba02d1e56fc5eeac6a24509",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-production",
+              "public_origin": "https://ads.example.com",
+              "channel": "production"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "select-local",
+      "command": "publisher_remote_save",
+      "ok": true,
+      "value": {
+        "preview": null,
+        "production": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-production",
+          "public_origin": "https://ads.example.com",
+          "channel": "production"
+        },
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:ebad3f46a6daad153b4caa8e6ff382a12e59234890ab08a1f87bc4c70aa90205",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview-two",
+              "public_origin": "https://preview-two.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:7401fde07638450744dc946e78d7ceed8e0ef300fba02d1e56fc5eeac6a24509",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-production",
+              "public_origin": "https://ads.example.com",
+              "channel": "production"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    },
+    {
+      "label": "final-read",
+      "command": "publisher_remote_read",
+      "ok": true,
+      "value": {
+        "preview": null,
+        "production": {
+          "account_id": "abcdef0123456789abcdef0123456789",
+          "bucket": "ads-production",
+          "public_origin": "https://ads.example.com",
+          "channel": "production"
+        },
+        "targets": [
+          {
+            "target": "r2:2dacdcd38d6db8ec7d2b88a8904001813f4ac6699be5b5c4529b682cc569a4fc",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview",
+              "public_origin": "https://preview.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:ebad3f46a6daad153b4caa8e6ff382a12e59234890ab08a1f87bc4c70aa90205",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-preview-two",
+              "public_origin": "https://preview-two.example.com",
+              "channel": "preview"
+            },
+            "selected": false
+          },
+          {
+            "target": "r2:7401fde07638450744dc946e78d7ceed8e0ef300fba02d1e56fc5eeac6a24509",
+            "config": {
+              "account_id": "abcdef0123456789abcdef0123456789",
+              "bucket": "ads-production",
+              "public_origin": "https://ads.example.com",
+              "channel": "production"
+            },
+            "selected": true
+          }
+        ],
+        "unavailable_targets": []
+      }
+    }
+  ],
+  "url": "tauri://localhost",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "PASS_NATIVE_WEBVIEW_REMOTE_CONFIG_SYNTHETIC_VAULT",
+  "responses": 13,
+  "checkpoints": [
+    "baseline",
+    "preview",
+    "rejected",
+    "selected",
+    "local"
+  ],
+  "credential_not_in_responses_or_disk": true,
+  "channel_separation_and_retained_selection": true,
+  "no_publication": true,
+  "binary_sha256": "246e1e9d20252abab9ac7160059de270474c009520590e7c516a7eb2353fed4b",
+  "inputs_sha256": "dbd301f33e0d8118da6eafe9cb725236f22b2904b13df8c8ec00d83a85c14b1a",
+  "not_proven": [
+    "Svelte user interface clicks",
+    "default Keychain persistence",
+    "R2/CDN or real credentials"
+  ]
+}

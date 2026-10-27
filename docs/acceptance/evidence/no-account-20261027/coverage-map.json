@@ -7932,6 +7932,12 @@
         "path": "output/no-account-20261027/r2-sdk-integration/README.md",
         "status": "LOCAL_STATEFUL_PEER_REAL_SDK_SYNTHETIC_CREDENTIALS",
         "scope": "预览渠道：正式配置发布流程调用真实 SDK，上传图片与签名版本、匿名公开回读、条件写入及模拟冲突；不验证真实 TLS、R2、服务端请求签名或客户端传播。"
+      },
+      "native_remote_config_evidence": {
+        "path": "output/no-account-20261027/native-remote-config/README.md",
+        "sha256": "be44661088b978268e1fd33851a5ef979e2f792eae3d560675ccd5b33c7d2a76",
+        "status": "NATIVE_WEBVIEW_IPC_SYNTHETIC_MEMORY_VAULT",
+        "scope": "13 IPC responses and 5 checkpoints validate channel separation, retained targets and local selection. Product UI, default Keychain, process restart and real R2 not tested."
       }
     },
     {
@@ -7998,6 +8004,12 @@
         "sha256": "2fc7d52923bf0d5bb79f1565a54b2b29f06465d725ae0230f3994b96d56c0415",
         "status": "LOCAL_SDK_COMMITTED_RESPONSE_LOST_SAME_PROCESS_REOPEN",
         "scope": "预览发布在模拟存储保存 current 后断连；同进程重开发布器并恢复同一签名版本、公开回读及释放锁。真实 R2、进程重启及线上传播未验证。"
+      },
+      "native_remote_config_evidence": {
+        "path": "output/no-account-20261027/native-remote-config/README.md",
+        "sha256": "be44661088b978268e1fd33851a5ef979e2f792eae3d560675ccd5b33c7d2a76",
+        "status": "NATIVE_WEBVIEW_IPC_SYNTHETIC_MEMORY_VAULT",
+        "scope": "13 IPC responses and 5 checkpoints validate channel separation, retained targets and local selection. Product UI, default Keychain, process restart and real R2 not tested."
       }
     },
     {

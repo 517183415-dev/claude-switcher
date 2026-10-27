@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：远程配置原生 IPC
+
+`测试前端 → WKWebView → publisher_remote_read/save/select → Publisher::configure_r2 / select_retained_r2 → Registry → 合成 MemoryVault`。13 次响应覆盖渠道隔离、目标保留和切回本机；5 个检查点未产生公开内容。[证据](../../output/no-account-20261027/native-remote-config/README.md)。
+
+测试没有点击产品 Svelte 页面，也未使用默认 Keychain 或真实 R2。CodeGraph complete、pending 0：259 文件、6668 节点、27694 条边。
+
 ## 2026-10-27：远程写入结果未知的恢复
 
 `publish_configured_with → remote_lock → Publisher::publish_with → R2Store / AWS SDK → 模拟存储`。模拟端保存 current 后断连；重新打开 Publisher 后，现有恢复路径核对同一版本并公开回读，最后释放锁。[证据](../../output/no-account-20261027/r2-uncertain/README.md)。

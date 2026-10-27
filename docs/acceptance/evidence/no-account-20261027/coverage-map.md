@@ -1,5 +1,7 @@
 # 无真实账号功能覆盖审查索引
 
+AD-03/04 增量：[原生远程配置 IPC](../../../../output/no-account-20261027/native-remote-config/README.md)覆盖配置读写、渠道隔离、保留目标和本机回退。使用测试前端及合成 MemoryVault；产品页面、默认 Keychain 与真实服务待验，整项不升级。
+
 AD-04 增量：[SDK 写入响应丢失恢复](../../../../output/no-account-20261027/r2-uncertain/README.md)验证本机模拟存储保存后断连、同进程重开 Publisher、同版本恢复及公开回读。真实 R2、应用进程重启和整体验收仍待验证。
 
 F-01 增量：[21 项意图映射](f01-intent-map.md)修正失效测试名和 CLI 切换时序。24 个现行测试名称在历史日志有通过记录；当前完整源码及真实平台结果不由此推断。
