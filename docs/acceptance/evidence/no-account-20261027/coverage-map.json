@@ -7926,7 +7926,12 @@
           "requirement_checklist": "N：专用测试密钥存储或假凭据边界；E实源：两环境实际最小写权限、匿名读及越权拒绝"
         }
       ],
-      "next_review": "先验本地命名空间，再核实一个真实适配的环境隔离"
+      "next_review": "先验本地命名空间，再核实一个真实适配的环境隔离",
+      "local_sdk_integration_evidence": {
+        "path": "output/no-account-20261027/r2-sdk-integration/README.md",
+        "status": "LOCAL_STATEFUL_PEER_REAL_SDK_SYNTHETIC_CREDENTIALS",
+        "scope": "预览渠道：正式配置发布流程调用真实 SDK，上传图片与签名版本、匿名公开回读、条件写入及模拟冲突；不验证真实 TLS、R2、服务端请求签名或客户端传播。"
+      }
     },
     {
       "id": "AD-04",
@@ -7975,7 +7980,12 @@
           "requirement_checklist": "N/E受控：真实HTTP条件写、断连/故障端点与原生pending UI；E实源：真实存储CAS/ETag语义"
         }
       ],
-      "next_review": "先用受控服务跑生产传输链，再补真实适配条件写"
+      "next_review": "先用受控服务跑生产传输链，再补真实适配条件写",
+      "local_sdk_integration_evidence": {
+        "path": "output/no-account-20261027/r2-sdk-integration/README.md",
+        "status": "LOCAL_STATEFUL_PEER_REAL_SDK_SYNTHETIC_CREDENTIALS",
+        "scope": "预览渠道：正式配置发布流程调用真实 SDK，上传图片与签名版本、匿名公开回读、条件写入及模拟冲突；不验证真实 TLS、R2、服务端请求签名或客户端传播。"
+      }
     },
     {
       "id": "AD-05",

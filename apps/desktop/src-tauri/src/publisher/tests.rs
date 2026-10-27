@@ -192,7 +192,7 @@ impl ObjectStore for MemoryStore {
     }
 }
 
-fn attach_campaign(publisher: &mut Publisher, now: u64) {
+pub(super) fn attach_campaign(publisher: &mut Publisher, now: u64) {
     // Minimal static 1x1 PNG, locally generated fixture without real data.
     let png: &[u8] = &[
         137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2,

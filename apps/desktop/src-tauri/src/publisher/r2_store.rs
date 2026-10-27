@@ -351,4 +351,4 @@ impl ObjectStore for R2Store {
 }
 
 #[cfg(test)]
-mod tests;
+pub(super) mod tests;

@@ -119,14 +119,29 @@ fn server(
 }
 
 fn store(endpoint: &str) -> R2Store {
+    let config = R2Config {
+        account_id: "abcdef0123456789abcdef0123456789".into(),
+        bucket: "test-bucket".into(),
+        public_origin: "https://preview.example.com".into(),
+        channel: AdChannel::Preview,
+    };
+    configured_store(endpoint, &config, "synthetic-key", "synthetic-secret")
+}
+
+pub(in crate::publisher) fn configured_store(
+    endpoint: &str,
+    connection: &R2Config,
+    access_key: &str,
+    secret_key: &str,
+) -> R2Store {
     let config = aws_sdk_s3::config::Builder::new()
         .behavior_version(no_proxy_behavior())
         .region(Region::new("auto"))
         .endpoint_url(endpoint)
         .force_path_style(true)
         .credentials_provider(Credentials::new(
-            "synthetic-key",
-            "synthetic-secret",
+            access_key.to_owned(),
+            secret_key.to_owned(),
             None,
             None,
             "test",
@@ -140,11 +155,11 @@ fn store(endpoint: &str) -> R2Store {
         .request_checksum_calculation(RequestChecksumCalculation::WhenRequired)
         .build();
     R2Store {
-        channel: AdChannel::Preview,
-        bucket: "test-bucket".into(),
+        channel: connection.channel,
+        bucket: connection.bucket.clone(),
         origin: reqwest::Url::parse(&format!("{endpoint}/")).unwrap(),
-        target: "r2:synthetic".into(),
-        lock_target: format!("r2-lock:{}", "a".repeat(64)),
+        target: connection.identity().unwrap(),
+        lock_target: connection.lock_identity().unwrap(),
         client: Client::from_conf(config),
         public_client: reqwest::blocking::Client::builder()
             .no_proxy()

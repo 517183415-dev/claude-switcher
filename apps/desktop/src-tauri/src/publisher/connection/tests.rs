@@ -8,6 +8,8 @@ use switcher_core::storage;
 
 #[path = "maintenance_tests.rs"]
 mod maintenance_tests;
+#[path = "r2_integration_tests.rs"]
+mod r2_integration_tests;
 
 struct Root(PathBuf);
 impl Drop for Root {

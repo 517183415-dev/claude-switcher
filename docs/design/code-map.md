@@ -1,5 +1,11 @@
 # Claude 切换器当前代码图谱
 
+## 2026-10-27：R2 SDK 与发布流程的本机联通
+
+`publish_configured_with → 目标选择 / 发布锁 → Publisher → R2Store → AWS S3 SDK → 回环模拟对象存储`。测试复用现有合成配置和密钥库。公开读取、图片与签名版本、条件写入和冲突保留由同一场景验证。模拟服务器和延迟发送回归只在测试中使用；没有变更产品运行逻辑或依赖。[证据](../../output/no-account-20261027/r2-sdk-integration/README.md)。
+
+CodeGraph complete、pending 0：256 文件、6632 节点、27535 条边。此测试不证明真实 TLS、Cloudflare 服务端签名校验或客户端传播。
+
 ## 2026-10-27：单槽暂停与历史恢复
 
 native-pause-history/runner.py → native-publisher 隔离工具 → WKWebView → 正式 IPC → Publisher::pause / restore_history / publish。独立前端生成三槽六期，覆盖单槽与全暂停、未知历史拒绝和恢复后显式发布。宿主检查 8 个磁盘快照，并独立验证 4 个正式版本的 Ed25519 签名及递增序号。产品代码和依赖未改。[证据](../../output/no-account-20261027/native-pause-history/README.md)。

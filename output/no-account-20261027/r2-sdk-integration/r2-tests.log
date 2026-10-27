@@ -1,0 +1,29 @@
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  | 
+  | deny_unknown_fields 
+  | 
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.79s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-d7d281c3081aaab0)
+
+running 11 tests
+test publisher::r2_store::tests::immutable_collision_checks_existing_bytes ... ok
+test publisher::r2_store::tests::lock_identity_coalesces_domain_aliases_but_separates_accounts_buckets_and_channels ... ok
+test publisher::r2_store::tests::production_configuration_rejects_ipv6_literal_origins ... ok
+test publisher::r2_store::tests::production_configuration_rejects_untrusted_endpoints ... ok
+test publisher::r2_store::tests::production_rejects_provider_domains_even_with_dns_root_dot ... ok
+test publisher::r2_store::tests::public_read_is_anonymous_bounded_and_refuses_redirects ... ok
+test publisher::r2_store::tests::r2_target_identity_tracks_namespace_and_survives_credential_rotation ... ok
+test publisher::r2_store::tests::reserved_lock_transport_uses_authenticated_conditional_requests_only ... ok
+test publisher::r2_store::tests::signed_conditional_writes_and_error_classification ... ok
+test publisher::r2_store::tests::source_read_deadline_covers_slow_body_even_while_chunks_arrive ... ok
+test publisher::r2_store::tests::source_requires_etag_and_enforces_size ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 229 filtered out; finished in 1.37s
+
