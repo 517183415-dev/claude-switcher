@@ -1,6 +1,6 @@
 # Claude 切换器当前代码图谱
 
-两版最新候选包基于 `afce48da` 构建，包含广告来源和刷新提示修复。构建、签名校验及隔离窗口启动通过；当前包的窗口业务操作尚未验证。[候选验收](../acceptance/当前候选验收-2026-10-27.md)。
+两版最新候选包基于 `80d153bc` 构建，包含发布凭据保护和恢复配置修复。构建、签名校验及隔离窗口启动通过；窗口业务操作尚未验证。[候选验收](../acceptance/当前候选验收-2026-10-27.md)。
 
 ## 2026-10-28：发布凭据和恢复后的配置
 
@@ -8,7 +8,7 @@
 
 `publisher_remote_read → Publisher::remote_settings → PublisherModel.readRemote`。已保存的密钥缺失时返回错误；界面丢弃旧配置。备份或归档恢复后，`refreshAfterRecovery` 也丢弃旧配置，须重新读取。[回归与边界](../acceptance/evidence/no-account-20261027/publisher-credential-safety-20261028.md)。
 
-本次 CodeGraph 状态 complete、pending 0：306 文件、7,568 节点、30,231 条关系。旧候选包不含本次修复。
+本次 CodeGraph 状态 complete、pending 0：306 文件、7,568 节点、30,231 条关系。历史 `afce48da` 候选包不含本次修复。
 
 ## 2026-10-28：整理历史渠道提示
 
