@@ -1,6 +1,12 @@
 # Claude 切换器当前代码图谱
 
-两版最新候选包基于 `f34f9b9a` 构建，包含下列广告来源修复。构建和签名校验通过；当前包的原生窗口业务尚未验证。[构建证据](../acceptance/evidence/no-account-20261027/candidate-f34f9b9a-20261028.md)。
+两版最新候选包基于 `afce48da` 构建，包含广告来源和刷新提示修复。构建、签名校验及隔离窗口启动通过；当前包的窗口业务操作尚未验证。[候选验收](../acceptance/当前候选验收-2026-10-27.md)。
+
+## 2026-10-28：远程发布配置原生接线
+
+`PublisherModel.readRemote / saveRemote / selectRemote → DesktopBridge → TauriWebViewTransport → publisher_remote_read / save / select → Publisher 目标配置`。原生隔离测试使用合成内存密钥库，覆盖两条渠道的配置保存、拒绝无效地址、目标切换和重新读取。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-remote-settings-20261028.md)。
+
+CodeGraph 状态 complete，待处理变更为 0：306 文件、7,562 节点、30,211 条关系。静态图不代表真实云端或窗口操作已验证。
 
 ## 2026-10-28：广告手动刷新命令链
 

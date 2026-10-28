@@ -52,9 +52,10 @@ def main():
     parser.add_argument('--large-backup', action='store_true', help='exercise the 64 MiB native IPC boundary')
     parser.add_argument('--backup-recovery', action='store_true', help='exercise a successful encrypted backup restore')
     parser.add_argument('--valid-large-backup', action='store_true', help='restore a valid 64 MiB encrypted backup')
+    parser.add_argument('--remote-settings', action='store_true', help='exercise remote settings over the native bridge')
     args = parser.parse_args()
-    if (args.large_backup or args.backup_recovery or args.valid_large_backup) and args.edition != 'personal':
-        parser.error('backup tests require the personal edition')
+    if (args.large_backup or args.backup_recovery or args.valid_large_backup or args.remote_settings) and args.edition != 'personal':
+        parser.error('backup and remote settings tests require the personal edition')
     output = args.output.absolute()
     if any(path.is_symlink() for path in (output, *output.parents)):
         raise ValueError('output path must not contain symlinks')
@@ -85,6 +86,8 @@ def main():
         env['NATIVE_UI_FIXTURE_BACKUP_RECOVERY'] = '1'
     if args.valid_large_backup:
         env['NATIVE_UI_FIXTURE_VALID_LARGE_BACKUP'] = '1'
+    if args.remote_settings:
+        env['NATIVE_UI_FIXTURE_REMOTE_SETTINGS'] = '1'
     command = [str(TOOL / 'cargo'), 'build', '--release', '--offline', '--locked', '--target', 'aarch64-apple-darwin',
                '-p', 'switcher-desktop', '--bin', 'switcher-desktop', '--no-default-features',
                '--features', f'{args.edition},ipc-business,native-ui,custom-protocol']
@@ -119,6 +122,8 @@ def main():
         expected['backup_recovery'] = True
     if args.valid_large_backup:
         expected['valid_backup_at_limit'] = True
+    if args.remote_settings:
+        expected['remote_settings'] = True
     if result.returncode != 0 or len(lines) != 1 or json.loads(lines[0]) != expected:
         raise RuntimeError('native workspace fixture failed; see runtime.log')
     inputs = sorted((ROOT / 'apps/desktop/swiftui/Sources/SwitcherUI').rglob('*.swift'))

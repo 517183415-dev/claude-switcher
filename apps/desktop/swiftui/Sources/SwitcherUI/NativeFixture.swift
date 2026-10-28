@@ -76,6 +76,11 @@ func verifyNativeFixture(webView: WKWebView, host: NSView, bridge: DesktopBridge
                 }
                 checks["backup_over_limit"] = true
             }
+            if ProcessInfo.processInfo.environment["NATIVE_UI_FIXTURE_REMOTE_SETTINGS"] == "1" {
+                stage = "remote_settings"
+                try await verifyRemoteSettings(publisher: publisher, bridge: bridge)
+                checks["remote_settings"] = true
+            }
         } else {
             guard publisher.draft == nil, !SwitcherPage.visible(in: .public).contains(.operations)
             else { throw BridgeError.invalidResponse }
@@ -111,6 +116,57 @@ func verifyNativeFixture(webView: WKWebView, host: NSView, bridge: DesktopBridge
         fflush(stdout)
         exit(1)
     }
+}
+
+/// Exercises remote configuration through the production IPC registry and a synthetic vault.
+@MainActor
+private func verifyRemoteSettings(publisher: PublisherModel, bridge: DesktopBridge) async throws {
+    if publisher.status?.status == "wait_signing_key" {
+        await publisher.outcomeAction(.createAdSigningKey, label: "创建测试密钥", refreshStatus: true)
+        guard publisher.error == nil, publisher.outcome?.completed == true else { throw BridgeError.invalidResponse }
+    }
+    await publisher.readRemote()
+    guard publisher.error == nil, let initial = publisher.remote, initial.preview == nil, initial.production == nil else {
+        throw BridgeError.invalidResponse
+    }
+    let account = "abcdef0123456789abcdef0123456789"
+    let preview = RemoteConfig(accountId: account, bucket: "ads-preview", publicOrigin: "https://preview.example.com", channel: "preview")
+    let production = RemoteConfig(accountId: account, bucket: "ads-production", publicOrigin: "https://ads.example.com", channel: "production")
+    await publisher.saveRemote(channel: "preview", config: preview, accessKey: "preview-key", secretKey: "preview-secret")
+    guard publisher.error == nil, publisher.outcome?.completed == true,
+          let savedPreview = publisher.remote?.preview,
+          savedPreview.accountId == preview.accountId, savedPreview.bucket == preview.bucket,
+          savedPreview.publicOrigin == preview.publicOrigin, savedPreview.channel == preview.channel,
+          publisher.remote?.production == nil else { throw BridgeError.invalidResponse }
+    await publisher.saveRemote(channel: "production", config: production, accessKey: "production-key", secretKey: "production-secret")
+    guard publisher.error == nil, publisher.outcome?.completed == true,
+          publisher.remote?.preview?.bucket == preview.bucket, let savedProduction = publisher.remote?.production,
+          savedProduction.accountId == production.accountId, savedProduction.bucket == production.bucket,
+          savedProduction.publicOrigin == production.publicOrigin, savedProduction.channel == production.channel else {
+        throw BridgeError.invalidResponse
+    }
+
+    var invalid = production
+    invalid.publicOrigin = "http://ads.example.com"
+    await publisher.saveRemote(channel: "production", config: invalid, accessKey: "production-key", secretKey: "production-secret")
+    guard publisher.error != nil else { throw BridgeError.invalidResponse }
+    await publisher.readRemote()
+    guard publisher.error == nil, publisher.remote?.production?.publicOrigin == production.publicOrigin else {
+        throw BridgeError.invalidResponse
+    }
+    await publisher.saveRemote(channel: "preview", config: nil, accessKey: "", secretKey: "")
+    guard publisher.error == nil, publisher.outcome?.completed == true, publisher.remote?.preview == nil,
+          let previous = publisher.remote?.targets.first(where: { $0.config.channel == "preview" && !$0.selected }) else {
+        throw BridgeError.invalidResponse
+    }
+    await publisher.selectRemote(channel: "preview", target: previous.target)
+    guard publisher.error == nil, publisher.outcome?.completed == true,
+          publisher.remote?.preview?.bucket == preview.bucket else { throw BridgeError.invalidResponse }
+
+    let reopened = PublisherModel(bridge: bridge)
+    await reopened.readRemote()
+    guard reopened.error == nil, reopened.remote?.preview?.bucket == preview.bucket,
+          reopened.remote?.production?.bucket == production.bucket else { throw BridgeError.invalidResponse }
 }
 
 /// Exercises the production bridge with only the fixture's isolated memory vault.
