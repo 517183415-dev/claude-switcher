@@ -2,6 +2,12 @@
 
 两版最新候选包基于 `afce48da` 构建，包含广告来源和刷新提示修复。构建、签名校验及隔离窗口启动通过；当前包的窗口业务操作尚未验证。[候选验收](../acceptance/当前候选验收-2026-10-27.md)。
 
+## 2026-10-28：整理历史渠道提示
+
+`preview_publisher_cleanup → history_label → PublisherCleanupPreview → 整理确认界面`。保留和移除记录共用渠道名称；界面不推断记录的存储地点。[回归记录](../acceptance/evidence/no-account-20261027/history-label-20261028.md)。`afce48da` 候选包早于该修复。
+
+CodeGraph 状态 complete，待处理变更为 0：306 文件、7,563 节点、30,214 条关系。
+
 ## 2026-10-28：远程发布配置原生接线
 
 `PublisherModel.readRemote / saveRemote / selectRemote → DesktopBridge → TauriWebViewTransport → publisher_remote_read / save / select → Publisher 目标配置`。原生隔离测试使用合成内存密钥库，覆盖两条渠道的配置保存、拒绝无效地址、目标切换和重新读取。[测试与边界](../acceptance/evidence/no-account-20261027/swiftui-remote-settings-20261028.md)。

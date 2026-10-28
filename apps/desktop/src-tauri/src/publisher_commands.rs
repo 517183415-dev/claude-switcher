@@ -586,14 +586,47 @@ fn history_label(record: &publisher::HistoryRecord) -> String {
     format!(
         "{} · 序号 {} · {}",
         if record.manifest.channel == AdChannel::Preview {
-            "本机预览"
+            "预览"
         } else {
-            "本机正式"
+            "正式"
         },
         record.manifest.content_revision,
         record.manifest.release_id
     )
 }
+
+#[cfg(test)]
+mod history_label_tests {
+    use super::*;
+
+    #[test]
+    fn cleanup_history_label_describes_channel_without_guessing_storage() {
+        for (channel, label) in [
+            (AdChannel::Preview, "预览"),
+            (AdChannel::Production, "正式"),
+        ] {
+            let record = publisher::HistoryRecord {
+                manifest: AdManifest {
+                    schema_version: 1,
+                    channel,
+                    content_revision: 42,
+                    key_id: "test-key".into(),
+                    issued_at: 1,
+                    expires_at: 2,
+                    release_id: "test-release".into(),
+                    slots: vec![],
+                },
+                published_at: 1,
+                payload_hash: "test-hash".into(),
+            };
+            assert_eq!(
+                history_label(&record),
+                format!("{label} · 序号 42 · test-release")
+            );
+        }
+    }
+}
+
 fn protection_label(reason: &str) -> &str {
     match reason {
         "current_preview" => "当前预览内容",

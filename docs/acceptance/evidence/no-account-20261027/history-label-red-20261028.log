@@ -1,0 +1,32 @@
+warning: failed to parse serde attribute
+  |
+  | deny_unknown_fields
+  |
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+warning: failed to parse serde attribute
+  |
+  | deny_unknown_fields
+  |
+  = note: ts-rs failed to parse this attribute. It will be ignored.
+   Compiling switcher-core v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/crates/switcher-core)
+   Compiling switcher-desktop v0.2.0 (/Users/gua/CodexWorkspaces/claude-switcher/apps/desktop/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.65s
+     Running unittests src/main.rs (target/debug/deps/switcher_desktop-294ace823768e9c5)
+
+running 1 test
+
+thread 'publisher_commands::history_label_tests::cleanup_history_label_describes_channel_without_guessing_storage' (37272616) panicked at apps/desktop/src-tauri/src/publisher_commands.rs:619:13:
+assertion `left == right` failed
+  left: "本机预览 · 序号 42 · test-release"
+ right: "预览 · 序号 42 · test-release"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test publisher_commands::history_label_tests::cleanup_history_label_describes_channel_without_guessing_storage ... FAILED
+
+failures:
+
+failures:
+    publisher_commands::history_label_tests::cleanup_history_label_describes_channel_without_guessing_storage
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 257 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p switcher-desktop --bin switcher-desktop`
