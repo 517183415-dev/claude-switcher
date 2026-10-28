@@ -2,6 +2,12 @@
 
 两版最新候选包基于 `80d153bc` 构建，包含发布凭据保护和恢复配置修复。构建、签名校验及隔离窗口启动通过；窗口业务操作尚未验证。[候选验收](../acceptance/当前候选验收-2026-10-27.md)。
 
+## 2026-10-28：独立密钥库跨进程验证
+
+`Publisher::configure_r2 → Vault → 独立 Keychain` 保存合成配置；新进程经 `Publisher::open → Publisher::remote_settings` 读回配置。密钥创建继续经 `Publisher::generate_signing_key → Vault::create`，已有密钥时拒绝覆盖。[测试与边界](../acceptance/evidence/no-account-20261027/remote-settings-process-20261028.md)。
+
+CodeGraph 状态 complete、pending 0：306 文件、7,572 节点、30,255 条关系。静态图不代表普通 App 或真实云端验收。
+
 ## 2026-10-28：发布凭据和恢复后的配置
 
 `create_ad_signing_key → Publisher::generate_signing_key → Vault::create → save_trust`。创建密钥只新增密钥库条目；旧条目存在时中止。已有配置的常规修改仍使用 `credentials_save`。

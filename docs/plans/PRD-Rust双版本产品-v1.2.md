@@ -18,7 +18,9 @@ Personal 和 Public 候选包基于 `80d153bc` 构建，并通过本地签名和
 
 Personal 的预览和正式渠道须分别保存并读取发布配置。无效地址须被拒绝，原有效配置须保留。切回本地后，用户须能选回已保留的远程目标。
 
-原生 Swift 状态模型、WebView 桥接和 Rust 命令已用合成密钥库完成隔离验证。[测试及边界](../acceptance/evidence/no-account-20261027/swiftui-remote-settings-20261028.md)。真实 Keychain、真实远程服务、窗口内手动操作和应用进程重启仍待验证。
+原生 Swift 状态模型、WebView 桥接和 Rust 命令已用合成密钥库完成隔离验证。[测试及边界](../acceptance/evidence/no-account-20261027/swiftui-remote-settings-20261028.md)。用户默认 Keychain、真实远程服务、窗口内手动操作和应用进程重启仍待验证。
+
+独立 macOS 测试密钥库的跨进程测试已验证两渠道配置读回，以及信任文件缺失时保护旧密钥。[测试及边界](../acceptance/evidence/no-account-20261027/remote-settings-process-20261028.md)。这不等于普通 App 重启或用户默认密钥库权限验收。
 
 ## 2026-10-28：账号切换的中断恢复
 
