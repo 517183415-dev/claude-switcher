@@ -98,13 +98,16 @@ public struct OverviewView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("准备好，开始工作。")
-                    .font(.system(size: 34, weight: .bold))
-                Text("自动检查当前环境，确认准备就绪后启动 Claude。")
-                    .font(.system(size: 14)).foregroundStyle(.secondary)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 18) {
+                    heading.fixedSize(horizontal: true, vertical: false)
+                    adRow
+                }
+                VStack(alignment: .leading, spacing: 14) {
+                    heading
+                    adRow
+                }
             }
-            .padding(.bottom, 8)
 
             HStack(alignment: .top, spacing: 18) {
                 accountCard.frame(maxWidth: .infinity)
@@ -133,19 +136,28 @@ public struct OverviewView: View {
                     .padding(16).switcherGlass(cornerRadius: 15)
                 }
             }
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("精选服务").font(.system(size: 18, weight: .bold))
-                    Text("三个广告位独立开关，商业内容不参与启动判断。")
-                        .font(.system(size: 12)).foregroundStyle(.secondary)
-                }
-                Spacer()
+        }
+    }
+
+    private var heading: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("准备好，开始工作。")
+                .font(.system(size: 34, weight: .bold))
+            Text("自动检查当前环境，确认准备就绪后启动 Claude。")
+                .font(.system(size: 14)).foregroundStyle(.secondary)
+            HStack(spacing: 14) {
                 Button("刷新广告内容", action: onRefreshAds)
                 Button("广告设置", action: onAdSettings)
             }
-            .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(SwitcherPalette.green)
-            HStack(alignment: .top, spacing: 14) {
-                ForEach(data.ads) { ad in AdCard(ad: ad, onOpen: { onAd(ad.id) }).frame(maxWidth: .infinity) }
+            .buttonStyle(.plain).font(.system(size: 11, weight: .semibold)).foregroundStyle(SwitcherPalette.green)
+        }
+    }
+
+    private var adRow: some View {
+        HStack(spacing: 10) {
+            ForEach(data.ads) { ad in
+                AdCard(ad: ad, onOpen: { onAd(ad.id) })
+                    .frame(minWidth: 180, maxWidth: .infinity)
             }
         }
     }

@@ -702,6 +702,169 @@ fn missing_pins_and_all_off_make_zero_requests() {
 }
 
 #[test]
+fn enabled_slot_fetches_missing_image_before_next_scheduled_refresh() {
+    for local in [false, true] {
+        let root = Root::new();
+        let mut runtime = configured_runtime(&root);
+        let mut content = manifest(1);
+        content.slots[0].campaigns.clear();
+        content.slots[2].campaigns.clear();
+        if local {
+            let directory = local::directory(&root.0);
+            storage::create_private_directory(&root.0).unwrap();
+            storage::create_private_directory(&root.0.join("v2")).unwrap();
+            storage::create_private_directory(&directory).unwrap();
+            storage::create_private_directory(&directory.join("production")).unwrap();
+            storage::atomic_write(&directory.join("production/current.json"), &wire(&content))
+                .unwrap();
+            runtime.pins.as_mut().unwrap().local = true;
+        }
+        let mut fetcher = MemoryFetch::default();
+        fetcher.set(&runtime, &content);
+        let mut preferences = prefs();
+        preferences.slots_enabled = [true, false, false];
+        let _lock = runtime.lock().unwrap();
+
+        assert!(
+            runtime
+                .refresh_locked(
+                    &preferences,
+                    true,
+                    sample(1000),
+                    Some(&mut fetcher),
+                    Some(0)
+                )
+                .unwrap()
+                .refreshed
+        );
+        assert_eq!(fetcher.requests.len(), 1);
+
+        preferences.slots_enabled[1] = true;
+        if !local {
+            assert!(
+                !runtime
+                    .refresh_locked(
+                        &preferences,
+                        true,
+                        sample(1001),
+                        Some(&mut fetcher),
+                        Some(0)
+                    )
+                    .unwrap()
+                    .refreshed
+            );
+        }
+        assert_eq!(fetcher.requests.len(), 1);
+        assert!(
+            runtime
+                .refresh_locked(
+                    &preferences,
+                    false,
+                    sample(1001),
+                    Some(&mut fetcher),
+                    Some(0)
+                )
+                .unwrap()
+                .refreshed
+        );
+        assert_eq!(fetcher.requests.len(), 3);
+        let (state, clock) = runtime.load(&sample(1001)).unwrap();
+        let visible = runtime.visible(&state, &clock, &preferences, 1001).unwrap();
+        assert_eq!(visible.slots[1].campaigns.len(), 1);
+
+        assert!(
+            !runtime
+                .refresh_locked(
+                    &preferences,
+                    false,
+                    sample(1002),
+                    Some(&mut fetcher),
+                    Some(0)
+                )
+                .unwrap()
+                .refreshed
+        );
+        assert_eq!(fetcher.requests.len(), 3);
+    }
+}
+
+#[test]
+fn enabled_slot_respects_retry_backoff_when_image_download_fails() {
+    let root = Root::new();
+    let runtime = configured_runtime(&root);
+    let mut content = manifest(1);
+    content.slots[0].campaigns.clear();
+    content.slots[2].campaigns.clear();
+    let mut fetcher = MemoryFetch::default();
+    fetcher.set(&runtime, &content);
+    let mut preferences = prefs();
+    preferences.slots_enabled = [true, false, false];
+    let _lock = runtime.lock().unwrap();
+    runtime
+        .refresh_locked(
+            &preferences,
+            false,
+            sample(1000),
+            Some(&mut fetcher),
+            Some(0),
+        )
+        .unwrap();
+
+    let pins = runtime.pins.as_ref().unwrap();
+    let slot = &content.slots[1];
+    let image_url = pins
+        .source
+        .asset_request(slot.slot, &slot.campaigns[0].image, &prefs(), pins.channel)
+        .unwrap()
+        .unwrap()
+        .to_string();
+    let image = fetcher.objects.remove(&image_url).unwrap();
+    preferences.slots_enabled[1] = true;
+    assert_eq!(
+        runtime
+            .refresh_locked(
+                &preferences,
+                false,
+                sample(1001),
+                Some(&mut fetcher),
+                Some(0)
+            )
+            .unwrap_err(),
+        "synthetic_missing"
+    );
+    let requests_after_failure = fetcher.requests.len();
+    fetcher.objects.insert(image_url, image);
+    let waiting = runtime
+        .refresh_locked(
+            &preferences,
+            false,
+            sample(1002),
+            Some(&mut fetcher),
+            Some(0),
+        )
+        .unwrap();
+    assert!(!waiting.refreshed);
+    assert_eq!(waiting.next_check_at, Some(1061));
+    assert_eq!(fetcher.requests.len(), requests_after_failure);
+
+    assert!(
+        runtime
+            .refresh_locked(
+                &preferences,
+                false,
+                sample(1061),
+                Some(&mut fetcher),
+                Some(0)
+            )
+            .unwrap()
+            .refreshed
+    );
+    let (state, clock) = runtime.load(&sample(1061)).unwrap();
+    let visible = runtime.visible(&state, &clock, &preferences, 1061).unwrap();
+    assert_eq!(visible.slots[1].campaigns.len(), 1);
+}
+
+#[test]
 fn configured_pins_with_all_slots_off_make_zero_requests() {
     let root = Root::new();
     let runtime = configured_runtime(&root);

@@ -14,39 +14,61 @@ struct AdCard: View {
     let onOpen: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(ad.name)
-                Spacer()
-                Text("推广")
-            }.font(.system(size: 11)).foregroundStyle(.secondary)
-            switch ad.state {
-            case .disabled, .unavailable:
-                Image(systemName: ad.symbol).font(.system(size: 24)).foregroundStyle(SwitcherPalette.green)
-                Text(ad.state.isDisabled ? "此广告位已关闭" : "暂无有效内容")
-                    .font(.system(size: 15, weight: .semibold))
-                Text(ad.state.isDisabled ? "不会读取此广告位的素材。" : "内容通过签名与排期校验后显示。")
-                    .font(.system(size: 12)).foregroundStyle(.secondary)
-                Text("账号功能继续按环境检查结果工作")
-                    .font(.system(size: 10)).foregroundStyle(.secondary)
-            case .active(let content):
-                if let bytes = content.imageData, let image = NSImage(data: bytes) {
-                    Image(nsImage: image).resizable().scaledToFit().frame(maxWidth: .infinity).frame(height: 124)
-                } else {
-                    Label("素材等待本地校验", systemImage: ad.symbol)
-                        .frame(maxWidth: .infinity).frame(height: 104)
-                        .background(SwitcherPalette.accent.opacity(0.25), in: RoundedRectangle(cornerRadius: 8))
+        HStack(spacing: 10) {
+            artwork
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 4) {
+                    Text(title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Text("推广").font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 5).padding(.vertical, 3)
+                        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
                 }
-                Text(content.title).font(.system(size: 15, weight: .semibold))
-                Text(content.description).font(.system(size: 12)).foregroundStyle(.secondary)
-                Text(content.merchant).font(.system(size: 10)).foregroundStyle(.secondary)
-                Button(content.button) { onOpen?() }
-                    .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(SwitcherPalette.green)
-                    .disabled(onOpen == nil)
+                switch ad.state {
+                case .disabled, .unavailable:
+                    Text(ad.state.isDisabled ? "此广告位已关闭" : "暂无有效内容")
+                        .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
+                case .active(let content):
+                    Text(content.imageData == nil ? "\(content.merchant) · 素材待校验" : content.merchant)
+                        .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
+                    Button(content.button) { onOpen?() }
+                        .buttonStyle(.plain).font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(SwitcherPalette.green).lineLimit(1)
+                        .disabled(onOpen == nil)
+                }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 155, alignment: .topLeading)
-        .padding(16).switcherGlass(cornerRadius: 15)
+        .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+        .padding(10).switcherGlass(cornerRadius: 12)
+        .help(details)
+    }
+
+    private var artwork: some View {
+        Group {
+            if case .active(let content) = ad.state,
+               let bytes = content.imageData, let image = NSImage(data: bytes) {
+                Image(nsImage: image).resizable().scaledToFit()
+            } else {
+                Image(systemName: ad.symbol).font(.system(size: 21)).foregroundStyle(SwitcherPalette.green)
+            }
+        }
+        .frame(width: 44, height: 44)
+        .background(SwitcherPalette.accent.opacity(0.45), in: RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var title: String {
+        if case .active(let content) = ad.state { return content.title }
+        return ad.name
+    }
+
+    private var details: String {
+        switch ad.state {
+        case .disabled: return "\(ad.name)：此广告位已关闭，不会读取素材。"
+        case .unavailable: return "\(ad.name)：暂无有效内容。"
+        case .active(let content): return "\(content.merchant) · \(content.title)\n\(content.description)"
+        }
     }
 }
 

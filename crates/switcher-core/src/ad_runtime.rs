@@ -263,6 +263,24 @@ fn enabled(preferences: &AdPreferences) -> bool {
     preferences.request_purpose_acknowledged
         && preferences.slots_enabled.iter().any(|enabled| *enabled)
 }
+
+fn required_images<'a>(
+    manifest: &'a AdManifest,
+    preferences: &'a AdPreferences,
+    now: u64,
+) -> impl Iterator<Item = (AdSlot, &'a ImageAsset)> + 'a {
+    manifest
+        .slots
+        .iter()
+        .filter(move |slot| slot.enabled && preferences.slots_enabled[ads::slot_index(slot.slot)])
+        .flat_map(move |slot| {
+            slot.campaigns
+                .iter()
+                .filter(move |campaign| campaign.enabled && campaign.ends_at > now)
+                .map(move |campaign| (slot.slot, &campaign.image))
+        })
+}
+
 fn utc(sample: &ClockSample) -> Result<u64> {
     sample.utc_secs.try_into().map_err(|_| "ad_clock")
 }
@@ -610,6 +628,12 @@ impl AdRuntime {
             Some("clock_recovery_required")
         } else if !self.local_changed(&state)?
             && !state.schedule.begin(now, preferences, true, manual)
+            && (manual
+                || state.schedule.failures > 0
+                || state.cache.manifest().is_none_or(|manifest| {
+                    required_images(manifest, preferences, now)
+                        .all(|(_, image)| self.verified_image(image).is_ok())
+                }))
         {
             Some("ad_refresh_not_due_or_merged")
         } else {
@@ -688,42 +712,30 @@ impl AdRuntime {
             state.sequence.remember(manifest.content_revision, hash)?;
             // Preserve authenticated revision even if an asset subsequently fails.
             self.save(&state, &clock)?;
-            for slot in &manifest.slots {
-                if !slot.enabled || !preferences.slots_enabled[ads::slot_index(slot.slot)] {
+            for (slot, image) in required_images(&manifest, preferences, now) {
+                if self.verified_image(image).is_ok() {
                     continue;
                 }
-                for campaign in slot
-                    .campaigns
-                    .iter()
-                    .filter(|campaign| campaign.enabled && campaign.ends_at > now)
+                let request = pins
+                    .source
+                    .asset_request(slot, image, preferences, pins.channel)?
+                    .ok_or("ads_disabled")?;
+                let response = fetcher.get(&request, ads::MAX_IMAGE_BYTES)?;
+                if !pins
+                    .source
+                    .permits_response_url(&request, &response.final_url)
                 {
-                    if self.verified_image(&campaign.image).is_ok() {
-                        continue;
-                    }
-                    let request = pins
-                        .source
-                        .asset_request(slot.slot, &campaign.image, preferences, pins.channel)?
-                        .ok_or("ads_disabled")?;
-                    let response = fetcher.get(&request, ads::MAX_IMAGE_BYTES)?;
-                    if !pins
-                        .source
-                        .permits_response_url(&request, &response.final_url)
-                    {
-                        return Err("ad_redirect");
-                    }
-                    if response.mime.as_deref() != Some(&campaign.image.mime) {
-                        return Err("ad_image_mime");
-                    }
-                    ads::validate_image(&response.bytes, &campaign.image)?;
-                    storage::atomic_write(
-                        &self
-                            .ads_directory()
-                            .join("assets")
-                            .join(&campaign.image.sha256),
-                        &response.bytes,
-                    )
-                    .map_err(|_| "ad_image_write")?;
+                    return Err("ad_redirect");
                 }
+                if response.mime.as_deref() != Some(&image.mime) {
+                    return Err("ad_image_mime");
+                }
+                ads::validate_image(&response.bytes, image)?;
+                storage::atomic_write(
+                    &self.ads_directory().join("assets").join(&image.sha256),
+                    &response.bytes,
+                )
+                .map_err(|_| "ad_image_write")?;
             }
             let final_sample = if supplied_clock {
                 sample.clone()
