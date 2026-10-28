@@ -887,17 +887,21 @@ impl Publisher {
     pub fn credentials_save(&mut self, vault: &mut dyn Vault, secrets: &Secrets) -> Result<()> {
         let signer = self.check_signer(secrets)?;
         vault.store(&self.generation, secrets)?;
+        self.save_trust(signer.verifying_key())
+    }
+
+    fn save_trust(&mut self, public_key: VerifyingKey) -> Result<()> {
         storage::atomic_write(
             &self.root.join("trust.json"),
             &encode(
                 &Trust {
                     key_id: self.key_id.clone(),
-                    public_key: signer.verifying_key().to_bytes(),
+                    public_key: public_key.to_bytes(),
                 },
                 4096,
             )?,
         )?;
-        self.public_key = Some(signer.verifying_key());
+        self.public_key = Some(public_key);
         Ok(())
     }
     /// Call only for an explicit operator action. Opening drafts never generates a key.
@@ -918,7 +922,9 @@ impl Publisher {
         OsRng
             .try_fill_bytes(&mut secrets.signing_seed)
             .map_err(|_| Error::Random)?;
-        self.credentials_save(vault, &secrets)?;
+        let signer = self.check_signer(&secrets)?;
+        vault.create(&self.generation, &secrets)?;
+        self.save_trust(signer.verifying_key())?;
         Ok(self.verifying_key()?.to_bytes())
     }
     pub fn configured_public_key(&self) -> Option<[u8; 32]> {

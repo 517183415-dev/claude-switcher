@@ -109,6 +109,12 @@ impl Publisher {
 
     pub fn remote_settings(&self, vault: &dyn Vault) -> Result<RemoteSettings> {
         let Some(secrets) = vault.load_optional(&self.generation)? else {
+            if self.public_key.is_some()
+                || self.state.target.is_some()
+                || !self.state.other_targets.is_empty()
+            {
+                return Err(Error::SecretUnavailable);
+            }
             return Ok(RemoteSettings::default());
         };
         self.check_signer(&secrets)?;

@@ -1025,6 +1025,29 @@ fn restore_keeps_local_authenticated_watermark_and_reuploads_missing_assets() {
 }
 
 #[test]
+fn signing_key_creation_preserves_existing_credentials_when_trust_is_missing() {
+    let root = LocalRoot::new();
+    let mut publisher = Publisher::open(&root.0, "local-ad-key", None, 1000).unwrap();
+    let mut vault = MemoryVault::default();
+    publisher
+        .generate_signing_key(&mut vault, b"preview".to_vec(), b"production".to_vec())
+        .unwrap();
+    let saved = vault.items.clone();
+
+    drop(publisher);
+    fs::remove_file(root.0.join("trust.json")).unwrap();
+    let mut publisher = Publisher::open(&root.0, "local-ad-key", None, 1000).unwrap();
+    assert!(publisher.configured_public_key().is_none());
+    assert!(
+        publisher
+            .generate_signing_key(&mut vault, vec![], vec![])
+            .is_err()
+    );
+    assert!(vault.items == saved);
+    assert!(!root.0.join("trust.json").exists());
+}
+
+#[test]
 fn drafts_need_no_key_and_explicit_generation_persists_only_public_trust_on_disk() {
     let root = LocalRoot::new();
     let mut publisher = Publisher::open(&root.0, "local-ad-key", None, 1000).unwrap();

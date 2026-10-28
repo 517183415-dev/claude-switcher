@@ -156,6 +156,45 @@ fn remote(root: &Path, c: R2Config, unknown: bool) -> Result<Box<dyn ObjectStore
 }
 
 #[test]
+fn missing_saved_credentials_are_not_reported_as_local_sources() {
+    let (root, mut publisher, mut vault) = fixture();
+    let fresh = Publisher::open(&root.0.join("fresh"), "ads-personal-v1", None, 1000).unwrap();
+    let initial = fresh.remote_settings(&MemoryVault::default()).unwrap();
+    assert!(initial.preview.is_none() && initial.production.is_none());
+
+    configure(
+        &mut publisher,
+        &mut vault,
+        AdChannel::Preview,
+        "preview-key",
+    )
+    .unwrap();
+    publisher
+        .publish_configured_with(&root.0, AdChannel::Preview, 1001, &vault, |config, _, _| {
+            remote(&root.0, config, false)
+        })
+        .unwrap();
+    let saved = vault.items.remove(&publisher.generation).unwrap();
+    assert!(matches!(
+        publisher.remote_settings(&vault),
+        Err(Error::SecretUnavailable)
+    ));
+    vault.items.insert(publisher.generation.clone(), saved);
+    assert!(publisher.remote_settings(&vault).unwrap().preview.is_some());
+
+    drop(publisher);
+    fs::remove_file(root.0.join("publisher/trust.json")).unwrap();
+    let reopened =
+        Publisher::open(&root.0.join("publisher"), "ads-personal-v1", None, 1000).unwrap();
+    assert!(reopened.configured_public_key().is_none());
+    assert!(reopened.active_target().is_some());
+    assert!(matches!(
+        reopened.remote_settings(&MemoryVault::default()),
+        Err(Error::SecretUnavailable)
+    ));
+}
+
+#[test]
 fn settings_keep_credentials_out_of_responses_and_disk_and_survive_restart() {
     let (root, mut p, mut v) = fixture();
     assert!(p.remote_settings(&v).unwrap().preview.is_none());

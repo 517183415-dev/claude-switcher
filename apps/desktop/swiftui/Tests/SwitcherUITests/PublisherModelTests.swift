@@ -167,6 +167,46 @@ func publisherPauseReplacesPreviousFailureAndSuccess() async {
 }
 
 @Test @MainActor
+func remoteReadFailureClearsPreviouslyLoadedSettings() async {
+    let (model, transport) = publisherSetup()
+    let saved = #"{"preview":{"account_id":"account","bucket":"old-bucket","public_origin":"https://old.example.com","channel":"preview"},"production":null,"targets":[],"unavailable_targets":[]}"#
+    transport.replies["publisher_remote_read"] = reply(saved)
+    await model.readRemote()
+    #expect(model.remote?.preview?.bucket == "old-bucket")
+
+    transport.replies["publisher_remote_read"] = #"{"ok":false,"error":"密钥不可用"}"#
+    await model.readRemote()
+    #expect(model.remote == nil)
+    #expect(model.error == "密钥不可用")
+    await model.saveRemote(channel: "preview", config: nil, accessKey: "", secretKey: "")
+    #expect(!transport.calls.contains { $0.0 == "publisher_remote_save" })
+
+    transport.replies["publisher_remote_read"] = reply(saved)
+    await model.readRemote()
+    #expect(model.remote?.preview?.bucket == "old-bucket" && model.error == nil)
+}
+
+@Test @MainActor
+func recoveryClearsPreviouslyLoadedRemoteSettings() async {
+    for fromBackup in [false, true] {
+        let (model, transport) = publisherSetup()
+        transport.replies["publisher_remote_read"] = reply(#"{"preview":null,"production":null,"targets":[],"unavailable_targets":[]}"#)
+        transport.replies["restore_publisher_backup"] = reply(#"{"completed":false,"message":"已恢复","recovery":null}"#)
+        await model.load()
+        await model.readRemote()
+        #expect(model.remote != nil)
+        if fromBackup {
+            await model.restoreBackup(Data([1]), passphrase: "test-passphrase")
+        } else {
+            await model.prepareRecovery(passphrase: "test-passphrase")
+            await model.confirmRecovery()
+        }
+        #expect(model.remote == nil)
+        #expect(!model.recoveryHolding)
+    }
+}
+
+@Test @MainActor
 func publisherReadsClearPreviousErrorAfterRetry() async {
     let (model, transport) = publisherSetup()
     let cleanup = #"{"digest":"approved","retain":128,"history_before":0,"history_after":0,"assets_before":0,"assets_after":0,"candidate_bytes":0,"pending_blocks_commit":false,"release_resolution":false,"replaces_checkpoint":false,"retained_history":[],"removed_history_records":[],"protected_assets":[],"candidate_assets":[],"message":"确认"}"#

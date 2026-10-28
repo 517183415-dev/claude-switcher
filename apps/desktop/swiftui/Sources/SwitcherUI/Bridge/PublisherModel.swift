@@ -194,7 +194,7 @@ final class PublisherModel: ObservableObject {
         guard canEdit else { return }
         beginAction("正在读取发布配置…")
         do { remote = try await bridge.read(.publisherRemoteRead) }
-        catch { self.error = desktopErrorMessage(error) }
+        catch { remote = nil; self.error = desktopErrorMessage(error) }
         busy = nil
     }
 
@@ -265,6 +265,7 @@ final class PublisherModel: ObservableObject {
     }
 
     private func refreshAfterRecovery() async {
+        remote = nil
         do {
             try await reload()
             recoveryRefreshPending = false
